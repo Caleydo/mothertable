@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3';
-import {HELLO_WORLD} from './language';
+import {list as listData} from 'phovea_core/src/data';
 
 /**
  * The main class for the App app
@@ -30,8 +30,12 @@ export class App {
    * @returns {Promise<App>}
    */
   private build() {
-    this.$node.html(HELLO_WORLD);
-    return Promise.resolve(null);
+    return listData().then((datasets) => {
+      const data = this.$node.append('div').selectAll('div').data(datasets);
+      data.enter().append('div');
+      data.text((d) => d.desc.name);
+      data.exit().remove();
+    });
   }
 
   /**

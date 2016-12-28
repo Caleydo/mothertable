@@ -3,4 +3,3 @@
  */
 
 export const APP_NAME = 'Mother Table';
-export const HELLO_WORLD = 'Hello Phovea World';
