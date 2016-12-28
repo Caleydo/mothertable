@@ -67,9 +67,9 @@
     "webpack-dev-server": "2.1.0-beta.10"
   },
   "dependencies": {
-    "phovea_core": "github:phovea/phovea_core",
-    "phovea_vis": "github:phovea/phovea_vis",
-    "phovea_bootstrap_fontawesome": "github:phovea/phovea_bootstrap_fontawesome",
+    "phovea_core": "github:phovea/phovea_core#v0.0.3",
+    "phovea_vis": "github:phovea/phovea_vis#v0.0.3",
+    "phovea_bootstrap_fontawesome": "github:phovea/phovea_bootstrap_fontawesome#v0.0.3",
     "@types/d3": "3.5.36",
     "d3": "3.5.17"
   },
