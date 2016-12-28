@@ -1,2 +1,16 @@
 
 @import "styles/base";
+
+#app > main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .block {
+    header {
+      i {
+        cursor: pointer;
+      }
+    }
+  }
+}
