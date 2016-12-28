@@ -4,7 +4,7 @@
 
 import * as d3 from 'd3';
 import {IDataType} from 'phovea_core/src/datatype';
-import {list as listData} from 'phovea_core/src/data';
+import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_bootstrap_fontawesome/src/dialogs';
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
 
@@ -13,7 +13,7 @@ import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/mult
  */
 export class App {
 
-  private $node;
+  private readonly $node;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent);
@@ -35,6 +35,7 @@ export class App {
   private build() {
     this.setBusy(true);
     return listData().then((datasets) => {
+      datasets = convertTableToVectors(datasets);
       this.$node.select('h3').remove();
       this.$node.select('button.adder').on('click', () => {
         choose(datasets.map((d)=>d.desc.name), 'Choose dataset').then((selection) => {
