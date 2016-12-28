@@ -1,0 +1,32 @@
+{
+  "generator-phovea": {
+    "type": "app",
+    "app": "Mother Table",
+    "clientOnly": false,
+    "entries": {
+      "app": "./src/index.ts"
+    },
+    "libraries": [
+      "d3"
+    ],
+    "modules": [
+      "phovea_core",
+      "phovea_vis",
+      "phovea_bootstrap_fontawesome"
+    ],
+    "libraryAliases": {
+      "d3": "d3/d3"
+    },
+    "libraryExternals": [
+      "d3",
+      "jquery",
+      "font-awesome"
+    ],
+    "ignores": [],
+    "extensions": [],
+    "name": "mothertable",
+    "author": "Samuel Gratzl",
+    "today": "Wed, 28 Dec 2016 10:12:42 GMT",
+    "githubAccount": "Caleydo"
+  }
+}
