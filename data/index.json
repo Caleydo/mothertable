@@ -231,5 +231,24 @@
         }
       }
     ]
+  },
+  {
+    "name": "Number One Hits",
+    "type": "matrix",
+    "path": "number_one.csv",
+    "separator": "\t",
+    "size": [
+      12,
+      12
+    ],
+    "coltype": "country",
+    "rowtype": "artist",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        23
+      ]
+    }
   }
 ]
