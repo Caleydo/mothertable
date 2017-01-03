@@ -5,7 +5,7 @@
 import * as d3 from 'd3';
 import {IDataType} from 'phovea_core/src/datatype';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
-import {choose} from 'phovea_bootstrap_fontawesome/src/dialogs';
+import {choose} from 'phovea_ui/src/dialogs';
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
 
 /**
