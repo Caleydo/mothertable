@@ -60,14 +60,14 @@ export class App {
       })
       .on('drag', function () {
         d3.select(this).style('position', 'absolute')
-          .style('top', d3.mouse(this)[1] + 'px')
-          .style('left', d3.mouse(this)[0] + 'px');
+          .style('top', (<any>d3.event).y + 'px')
+          .style('left', (<any>d3.event).x + 'px');
       })
       .on('dragend', function () {
         d3.select(this)
           .style('position', 'absolute')
-          .style('top', d3.mouse(this)[1] + 'px')
-          .style('left', d3.mouse(this)[0] + 'px')
+          .style('top', (<any>d3.event).y + 'px')
+          .style('left', (<any>d3.event).x + 'px')
           .classed('block-select-selected', false);
 
       });
