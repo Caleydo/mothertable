@@ -1,4 +1,3 @@
-
 @import "styles/base";
 
 #app > main {
@@ -11,6 +10,28 @@
       i {
         cursor: pointer;
       }
+
     }
   }
 }
+
+.toolbar {
+  height: 20px;
+}
+
+$select-color: orange;
+$hover-color: #ffc46b;
+
+.block {
+  &.block-select-selected {
+    border: 1px solid $select-color;
+    background: none;
+  }
+  &.block-select-hovered {
+    border: 1px solid $hover-color;
+    background: none;
+  }
+
+}
+
+
