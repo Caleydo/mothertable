@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import {IDataType} from 'phovea_core/src/datatype';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
-import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
+import {create as createMultiForm} from 'phovea_core/src/multiform';
 
 /**
  * The main class for the App app
@@ -48,8 +48,8 @@ export class App {
 
   private addDataset(data: IDataType) {
     const parent = this.$node.select('main').append('div').classed('block', true).html(`<header class="toolbar"></header><main></main>`);
-    const vis = createMultiForm(data, <Element>parent.select('main').node());
-    addIconVisChooser(<Element>parent.select('header').node(), vis);
+    const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
+    vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
   }
 
   /**
