@@ -34,4 +34,15 @@ $hover-color: #ffc46b;
 
 }
 
+.filterdialog {
+  border: 1px solid $select-color;
+  position: absolute;
+  top: 41px;
+  right: 50px;
+  width: 201px;
+}
+.catRect{
+  stroke: black;
+
+}
 
