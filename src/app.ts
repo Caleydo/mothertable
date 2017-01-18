@@ -116,6 +116,12 @@ export class App {
           makeNumRect(svgData, dataVal);
 
         });
+      } else {
+        (<any>data).data().then(function (dataVal) {
+          makeStringRect(svgData, dataVal);
+
+        });
+
       }
 
     } else if (vectorOrMatrix === 'matrix') {
@@ -260,6 +266,30 @@ export class App {
 
     }
 
+    function makeStringRect(svgData, data) {
+      const svg = svgData.svg;
+      const cellWidth = svgData.filterDialogWidth;
+      const cellHeight = svgData.filterRowHeight;
+      const name = svgData.name;
+
+      const rect = svg.selectAll('.rect').data([data]).enter();
+      rect.append('rect')
+        .attr('x', (d, i) => svgData.filterDialogWidth * i)
+        .attr('y', 0)
+        .attr('width', cellWidth)
+        .attr('height', cellHeight)
+        .attr('fill', 'grey');
+
+
+      const text = svg.selectAll('.text').data([name]).enter();
+      text.append('text')
+        .attr('x', (d, i) => (cellWidth * i) + cellWidth / 2)
+        .attr('y', cellHeight / 2)
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .text((d: any) => d);
+
+    }
   }
 
   /**
