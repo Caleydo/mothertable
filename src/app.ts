@@ -10,6 +10,8 @@ import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/mult
 import {getAPIJSON, api2absURL} from "../../phovea_core/src/ajax";
 import any = jasmine.any;
 import {rect} from "../../phovea_core/src/geom";
+import {type} from "os";
+import {none} from "../../phovea_core/src/range";
 /**
  * The main class for the App app
  */
@@ -106,19 +108,22 @@ export class App {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
         (<any>data).data().then(function (dataVal) {
-          const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i)
-          makeCatRect(svgData, uniqCat);
+          const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i);
+          const dataInfo = {name: name, value: uniqCat, type: dataType}
+          makeCatRect(svgData, dataInfo);
         });
 
       } else if (dataType === 'int' || dataType === 'real') {
 
         (<any>data).data().then(function (dataVal) {
-          makeNumRect(svgData, dataVal);
+          const dataInfo = {name: name, value: dataVal, type: dataType}
+          makeNumRect(svgData, dataInfo);
 
         });
       } else {
         (<any>data).data().then(function (dataVal) {
-          makeStringRect(svgData, dataVal);
+          const dataInfo = {name: name, value: dataVal, type: dataType}
+          makeStringRect(svgData, dataInfo);
 
         });
 
@@ -127,7 +132,8 @@ export class App {
     } else if (vectorOrMatrix === 'matrix') {
 
       (<any>data).data().then(function (dataVal) {
-        makeMatrix(svgData, dataVal[0], range);
+        const dataInfo = {name: name, value: dataVal[0], type: vectorOrMatrix, range: range}
+        makeMatrix(svgData, dataInfo);
 
       });
     }
@@ -138,59 +144,105 @@ export class App {
     });
 
 
-    function makeCatRect(svgData, listCat) {
-      const cellDimension = svgData.filterDialogWidth / listCat.length;
-      const height = svgData.filterRowHeight;
-      const c20 = d3.scale.category20();
-      const name = svgData.name;
+    function makeRectangle(svgData, styleInfo, data) {
+      const cellWidth = svgData.filterDialogWidth / data.value.length;
+      const cellHeight = svgData.filterRowHeight;
 
-      const div = d3.select('main').append('div')
-        .style('display', 'none');
+      const cssClass = styleInfo.class;
+      var rectFill;
+      if (data.type === 'int' || data.type === 'real') {
+        rectFill = 'none';
+      } else if (data.type === 'categorical') {
 
-      const rect = svgData.svg.selectAll('.rect').data(listCat).enter();
+        rectFill = d3.scale.category20();
+
+      } else if (data.type === 'matrix') {
+
+        rectFill = d3.scale.linear<string, number>().domain(data.range).range(['white', 'red'])
+      } else {
+        rectFill = 'grey';
+      }
+
+      const rect = svg.selectAll('.rect' + cssClass).data(data.value).enter();
       rect.append('rect')
-        .attr('x', (d, i) => cellDimension * i)
+        .attr('x', (d, i) => cellWidth * i)
         .attr('y', 0)
-        .attr('width', cellDimension)
-        .attr('height', height - 15)
-        .attr('class', 'catRect')
-        .attr('fill', c20)
-        .on('mouseover', (d) => mouseover(d))
-        //.on("mousemove",(d)=> mousemove(d))
-        .on('mouseout', mouseout);
+        .attr('width', cellWidth)
+        .attr('height', cellHeight)
+        .attr('class', cssClass)
+        .attr('fill', rectFill);
+
+    }
 
 
-      const catName = svg.selectAll('.text').data([name]).enter();
-      catName.append('text')
-        .attr('x', svgData.filterDialogWidth / 2)
-        .attr('y', height - 5)
+    function makeText(svgData, stylInfo, data) {
+
+      const cellWidth = svgData.filterDialogWidth / data.value.length;
+      let cellHeight = svgData.filterRowHeight;
+      if (data.value.length > 1) {
+
+        cellHeight = cellHeight / 2;
+      } else {
+
+        cellHeight = cellHeight - 10;
+      }
+      const text = svg.selectAll('.text').data(data.value).enter();
+      text.append('text')
+        .attr('x', (d, i) => (cellWidth * i) + cellWidth / 2)
+        .attr('y', cellHeight)
         .style('alignment-baseline', 'middle')
         .style('text-anchor', 'middle')
-        .style('font-size', '12px')
         .text((d: any) => d);
 
-      const text = svg.selectAll('.text').data(listCat).enter();
-      text.append('text')
-        .attr('x', (d, i) => (cellDimension * i) + cellDimension / 2)
-        .attr('y', height / 2)
-        .style('alignment-baseline', 'middle')
-        .style('text-anchor', 'middle')
-        .text(function (d: any) {
-          if (d.length > 3) {
-            return d.substring(0, 3) + '..';
-          } else {
-            return d;
-          }
-        });
+    }
 
-      function mouseover(d) {
-        div.style('display', 'inline')
-          .style('position', 'absolute')
-          .style('color', 'black')
-          .style('left', ((<any>d3.event).pageX ) + 'px')
-          .style('top', ((<any>d3.event).pageY ) + 'px')
-          .text(d);
-      }
+
+    function makeCatRect(svgData, dataInfo) {
+      const cellDimension = svgData.filterDialogWidth / dataInfo.length;
+      const height = svgData.filterRowHeight;
+      const rectStyle = {class: 'catRect'};
+      const rectData = {value: dataInfo.value, type: dataInfo.type};
+      makeRectangle(svgData, rectStyle, rectData);
+      const catNameStyle = {class: 'catName'};
+      const catName = {value: [dataInfo.name]}
+      makeText(svgData, catNameStyle, catName);
+
+      const categories = {value: dataInfo.value};
+      const categoriesStyle = {class: 'categories'};
+      makeText(svgData, categoriesStyle, categories);
+
+
+      // const catName = svg.selectAll('.text').data([dataInfo.name]).enter();
+      // catName.append('text')
+      //   .attr('x', svgData.filterDialogWidth / 2)
+      //   .attr('y', height - 5)
+      //   .style('alignment-baseline', 'middle')
+      //   .style('text-anchor', 'middle')
+      //   .style('font-size', '12px')
+      //   .text((d: any) => d);
+
+      // const text = svg.selectAll('.text').data(dataInfo.value).enter();
+      // text.append('text')
+      //   .attr('x', (d, i) => (cellDimension * i) + cellDimension / 2)
+      //   .attr('y', height / 2)
+      //   .style('alignment-baseline', 'middle')
+      //   .style('text-anchor', 'middle')
+      //   .text(function (d: any) {
+      //     if (d.length > 3) {
+      //       return d.substring(0, 3) + '..';
+      //     } else {
+      //       return d;
+      //     }
+      //   });
+
+      // function mouseover(d) {
+      //   div.style('display', 'inline')
+      //     .style('position', 'absolute')
+      //     .style('color', 'black')
+      //     .style('left', ((<any>d3.event).pageX ) + 'px')
+      //     .style('top', ((<any>d3.event).pageY ) + 'px')
+      //     .text(d);
+      // }
 
       // function mousemove(d) {
       //   div
@@ -199,18 +251,18 @@ export class App {
       //     .style("top", ((<any>d3.event).pageY ) + "px");
       // }
 
-      function mouseout() {
-        div.style('display', 'none');
-      }
+      // function mouseout() {
+      //   div.style('display', 'none');
+      // }
     }
 
-    function makeNumRect(svgData, data) {
+    function makeNumRect(svgData, dataInfo) {
       const svg = svgData.svg;
       const svgDefs = svg.append('defs');
       const cellWidth = svgData.filterDialogWidth;
       const cellHeight = svgData.filterRowHeight;
-      const name = svgData.name;
-
+      const rectData = {value: [dataInfo.value], type: dataInfo.type};
+      const rectStyle = {class: 'numRect'};
       const mainGradient = svgDefs.append('linearGradient')
         .attr('id', 'numGradient');
 
@@ -221,73 +273,77 @@ export class App {
         .attr('class', 'stop-right')
         .attr('offset', '1');
 
-      const rect = svg.selectAll('.rect').data([data]).enter();
-      rect.append('rect')
-        .attr('x', (d, i) => svgData.filterDialogWidth * i)
-        .attr('y', 0)
-        .attr('width', cellWidth)
-        .attr('height', cellHeight)
-        .attr('class', 'numRect');
 
+      console.log(svgData)
 
-      const text = svg.selectAll('.text').data([name]).enter();
-      text.append('text')
-        .attr('x', (d, i) => (cellWidth * i) + cellWidth / 2)
-        .attr('y', cellHeight / 2)
-        .style('alignment-baseline', 'middle')
-        .style('text-anchor', 'middle')
-        .text((d: any) => d);
+      makeRectangle(svgData, rectStyle, rectData);
+      const textStyle = {class: 'numText'};
+      const textData = {value: [dataInfo.name]};
+      makeText(svgData, textStyle, textData);
+      //
+      //
+      // const text = svg.selectAll('.text').data([dataInfo.name]).enter();
+      // text.append('text')
+      //   .attr('x', (d, i) => (cellWidth * i) + cellWidth / 2)
+      //   .attr('y', cellHeight / 2)
+      //   .style('alignment-baseline', 'middle')
+      //   .style('text-anchor', 'middle')
+      //   .text((d: any) => d);
 
     }
 
-    function makeMatrix(svgData, data, range) {
-      const cellDimension = svgData.filterDialogWidth / data.length;
+    function makeMatrix(svgData, dataInfo) {
+
       const height = svgData.filterRowHeight;
       const name = svgData.name;
-      const colorScale = d3.scale.linear<string, number>().domain(range).range(['white', 'red'])
+      const styleInfo = {class: 'matrixRect'};
+      const data = {value: dataInfo.value, type: dataInfo.type, range: dataInfo.range};
+      makeRectangle(svgData, styleInfo, data);
 
-      const rect = svgData.svg.selectAll('.rect').data(data).enter();
-      rect.append('rect')
-        .attr('x', (d, i) => cellDimension * i)
-        .attr('y', 0)
-        .attr('width', cellDimension)
-        .attr('height', height - 15)
-        .attr('class', 'catRect')
-        .attr('fill', colorScale)
+      const textStyle = {class: 'matText'};
+      const textData = {value: [dataInfo.name]};
+      makeText(svgData, textStyle, textData);
 
-      const catName = svg.selectAll('.text').data([name]).enter();
-      catName.append('text')
-        .attr('x', svgData.filterDialogWidth / 2)
-        .attr('y', height - 5)
-        .style('alignment-baseline', 'middle')
-        .style('text-anchor', 'middle')
-        .style('font-size', '12px')
-        .text((d: any) => d);
+      // const catName = svg.selectAll('.text').data([name]).enter();
+      // catName.append('text')
+      //   .attr('x', svgData.filterDialogWidth / 2)
+      //   .attr('y', height - 5)
+      //   .style('alignment-baseline', 'middle')
+      //   .style('text-anchor', 'middle')
+      //   .style('font-size', '12px')
+      //   .text((d: any) => d);
 
     }
 
-    function makeStringRect(svgData, data) {
-      const svg = svgData.svg;
-      const cellWidth = svgData.filterDialogWidth;
-      const cellHeight = svgData.filterRowHeight;
-      const name = svgData.name;
+    function makeStringRect(svgData, dataInfo) {
+      // const svg = svgData.svg;
+      // const cellWidth = svgData.filterDialogWidth;
+      // const cellHeight = svgData.filterRowHeight;
+      // const name = svgData.name;
+      const rectStyle = {class: 'stringRect'};
+      const rectData = {value: [dataInfo.name], type: dataInfo.type};
+      //
+      // const rect = svg.selectAll('.rect').data([data]).enter();
+      // rect.append('rect')
+      //   .attr('x', (d, i) => svgData.filterDialogWidth * i)
+      //   .attr('y', 0)
+      //   .attr('width', cellWidth)
+      //   .attr('height', cellHeight)
+      //   .attr('fill', 'grey');
 
-      const rect = svg.selectAll('.rect').data([data]).enter();
-      rect.append('rect')
-        .attr('x', (d, i) => svgData.filterDialogWidth * i)
-        .attr('y', 0)
-        .attr('width', cellWidth)
-        .attr('height', cellHeight)
-        .attr('fill', 'grey');
+      makeRectangle(svgData, rectStyle, rectData);
 
+      const textStyle = {class: 'stringText'};
+      const textData = {value: [dataInfo.name]};
+      makeText(svgData, textStyle, textData);
 
-      const text = svg.selectAll('.text').data([name]).enter();
-      text.append('text')
-        .attr('x', (d, i) => (cellWidth * i) + cellWidth / 2)
-        .attr('y', cellHeight / 2)
-        .style('alignment-baseline', 'middle')
-        .style('text-anchor', 'middle')
-        .text((d: any) => d);
+      // const text = svg.selectAll('.text').data([name]).enter();
+      // text.append('text')
+      //   .attr('x', (d, i) => (cellWidth * i) + cellWidth / 2)
+      //   .attr('y', cellHeight / 2)
+      //   .style('alignment-baseline', 'middle')
+      //   .style('text-anchor', 'middle')
+      //   .text((d: any) => d);
 
     }
   }
