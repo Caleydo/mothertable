@@ -97,10 +97,22 @@ export class App {
 
     const dataType = (<any>data.desc).value.type;
     console.log(dataType)
-    const filterDialogWidth = 200;
+    const name = (<any>data).desc.name;
+    const svgData = {
+      filterDialogWidth: 200, filterRowHeight: 50, svg: svg, name: name
+    }
     if (dataType === 'categorical') {
       const listCat = (<any>data.desc).value.categories;
-      makeCatRect(listCat, filterDialogWidth, svg);
+      makeCatRect(svgData, listCat);
+
+    } else if (dataType === 'int' || dataType === 'real') {
+
+      (<any>data).data().then(function (dataVal) {
+        const range = (<any>data.desc).value.range;
+        makeNumRect(svgData, dataVal);
+
+      });
+
 
     }
 
@@ -110,25 +122,36 @@ export class App {
     });
 
 
-    function makeCatRect(listCat, cellWidth, svg) {
-      const cellDimension = cellWidth / listCat.length;
-      const height = 50;
+    function makeCatRect(svgData, listCat) {
+      const cellDimension = svgData.filterDialogWidth / listCat.length;
+      const height = svgData.filterRowHeight;
       const c20 = d3.scale.category20();
+      const name = svgData.name;
 
-      var div = d3.select('main').append('div')
+      const div = d3.select('main').append('div')
         .style('display', 'none');
 
-      const rect = svg.selectAll('.rect').data(listCat).enter();
+      const rect = svgData.svg.selectAll('.rect').data(listCat).enter();
       rect.append('rect')
         .attr('x', (d, i) => cellDimension * i)
         .attr('y', 0)
         .attr('width', cellDimension)
-        .attr('height', height)
+        .attr('height', height - 15)
         .attr('class', 'catRect')
         .attr('fill', c20)
-       .on('mouseover', (d) => mouseover(d))
+        .on('mouseover', (d) => mouseover(d))
         //.on("mousemove",(d)=> mousemove(d))
         .on('mouseout', mouseout);
+
+
+      const catName = svg.selectAll('.text').data([name]).enter();
+      catName.append('text')
+        .attr('x', svgData.filterDialogWidth / 2)
+        .attr('y', height-5)
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .style('font-size','12px')
+        .text((d: any) => d)
 
       const text = svg.selectAll('.text').data(listCat).enter();
       text.append('text')
@@ -163,6 +186,42 @@ export class App {
       function mouseout() {
         div.style('display', 'none');
       }
+    }
+
+    function makeNumRect(svgData, data) {
+      const svg = svgData.svg;
+      const svgDefs = svg.append('defs');
+      const cellWidth = svgData.filterDialogWidth;
+      const cellHeight = svgData.filterRowHeight;
+      const name = svgData.name;
+
+      const mainGradient = svgDefs.append('linearGradient')
+        .attr('id', 'numGradient');
+
+      mainGradient.append('stop')
+        .attr('class', 'stop-left')
+        .attr('offset', '0');
+      mainGradient.append('stop')
+        .attr('class', 'stop-right')
+        .attr('offset', '1');
+
+      const rect = svg.selectAll('.rect').data([data]).enter();
+      rect.append('rect')
+        .attr('x', (d, i) => svgData.filterDialogWidth * i)
+        .attr('y', 0)
+        .attr('width', cellWidth)
+        .attr('height', cellHeight)
+        .attr('class', 'numRect')
+
+
+      const text = svg.selectAll('.text').data([name]).enter();
+      text.append('text')
+        .attr('x', (d, i) => (cellWidth * i) + cellWidth / 2)
+        .attr('y', cellHeight / 2)
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .text((d: any) => d);
+
     }
 
 
