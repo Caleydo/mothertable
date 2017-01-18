@@ -35,6 +35,7 @@ $hover-color: #ffc46b;
 }
 
 .filterdialog {
+  background-color: lightgrey;
   border: 1px solid $select-color;
   position: absolute;
   top: 41px;
@@ -43,17 +44,26 @@ $hover-color: #ffc46b;
 
 }
 
-.catRect {
+.categories {
   stroke: black;
-
+  margin: 1px;
+  flex-grow: 1;
+  width: 100%;
 }
 
-.stop-left {
-  stop-color: #3f51b5; /* Indigo */
+.numerical {
+  background: linear-gradient(aliceblue, cornflowerblue);
+  margin: 1px;
+  width: 100%;
 }
 
-.stop-right {
-  stop-color: #009688; /* Teal */
+.matrix {
+  flex-grow: 1;
+  width: 100%;
+}
+
+.matrixName {
+  position: absolute;
 }
 
 .numRect {
