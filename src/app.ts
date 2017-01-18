@@ -94,26 +94,36 @@ export class App {
     const filterdialog = d3.select('main').append('div').classed('filterdialog', true);
     // filterdialog.text('Filter Dialog');
     const svg = d3.select('.filterdialog').append('svg').attr('width', 200).attr('height', 50).append('g');
-
-    const dataType = (<any>data.desc).value.type;
-    console.log(dataType)
+    const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data).desc.name;
+    const range = (<any>data).desc.value.range;
+    console.log(vectorOrMatrix)
     const svgData = {
       filterDialogWidth: 200, filterRowHeight: 50, svg: svg, name: name
-    }
-    if (dataType === 'categorical') {
-      const listCat = (<any>data.desc).value.categories;
-      makeCatRect(svgData, listCat);
+    };
 
-    } else if (dataType === 'int' || dataType === 'real') {
+    if (vectorOrMatrix === 'vector') {
+      const dataType = (<any>data.desc).value.type;
+      if (dataType === 'categorical') {
+        (<any>data).data().then(function (dataVal) {
+          const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i)
+          makeCatRect(svgData, uniqCat);
+        });
+
+      } else if (dataType === 'int' || dataType === 'real') {
+
+        (<any>data).data().then(function (dataVal) {
+          makeNumRect(svgData, dataVal);
+
+        });
+      }
+
+    } else if (vectorOrMatrix === 'matrix') {
 
       (<any>data).data().then(function (dataVal) {
-        const range = (<any>data.desc).value.range;
-        makeNumRect(svgData, dataVal);
+        makeMatrix(svgData, dataVal[0], range);
 
       });
-
-
     }
 
     (<any>data).data().then(function (v) {
@@ -147,11 +157,11 @@ export class App {
       const catName = svg.selectAll('.text').data([name]).enter();
       catName.append('text')
         .attr('x', svgData.filterDialogWidth / 2)
-        .attr('y', height-5)
+        .attr('y', height - 5)
         .style('alignment-baseline', 'middle')
         .style('text-anchor', 'middle')
-        .style('font-size','12px')
-        .text((d: any) => d)
+        .style('font-size', '12px')
+        .text((d: any) => d);
 
       const text = svg.selectAll('.text').data(listCat).enter();
       text.append('text')
@@ -165,7 +175,7 @@ export class App {
           } else {
             return d;
           }
-        })
+        });
 
       function mouseover(d) {
         div.style('display', 'inline')
@@ -211,7 +221,7 @@ export class App {
         .attr('y', 0)
         .attr('width', cellWidth)
         .attr('height', cellHeight)
-        .attr('class', 'numRect')
+        .attr('class', 'numRect');
 
 
       const text = svg.selectAll('.text').data([name]).enter();
@@ -224,6 +234,31 @@ export class App {
 
     }
 
+    function makeMatrix(svgData, data, range) {
+      const cellDimension = svgData.filterDialogWidth / data.length;
+      const height = svgData.filterRowHeight;
+      const name = svgData.name;
+      const colorScale = d3.scale.linear<string, number>().domain(range).range(['white', 'red'])
+
+      const rect = svgData.svg.selectAll('.rect').data(data).enter();
+      rect.append('rect')
+        .attr('x', (d, i) => cellDimension * i)
+        .attr('y', 0)
+        .attr('width', cellDimension)
+        .attr('height', height - 15)
+        .attr('class', 'catRect')
+        .attr('fill', colorScale)
+
+      const catName = svg.selectAll('.text').data([name]).enter();
+      catName.append('text')
+        .attr('x', svgData.filterDialogWidth / 2)
+        .attr('y', height - 5)
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .style('font-size', '12px')
+        .text((d: any) => d);
+
+    }
 
   }
 
