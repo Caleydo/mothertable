@@ -22,18 +22,6 @@
 $select-color: orange;
 $hover-color: #ffc46b;
 
-.block {
-  &.block-select-selected {
-    border: 1px solid $select-color;
-    background: none;
-  }
-  &.block-select-hovered {
-    border: 1px solid $hover-color;
-    background: none;
-  }
-
-}
-
 .filterdialog {
   background-color: lightgrey;
   border: 1px solid $select-color;
@@ -41,6 +29,14 @@ $hover-color: #ffc46b;
   top: 41px;
   right: 50px;
   width: 201px;
+  &.block-select-selected {
+    border: 1px solid red;
+    background: none;
+  }
+  &.block-select-hovered {
+    border: 1px solid red;
+    background: none;
+  }
 
 }
 

@@ -7,13 +7,12 @@ import {IDataType} from 'phovea_core/src/datatype';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
-import {getAPIJSON, api2absURL} from "../../phovea_core/src/ajax";
-import any = jasmine.any;
-import {rect} from "../../phovea_core/src/geom";
-import {type} from "os";
-import {none} from "../../phovea_core/src/range";
-import color = d3.color;
+import {range as createRange}  from 'phovea_core/src/Range';
+import {randomId} from 'phovea_core/src/index';
+import * as $ from 'jquery';
+
 /**
+ *
  * The main class for the App app
  */
 export class App {
@@ -45,7 +44,6 @@ export class App {
       this.$node.select('h3').remove();
       this.$node.select('button.adder').on('click', () => {
         choose(datasets.map((d) => d.desc.name), 'Choose dataset').then((selection) => {
-          console.log(datasets, selection)
           this.addDataset(datasets.find((d) => {
             return d.desc.name === selection;
           }));
@@ -75,7 +73,17 @@ export class App {
 
       });
 
-    const parent = this.$node.select('main').append('div').classed('block', true).call(drag).html(`<header class="toolbar"></header><main></main>`);
+
+    //console.log((<any>data).data(createRange(2, 8, 2)))
+
+
+    const uid = randomId();
+    const parent = this.$node.select('main')
+      .append('div')
+      .attr('data-uid', uid)
+      .call(drag)
+      .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
+
     const vis = createMultiForm(data, <Element>parent.select('main').node());
     addIconVisChooser(<Element>parent.select('header').node(), vis);
     const sort = ['min', 'max', 'median', 'q1', 'q3'];
@@ -86,22 +94,42 @@ export class App {
       });
     });
 
-    d3.selectAll('.block').on('mouseover', function () {
-      d3.select(this).classed('block-select-selected', true);
-    });
 
-    d3.selectAll('.block').on('mouseout', function () {
-      d3.select(this).classed('block-select-selected', false);
-    });
+    // (<any>data).filter(greaterThan)
+    //   .then((vectorView) => {
+    //     //console.log(vectorView.data());
+    //
+    //     // d3.selectAll(`[data-uid="${uid}"]`).remove();
+    //     // const parent = this.$node.select('main')
+    //     //   .append('div')
+    //     //   .attr('data-uid', uid)
+    //     //   .call(drag)
+    //     //   .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
+    //
+    //     const vis = createMultiForm(vectorView, <Element>parent.select('main').node());
+    //     addIconVisChooser(<Element>parent.select('header').node(), vis);
+    //
+    //   })
+
 
     const filterdialog = d3.select('main').append('div').classed('filterdialog', true);
     // filterdialog.text('Filter Dialog');
 
+
+    // d3.selectAll('.filterdialog').on('mouseover', function () {
+    //   d3.select(this).classed('block-select-selected', true);
+    // });
+    //
+    // d3.selectAll('.filterdialog').on('mouseout', function () {
+    //   d3.select(this).classed('block-select-selected', false);
+    // });
+
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data).desc.name;
     const range = (<any>data).desc.value.range;
+
     const divInfo = {
-      filterDialogWidth: 200, filterRowHeight: 30
+      filterDialogWidth: 200, filterRowHeight: 30, uid: uid
     };
 
     if (vectorOrMatrix === 'vector') {
@@ -109,32 +137,27 @@ export class App {
       if (dataType === 'categorical') {
         (<any>data).data().then(function (dataVal) {
           const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i);
-          const dataInfo = {name: name, value: uniqCat, type: dataType}
+          const dataInfo = {name: name, value: uniqCat, type: dataType};
           makeCategories(divInfo, dataInfo);
         });
-
       } else if (dataType === 'int' || dataType === 'real') {
 
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {name: name, value: dataVal, type: dataType}
+          const dataInfo = {name: name, value: dataVal, type: dataType};
           makeNumerical(divInfo, dataInfo);
-
         });
       } else {
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {name: name, value: dataVal, type: dataType}
+          const dataInfo = {name: name, value: dataVal, type: dataType};
           makeStringRect(divInfo, dataInfo);
 
         });
-
       }
 
     } else if (vectorOrMatrix === 'matrix') {
-
       (<any>data).data().then(function (dataVal) {
-        const dataInfo = {name: name, value: dataVal[0], type: vectorOrMatrix, range: range}
+        const dataInfo = {name: name, value: dataVal[0], type: vectorOrMatrix, range: range};
         makeMatrix(divInfo, dataInfo);
-
       });
     }
 
@@ -144,11 +167,49 @@ export class App {
     });
 
 
+    function greaterThan(value, index) {
+      return value >= 10;
+    }
+
+    function findCatName(catName, value, index,) {
+      if (value === catName) {
+
+        return value;
+      } else {
+        return;
+      }
+
+    }
+
+    console.log(this.$node.node())
+    d3.selectAll('.filterdialog').on('click', function (d) {
+
+      let stat = 'active';
+
+      (<any>data).filter(findCatName.bind(this, stat))
+        .then((vectorView) => {
+          console.log(vectorView.data());
+          d3.selectAll(`[data-uid="${uid}"]`).remove();
+          const parent = d3.select('main')
+            .append('div')
+            .attr('data-uid', uid)
+            .call(drag)
+            .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
+
+          const vis = createMultiForm(vectorView, <Element>parent.select('main').node());
+          addIconVisChooser(<Element>parent.select('header').node(), vis);
+
+        })
+
+
+    })
+
+
     function makeCategories(divInfo, dataInfo) {
       const cellHeight = divInfo.filterRowHeight;
       const c20 = d3.scale.category20();
       const divBlock = d3.select('.filterdialog').append('div')
-        .classed(dataInfo.name, true)
+        .attr('data-uid', 'f' + divInfo.uid)
         .style('display', 'flex')
         .style('margin', '1px')
         .style('height', cellHeight + 'px');
@@ -163,10 +224,10 @@ export class App {
     function makeNumerical(divInfo, dataInfo) {
       const cellHeight = divInfo.filterRowHeight;
       const divBlock = d3.select('.filterdialog').append('div')
-        .classed(dataInfo.name, true)
+        .attr('data-uid', 'f' + divInfo.uid)
         .style('display', 'flex')
         .style('height', cellHeight + 'px')
-        .style('margin', '1px')
+        .style('margin', '1px');
       const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
       div.append('div')
         .attr('class', 'numerical')
@@ -174,15 +235,16 @@ export class App {
 
     }
 
+
     function makeMatrix(divInfo, dataInfo) {
       const cellHeight = divInfo.filterRowHeight;
       const divBlock = d3.select('.filterdialog').append('div')
-        .classed(dataInfo.name, true)
+        .attr('data-uid', 'f' + divInfo.uid)
         .style('display', 'flex')
         .style('height', cellHeight + 'px')
-        .style('margin', '1px')
+        .style('margin', '1px');
       const div = divBlock.selectAll('div.matrix').data(dataInfo.value).enter();
-      const colorScale = d3.scale.linear<string, number>().domain(dataInfo.range).range(['white', 'red'])
+      const colorScale = d3.scale.linear<string, number>().domain(dataInfo.range).range(['white', 'red']);
       div.append('div')
         .attr('class', 'matrix')
         .style('background-color', colorScale);
@@ -203,8 +265,9 @@ export class App {
         .style('margin', '1px')
         .style('border', '1px')
         .text((d) => d);
-
     }
+
+
   }
 
   /**
