@@ -101,13 +101,8 @@ export class App {
    //  }
 
 
-    const sort = ['min', 'max', 'median', 'q1', 'q3'];
-    d3.selectAll('.fa-sort').remove();
-    d3.selectAll('div.visualization').append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d, i) {
-      choose(sort.map((d) => d), 'Choose dataset').then((selection) => {
-        return selection;
-      });
-    });
+
+
 
     d3.selectAll('.block').on('mouseover', function () {
       d3.select(this).classed('block-select-selected', true);
@@ -152,12 +147,19 @@ export class App {
         );
 
     }) ;
-  });
-  var child = s.ownerDocument.createElement("label");
-  child.className = "adder fa fa-sort-amount-desc fa-0.5x";
+   });
+    var child = s.ownerDocument.createElement("label");
+    child.className = "adder fa fa-sort-amount-desc fa-0.5x";
     child.style.cursor = "pointer";
-  s.appendChild(child);
-  //child.onclick  = () => child.parentElement.parentElement.parentElement.remove();
+    s.appendChild(child);
+    const sort = ['min', 'max', 'median', 'q1', 'q3'];
+
+    child.onclick  = () => choose(sort.map((d) => d), 'Choose sorting criteria').then((selection) => {
+        let div: HTMLDivElement =  <HTMLDivElement>child.parentElement.parentElement.parentElement;
+        let multiform = div.childNodes[1].childNodes[0];
+
+        return selection;
+      });
 
 
 
