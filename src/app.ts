@@ -112,7 +112,13 @@ export class App {
     //   })
 
 
-    const filterdialog = d3.select('main').append('div').classed('filterdialog', true);
+    if (d3.selectAll('.filterdialog').size() < 1) {
+
+      d3.select('main').append('div').classed('filterdialog', true);
+
+    }
+
+
     // filterdialog.text('Filter Dialog');
 
 
@@ -178,15 +184,12 @@ export class App {
       } else {
         return;
       }
-
     }
 
-    console.log(this.$node.node())
-    d3.selectAll('.filterdialog').on('click', function (d) {
 
-      let stat = 'active';
+    function onClickCat(catName) {
 
-      (<any>data).filter(findCatName.bind(this, stat))
+      (<any>data).filter(findCatName.bind(this, catName))
         .then((vectorView) => {
           console.log(vectorView.data());
           d3.selectAll(`[data-uid="${uid}"]`).remove();
@@ -195,15 +198,11 @@ export class App {
             .attr('data-uid', uid)
             .call(drag)
             .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
-
           const vis = createMultiForm(vectorView, <Element>parent.select('main').node());
           addIconVisChooser(<Element>parent.select('header').node(), vis);
+        });
 
-        })
-
-
-    })
-
+    }
 
     function makeCategories(divInfo, dataInfo) {
       const cellHeight = divInfo.filterRowHeight;
@@ -213,11 +212,22 @@ export class App {
         .style('display', 'flex')
         .style('margin', '1px')
         .style('height', cellHeight + 'px');
-      const div = divBlock.selectAll('div.categories').data(dataInfo.value).enter();
-      div.append('div')
+      const div = divBlock
+        .selectAll('div.categories')
+        .data(dataInfo.value);
+
+      div.enter()
+        .append('div')
         .attr('class', 'categories')
         .style('background-color', c20)
-        .text((d: any) => d);
+        .text((d: any) => d)
+        .on('click', function () {
+          const catName = (d3.select(this).datum());
+          onClickCat(catName);
+
+        });
+
+      div.exit().remove();
     }
 
 
