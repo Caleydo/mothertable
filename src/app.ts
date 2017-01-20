@@ -13,7 +13,6 @@ import {IMultiForm} from 'phovea_core/src/multiform';
 import {randomId} from 'phovea_core/src/index';
 
 
-
 /**
  * The main class for the App app
  */
@@ -21,10 +20,10 @@ export class App {
 
   private readonly $node;
 
-  private blocks:MultiForm[]=[];
-  private blockDivs:HTMLDivElement[]=[];
+  private blocks: MultiForm[] = [];
+  private blockDivs: HTMLDivElement[] = [];
 
-  constructor(parent:Element) {
+  constructor(parent: Element) {
     this.$node = d3.select(parent);
   }
 
@@ -56,10 +55,6 @@ export class App {
   }
 
   private addDataset(data: IDataType) {
-    // const parent = this.$node.select('main').append('div').classed('block', true).html(`<header class="toolbar"></header><main></main>`);
-    // const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
-    // vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
-
     const drag = d3.behavior.drag()
       .on('dragstart', function () {
         d3.select(this).classed('block-select-selected', true);
@@ -77,10 +72,7 @@ export class App {
           .classed('block-select-selected', false);
 
       });
-
-
     //console.log((<any>data).data(createRange(2, 8, 2)))
-
 
     const uid = randomId();
     const parent = this.$node.select('main')
@@ -89,25 +81,20 @@ export class App {
       .call(drag)
       .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
 
-
-
     const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
-   // vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
-    this.addIconVisChooser(<HTMLElement>parent.select('header').node(),vis);
+    this.addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
     this.blocks.push(vis);
     this.blockDivs.push(parent);
-      vis.transform([1,1]);
-     //if(parent[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0] instanceof svg) {
-       let svg: SVGElement = parent[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
-       let visHeight = svg.clientHeight;
-       let visWidth = svg.clientWidth;
-       parent[0][0].setAttribute("style", "height:210px; width:200px");
-       svg.setAttribute("viewbox", "0 0 200 200");
-       svg.setAttribute("height", "200");
-       svg.setAttribute("width", "200");
-       vis.transform([200 / visWidth, 200 / visHeight]);
-   //  }
-
+    vis.transform([1, 1]);
+    /*if(parent[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0] instanceof svg) {
+     let svg: SVGElement = parent[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
+     let visHeight = svg.clientHeight;
+     let visWidth = svg.clientWidth;
+     parent[0][0].setAttribute("style", "height:210px; width:200px");
+     svg.setAttribute("viewbox", "0 0 200 200");
+     svg.setAttribute("height", "200");
+     svg.setAttribute("width", "200");
+     }*/
 
 
 
@@ -116,40 +103,11 @@ export class App {
       d3.select(this).classed('block-select-selected', true);
     });
 
-    // (<any>data).filter(greaterThan)
-    //   .then((vectorView) => {
-    //     //console.log(vectorView.data());
-    //
-    //     // d3.selectAll(`[data-uid="${uid}"]`).remove();
-    //     // const parent = this.$node.select('main')
-    //     //   .append('div')
-    //     //   .attr('data-uid', uid)
-    //     //   .call(drag)
-    //     //   .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
-    //
-    //     const vis = createMultiForm(vectorView, <Element>parent.select('main').node());
-    //     addIconVisChooser(<Element>parent.select('header').node(), vis);
-    //
-    //   })
-
-
     if (d3.selectAll('.filterdialog').size() < 1) {
 
       d3.select('main').append('div').classed('filterdialog', true);
 
     }
-
-
-    // filterdialog.text('Filter Dialog');
-
-
-    // d3.selectAll('.filterdialog').on('mouseover', function () {
-    //   d3.select(this).classed('block-select-selected', true);
-    // });
-    //
-    // d3.selectAll('.filterdialog').on('mouseout', function () {
-    //   d3.select(this).classed('block-select-selected', false);
-    // });
 
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data).desc.name;
@@ -308,68 +266,65 @@ export class App {
   }
 
   private addIconVisChooser(toolbar: HTMLElement, ...forms: IMultiForm[]) {
-  const s = toolbar.ownerDocument.createElement('div');
-  toolbar.insertBefore(s, toolbar.firstChild);
-  const visses = this.toAvailableVisses(forms);
+    const s = toolbar.ownerDocument.createElement('div');
+    toolbar.insertBefore(s, toolbar.firstChild);
+    const visses = this.toAvailableVisses(forms);
 
-  visses.forEach((v) => {
-    let child = createNode(s, 'i');
-    v.iconify(child);
-    child.onclick = () => forms.forEach((f) => {
+    visses.forEach((v) => {
+      let child = createNode(s, 'i');
+      v.iconify(child);
+      child.onclick = () => forms.forEach((f) => {
         f.switchTo(v).then(()=>
-           this.blockDivs.forEach((b,index)=>{
-              this.blocks[index].transform([1,1]);
-              let svg = b[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
-              let visHeight = svg.clientHeight;
-              let visWidth = svg.clientWidth;
-              b[0][0].setAttribute("style","height:210px; width:200px");
-             svg.setAttribute("viewbox","0 0 200 200");
-             svg.setAttribute("height","200");
-             svg.setAttribute("width","200");
-              this.blocks[index].transform([200/visWidth,200/visHeight]);
-           })
+          this.blockDivs.forEach((b, index)=> {
+            this.blocks[index].transform([1, 1]);
+            let svg = b[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
+            let visHeight = svg.clientHeight;
+            let visWidth = svg.clientWidth;
+            b[0][0].setAttribute("style", "height:210px; width:200px");
+            svg.setAttribute("viewbox", "0 0 200 200");
+            svg.setAttribute("height", "200");
+            svg.setAttribute("width", "200");
+            this.blocks[index].transform([200 / visWidth, 200 / visHeight]);
+          })
         );
 
-    }) ;
-   });
+      });
+    });
     var child = s.ownerDocument.createElement("label");
     child.className = "adder fa fa-sort-amount-desc fa-0.5x";
     child.style.cursor = "pointer";
     s.appendChild(child);
     const sort = ['min', 'max', 'median', 'q1', 'q3'];
 
-    child.onclick  = () => choose(sort.map((d) => d), 'Choose sorting criteria').then((selection) => {
-        let div: HTMLDivElement =  <HTMLDivElement>child.parentElement.parentElement.parentElement;
-        let multiform = div.childNodes[1].childNodes[0];
+    child.onclick = () => choose(sort.map((d) => d), 'Choose sorting criteria').then((selection) => {
+      let div: HTMLDivElement = <HTMLDivElement>child.parentElement.parentElement.parentElement;
+      let multiform = div.childNodes[1].childNodes[0];
 
-        return selection;
-      });
+      return selection;
+    });
 
 
-
-  var child = s.ownerDocument.createElement("label");
-  child.className = "adder fa fa-close fa-0.8x";
+    var child = s.ownerDocument.createElement("label");
+    child.className = "adder fa fa-close fa-0.8x";
     child.style.cursor = "pointer";
-  s.appendChild(child);
-  child.onclick  = () => child.parentElement.parentElement.parentElement.remove();
+    s.appendChild(child);
+    child.onclick = () => child.parentElement.parentElement.parentElement.remove();
 
 
-
-}
-
-private toAvailableVisses(forms: IMultiForm[]) {
-  if (forms.length === 0) {
-    return [];
   }
-  if (forms.length === 1) {
-    return forms[0].visses;
+
+  private toAvailableVisses(forms: IMultiForm[]) {
+    if (forms.length === 0) {
+      return [];
+    }
+    if (forms.length === 1) {
+      return forms[0].visses;
+    }
+    //intersection of all
+    return forms[0].visses.filter((vis) => forms.every((f) => f.visses.indexOf(vis) >= 0));
   }
-  //intersection of all
-  return forms[0].visses.filter((vis) => forms.every((f) => f.visses.indexOf(vis) >= 0));
-}
 
 }
-
 
 
 /**
