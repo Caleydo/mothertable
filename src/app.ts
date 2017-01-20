@@ -110,8 +110,17 @@ export class App {
 
     }) ;
   });
-  var child = s.ownerDocument.createElement("button");
-  child.className = "adder fa fa-close fa-0.5x";
+  var child = s.ownerDocument.createElement("label");
+  child.className = "adder fa fa-sort-amount-desc fa-0.5x";
+    child.style.cursor = "pointer";
+  s.appendChild(child);
+  //child.onclick  = () => child.parentElement.parentElement.parentElement.remove();
+
+
+
+  var child = s.ownerDocument.createElement("label");
+  child.className = "adder fa fa-close fa-0.8x";
+    child.style.cursor = "pointer";
   s.appendChild(child);
   child.onclick  = () => child.parentElement.parentElement.parentElement.remove();
 
