@@ -7,12 +7,9 @@ import {IDataType} from 'phovea_core/src/datatype';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
-import {range as createRange}  from 'phovea_core/src/Range';
 import {randomId} from 'phovea_core/src/index';
-import * as $ from 'jquery';
 
 /**
- *
  * The main class for the App app
  */
 export class App {
@@ -40,13 +37,10 @@ export class App {
     this.setBusy(true);
     return listData().then((datasets) => {
       datasets = convertTableToVectors(datasets);
-      console.log(datasets)
       this.$node.select('h3').remove();
       this.$node.select('button.adder').on('click', () => {
         choose(datasets.map((d) => d.desc.name), 'Choose dataset').then((selection) => {
-          this.addDataset(datasets.find((d) => {
-            return d.desc.name === selection;
-          }));
+          this.addDataset(datasets.find((d) => d.desc.name === selection));
         });
       });
       this.setBusy(false);
@@ -54,6 +48,9 @@ export class App {
   }
 
   private addDataset(data: IDataType) {
+    // const parent = this.$node.select('main').append('div').classed('block', true).html(`<header class="toolbar"></header><main></main>`);
+    // const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
+    // vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
 
     const drag = d3.behavior.drag()
       .on('dragstart', function () {
@@ -84,8 +81,8 @@ export class App {
       .call(drag)
       .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
 
-    const vis = createMultiForm(data, <Element>parent.select('main').node());
-    addIconVisChooser(<Element>parent.select('header').node(), vis);
+    const vis = createMultiForm(data, <HTMLElement>parent.select('main').node());
+    addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
     const sort = ['min', 'max', 'median', 'q1', 'q3'];
     d3.selectAll('.fa-sort').remove();
     d3.selectAll('div.visualization').append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d, i) {
@@ -134,27 +131,25 @@ export class App {
     const name = (<any>data).desc.name;
     const range = (<any>data).desc.value.range;
 
-    const divInfo = {
-      filterDialogWidth: 200, filterRowHeight: 30, uid: uid
-    };
+    const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': uid};
 
     if (vectorOrMatrix === 'vector') {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
         (<any>data).data().then(function (dataVal) {
           const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i);
-          const dataInfo = {name: name, value: uniqCat, type: dataType};
+          const dataInfo = {'name': name, value: uniqCat, type: dataType};
           makeCategories(divInfo, dataInfo);
         });
       } else if (dataType === 'int' || dataType === 'real') {
 
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {name: name, value: dataVal, type: dataType};
+          const dataInfo = {'name': name, value: dataVal, type: dataType};
           makeNumerical(divInfo, dataInfo);
         });
       } else {
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {name: name, value: dataVal, type: dataType};
+          const dataInfo = {'name': name, value: dataVal, type: dataType};
           makeStringRect(divInfo, dataInfo);
 
         });
@@ -162,7 +157,7 @@ export class App {
 
     } else if (vectorOrMatrix === 'matrix') {
       (<any>data).data().then(function (dataVal) {
-        const dataInfo = {name: name, value: dataVal[0], type: vectorOrMatrix, range: range};
+        const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'range': range};
         makeMatrix(divInfo, dataInfo);
       });
     }
@@ -198,8 +193,8 @@ export class App {
             .attr('data-uid', uid)
             .call(drag)
             .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
-          const vis = createMultiForm(vectorView, <Element>parent.select('main').node());
-          addIconVisChooser(<Element>parent.select('header').node(), vis);
+          const vis = createMultiForm(vectorView, <HTMLElement>parent.select('main').node());
+          addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
         });
 
     }
