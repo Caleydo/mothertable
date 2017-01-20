@@ -37,21 +37,23 @@ export class App {
     this.setBusy(true);
     return listData().then((datasets) => {
       datasets = convertTableToVectors(datasets);
+      console.log(datasets)
+      let dataArray = [];
       this.$node.select('h3').remove();
       this.$node.select('button.adder').on('click', () => {
         choose(datasets.map((d) => d.desc.name), 'Choose dataset').then((selection) => {
-          this.addDataset(datasets.find((d) => d.desc.name === selection));
+          this.addDataset(datasets.find((d) => d.desc.name === selection), dataArray);
         });
       });
       this.setBusy(false);
     });
   }
 
-  private addDataset(data: IDataType) {
+
+  private addDataset(data: IDataType, dataArray) {
     // const parent = this.$node.select('main').append('div').classed('block', true).html(`<header class="toolbar"></header><main></main>`);
     // const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
     // vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
-
     const drag = d3.behavior.drag()
       .on('dragstart', function () {
         d3.select(this).classed('block-select-selected', true);
@@ -67,29 +69,107 @@ export class App {
           .style('top', (<any>d3.event).y + 'px')
           .style('left', (<any>d3.event).x + 'px')
           .classed('block-select-selected', false);
-
       });
 
+    const parentNode = this.$node.select('main');
+
+
+    registerData(data);
+
+
+    function registerData(data) {
+      dataArray.push(data);
+
+      d3.selectAll('.visBlock').remove();
+      d3.selectAll('.filterdialog').remove();
+
+      const visDiv = parentNode.selectAll('.visBlock')
+        .data([dataArray])
+        .enter()
+        .append('div')
+        .attr('class', 'visBlock');
+
+
+      if (d3.selectAll('.filterdialog').size() < 1) {
+
+        d3.select('main').append('div').classed('filterdialog', true);
+
+      }
+
+
+      dataArray.forEach((d, i) => {
+        const uid = randomId();
+        console.log(d, i);
+        filterDialog(d, uid);
+        makeVis(d, uid, visDiv, dataArray);
+
+
+      })
+
+
+    }
+
+    function makeVis(visdata, uid, parentNode, dataArray) {
+      console.log(dataArray)
+      console.log(visdata)
+      const parent = parentNode
+        .append('div')
+        .attr('data-uid', uid)
+        .call(drag)
+        .html(`<header class="toolbar"></header><main class="vis"></main>`);
+
+      const vis = createMultiForm(visdata, <HTMLElement>parent.select('main').node());
+      addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
+      const sort = ['min', 'max', 'median', 'q1', 'q3'];
+      d3.selectAll('.fa-sort').remove();
+      d3.selectAll('div.visualization').append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d, i) {
+        choose(sort.map((d) => d), 'Choose dataset').then((selection) => {
+          return selection;
+        });
+      });
+
+    }
+
+
+    function filterDialog(data, uid) {
+      const vectorOrMatrix = (<any>data.desc).type;
+      const name = (<any>data).desc.name;
+      const range = (<any>data).desc.value.range;
+
+      const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': name};
+
+      if (vectorOrMatrix === 'vector') {
+        const dataType = (<any>data.desc).value.type;
+        if (dataType === 'categorical') {
+          (<any>data).data().then(function (dataVal) {
+            const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i);
+            const dataInfo = {'name': name, value: uniqCat, type: dataType};
+            makeCategories(divInfo, dataInfo, uid);
+          });
+        } else if (dataType === 'int' || dataType === 'real') {
+
+          (<any>data).data().then(function (dataVal) {
+            const dataInfo = {'name': name, value: dataVal, type: dataType};
+            makeNumerical(divInfo, dataInfo);
+          });
+        } else {
+          (<any>data).data().then(function (dataVal) {
+            const dataInfo = {'name': name, value: dataVal, type: dataType};
+            makeStringRect(divInfo, dataInfo);
+
+          });
+        }
+
+      } else if (vectorOrMatrix === 'matrix') {
+        (<any>data).data().then(function (dataVal) {
+          const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'range': range};
+          makeMatrix(divInfo, dataInfo);
+        });
+      }
+
+    }
 
     //console.log((<any>data).data(createRange(2, 8, 2)))
-
-
-    const uid = randomId();
-    const parent = this.$node.select('main')
-      .append('div')
-      .attr('data-uid', uid)
-      .call(drag)
-      .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
-
-    const vis = createMultiForm(data, <HTMLElement>parent.select('main').node());
-    addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
-    const sort = ['min', 'max', 'median', 'q1', 'q3'];
-    d3.selectAll('.fa-sort').remove();
-    d3.selectAll('div.visualization').append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d, i) {
-      choose(sort.map((d) => d), 'Choose dataset').then((selection) => {
-        return selection;
-      });
-    });
 
 
     // (<any>data).filter(greaterThan)
@@ -109,13 +189,6 @@ export class App {
     //   })
 
 
-    if (d3.selectAll('.filterdialog').size() < 1) {
-
-      d3.select('main').append('div').classed('filterdialog', true);
-
-    }
-
-
     // filterdialog.text('Filter Dialog');
 
 
@@ -126,46 +199,6 @@ export class App {
     // d3.selectAll('.filterdialog').on('mouseout', function () {
     //   d3.select(this).classed('block-select-selected', false);
     // });
-
-    const vectorOrMatrix = (<any>data.desc).type;
-    const name = (<any>data).desc.name;
-    const range = (<any>data).desc.value.range;
-
-    const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': uid};
-
-    if (vectorOrMatrix === 'vector') {
-      const dataType = (<any>data.desc).value.type;
-      if (dataType === 'categorical') {
-        (<any>data).data().then(function (dataVal) {
-          const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i);
-          const dataInfo = {'name': name, value: uniqCat, type: dataType};
-          makeCategories(divInfo, dataInfo);
-        });
-      } else if (dataType === 'int' || dataType === 'real') {
-
-        (<any>data).data().then(function (dataVal) {
-          const dataInfo = {'name': name, value: dataVal, type: dataType};
-          makeNumerical(divInfo, dataInfo);
-        });
-      } else {
-        (<any>data).data().then(function (dataVal) {
-          const dataInfo = {'name': name, value: dataVal, type: dataType};
-          makeStringRect(divInfo, dataInfo);
-
-        });
-      }
-
-    } else if (vectorOrMatrix === 'matrix') {
-      (<any>data).data().then(function (dataVal) {
-        const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'range': range};
-        makeMatrix(divInfo, dataInfo);
-      });
-    }
-
-    (<any>data).data().then(function (v) {
-      console.log(v);
-
-    });
 
 
     function greaterThan(value, index) {
@@ -182,11 +215,11 @@ export class App {
     }
 
 
-    function onClickCat(catName) {
-
+    function onClickCat(catName, uid) {
       (<any>data).filter(findCatName.bind(this, catName))
         .then((vectorView) => {
           console.log(vectorView.data());
+
           d3.selectAll(`[data-uid="${uid}"]`).remove();
           const parent = d3.select('main')
             .append('div')
@@ -196,10 +229,10 @@ export class App {
           const vis = createMultiForm(vectorView, <HTMLElement>parent.select('main').node());
           addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
         });
-
     }
 
-    function makeCategories(divInfo, dataInfo) {
+
+    function makeCategories(divInfo, dataInfo, uid) {
       const cellHeight = divInfo.filterRowHeight;
       const c20 = d3.scale.category20();
       const divBlock = d3.select('.filterdialog').append('div')
@@ -218,7 +251,7 @@ export class App {
         .text((d: any) => d)
         .on('click', function () {
           const catName = (d3.select(this).datum());
-          onClickCat(catName);
+          onClickCat(catName, uid);
 
         });
 
