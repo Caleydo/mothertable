@@ -7,6 +7,7 @@ import {IDataType} from 'phovea_core/src/datatype';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
 import {create as createMultiForm} from 'phovea_core/src/multiform';
+import {MultiForm} from 'phovea_core/src/multiform';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {IMultiForm} from 'phovea_core/src/multiform';
 
@@ -18,6 +19,9 @@ import {IMultiForm} from 'phovea_core/src/multiform';
 export class App {
 
   private readonly $node;
+
+  private blocks:MultiForm[]=[];
+  private blockDivs:HTMLDivElement[]=[];
 
   constructor(parent:Element) {
     this.$node = d3.select(parent);
@@ -52,10 +56,25 @@ export class App {
 
   private addDataset(data: IDataType) {
     const parent = this.$node.select('main').append('div').classed('block', true).html(`<header class="toolbar"></header><main></main>`);
+
     const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
    // vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
     this.addIconVisChooser(<HTMLElement>parent.select('header').node(),vis);
-    vis.transform([2,2]);
+    this.blocks.push(vis);
+    this.blockDivs.push(parent);
+      vis.transform([1,1]);
+     //if(parent[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0] instanceof svg) {
+       let svg: SVGElement = parent[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
+       let visHeight = svg.clientHeight;
+       let visWidth = svg.clientWidth;
+       parent[0][0].setAttribute("style", "height:210px; width:200px");
+       svg.setAttribute("viewbox", "0 0 200 200");
+       svg.setAttribute("height", "200");
+       svg.setAttribute("width", "200");
+       vis.transform([200 / visWidth, 200 / visHeight]);
+   //  }
+
+
   }
 
   /**
@@ -75,13 +94,29 @@ export class App {
     let child = createNode(s, 'i');
     v.iconify(child);
     child.onclick = () => forms.forEach((f) => {
-      f.switchTo(v);
-      let sy:number = 600/f.size[0];
-      let sx:number = 200/f.size[1];
-     // f.size = [200,600];
-      f.transform([sx,sy]);
+        f.switchTo(v).then(()=>
+           this.blockDivs.forEach((b,index)=>{
+              this.blocks[index].transform([1,1]);
+              let svg = b[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
+              let visHeight = svg.clientHeight;
+              let visWidth = svg.clientWidth;
+              b[0][0].setAttribute("style","height:210px; width:200px");
+             svg.setAttribute("viewbox","0 0 200 200");
+             svg.setAttribute("height","200");
+             svg.setAttribute("width","200");
+              this.blocks[index].transform([200/visWidth,200/visHeight]);
+           })
+        );
+
     }) ;
   });
+  var child = s.ownerDocument.createElement("button");
+  child.className = "adder fa fa-close fa-0.5x";
+  s.appendChild(child);
+  child.onclick  = () => child.parentElement.parentElement.parentElement.remove();
+
+
+
 }
 
 private toAvailableVisses(forms: IMultiForm[]) {
