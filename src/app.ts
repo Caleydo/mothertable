@@ -76,6 +76,7 @@ export class App {
 
     registerData(data);
 
+    var rangetest;
 
     function registerData(data) {
       dataArray.push(data);
@@ -98,24 +99,27 @@ export class App {
 
 
       dataArray.forEach((d, i) => {
+
+        (<any>d.ids().then((e) => {
+
+          rangetest = e;
+
+        }))
+
         const uid = randomId();
         console.log(d, i);
         filterDialog(d, uid);
         makeVis(d, uid, visDiv, dataArray);
 
-
       })
-
-
     }
 
     function makeVis(visdata, uid, parentNode, dataArray) {
       console.log(dataArray)
-      console.log(visdata)
       const parent = parentNode
         .append('div')
         .attr('data-uid', uid)
-        .call(drag)
+        // .call(drag)
         .html(`<header class="toolbar"></header><main class="vis"></main>`);
 
       const vis = createMultiForm(visdata, <HTMLElement>parent.select('main').node());
@@ -206,8 +210,8 @@ export class App {
     }
 
     function findCatName(catName, value, index,) {
-      if (value === catName) {
 
+      if (value === catName) {
         return value;
       } else {
         return;
@@ -215,20 +219,31 @@ export class App {
     }
 
 
+    function setRange(range) {
+
+
+      console.log(range.intersect(rangetest))
+      console.log(range, rangetest)
+      console.log((<any>data).data(range.intersect(rangetest)));
+    }
+
+
     function onClickCat(catName, uid) {
       (<any>data).filter(findCatName.bind(this, catName))
         .then((vectorView) => {
           console.log(vectorView.data());
+          setRange(vectorView.range);
 
+          console.log(vectorView.range)
           d3.selectAll(`[data-uid="${uid}"]`).remove();
           const parent = d3.select('main')
             .append('div')
             .attr('data-uid', uid)
-            .call(drag)
             .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
           const vis = createMultiForm(vectorView, <HTMLElement>parent.select('main').node());
           addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
         });
+
     }
 
 
