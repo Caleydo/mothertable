@@ -76,10 +76,17 @@ export class App {
 
     registerData(data);
 
-    var rangetest;
 
     function registerData(data) {
       dataArray.push(data);
+
+      filterVisFactory(dataArray);
+
+
+    }
+
+
+    function filterVisFactory(dataArray) {
 
       d3.selectAll('.visBlock').remove();
       d3.selectAll('.filterdialog').remove();
@@ -94,28 +101,17 @@ export class App {
       if (d3.selectAll('.filterdialog').size() < 1) {
 
         d3.select('main').append('div').classed('filterdialog', true);
-
       }
-
-
       dataArray.forEach((d, i) => {
 
-        (<any>d.ids().then((e) => {
-
-          rangetest = e;
-
-        }))
-
         const uid = randomId();
-        console.log(d, i);
         filterDialog(d, uid);
-        makeVis(d, uid, visDiv, dataArray);
-
+        makeVis(d, uid, visDiv);
       })
     }
 
-    function makeVis(visdata, uid, parentNode, dataArray) {
-      console.log(dataArray)
+
+    function makeVis(visdata, uid, parentNode) {
       const parent = parentNode
         .append('div')
         .attr('data-uid', uid)
@@ -205,10 +201,6 @@ export class App {
     // });
 
 
-    function greaterThan(value, index) {
-      return value >= 10;
-    }
-
     function findCatName(catName, value, index,) {
 
       if (value === catName) {
@@ -221,10 +213,34 @@ export class App {
 
     function setRange(range) {
 
+      filteredData(range, dataArray)
 
-      console.log(range.intersect(rangetest))
-      console.log(range, rangetest)
-      console.log((<any>data).data(range.intersect(rangetest)));
+    }
+
+
+    function filteredData(range, dataArray) {
+      console.log(range, dataArray)
+      let newVisDataArray = [];
+      let rangeIntersected = range;
+      dataArray.forEach((d, i) => {
+
+        (<any>d).ids().then((r) => {
+          console.log(r, i, (<any>d).desc.name);
+          rangeIntersected = rangeIntersected.intersect(r);
+        })
+      })
+
+
+      dataArray.forEach((d, i) => {
+
+        d.idView(rangeIntersected).then((e) => {
+         newVisDataArray.push(e);
+        })
+      })
+
+      console.log(newVisDataArray)
+
+
     }
 
 
