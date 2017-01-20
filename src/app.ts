@@ -8,6 +8,7 @@ import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
 import {randomId} from 'phovea_core/src/index';
+import {tmpdir} from "os";
 
 /**
  * The main class for the App app
@@ -233,12 +234,19 @@ export class App {
 
       dataArray.forEach((d, i) => {
 
-        d.idView(rangeIntersected).then((e) => {
-         newVisDataArray.push(e);
-        })
+        newVisDataArray.push(d.idView(rangeIntersected));
+
+        // d.idView(rangeIntersected).then((e) => {
+        //
+        //   newVisDataArray.push(e);
+        // })
       })
 
-      console.log(newVisDataArray)
+
+      Promise.all(newVisDataArray).then((val) => {
+        filterVisFactory(val);
+        console.log(val);
+      })
 
 
     }
