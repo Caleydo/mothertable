@@ -22,16 +22,50 @@
 $select-color: orange;
 $hover-color: #ffc46b;
 
-.block {
+.filterdialog {
+  background-color: lightgrey;
+  border: 1px solid $select-color;
+  position: absolute;
+  top: 41px;
+  right: 50px;
+  width: 201px;
   &.block-select-selected {
-    border: 1px solid $select-color;
+    border: 1px solid red;
     background: none;
   }
   &.block-select-hovered {
-    border: 1px solid $hover-color;
+    border: 1px solid red;
     background: none;
   }
 
 }
+
+.categories {
+  stroke: black;
+  margin: 1px;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.numerical {
+  background: linear-gradient(aliceblue, cornflowerblue);
+  margin: 1px;
+  width: 100%;
+}
+
+.matrix {
+  flex-grow: 1;
+  width: 100%;
+}
+
+.matrixName {
+  position: absolute;
+}
+
+.numRect {
+  fill: url(#numGradient);
+}
+
+
 
 
