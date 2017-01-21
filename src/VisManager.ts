@@ -42,7 +42,6 @@ export default class VisManager {
   }
 
   createVis() {
-
     const parent = this._parentDiv
       .append('div')
       .attr('data-uid', this._visUID)

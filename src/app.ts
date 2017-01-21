@@ -64,13 +64,11 @@ export class App {
     // const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
     // vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
 
-
     const block = new BlockManager(data, randomId());
 
     blockList.set(block.uid, block.data);
 
     const visNode = d3.select('.visManager');
-    console.log(visNode)
 
     const vis = new VisManager(block.data, block.uid, visNode);
     vis.createVis();
@@ -91,26 +89,26 @@ export class App {
 
     console.log(blockList);
 
+    //
+    // const drag = d3.behavior.drag()
+    //   .on('dragstart', function () {
+    //     d3.select(this).classed('block-select-selected', true);
+    //   })
+    //   .on('drag', function () {
+    //     d3.select(this).style('position', 'absolute')
+    //       .style('top', (<any>d3.event).y + 'px')
+    //       .style('left', (<any>d3.event).x + 'px');
+    //   })
+    //   .on('dragend', function () {
+    //     d3.select(this)
+    //       .style('position', 'absolute')
+    //       .style('top', (<any>d3.event).y + 'px')
+    //       .style('left', (<any>d3.event).x + 'px')
+    //       .classed('block-select-selected', false);
+    //   });
 
-    const drag = d3.behavior.drag()
-      .on('dragstart', function () {
-        d3.select(this).classed('block-select-selected', true);
-      })
-      .on('drag', function () {
-        d3.select(this).style('position', 'absolute')
-          .style('top', (<any>d3.event).y + 'px')
-          .style('left', (<any>d3.event).x + 'px');
-      })
-      .on('dragend', function () {
-        d3.select(this)
-          .style('position', 'absolute')
-          .style('top', (<any>d3.event).y + 'px')
-          .style('left', (<any>d3.event).x + 'px')
-          .classed('block-select-selected', false);
-      });
 
-
-   // registerData(block);
+    // registerData(block);
 
 
     // function registerData(data) {
@@ -170,7 +168,7 @@ export class App {
     //   console.log(data)
     //   const vectorOrMatrix = (<any>data.desc).type;
     //   const name = (<any>data).desc.name;
-    //   const range = (<any>data).desc.value.range;
+    //   const narrowRange = (<any>data).desc.value.narrowRange;
     //
     //   const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': name};
     //
@@ -198,14 +196,12 @@ export class App {
     //
     //   } else if (vectorOrMatrix === 'matrix') {
     //     (<any>data).data().then(function (dataVal) {
-    //       const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'range': range};
+    //       const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'narrowRange': narrowRange};
     //       makeMatrix(divInfo, dataInfo);
     //     });
     //   }
     //
     // }
-
-
 
 
     //console.log((<any>data).data(createRange(2, 8, 2)))
@@ -240,14 +236,6 @@ export class App {
     // });
 
 
-    function findCatName(catName, value, index,) {
-
-      if (value === catName) {
-        return value;
-      } else {
-        return;
-      }
-    }
 
 
     function setRange(range) {
@@ -286,25 +274,6 @@ export class App {
       //   console.log(val);
       // })
 
-
-    }
-
-
-    function onClickCat(catName, uid) {
-      (<any>block).filter(findCatName.bind(this, catName))
-        .then((vectorView) => {
-          console.log(vectorView.data());
-          setRange(vectorView.range);
-
-          console.log(vectorView.range)
-          d3.selectAll(`[data-uid="${uid}"]`).remove();
-          const parent = d3.select('main')
-            .append('div')
-            .attr('data-uid', uid)
-            .html(`<header class="toolbar"></header><main class="visBlock"></main>`);
-          const vis = createMultiForm(vectorView, <HTMLElement>parent.select('main').node());
-          addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
-        });
 
     }
 

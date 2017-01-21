@@ -11,7 +11,6 @@ export default class BlockManager {
     this._data = data;
     this._uid = uid;
 
-    //  this.getBlock();
   }
 
   get data() {
@@ -33,8 +32,14 @@ export default class BlockManager {
   getBlock() {
     const block = {data: this._data, uniqueID: this._uid};
     return block;
+  }
+
+  updateBlock(updatedData, uid) {
+    const blockUpdate = {data: updatedData, uniqueID: uid};
+    return blockUpdate;
 
   }
+
 
 }
 
