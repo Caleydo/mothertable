@@ -73,7 +73,7 @@ export default class App {
     const vis = new VisManager(block.data, block.uid);
     vis.createVis();
 
-    const filterNode = d3.select('.filterManager');
+    const filterNode = d3.select('#filterView');
 
     const filter = new FilterManager(block.data, block.uid)
     filter.createFilter();
