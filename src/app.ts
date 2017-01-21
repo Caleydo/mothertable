@@ -6,6 +6,8 @@ import * as d3 from 'd3';
 import {IDataType} from 'phovea_core/src/datatype';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
+import {create as createMultiForm} from 'phovea_core/src/multiform';
+import {IMultiForm} from 'phovea_core/src/multiform';
 import {randomId} from 'phovea_core/src/index';
 import BlockManager from './BlockManager';
 import VisManager from './VisManager';
