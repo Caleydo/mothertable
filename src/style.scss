@@ -1,33 +1,88 @@
 @import "styles/base";
 
-#app > main {
+$rightPanelWidth: 300px;
+$select-color: orange;
+$hover-color: #ffc46b;
+
+
+html,body{
+height:100%;
+}
+
+body {
+  margin: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  flex-direction: column;
+}
 
+
+
+#app > main {
   .block {
-    header {
-      i {
-        cursor: pointer;
-      }
+        header {
+          i {
+            cursor: pointer;
+          }
 
+        }
+   }
+}
+
+
+#app {
+    flex: 1 1 auto;
+    flex-direction: row;
+    display: flex;
+    overflow: hidden;
+
+    align-items: stretch;
+    justify-content: left;
+
+
+
+    > .rightPanel {
+      display: flex;
+      overflow: hidden;
+      flex-direction: column;
+
+      width: $rightPanelWidth;
+      background: #eee;
+
+       > .appToolBar {
+          height: 40px;
+          background: #555;
+          color: white;
+          overflow:hidden;
+        }
+
+        > .filterView {
+          flex: 1 1 auto;
+          overflow: scroll;
+          background: white;
+          color: black;
+          border-top: 1px solid;
+          border-left: 1px solid;
+        }
     }
-  }
+
+    > main {
+      flex: 1 1 auto;
+      overflow: scroll;
+    }
 }
 
 .toolbar {
   height: 20px;
 }
 
-$select-color: orange;
-$hover-color: #ffc46b;
 
 .filterManager {
   background-color: lightgrey;
   border: 1px solid $select-color;
   position: absolute;
   top: 41px;
-  right: 50px;
+  right: 350px;
   width: 201px;
   &.block-select-selected {
     border: 1px solid red;
