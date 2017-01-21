@@ -22,7 +22,7 @@
 $select-color: orange;
 $hover-color: #ffc46b;
 
-.filterdialog {
+.filterManager {
   background-color: lightgrey;
   border: 1px solid $select-color;
   position: absolute;
@@ -38,6 +38,10 @@ $hover-color: #ffc46b;
     background: none;
   }
 
+}
+
+.visManager {
+  display: flex;
 }
 
 .categories {
