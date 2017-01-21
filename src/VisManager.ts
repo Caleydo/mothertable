@@ -3,18 +3,18 @@
  */
 
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
+import App from './app';
 
 export default class VisManager {
 
   private _visData;
   private _visUID;
-  private _parentDiv;
+  private _parentDiv = App.visNode;
 
 
-  constructor(visData, visUID, parentDiv) {
+  constructor(visData, visUID) {
     this._visData = visData;
     this._visUID = visUID;
-    this._parentDiv = parentDiv;
   }
 
   get visData() {

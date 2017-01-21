@@ -4,18 +4,19 @@
 
 import * as d3 from 'd3';
 import RangeManager from './RangeManager';
+import App from './app';
+
 
 export default class FilterManager {
 
   private _filterData;
   private _filterUID;
-  private _filterDiv;
+  private _filterDiv = App.filterNode;
 
 
-  constructor(filterData, filterUID, filterDiv) {
+  constructor(filterData, filterUID) {
     this._filterData = filterData;
     this._filterUID = filterUID;
-    this._filterDiv = filterDiv;
   }
 
   get filterData() {
@@ -91,7 +92,7 @@ function makeCategories(divInfo, dataInfo) {
   const filterDiv = divInfo.div;
   const c20 = d3.scale.category20();
   const divBlock = filterDiv.append('div')
-    .attr('data-uid', divInfo.uid)
+    .attr('f-uid', divInfo.uid)
     .style('display', 'flex')
     .style('margin', '1px')
     .style('height', cellHeight + 'px');
@@ -108,7 +109,6 @@ function makeCategories(divInfo, dataInfo) {
       const catName = (d3.select(this).datum());
       const range = new RangeManager(dataInfo.data, divInfo.uid, catName);
       range.onClickCat();
-      console.log(range.narrowRange);
 
     });
 
@@ -120,7 +120,7 @@ function makeNumerical(divInfo, dataInfo) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
-    .attr('data-uid', divInfo.uid)
+    .attr('f-uid', divInfo.uid)
     .style('display', 'flex')
     .style('height', cellHeight + 'px')
     .style('margin', '1px');
@@ -136,7 +136,7 @@ function makeMatrix(divInfo, dataInfo) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
-    .attr('data-uid', divInfo.uid)
+    .attr('f-uid', divInfo.uid)
     .style('display', 'flex')
     .style('height', cellHeight + 'px')
     .style('margin', '1px');
@@ -157,7 +157,7 @@ function makeStringRect(divInfo, dataInfo) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
-    .attr('data-uid', divInfo.uid);
+    .attr('f-uid', divInfo.uid);
   divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]).enter()
     .append('div')
     .classed(dataInfo.name, true)

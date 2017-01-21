@@ -2,6 +2,7 @@
  * Created by bikramkawan on 21/01/2017.
  */
 
+import UpdateBlockManager from './UpdateBlockManager';
 export default class RangeManager {
 
 
@@ -32,11 +33,12 @@ export default class RangeManager {
     this._uniqueID = value;
   }
 
-  get narrowRange() {
+  getRange() {
     return this._narrowRange;
+
   }
 
-  set narrowRange(value) {
+  setRange(value) {
     this._narrowRange = value;
   }
 
@@ -45,21 +47,32 @@ export default class RangeManager {
     (<any>data).filter(findCatName.bind(this, this._catName))
       .then((vectorView) => {
         console.log(vectorView.data());
-        this._narrowRange = vectorView.range;
+        this.setRange(vectorView.range);
+        const updateVis = new UpdateBlockManager(vectorView.range);
+        updateVis.updateVis();
+        // this.calculateRangeIntersect(App.blockList, vectorView.range);
+
+
       });
   }
 
+
+  calculateRangeIntersect(blockList, range,) {
+
+
+    //To Do
+    let rangeIntersected = range;
+    blockList.forEach((value, key) => {
+      console.log(key);
+      (<any>value).ids().then((r) => {
+
+        rangeIntersected = range.intersect(r)
+        console.log(rangeIntersected);
+      });
+    });
+  }
 }
 
-
-function setRange(range) {
-
-  console.log(range)
-
-
-  // filteredData(range, blockList)
-
-}
 
 function findCatName(catName, value, index,) {
 
@@ -70,35 +83,3 @@ function findCatName(catName, value, index,) {
   }
 }
 
-
-function filteredData(range, dataArray) {
-  console.log(range, dataArray)
-  let newVisDataArray = [];
-  let rangeIntersected = range;
-  dataArray.forEach((d, i) => {
-
-    (<any>d).ids().then((r) => {
-      console.log(r, i, (<any>d).desc.name);
-      rangeIntersected = rangeIntersected.intersect(r);
-    })
-  })
-
-
-  dataArray.forEach((d, i) => {
-
-    newVisDataArray.push(d.idView(rangeIntersected));
-
-    // d.idView(rangeIntersected).then((e) => {
-    //
-    //   newVisDataArray.push(e);
-    // })
-  })
-
-
-  // Promise.all(newVisDataArray).then((val) => {
-  // //  filterVisFactory(val);
-  //   console.log(val);
-  // })
-
-
-}
