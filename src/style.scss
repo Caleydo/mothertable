@@ -3,6 +3,7 @@
 $rightPanelWidth: 300px;
 $select-color: orange;
 $hover-color: #ffc46b;
+$border-ui: 1px solid #bbb;
 
 
 html,body{
@@ -45,30 +46,26 @@ body {
       display: flex;
       overflow: hidden;
       flex-direction: column;
-
+      border-left: $border-ui;
       width: $rightPanelWidth;
-      background: #eee;
 
        > .appToolBar {
           height: 40px;
-          background: #555;
-          color: white;
+          padding: 4px;
           overflow:hidden;
         }
 
         > .filterView {
           flex: 1 1 auto;
           overflow: scroll;
-          background: white;
-          color: black;
-          border-top: 1px solid;
-          border-left: 1px solid;
+          border-top: $border-ui;
         }
     }
 
     > main {
       flex: 1 1 auto;
       overflow: scroll;
+      padding: 10px 5px 10px 20px;
     }
 }
 
