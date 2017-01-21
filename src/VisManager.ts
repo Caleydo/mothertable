@@ -1,6 +1,9 @@
 /**
  * Created by bikramkawan on 21/01/2017.
  */
+
+import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
+
 export default class VisManager {
 
   private _visData;
@@ -37,4 +40,18 @@ export default class VisManager {
   set parentDiv(value) {
     this._parentDiv = value;
   }
+
+  createVis() {
+    console.log(this._parentDiv);
+    const parent = this._parentDiv
+      .append('div')
+      .attr('data-uid', this._visUID)
+      // .call(drag)
+      .html(`<header class="toolbar"></header><main class="vis"></main>`);
+    const vis = createMultiForm(this._visData, <HTMLElement>parent.select('main').node());
+    addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
+
+  }
+
+
 }
