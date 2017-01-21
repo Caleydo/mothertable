@@ -55,11 +55,20 @@ body {
           overflow:hidden;
         }
 
-        > .filterView {
+        > .filter-view {
           flex: 1 1 auto;
           overflow: scroll;
           padding: 4px;
           border-top: $border-ui;
+
+          &.block-select-selected {
+            border: 1px solid red;
+            background: none;
+          }
+          &.block-select-hovered {
+            border: 1px solid red;
+            background: none;
+          }
         }
     }
 

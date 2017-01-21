@@ -43,7 +43,6 @@ export class App {
     this.setBusy(true);
     const blockList = new Map();
     this.$node.select('main').append('div').classed('visManager', true);
-    this.$node.select('main').append('div').classed('filterManager', true);
 
     return listData().then((datasets) => {
       datasets = convertTableToVectors(datasets);
@@ -72,7 +71,7 @@ export class App {
     const vis = new VisManager(block.data, block.uid, visNode);
     vis.createVis();
 
-    const filterNode = d3.select('.filterManager');
+    const filterNode = d3.select('#filterView');
 
     const filter = new FilterManager(block.data, block.uid, filterNode);
     filter.createFilter();
