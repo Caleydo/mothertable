@@ -8,7 +8,8 @@ import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
 import {randomId} from 'phovea_core/src/index';
-import {tmpdir} from "os";
+import BlockManager from './BlockManager';
+import {copySync} from "fs-extra";
 
 /**
  * The main class for the App app
@@ -27,6 +28,7 @@ export class App {
    * @returns {Promise<App>}
    */
   init() {
+
     return this.build();
   }
 
@@ -36,14 +38,18 @@ export class App {
    */
   private build() {
     this.setBusy(true);
+    const blockList = new Map();
+    this.$node.select('main').append('div').classed('visManager', true);
+    this.$node.select('main').append('div').classed('filterManager', true);
+
     return listData().then((datasets) => {
       datasets = convertTableToVectors(datasets);
       console.log(datasets)
-      let dataArray = [];
+      console.log(blockList)
       this.$node.select('h3').remove();
       this.$node.select('button.adder').on('click', () => {
         choose(datasets.map((d) => d.desc.name), 'Choose dataset').then((selection) => {
-          this.addDataset(datasets.find((d) => d.desc.name === selection), dataArray);
+          this.addDataset(datasets.find((d) => d.desc.name === selection), blockList);
         });
       });
       this.setBusy(false);
@@ -51,10 +57,28 @@ export class App {
   }
 
 
-  private addDataset(data: IDataType, dataArray) {
+  private addDataset(data: IDataType, blockList) {
     // const parent = this.$node.select('main').append('div').classed('block', true).html(`<header class="toolbar"></header><main></main>`);
     // const vis = createMultiForm(data, <HTMLElement>parent.select('main').node(), {});
     // vis.addIconVisChooser(<HTMLElement>parent.select('header').node());
+
+
+    const block = new BlockManager(data, randomId());
+
+    blockList.set(block.uid, block.data);
+
+
+
+
+    // blocks.forEach(function (value, key) {
+    //   console.log(key);
+    //   console.log((<any>value).data())
+    // });
+
+
+    console.log(blockList);
+
+
     const drag = d3.behavior.drag()
       .on('dragstart', function () {
         d3.select(this).classed('block-select-selected', true);
@@ -75,13 +99,13 @@ export class App {
     const parentNode = this.$node.select('main');
 
 
-    registerData(data);
+    registerData(block);
 
 
     function registerData(data) {
-      dataArray.push(data);
+      blockList.push(data);
 
-      filterVisFactory(dataArray);
+      filterVisFactory(blockList);
 
 
     }
@@ -133,6 +157,7 @@ export class App {
 
 
     function filterDialog(data, uid) {
+      console.log(data)
       const vectorOrMatrix = (<any>data.desc).type;
       const name = (<any>data).desc.name;
       const range = (<any>data).desc.value.range;
@@ -214,7 +239,7 @@ export class App {
 
     function setRange(range) {
 
-      filteredData(range, dataArray)
+      filteredData(range, blockList)
 
     }
 
@@ -253,7 +278,7 @@ export class App {
 
 
     function onClickCat(catName, uid) {
-      (<any>data).filter(findCatName.bind(this, catName))
+      (<any>block).filter(findCatName.bind(this, catName))
         .then((vectorView) => {
           console.log(vectorView.data());
           setRange(vectorView.range);
