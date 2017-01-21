@@ -10,7 +10,7 @@ import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/mult
 import {randomId} from 'phovea_core/src/index';
 import BlockManager from './BlockManager';
 import VisManager from './VisManager';
-import FilterManager from "./FilterManager";
+import FilterManager from './FilterManager';
 
 
 /**
@@ -110,16 +110,16 @@ export class App {
       });
 
 
-    registerData(block);
+   // registerData(block);
 
 
-    function registerData(data) {
-      blockList.push(data);
-
-      filterVisFactory(blockList);
-
-
-    }
+    // function registerData(data) {
+    //   blockList.push(data);
+    //
+    //  // filterVisFactory(blockList);
+    //
+    //
+    // }
 
 
     // function filterVisFactory(dataArray) {
@@ -281,10 +281,10 @@ export class App {
       })
 
 
-      Promise.all(newVisDataArray).then((val) => {
-        filterVisFactory(val);
-        console.log(val);
-      })
+      // Promise.all(newVisDataArray).then((val) => {
+      // //  filterVisFactory(val);
+      //   console.log(val);
+      // })
 
 
     }

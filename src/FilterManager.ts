@@ -2,6 +2,9 @@
  * Created by bikramkawan on 21/01/2017.
  */
 
+import * as d3 from 'd3';
+
+
 export default class FilterManager {
 
   private _filterData;
@@ -40,25 +43,27 @@ export default class FilterManager {
   }
 
   createFilter() {
-    console.log(this._filterData);
-    const data = this._filterData;
 
+    console.log(this._filterData, this._filterUID);
+    const data = this._filterData;
     const vectorOrMatrix = (<any>data.desc).type;
+    const name = (<any>data.desc).name;
     const fid = this._filterUID;
     const range = (<any>data).desc.value.range;
+    const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
 
-    const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': fid};
 
     if (vectorOrMatrix === 'vector') {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
+
         (<any>data).data().then(function (dataVal) {
           const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i);
           const dataInfo = {'name': name, value: uniqCat, type: dataType};
-          this.makeCategories(divInfo, dataInfo, uid);
+          console.log(divInfo, dataInfo, fid);
+          makeCategories(divInfo, dataInfo, fid);
         });
       } else if (dataType === 'int' || dataType === 'real') {
-
         (<any>data).data().then(function (dataVal) {
           const dataInfo = {'name': name, value: dataVal, type: dataType};
           this.makeNumerical(divInfo, dataInfo);
@@ -82,34 +87,7 @@ export default class FilterManager {
   }
 
 
-  makeCategories(divInfo, dataInfo, uid) {
-    const cellHeight = divInfo.filterRowHeight;
-    const c20 = d3.scale.category20();
-    const divBlock = d3.select('.filterdialog').append('div')
-      .attr('data-uid', 'f' + divInfo.uid)
-      .style('display', 'flex')
-      .style('margin', '1px')
-      .style('height', cellHeight + 'px');
-    const div = divBlock
-      .selectAll('div.categories')
-      .data(dataInfo.value);
-
-    div.enter()
-      .append('div')
-      .attr('class', 'categories')
-      .style('background-color', c20)
-      .text((d: any) => d)
-      .on('click', function () {
-        const catName = (d3.select(this).datum());
-        onClickCat(catName, uid);
-
-      });
-
-    div.exit().remove();
-  }
-
-
-  makeNumerical(divInfo, dataInfo) {
+  private makeNumerical(divInfo, dataInfo) {
     const cellHeight = divInfo.filterRowHeight;
     const divBlock = d3.select('.filterdialog').append('div')
       .attr('data-uid', 'f' + divInfo.uid)
@@ -124,7 +102,7 @@ export default class FilterManager {
   }
 
 
-  makeMatrix(divInfo, dataInfo) {
+  private makeMatrix(divInfo, dataInfo) {
     const cellHeight = divInfo.filterRowHeight;
     const divBlock = d3.select('.filterdialog').append('div')
       .attr('data-uid', 'f' + divInfo.uid)
@@ -145,7 +123,7 @@ export default class FilterManager {
   }
 
 
-  makeStringRect(divInfo, dataInfo) {
+  private makeStringRect(divInfo, dataInfo) {
     const cellHeight = divInfo.filterRowHeight;
     d3.select('.filterdialog').selectAll('div.' + dataInfo.name).data([dataInfo.name]).enter()
       .append('div')
@@ -159,3 +137,30 @@ export default class FilterManager {
 
 }
 
+function makeCategories(divInfo, dataInfo, uid) {
+  console.log(divInfo, dataInfo, uid)
+  const cellHeight = divInfo.filterRowHeight;
+  const catdiv = divInfo.div;
+  const c20 = d3.scale.category20();
+  const divBlock = catdiv.append('div')
+    .attr('data-uid', 'f' + divInfo.uid)
+    .style('display', 'flex')
+    .style('margin', '1px')
+    .style('height', cellHeight + 'px');
+  const div = divBlock
+    .selectAll('div.categories')
+    .data(dataInfo.value);
+
+  div.enter()
+    .append('div')
+    .attr('class', 'categories')
+    .style('background-color', c20)
+    .text((d: any) => d)
+  // .on('click', function () {
+  //   const catName = (d3.select(this).datum());
+  //   onClickCat(catName, uid);
+  //
+  // });
+
+  div.exit().remove();
+}
