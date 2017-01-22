@@ -12,8 +12,8 @@ export default class UpdateBlockManager {
   private _visNode;
 
 
-  constructor(range) {
-    this._range = range;
+  constructor() {
+   // this._range = range;
 
   }
 
@@ -42,22 +42,5 @@ export default class UpdateBlockManager {
     this._visNode = value;
   }
 
-  updateVis() {
-
-    App.blockList.forEach((value, key) => {
-      console.log(key);
-      console.log((<any>value).data(this._range));
-
-      (<any>value).idView(this._range).then((d) => {
-
-        d3.selectAll(`[data-uid="${key}"]`).remove();
-
-        const newVis = new VisManager(d, key);
-        newVis.createVis();
-
-      });
-
-    });
-  }
 
 }

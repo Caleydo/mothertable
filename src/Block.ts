@@ -4,7 +4,7 @@
 
 
 
-export default class BlockManager {
+export default class Block {
 
   private _data;
   private _uid;

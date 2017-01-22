@@ -9,17 +9,22 @@ import App from './app';
 
 export default class FilterManager {
 
-  private _filterData;
-  private _filterUID;
+ // private _filterData;
+ // private _filterUID;
+  private filterUID = [];
+  private filterData = [];
   private _filterDiv = App.filterNode;
+   private _rangeManager;
 
 
-  constructor(filterData, filterUID) {
-    this._filterData = filterData;
-    this._filterUID = filterUID;
+  constructor(rangeManager) {
+    this._rangeManager = rangeManager;
+
+  //  this._filterData = filterData;
+  //  this._filterUID = filterUID;
   }
 
-  get filterData() {
+ /* get filterData() {
     return this._filterData;
   }
 
@@ -33,7 +38,7 @@ export default class FilterManager {
 
   set filterUID(value) {
     this._filterUID = value;
-  }
+  }*/
 
   get filterDiv() {
     return this._filterDiv;
@@ -43,13 +48,13 @@ export default class FilterManager {
     this._filterDiv = value;
   }
 
-  createFilter() {
+  createFilter(filterData, filterUID,self) {
 
-    console.log(this._filterData, this._filterUID);
-    const data = this._filterData;
+    console.log(filterData, filterUID);
+    const data = filterData;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
-    const fid = this._filterUID;
+    const fid =filterUID;
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
 
@@ -60,33 +65,36 @@ export default class FilterManager {
 
         const uniqCat = (<any>data).desc.value.categories;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
-        makeCategories(divInfo, dataInfo);
+        makeCategories(divInfo, dataInfo,self);
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {'name': name, value: dataVal, type: dataType};
-          makeNumerical(divInfo, dataInfo);
+          const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data, 'range': range};
+          makeNumerical(divInfo, dataInfo,self);
         });
       } else {
         (<any>data).data().then(function (dataVal) {
           const dataInfo = {'name': name, value: dataVal, type: dataType};
-          makeStringRect(divInfo, dataInfo);
+          makeStringRect(divInfo, dataInfo,self);
 
         });
       }
 
+
     } else if (vectorOrMatrix === 'matrix') {
       (<any>data).data().then(function (dataVal) {
         const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'range': range};
-        makeMatrix(divInfo, dataInfo);
+        makeMatrix(divInfo, dataInfo,self);
       });
     }
+     this.filterData.push(filterData);
+     this.filterUID.push(filterUID);
 
   }
 
 }
 
-function makeCategories(divInfo, dataInfo) {
+function makeCategories(divInfo, dataInfo,self) {
 
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
@@ -107,8 +115,8 @@ function makeCategories(divInfo, dataInfo) {
     .text((d: any) => d)
     .on('click', function () {
       const catName = (d3.select(this).datum());
-      const range = new RangeManager(dataInfo.data, divInfo.uid, catName);
-      range.onClickCat();
+      const filterType = {category: catName};
+      self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType);
 
     });
 
@@ -116,23 +124,59 @@ function makeCategories(divInfo, dataInfo) {
 }
 
 
-function makeNumerical(divInfo, dataInfo) {
+function makeNumerical(divInfo, dataInfo,self) {
   const cellHeight = divInfo.filterRowHeight;
+  const cellWidth = divInfo.filterDialogWidth - 2;
+  const range = dataInfo.range;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
     .attr('f-uid', divInfo.uid)
-    .style('display', 'flex')
     .style('height', cellHeight + 'px')
     .style('margin', '1px');
-  const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
-  div.append('div')
-    .attr('class', 'numerical')
+  // const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
+  // div.append('div')
+  //   .attr('class', 'numerical')
+  //   .text((d: any) => d);
+
+
+  const svg = divBlock.append('svg').attr('height', cellHeight).attr('width', cellWidth);
+
+  const scale = d3.scale.linear()
+    .domain(range)
+    .range([0, cellWidth]);
+
+  const brush = d3.svg.brush();
+  brush.x(scale);
+  brush.extent(range);
+
+
+  brush.on('brushend', function () {
+    console.log(brush.extent());
+    const filterType = {numerical: brush.extent()};
+    self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
+
+  });
+
+  const g = svg.append('g');
+
+  brush(g);
+  g.selectAll('rect').attr('height', cellHeight);
+  g.selectAll('.background')
+    .style({fill: 'grey', visibility: 'visible', opacity: 0.5});
+  g.selectAll('.extent')
+    .style({fill: 'grey', visibility: 'visible', opacity: 1});
+  g.selectAll('.resize rect')
+    .style({fill: 'grey', visibility: 'visible'});
+  const textDiv = svg.selectAll('.text').data([dataInfo.name]).enter();
+  textDiv.append('text')
+    .attr('x', 0)
+    .attr('y', cellHeight / 2)
     .text((d: any) => d);
 
 }
 
 
-function makeMatrix(divInfo, dataInfo) {
+function makeMatrix(divInfo, dataInfo, self) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
@@ -153,7 +197,7 @@ function makeMatrix(divInfo, dataInfo) {
 
 }
 
-function makeStringRect(divInfo, dataInfo) {
+function makeStringRect(divInfo, dataInfo, self) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
@@ -166,3 +210,4 @@ function makeStringRect(divInfo, dataInfo) {
     .style('border', '1px')
     .text((d) => d);
 }
+
