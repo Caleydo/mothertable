@@ -64,7 +64,7 @@ export default class FilterManager {
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {'name': name, value: dataVal, type: dataType};
+          const dataInfo = {'name': name, value: dataVal, type: dataType, 'range': range};
           makeNumerical(divInfo, dataInfo);
         });
       } else {
@@ -107,7 +107,8 @@ function makeCategories(divInfo, dataInfo) {
     .text((d: any) => d)
     .on('click', function () {
       const catName = (d3.select(this).datum());
-      const range = new RangeManager(dataInfo.data, divInfo.uid, catName);
+      const filterType = {category: catName};
+      const range = new RangeManager(dataInfo.data, divInfo.uid, filterType);
       range.onClickCat();
 
     });
@@ -118,15 +119,50 @@ function makeCategories(divInfo, dataInfo) {
 
 function makeNumerical(divInfo, dataInfo) {
   const cellHeight = divInfo.filterRowHeight;
+  const cellWidth = divInfo.filterDialogWidth - 2;
+  const range = dataInfo.range;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
     .attr('f-uid', divInfo.uid)
-    .style('display', 'flex')
     .style('height', cellHeight + 'px')
     .style('margin', '1px');
-  const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
-  div.append('div')
-    .attr('class', 'numerical')
+  // const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
+  // div.append('div')
+  //   .attr('class', 'numerical')
+  //   .text((d: any) => d);
+
+
+  const svg = divBlock.append('svg').attr('height', cellHeight).attr('width', cellWidth);
+
+  const scale = d3.scale.linear()
+    .domain(range)
+    .range([0, cellWidth])
+
+  const brush = d3.svg.brush()
+  brush.x(scale)
+  brush.extent(range)
+
+  brush.on('brushend', function () {
+    console.log(brush.extent())
+    const filterType = {numerical: brush.extent()};
+    const range = new RangeManager(dataInfo.data, divInfo.uid, filterType);
+    range.onClickCat();
+  })
+
+  const g = svg.append('g')
+
+  brush(g)
+  g.selectAll('rect').attr('height', cellHeight);
+  g.selectAll('.background')
+    .style({fill: 'grey', visibility: 'visible', opacity: 0.5})
+  g.selectAll('.extent')
+    .style({fill: 'grey', visibility: 'visible', opacity: 1})
+  g.selectAll('.resize rect')
+    .style({fill: 'grey', visibility: 'visible'});
+  const textDiv = svg.selectAll('.text').data([dataInfo.name]).enter();
+  textDiv.append('text')
+    .attr('x', 0)
+    .attr('y', cellHeight / 2)
     .text((d: any) => d);
 
 }
@@ -166,3 +202,35 @@ function makeStringRect(divInfo, dataInfo) {
     .style('border', '1px')
     .text((d) => d);
 }
+
+function makeBrushRange(divInfo, dataInfo) {
+
+
+  const svg = d3.select('svg')
+
+  const scale = d3.scale.linear()
+    .domain([20, 30])
+    .range([10, 450])
+
+  const brush = d3.svg.brush()
+  brush.x(scale)
+  brush.extent([20, 30])
+
+  brush.on('brushend', function () {
+    console.log(brush.extent())
+  })
+
+  const g = svg.append('g')
+
+  brush(g)
+  g.selectAll('rect').attr('height', 10);
+  g.selectAll('.background')
+    .style({fill: 'grey', visibility: 'visible', opacity: 0.5})
+  g.selectAll('.extent')
+    .style({fill: 'grey', visibility: 'visible', opacity: 1})
+  g.selectAll('.resize rect')
+    .style({fill: 'grey', visibility: 'visible'});
+
+
+}
+

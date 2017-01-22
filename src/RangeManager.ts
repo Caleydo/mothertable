@@ -7,14 +7,15 @@ export default class RangeManager {
 
 
   private _data;
-  private _catName;
+  private _filterType;
   private _uniqueID;
   private _narrowRange;
+  private _numericalRange;
 
-  constructor(data, uniqueID, catName) {
+  constructor(data, uniqueID, filterType?) {
     this._data = data;
     this._uniqueID = uniqueID;
-    this._catName = catName;
+    this._filterType = filterType;
   }
 
   get data() {
@@ -44,7 +45,8 @@ export default class RangeManager {
 
   onClickCat() {
     const data = this._data;
-    (<any>data).filter(findCatName.bind(this, this._catName))
+    const catFilter = this._filterType.category;
+    (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
         console.log(vectorView.data());
         this.setRange(vectorView.range);
@@ -52,8 +54,11 @@ export default class RangeManager {
         updateVis.updateVis();
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
-
       });
+  }
+
+  onBrushNumerical(){
+
   }
 
 
