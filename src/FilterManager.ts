@@ -64,7 +64,7 @@ export default class FilterManager {
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {'name': name, value: dataVal, type: dataType, 'range': range};
+          const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data,'range': range};
           makeNumerical(divInfo, dataInfo);
         });
       } else {
@@ -146,7 +146,7 @@ function makeNumerical(divInfo, dataInfo) {
     console.log(brush.extent())
     const filterType = {numerical: brush.extent()};
     const range = new RangeManager(dataInfo.data, divInfo.uid, filterType);
-    range.onClickCat();
+    range.onBrushNumerical();
   })
 
   const g = svg.append('g')

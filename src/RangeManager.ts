@@ -57,7 +57,19 @@ export default class RangeManager {
       });
   }
 
-  onBrushNumerical(){
+  onBrushNumerical() {
+    const data = this._data;
+    const numFilter = this._filterType.numerical;
+    (<any>data).filter(numericalFilter.bind(this, numFilter))
+      .then((vectorView) => {
+        console.log(vectorView.data(), numFilter);
+       // this.setRange(vectorView.range);
+        const updateVis = new UpdateBlockManager(vectorView.range);
+        updateVis.updateVis();
+        // this.calculateRangeIntersect(App.blockList, vectorView.range);
+
+      });
+
 
   }
 
@@ -86,5 +98,22 @@ function findCatName(catName, value, index,) {
   } else {
     return;
   }
+}
+
+
+function numericalFilter(numRange, value, index) {
+
+  if (value >= numRange[0] && value <= numRange[1]) {
+
+    console.log(numRange)
+    console.log(value, 'yes', index);
+    return value;
+  } else {
+    console.log(numRange)
+    console.log(value, 'No', index);
+    return;
+  }
+
+
 }
 
