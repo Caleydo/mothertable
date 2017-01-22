@@ -5,6 +5,7 @@
 import App from './app';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
+import Range1D from 'phovea_core/src/range/Range1D';
 export default class UpdateBlockManager {
 
   private _blockList;
@@ -42,20 +43,24 @@ export default class UpdateBlockManager {
     this._visNode = value;
   }
 
-  updateVis() {
+  updateVis(rangeSelected) {
 
     App.blockList.forEach((value, key) => {
-      console.log(key);
-      console.log((<any>value).data(this._range));
 
-      (<any>value).idView(this._range).then((d) => {
-
+      if (rangeSelected === false) {
         d3.selectAll(`[data-uid="${key}"]`).remove();
-
-        const newVis = new VisManager(d, key);
+        const newVis = new VisManager(value, key);
         newVis.createVis();
+      } else if (rangeSelected === true) {
 
-      });
+        (<any>value).idView(this._range).then((d) => {
+          d3.selectAll(`[data-uid="${key}"]`).remove();
+          const newVis = new VisManager(d, key);
+          newVis.createVis();
+
+        });
+      }
+
 
     });
   }

@@ -43,7 +43,7 @@ export default class RangeManager {
     this._narrowRange = value;
   }
 
-  onClickCat() {
+  onClickCat(catSelected) {
     const data = this._data;
     const catFilter = this._filterType.category;
     (<any>data).filter(findCatName.bind(this, catFilter))
@@ -51,7 +51,9 @@ export default class RangeManager {
         console.log(vectorView.data());
         this.setRange(vectorView.range);
         const updateVis = new UpdateBlockManager(vectorView.range);
-        updateVis.updateVis();
+        updateVis.updateVis(catSelected);
+
+
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
       });
@@ -65,7 +67,7 @@ export default class RangeManager {
         console.log(vectorView.data(), numFilter);
         // this.setRange(vectorView.range);
         const updateVis = new UpdateBlockManager(vectorView.range);
-        updateVis.updateVis();
+        updateVis.updateVis(false);
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
       });

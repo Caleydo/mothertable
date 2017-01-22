@@ -5,6 +5,8 @@
 import * as d3 from 'd3';
 import RangeManager from './RangeManager';
 import App from './app';
+import UpdateBlockManager from './UpdateBlockManager';
+import Range1D from 'phovea_core/src/range/Range1D';
 
 
 export default class FilterManager {
@@ -104,12 +106,26 @@ function makeCategories(divInfo, dataInfo) {
     .append('div')
     .attr('class', 'categories')
     .style('background-color', c20)
-    .text((d: any) => d)
+    .text((d: any) => {
+      return d;
+    })
     .on('click', function () {
-      const catName = (d3.select(this).datum());
-      const filterType = {category: catName};
-      const range = new RangeManager(dataInfo.data, divInfo.uid, filterType);
-      range.onClickCat();
+      d3.select(this).classed('active', !d3.select(this).classed('active'));
+      if (d3.select(this).classed('active') === true) {
+        const catSelected = true;
+        const catName = (d3.select(this).datum());
+        const filterType = {category: catName};
+        const range = new RangeManager(dataInfo.data, divInfo.uid, filterType);
+        range.onClickCat(catSelected);
+      } else if (d3.select(this).classed('active') === false) {
+        const catSelected = false;
+        const catName = (d3.select(this).datum());
+        const filterType = {category: catName};
+        const range = new RangeManager(dataInfo.data, divInfo.uid, filterType);
+        range.onClickCat(catSelected);
+
+      }
+
 
     });
 
