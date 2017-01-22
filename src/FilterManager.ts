@@ -3,19 +3,20 @@
  */
 
 import * as d3 from 'd3';
+import RangeManager from './RangeManager';
+import App from './app';
 
 
 export default class FilterManager {
 
   private _filterData;
   private _filterUID;
-  private _filterDiv;
+  private _filterDiv = App.filterNode;
 
 
-  constructor(filterData, filterUID, filterDiv) {
+  constructor(filterData, filterUID) {
     this._filterData = filterData;
     this._filterUID = filterUID;
-    this._filterDiv = filterDiv;
   }
 
   get filterData() {
@@ -57,12 +58,10 @@ export default class FilterManager {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
 
-        (<any>data).data().then(function (dataVal) {
-          const uniqCat = dataVal.filter((x, i, a) => a.indexOf(x) === i);
-          const dataInfo = {'name': name, value: uniqCat, type: dataType};
-          console.log(divInfo, dataInfo, fid);
-          makeCategories(divInfo, dataInfo);
-        });
+        const uniqCat = (<any>data).desc.value.categories;
+        const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
+        makeCategories(divInfo, dataInfo);
+
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
           const dataInfo = {'name': name, value: dataVal, type: dataType};
@@ -88,11 +87,12 @@ export default class FilterManager {
 }
 
 function makeCategories(divInfo, dataInfo) {
+
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const c20 = d3.scale.category20();
   const divBlock = filterDiv.append('div')
-    .attr('data-uid', divInfo.uid)
+    .attr('f-uid', divInfo.uid)
     .style('display', 'flex')
     .style('margin', '1px')
     .style('height', cellHeight + 'px');
@@ -105,11 +105,12 @@ function makeCategories(divInfo, dataInfo) {
     .attr('class', 'categories')
     .style('background-color', c20)
     .text((d: any) => d)
-  // .on('click', function () {
-  //   const catName = (d3.select(this).datum());
-  //   onClickCat(catName, uid);
-  //
-  // });
+    .on('click', function () {
+      const catName = (d3.select(this).datum());
+      const range = new RangeManager(dataInfo.data, divInfo.uid, catName);
+      range.onClickCat();
+
+    });
 
   div.exit().remove();
 }
@@ -119,7 +120,7 @@ function makeNumerical(divInfo, dataInfo) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
-    .attr('data-uid', divInfo.uid)
+    .attr('f-uid', divInfo.uid)
     .style('display', 'flex')
     .style('height', cellHeight + 'px')
     .style('margin', '1px');
@@ -135,7 +136,7 @@ function makeMatrix(divInfo, dataInfo) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
-    .attr('data-uid', divInfo.uid)
+    .attr('f-uid', divInfo.uid)
     .style('display', 'flex')
     .style('height', cellHeight + 'px')
     .style('margin', '1px');
@@ -152,11 +153,11 @@ function makeMatrix(divInfo, dataInfo) {
 
 }
 
-
 function makeStringRect(divInfo, dataInfo) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
-  const divBlock = filterDiv.append('div');
+  const divBlock = filterDiv.append('div')
+    .attr('f-uid', divInfo.uid);
   divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]).enter()
     .append('div')
     .classed(dataInfo.name, true)
