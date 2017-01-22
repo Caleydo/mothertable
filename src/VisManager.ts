@@ -134,6 +134,7 @@ export default class VisManager {
       for (var index = 0; index < nodes.length; ++index) {
          if(nodes[index].getAttribute('f-uid') == visUID){
             nodes[index].remove();
+            App.blockList.delete(visUID);
          }
 
       }
