@@ -53,7 +53,7 @@ export default class FilterManager {
     const name = (<any>data.desc).name;
     const fid = this._filterUID;
     const range = (<any>data).desc.value.range;
-    const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
+    const divInfo = {filterDialogWidth: 300, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
 
 
     if (vectorOrMatrix === 'vector') {

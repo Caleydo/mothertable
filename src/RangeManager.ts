@@ -67,7 +67,7 @@ export default class RangeManager {
         console.log(vectorView.data(), numFilter);
         // this.setRange(vectorView.range);
         const updateVis = new UpdateBlockManager(vectorView.range);
-        updateVis.updateVis(false);
+        updateVis.updateVis(true);
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
       });
