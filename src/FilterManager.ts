@@ -230,6 +230,7 @@ function makeStringRect(divInfo, dataInfo) {
     .classed(dataInfo.name, true)
     .style('height', cellHeight + 'px')
     .style('margin', '1px')
+    .style('background-color','grey')
     .style('border', '1px')
     .text((d) => d);
 }
