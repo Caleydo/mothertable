@@ -26,7 +26,7 @@ export default class RangeManager {
 
        // const newVis = new VisManager(d, key);
 
-        this._visManager.createVis(d, key);
+        this._visManager.createVis((<any>value).data, d, key);
 
       });
 

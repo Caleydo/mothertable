@@ -11,14 +11,24 @@ export default class Block {
   private _multiform: MultiForm;
   private _blockDiv: HTMLDivElement;
   private _dataList;
+  private _filteredVisData;
 
-  constructor(data, uid, multifom, div) {
+  constructor(data, filteredVisData, uid, multifom, div) {
     this._data = data;
     this._uid = uid;
     this._multiform= multifom;
     this._blockDiv = div;
+    this._filteredVisData = filteredVisData;
   }
 
+
+  get filteredVisData() {
+    return this._filteredVisData;
+  }
+
+  set filteredVisData(value) {
+    this._data = value;
+  }
 
   get data() {
     return this._data;
@@ -37,7 +47,7 @@ export default class Block {
   }
 
   get multiform() {
-    return this._uid;
+    return this._multiform;
   }
 
   set multiform(value) {
@@ -45,7 +55,7 @@ export default class Block {
   }
 
   get blockDiv() {
-    return this._uid;
+    return this._blockDiv;
   }
 
   set blockDiv(value) {

@@ -53,14 +53,14 @@ export default class VisManager {
     this._parentDiv = value;
   }
 
-  createVis(visData, visUID) {
+  createVis(visData, filteredVisData, visUID) {
     const parent = this._parentDiv
       .append('div')
       .attr('data-uid', visUID)
       // .call(drag)
       .html(`<header class="toolbar"></header><main class="vis"></main>`);
-    const vis = createMultiForm(visData, <HTMLElement>parent.select('main').node());
-    var block:Block = new Block(visData, visUID, vis,parent);
+    const vis = createMultiForm(filteredVisData, <HTMLElement>parent.select('main').node());
+    var block:Block = new Block(visData,filteredVisData, visUID, vis,parent);
     App.blockList.set(block.uid, block);
     this.addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
 

@@ -81,7 +81,7 @@ export default class App {
   private addDataset(data: IDataType) {
 
     var id =randomId();
-    this.visManager.createVis(data, id);
+    this.visManager.createVis(data, data, id);
 
     const filterNode = d3.select('#filterView');
 
