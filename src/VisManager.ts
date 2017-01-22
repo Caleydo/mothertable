@@ -2,6 +2,7 @@
  * Created by bikramkawan on 21/01/2017.
  */
 
+import * as d3 from 'd3';
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
 import App from './app';
 import {MultiForm} from 'phovea_core/src/multiform';
@@ -57,7 +58,7 @@ export default class VisManager {
     const parent = this._parentDiv
       .append('div')
       .attr('data-uid', visUID)
-      // .call(drag)
+       //.call(drag)
       .html(`<header class="toolbar"></header><main class="vis"></main>`);
     const vis = createMultiForm(filteredVisData, <HTMLElement>parent.select('main').node());
     var block:Block = new Block(visData,filteredVisData, visUID, vis,parent);
@@ -105,6 +106,36 @@ export default class VisManager {
 
       });
     });
+
+    /*
+    const drag = d3.behavior.drag()
+      .on('dragstart', function() {
+        console.log("Yea, I am here.");
+        d3.select(this.classed('block-select-selected', true));
+      })
+      .on('drag', function () {
+        console.log("Yea, I am here drag.");
+        d3.select(this).style('position', 'absolute')
+          .style('top', d3.mouse(this)[1] + 'px')
+          .style('left', d3.select(this)[0] + 'px');
+      })
+      .on('dragend', function () {
+        d3.select(this).style('position', 'absolute')
+          .style('top', d3.mouse(this)[1] + 'px')
+          .style('left', d3.select(this)[0] + 'px')
+          .classed('block-select-selected', false);
+      });
+      */
+
+    //add icon for dragging
+    var child = s.ownerDocument.createElement('label');
+    child.className = 'adder fa fa-arrows fa-0.8x';
+    child.style.cursor = 'ew-resize';
+    s.appendChild(child);
+    child.onclick = () => console.log("You clicked on Dragging icon.");
+
+      //d3.select(child.parentElement.parentElement.parentElement).call(drag);
+
     var child = s.ownerDocument.createElement('label');
     child.className = 'adder fa fa-sort-amount-desc fa-0.5x';
     child.style.cursor = 'pointer';
