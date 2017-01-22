@@ -5,9 +5,8 @@ $select-color: orange;
 $hover-color: #ffc46b;
 $border-ui: 1px solid #bbb;
 
-
-html,body{
-height:100%;
+html, body {
+  height: 100%;
 }
 
 body {
@@ -17,72 +16,66 @@ body {
   flex-direction: column;
 }
 
-
-
 #app > main {
   .block {
-        header {
-          i {
-            cursor: pointer;
-          }
+    header {
+      i {
+        cursor: pointer;
+      }
 
-        }
-   }
+    }
+  }
 }
 
-
 #app {
-    flex: 1 1 auto;
-    flex-direction: row;
+  flex: 1 1 auto;
+  flex-direction: row;
+  display: flex;
+  overflow: hidden;
+
+  align-items: stretch;
+  justify-content: left;
+
+  > .rightPanel {
     display: flex;
     overflow: hidden;
+    flex-direction: column;
+    border-left: $border-ui;
+    width: $rightPanelWidth;
 
-    align-items: stretch;
-    justify-content: left;
-
-
-
-    > .rightPanel {
-      display: flex;
+    > .appToolBar {
+      height: 40px;
+      padding: 4px;
       overflow: hidden;
-      flex-direction: column;
-      border-left: $border-ui;
-      width: $rightPanelWidth;
-
-       > .appToolBar {
-          height: 40px;
-          padding: 4px;
-          overflow:hidden;
-        }
-
-        > .filter-view {
-          flex: 1 1 auto;
-          overflow: scroll;
-          padding: 4px;
-          border-top: $border-ui;
-
-          &.block-select-selected {
-            border: 1px solid red;
-            background: none;
-          }
-          &.block-select-hovered {
-            border: 1px solid red;
-            background: none;
-          }
-        }
     }
 
-    > main {
+    > .filter-view {
       flex: 1 1 auto;
-      overflow: auto;
-      padding: 10px 5px 10px 20px;
+      overflow: scroll;
+      padding: 4px;
+      border-top: $border-ui;
+
+      &.block-select-selected {
+        border: 1px solid red;
+        background: none;
+      }
+      &.block-select-hovered {
+        border: 1px solid red;
+        background: none;
+      }
     }
+  }
+
+  > main {
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 10px 5px 10px 20px;
+  }
 }
 
 .toolbar {
   height: 20px;
 }
-
 
 .filterManager {
   background-color: lightgrey;
@@ -111,6 +104,12 @@ body {
   margin: 1px;
   flex-grow: 1;
   width: 100%;
+  opacity: 0.5;
+}
+
+.categories.active {
+
+  opacity: 1;
 }
 
 .numerical {
@@ -132,6 +131,10 @@ body {
   fill: url(#numGradient);
 }
 
+.stop-left {
+  stop-color: #3f51b5; /* Indigo */
+}
 
-
-
+.stop-right {
+  stop-color: #009688; /* Teal */
+}
