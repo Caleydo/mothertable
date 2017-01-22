@@ -64,7 +64,7 @@ export default class FilterManager {
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
-          const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data,'range': range};
+          const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data, 'range': range};
           makeNumerical(divInfo, dataInfo);
         });
       } else {
@@ -136,27 +136,27 @@ function makeNumerical(divInfo, dataInfo) {
 
   const scale = d3.scale.linear()
     .domain(range)
-    .range([0, cellWidth])
+    .range([0, cellWidth]);
 
-  const brush = d3.svg.brush()
-  brush.x(scale)
-  brush.extent(range)
+  const brush = d3.svg.brush();
+  brush.x(scale);
+  brush.extent(range);
 
   brush.on('brushend', function () {
-    console.log(brush.extent())
+    console.log(brush.extent());
     const filterType = {numerical: brush.extent()};
     const range = new RangeManager(dataInfo.data, divInfo.uid, filterType);
     range.onBrushNumerical();
-  })
+  });
 
-  const g = svg.append('g')
+  const g = svg.append('g');
 
-  brush(g)
+  brush(g);
   g.selectAll('rect').attr('height', cellHeight);
   g.selectAll('.background')
-    .style({fill: 'grey', visibility: 'visible', opacity: 0.5})
+    .style({fill: 'grey', visibility: 'visible', opacity: 0.5});
   g.selectAll('.extent')
-    .style({fill: 'grey', visibility: 'visible', opacity: 1})
+    .style({fill: 'grey', visibility: 'visible', opacity: 1});
   g.selectAll('.resize rect')
     .style({fill: 'grey', visibility: 'visible'});
   const textDiv = svg.selectAll('.text').data([dataInfo.name]).enter();
@@ -201,36 +201,5 @@ function makeStringRect(divInfo, dataInfo) {
     .style('margin', '1px')
     .style('border', '1px')
     .text((d) => d);
-}
-
-function makeBrushRange(divInfo, dataInfo) {
-
-
-  const svg = d3.select('svg')
-
-  const scale = d3.scale.linear()
-    .domain([20, 30])
-    .range([10, 450])
-
-  const brush = d3.svg.brush()
-  brush.x(scale)
-  brush.extent([20, 30])
-
-  brush.on('brushend', function () {
-    console.log(brush.extent())
-  })
-
-  const g = svg.append('g')
-
-  brush(g)
-  g.selectAll('rect').attr('height', 10);
-  g.selectAll('.background')
-    .style({fill: 'grey', visibility: 'visible', opacity: 0.5})
-  g.selectAll('.extent')
-    .style({fill: 'grey', visibility: 'visible', opacity: 1})
-  g.selectAll('.resize rect')
-    .style({fill: 'grey', visibility: 'visible'});
-
-
 }
 

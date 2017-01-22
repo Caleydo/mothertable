@@ -63,13 +63,12 @@ export default class RangeManager {
     (<any>data).filter(numericalFilter.bind(this, numFilter))
       .then((vectorView) => {
         console.log(vectorView.data(), numFilter);
-       // this.setRange(vectorView.range);
+        // this.setRange(vectorView.range);
         const updateVis = new UpdateBlockManager(vectorView.range);
         updateVis.updateVis();
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
       });
-
 
   }
 
@@ -83,7 +82,7 @@ export default class RangeManager {
       console.log(key);
       (<any>value).ids().then((r) => {
 
-        rangeIntersected = range.intersect(r)
+        rangeIntersected = range.intersect(r);
         console.log(rangeIntersected);
       });
     });
@@ -104,13 +103,8 @@ function findCatName(catName, value, index,) {
 function numericalFilter(numRange, value, index) {
 
   if (value >= numRange[0] && value <= numRange[1]) {
-
-    console.log(numRange)
-    console.log(value, 'yes', index);
     return value;
   } else {
-    console.log(numRange)
-    console.log(value, 'No', index);
     return;
   }
 
