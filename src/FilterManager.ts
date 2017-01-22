@@ -53,7 +53,7 @@ export default class FilterManager {
     const name = (<any>data.desc).name;
     const fid = this._filterUID;
     const range = (<any>data).desc.value.range;
-    const divInfo = {filterDialogWidth: 300, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
+    const divInfo = {filterDialogWidth: 274, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
 
 
     if (vectorOrMatrix === 'vector') {
@@ -148,7 +148,21 @@ function makeNumerical(divInfo, dataInfo) {
   //   .text((d: any) => d);
 
 
-  const svg = divBlock.append('svg').attr('height', cellHeight).attr('width', cellWidth);
+  const svg = divBlock.append('svg')
+    .attr('height', cellHeight)
+    .attr('width', cellWidth);
+  const svgDefs = svg.append('defs');
+
+  const mainGradient = svgDefs.append('linearGradient')
+    .attr('id', 'numGradient');
+
+  mainGradient.append('stop')
+    .attr('class', 'stop-left')
+    .attr('offset', '0');
+  mainGradient.append('stop')
+    .attr('class', 'stop-right')
+    .attr('offset', '1');
+
 
   const scale = d3.scale.linear()
     .domain(range)
@@ -170,11 +184,12 @@ function makeNumerical(divInfo, dataInfo) {
   brush(g);
   g.selectAll('rect').attr('height', cellHeight);
   g.selectAll('.background')
-    .style({fill: 'grey', visibility: 'visible', opacity: 0.5});
+    .style({fill: 'url(#numGradient)', visibility: 'visible', opacity: 0.5});
   g.selectAll('.extent')
-    .style({fill: 'grey', visibility: 'visible', opacity: 1});
+    .style({fill: 'url(#numGradient)', visibility: 'visible', opacity: 1});
   g.selectAll('.resize rect')
-    .style({fill: 'grey', visibility: 'visible'});
+    .style({fill: 'url(#numGradient)', visibility: 'visible'});
+
   const textDiv = svg.selectAll('.text').data([dataInfo.name]).enter();
   textDiv.append('text')
     .attr('x', 0)
