@@ -27,9 +27,9 @@ export default class App {
   constructor(parent: Element) {
     this.$node = d3.select(parent);
     this.$node.select('main').append('div').classed('visManager', true);
-    this.$node.select('main').append('div').classed('filterManager', true);
+    //this.$node.select('main').append('div').classed('filterManager', true);
     App.visNode = d3.select('.visManager');
-    App.filterNode = d3.select('.filterManager');
+    App.filterNode = d3.select('#filterView');
   }
 
   /**
