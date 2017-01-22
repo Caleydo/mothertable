@@ -45,7 +45,8 @@ export default class FilterManager {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
 
-        const uniqCat = (<any>data).desc.value.categories;
+        var uniqCat = (<any>data).desc.value.categories;
+        block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo,block,self);
 
@@ -101,15 +102,27 @@ function makeCategories(divInfo, dataInfo,block,self) {
       })
       .on('click', function () {
         d3.select(this).classed('active', !d3.select(this).classed('active'));
-        if (d3.select(this).classed('active') === true) {
+        if (d3.select(this).classed('active') === false) {
           const catSelected = true;
           const catName = (d3.select(this).datum());
-          const filterType = {category: catName};
+          var cat = block.activeCategories;
+          cat.push(catName);
+          block.activeCategories = cat;
+          var filterType= cat;
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType);
-        } else if (d3.select(this).classed('active') === false) {
+        } else if (d3.select(this).classed('active') === true) {
           const catSelected = false;
           const catName = (d3.select(this).datum());
-          const filterType = {category: catName};
+          var cat = block.activeCategories;
+          var ind = -1;
+          for (var i = 0; i < cat.length; ++i) {
+              if (cat[i] === catName) {
+                  ind = i;
+              }
+          }
+          cat.splice(ind,1);
+          block.activeCategories = cat;
+           var filterType= cat;
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType);
 
   block.filterDiv = divBlock;

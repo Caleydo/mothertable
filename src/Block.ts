@@ -13,6 +13,7 @@ export default class Block {
   private _dataList;
   private _filteredVisData;
   private _filterDiv;
+  private _activeCategories : string[];
 
   constructor(data, filteredVisData, uid, multifom, div) {
     this._data = data;
@@ -20,6 +21,7 @@ export default class Block {
     this._multiform= multifom;
     this._blockDiv = div;
     this._filteredVisData = filteredVisData;
+
   }
 
 
@@ -69,6 +71,14 @@ export default class Block {
 
   set filterDiv(value) {
     this._filterDiv = value;
+  }
+
+  get activeCategories(){
+    return this._activeCategories;
+  }
+
+  set activeCategories(value){
+    this._activeCategories = value;
   }
 
 }

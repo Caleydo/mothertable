@@ -36,7 +36,7 @@ export default class RangeManager {
 
   onClickCat(data, uniqueID, filterType?) {
    // const data = data;
-    const catFilter = filterType.category;
+    const catFilter = filterType;
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
         console.log(vectorView.data());
@@ -77,13 +77,14 @@ export default class RangeManager {
 }
 
 
-function findCatName(catName, value, index,) {
-
-  if (value === catName) {
-    return value;
-  } else {
-    return;
+function findCatName(catName:any[], value, index,) {
+  for (var i = 0; i < catName.length; ++i) {
+     if (value === catName[i]) {
+      return value;
+    }
   }
+  return;
+
 }
 
 
