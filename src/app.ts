@@ -12,7 +12,7 @@ import {randomId} from 'phovea_core/src/index';
 import BlockManager from './BlockManager';
 import VisManager from './VisManager';
 import FilterManager from './FilterManager';
-import Range1D from 'phovea_core/src/range/Range1D';
+
 
 /**
  * The main class for the App app
@@ -29,7 +29,7 @@ export default class App {
     this.$node.select('main').append('div').classed('visManager', true);
     this.$node.select('main').append('div').classed('filterManager', true);
     App.visNode = d3.select('.visManager');
-    App.filterNode = d3.select('.filterManager');
+    App.filterNode = d3.select('#filterView');
   }
 
   /**
