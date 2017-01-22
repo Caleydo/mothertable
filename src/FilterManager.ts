@@ -9,8 +9,6 @@ import App from './app';
 
 export default class FilterManager {
 
- // private _filterData;
- // private _filterUID;
   private filterUID = [];
   private filterData = [];
   private _filterDiv = App.filterNode;
@@ -20,25 +18,8 @@ export default class FilterManager {
   constructor(rangeManager) {
     this._rangeManager = rangeManager;
 
-  //  this._filterData = filterData;
-  //  this._filterUID = filterUID;
   }
 
- /* get filterData() {
-    return this._filterData;
-  }
-
-  set filterData(value) {
-    this._filterData = value;
-  }
-
-  get filterUID() {
-    return this._filterUID;
-  }
-
-  set filterUID(value) {
-    this._filterUID = value;
-  }*/
 
   get filterDiv() {
     return this._filterDiv;

@@ -11,7 +11,6 @@ import {IMultiForm} from 'phovea_core/src/multiform';
 import {randomId} from 'phovea_core/src/index';
 import VisManager from './VisManager';
 import FilterManager from './FilterManager';
-import UpdateBlockManager from './UpdateBlockManager';
 import RangeManager from './RangeManager';
 import Block from './Block';
 
@@ -29,7 +28,6 @@ export default class App {
 
   private visManager: VisManager;
   private filterManager: FilterManager;
-  private updateBlockManager: UpdateBlockManager;
   private rangeManager: RangeManager;
 
   constructor(parent: Element) {
@@ -41,7 +39,6 @@ export default class App {
     this.visManager =new VisManager();
     this.rangeManager = new RangeManager(this.visManager);
     this.filterManager = new FilterManager(this.rangeManager);
-    this.updateBlockManager = new UpdateBlockManager();
 
 
 
@@ -83,15 +80,12 @@ export default class App {
 
   private addDataset(data: IDataType) {
 
-    const block = new Block(data, randomId());
-
-    App.blockList.set(block.uid, block.data);
-
-    this.visManager.createVis(block.data, block.uid);
+    var id =randomId();
+    this.visManager.createVis(data, id);
 
     const filterNode = d3.select('#filterView');
 
-    this.filterManager.createFilter(block.data, block.uid,this.filterManager);
+    this.filterManager.createFilter(data, id,this.filterManager);
 
     console.log(App.blockList);
 

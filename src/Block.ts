@@ -2,18 +2,21 @@
  * Created by bikramkawan on 20/01/2017.
  */
 
-
+import {MultiForm} from 'phovea_core/src/multiform';
 
 export default class Block {
 
   private _data;
   private _uid;
+  private _multiform: MultiForm;
+  private _blockDiv: HTMLDivElement;
   private _dataList;
 
-  constructor(data, uid) {
-
+  constructor(data, uid, multifom, div) {
     this._data = data;
     this._uid = uid;
+    this._multiform= multifom;
+    this._blockDiv = div;
   }
 
 
@@ -32,6 +35,23 @@ export default class Block {
   set uid(value) {
     this._uid = value;
   }
+
+  get multiform() {
+    return this._uid;
+  }
+
+  set multiform(value) {
+    this._multiform = value;
+  }
+
+  get blockDiv() {
+    return this._uid;
+  }
+
+  set blockDiv(value) {
+    this._uid = value;
+  }
+
 
 
 }
