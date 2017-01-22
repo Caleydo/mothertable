@@ -16,6 +16,7 @@ export default class VisManager {
   //private _visData;
   //private _visUID;
   private _parentDiv = App.visNode;
+  private _filterManager;
   private blocks: Block[] = [];
 
  // private visUID = [];
@@ -53,6 +54,10 @@ export default class VisManager {
     this._parentDiv = value;
   }
 
+  set filterManager(value) {
+    this._filterManager = value;
+  }
+
   createVis(visData, filteredVisData, visUID) {
     const parent = this._parentDiv
       .append('div')
@@ -62,7 +67,7 @@ export default class VisManager {
     const vis = createMultiForm(filteredVisData, <HTMLElement>parent.select('main').node());
     var block:Block = new Block(visData,filteredVisData, visUID, vis,parent);
     App.blockList.set(block.uid, block);
-    this.addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
+    this.addIconVisChooser(visUID,<HTMLElement>parent.select('header').node(), vis);
 
 
   /*  this.visData.push(visData);
@@ -73,7 +78,7 @@ export default class VisManager {
   }
 
 
-  private addIconVisChooser(toolbar: HTMLElement, ...forms: IMultiForm[]) {
+  private addIconVisChooser(visUID,toolbar: HTMLElement, ...forms: IMultiForm[]) {
     const s = toolbar.ownerDocument.createElement('div');
     toolbar.insertBefore(s, toolbar.firstChild);
     const visses = this.toAvailableVisses(forms);
@@ -123,7 +128,20 @@ export default class VisManager {
     child.className = 'adder fa fa-close fa-0.8x';
     child.style.cursor = 'pointer';
     s.appendChild(child);
-    child.onclick = () => child.parentElement.parentElement.parentElement.remove();
+    child.onclick = () => {
+      child.parentElement.parentElement.parentElement.remove();
+      var nodes: HTMLElement[] = this._filterManager.filterDiv[0][0].children;
+      for (var index = 0; index < nodes.length; ++index) {
+         if(nodes[index].getAttribute('f-uid') == visUID){
+            nodes[index].remove();
+         }
+
+      }
+
+
+
+
+    }
 
 
   }

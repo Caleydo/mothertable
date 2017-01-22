@@ -12,6 +12,7 @@ export default class Block {
   private _blockDiv: HTMLDivElement;
   private _dataList;
   private _filteredVisData;
+  private _filterDiv;
 
   constructor(data, filteredVisData, uid, multifom, div) {
     this._data = data;
@@ -62,7 +63,13 @@ export default class Block {
     this._uid = value;
   }
 
+   get filterDiv() {
+    return this._filterDiv;
+  }
 
+  set filterDiv(value) {
+    this._filterDiv = value;
+  }
 
 }
 

@@ -62,6 +62,7 @@ export default class App {
     this.setBusy(true);
     const blockList = new Map();
     this.$node.select('main').append('div').classed('visManager', true);
+    this.visManager.filterManager = this.filterManager;
 
 
     return listData().then((datasets) => {
@@ -85,7 +86,7 @@ export default class App {
 
     const filterNode = d3.select('#filterView');
 
-    this.filterManager.createFilter(data, id,this.filterManager);
+    this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
 
     console.log(App.blockList);
 

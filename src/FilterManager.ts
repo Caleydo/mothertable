@@ -29,13 +29,13 @@ export default class FilterManager {
     this._filterDiv = value;
   }
 
-  createFilter(filterData, filterUID,self) {
+  createFilter(block, self) {
 
-    console.log(filterData, filterUID);
-    const data = filterData;
+    console.log(block.data, block.uid);
+    const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
-    const fid =filterUID;
+    const fid =block.uid;
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 200, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
 
@@ -46,17 +46,17 @@ export default class FilterManager {
 
         const uniqCat = (<any>data).desc.value.categories;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
-        makeCategories(divInfo, dataInfo,self);
+        makeCategories(divInfo, dataInfo,block,self);
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
           const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data, 'range': range};
-          makeNumerical(divInfo, dataInfo,self);
+          makeNumerical(divInfo, dataInfo,block,self);
         });
       } else {
         (<any>data).data().then(function (dataVal) {
           const dataInfo = {'name': name, value: dataVal, type: dataType};
-          makeStringRect(divInfo, dataInfo,self);
+          makeStringRect(divInfo, dataInfo,block,self);
 
         });
       }
@@ -65,17 +65,17 @@ export default class FilterManager {
     } else if (vectorOrMatrix === 'matrix') {
       (<any>data).data().then(function (dataVal) {
         const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'range': range};
-        makeMatrix(divInfo, dataInfo,self);
+        makeMatrix(divInfo, dataInfo,block,self);
       });
     }
-     this.filterData.push(filterData);
-     this.filterUID.push(filterUID);
+     this.filterData.push(block.data);
+     this.filterUID.push(block.uid);
 
   }
 
 }
 
-function makeCategories(divInfo, dataInfo,self) {
+function makeCategories(divInfo, dataInfo,block,self) {
 
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
@@ -89,6 +89,7 @@ function makeCategories(divInfo, dataInfo,self) {
     .selectAll('div.categories')
     .data(dataInfo.value);
 
+  block.filterDiv = divBlock;
   div.enter()
     .append('div')
     .attr('class', 'categories')
@@ -105,7 +106,7 @@ function makeCategories(divInfo, dataInfo,self) {
 }
 
 
-function makeNumerical(divInfo, dataInfo,self) {
+function makeNumerical(divInfo, dataInfo,block,self) {
   const cellHeight = divInfo.filterRowHeight;
   const cellWidth = divInfo.filterDialogWidth - 2;
   const range = dataInfo.range;
@@ -118,7 +119,7 @@ function makeNumerical(divInfo, dataInfo,self) {
   // div.append('div')
   //   .attr('class', 'numerical')
   //   .text((d: any) => d);
-
+  block.filterDiv = divBlock;
 
   const svg = divBlock.append('svg').attr('height', cellHeight).attr('width', cellWidth);
 
@@ -157,7 +158,7 @@ function makeNumerical(divInfo, dataInfo,self) {
 }
 
 
-function makeMatrix(divInfo, dataInfo, self) {
+function makeMatrix(divInfo, dataInfo, block,self) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
@@ -171,6 +172,7 @@ function makeMatrix(divInfo, dataInfo, self) {
     .attr('class', 'matrix')
     .style('background-color', colorScale);
 
+  block.filterDiv = divBlock;
   const matrixName = divBlock.selectAll('div.matrixName').data([dataInfo.name]).enter();
   matrixName.append('div')
     .attr('class', 'matrixName')
@@ -178,11 +180,12 @@ function makeMatrix(divInfo, dataInfo, self) {
 
 }
 
-function makeStringRect(divInfo, dataInfo, self) {
+function makeStringRect(divInfo, dataInfo,block,self) {
   const cellHeight = divInfo.filterRowHeight;
   const filterDiv = divInfo.div;
   const divBlock = filterDiv.append('div')
     .attr('f-uid', divInfo.uid);
+  block.filterDiv = divBlock;
   divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]).enter()
     .append('div')
     .classed(dataInfo.name, true)
