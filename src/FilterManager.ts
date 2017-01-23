@@ -3,7 +3,6 @@
  */
 
 import * as d3 from 'd3';
-import RangeManager from './RangeManager';
 import App from './app';
 import Range1D from 'phovea_core/src/range/Range1D';
 
@@ -13,7 +12,7 @@ export default class FilterManager {
   private filterUID = [];
   private filterData = [];
   private _filterDiv = App.filterNode;
-   private _rangeManager;
+  private _rangeManager;
 
 
   constructor(rangeManager) {
@@ -40,12 +39,12 @@ export default class FilterManager {
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 274, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
 
-
     if (vectorOrMatrix === 'vector') {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
 
         var uniqCat = (<any>data).desc.value.categories;
+        block.activeCategories = uniqCat;
         block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo,block,self);
@@ -182,7 +181,7 @@ function makeNumerical(divInfo, dataInfo,block,self) {
     brush.extent(range);
 
     brush.on('brushend', function () {
-      console.log(brush.extent());
+     // console.log(brush.extent());
       const filterType = {numerical: brush.extent()};
       self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
     });

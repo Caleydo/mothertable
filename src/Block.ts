@@ -10,7 +10,6 @@ export default class Block {
   private _uid;
   private _multiform: MultiForm;
   private _blockDiv: HTMLDivElement;
-  private _dataList;
   private _filteredVisData;
   private _filterDiv;
   private _activeCategories : string[];
