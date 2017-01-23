@@ -9,6 +9,7 @@ import {createNode} from 'phovea_core/src/multiform/internal';
 import {IMultiForm} from 'phovea_core/src/multiform';
 import {choose} from 'phovea_ui/src/dialogs';
 import Block from './Block';
+import {makeSort} from "./SortManager";
 
 export default class VisManager {
 
@@ -113,12 +114,13 @@ export default class VisManager {
     child.className = 'adder fa fa-sort-amount-desc fa-0.5x';
     child.style.cursor = 'pointer';
     s.appendChild(child);
-    const sort = ['min', 'max', 'median', 'q1', 'q3'];
+    const sort = ['min', 'max', 'median', 'q1', 'q3','alphabetical'];
 
     child.onclick = () => choose(sort.map((d) => d), 'Choose sorting criteria').then((selection) => {
       const div: HTMLDivElement = <HTMLDivElement>child.parentElement.parentElement.parentElement;
       const multiform = div.childNodes[1].childNodes[0];
-
+      const sort = makeSort(visUID,selection);
+      console.log(sort)
       return selection;
     });
 

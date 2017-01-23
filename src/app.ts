@@ -80,12 +80,11 @@ export default class App {
     this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
 
     //
-    // (<any>block.data).sort(minSort).then((d) => console.log((<any>d).data()))
+
+
     // // ((<any>sorta).data().then((d) => console.log(d)))
 
     console.log(App.blockList);
-
-
   }
 
 
@@ -102,7 +101,7 @@ export default class App {
 
 function minSort(aVal, bVal) {
 
-  console.log(aVal, bVal, aVal.localeCompare(bVal))
+  //console.log(aVal, bVal, aVal.localeCompare(bVal))
 
   return (aVal.localeCompare(bVal));
 

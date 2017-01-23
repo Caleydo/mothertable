@@ -4,6 +4,7 @@
 
 import App from './app';
 import * as d3 from 'd3';
+import Block from './Block';
 export default class RangeManager {
 
 
@@ -31,15 +32,21 @@ export default class RangeManager {
   }
 
 
-  onClickCat(data, uniqueID, filterType?) {
+  onClickCat(data, uniqueID, filterType?, block?) {
     // const data = data;
     const catFilter = filterType;
+
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
-        // console.log(vectorView.data());
-        this.updateVis(vectorView.range);
-        // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
+        Block.filtersRange.delete(uniqueID);
+        Block.filtersRange.set(uniqueID, vectorView.range);
+        //   console.log(Block.filtersRange)
+        // console.log(vectorView)
+        // console.log(vectorView.range)
+        // console.log(vectorView.data());
+        this.updateVis((vectorView.range));
+        //this.updateVis(calculateRangeIntersect(vectorView.range));
       });
   }
 
@@ -48,29 +55,27 @@ export default class RangeManager {
     const numFilter = filterType.numerical;
     (<any>data).filter(numericalFilter.bind(this, numFilter))
       .then((vectorView) => {
-        console.log(vectorView.data(), numFilter);
-        this.updateVis(vectorView.range);
-        // this.calculateRangeIntersect(App.blockList, vectorView.range);
+        //  console.log(vectorView.data(), numFilter);
+        Block.filtersRange.delete(uniqueID);
+        Block.filtersRange.set(uniqueID, vectorView.range);
+        this.updateVis(calculateRangeIntersect(vectorView.range));
+
 
       });
 
   }
 
 
-  calculateRangeIntersect(blockList, range,) {
-
-
-    //To Do
-    let rangeIntersected = range;
-    blockList.forEach((value, key) => {
-      console.log(key);
-      (<any>value).ids().then((r) => {
-
-        rangeIntersected = range.intersect(r);
-        console.log(rangeIntersected);
-      });
-    });
-  }
+  //
+  //
+  // Block.filtersRange.forEach((value, key) => {
+  //   console.log(key);
+  //   (<any>value).ids().then((r) => {
+  //
+  //     rangeIntersected = range.intersect(r);
+  //     console.log(rangeIntersected);
+  //   });
+  // });
 }
 
 
@@ -96,3 +101,19 @@ function numericalFilter(numRange, value, index) {
 
 }
 
+
+function calculateRangeIntersect(range) {
+
+  let rangeIntersected = range;
+  //To Do
+  Block.filtersRange.forEach(function (value, key) {
+    // console.log(range, key)
+    // console.log(range.union(value))
+    // console.log(range.intersect(value))
+    rangeIntersected = range.intersect(value);
+
+
+  });
+  return rangeIntersected;
+
+}

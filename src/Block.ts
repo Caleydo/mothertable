@@ -13,6 +13,7 @@ export default class Block {
   private _filteredVisData;
   private _filterDiv;
   private _activeCategories : string[];
+  public static filtersRange = new Map();
 
   constructor(data, filteredVisData, uid, multifom, div) {
     this._data = data;
@@ -71,6 +72,7 @@ export default class Block {
   set filterDiv(value) {
     this._filterDiv = value;
   }
+
 
   get activeCategories(){
     return this._activeCategories;

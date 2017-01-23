@@ -4,7 +4,7 @@
 
 import * as d3 from 'd3';
 import App from './app';
-
+import Block from './Block';
 
 export default class FilterManager {
 
@@ -36,6 +36,9 @@ export default class FilterManager {
     const fid = block.uid;
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 274, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
+    console.log(block);
+
+    Block.filtersRange.set(fid, data.indices);
 
     if (vectorOrMatrix === 'vector') {
       const dataType = (<any>data.desc).value.type;
@@ -43,6 +46,7 @@ export default class FilterManager {
 
         const uniqCat = (<any>data).desc.value.categories;
         block.activeCategories = uniqCat;
+        console.log(block.activeCategories)
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo, block, self);
 
@@ -99,16 +103,17 @@ function makeCategories(divInfo, dataInfo, block, self) {
       .on('click', function () {
         d3.select(this).classed('active', !d3.select(this).classed('active'));
         if (d3.select(this).classed('active') === false) {
-          const catSelected = true;
           const catName = (d3.select(this).datum());
+
           const cat = block.activeCategories;
           cat.push(catName);
           block.activeCategories = cat;
+
           const filterType = cat;
-          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType);
+          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
         } else if (d3.select(this).classed('active') === true) {
-          const catSelected = false;
           const catName = (d3.select(this).datum());
+          console.log(block.activeCategories)
           const cat = block.activeCategories;
           let ind = -1;
           for (let i = 0; i < cat.length; ++i) {
@@ -119,8 +124,7 @@ function makeCategories(divInfo, dataInfo, block, self) {
           cat.splice(ind, 1);
           block.activeCategories = cat;
           const filterType = cat;
-          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType);
-
+          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
           block.filterDiv = divBlock;
         }
 
@@ -178,7 +182,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     brush.extent(range);
 
     brush.on('brushend', function () {
-     // console.log(brush.extent());
+      // console.log(brush.extent());
       const filterType = {numerical: brush.extent()};
       self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
     });
