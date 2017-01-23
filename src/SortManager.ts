@@ -56,11 +56,21 @@ export default class SortManager {
     const block = App.blockList.get(this._blockID);
 
     if (this._sortCriteria === 'alphabetical') {
-      (<any>block.data).sort(minSort).then((d) => {
+      (<any>block.data).sort(stringSort).then((d) => {
         this.updateVis((<any>d.range));
       })
 
-    } else {
+    } else if (this._sortCriteria === 'min') {
+
+      (<any>block.data).sort(minSort).then((d) => {
+        this.updateVis((<any>d.range));
+      });
+
+    } else if (this._sortCriteria === 'max') {
+
+      (<any>block.data).sort(maxSort).then((d) => {
+        this.updateVis((<any>d.range));
+      });
 
     }
 
@@ -78,10 +88,20 @@ export function makeSort(block, sortMethod) {
   return s.sortedRange();
 }
 
-function minSort(aVal, bVal) {
+function stringSort(aVal, bVal) {
 
-  //console.log(aVal, bVal, aVal.localeCompare(bVal))
 
   return (aVal.localeCompare(bVal));
 
+}
+
+
+function minSort(aVal, bVal) {
+
+  return aVal - bVal;
+}
+
+function maxSort(aVal, bVal) {
+
+  return bVal - aVal;
 }
