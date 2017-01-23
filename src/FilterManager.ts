@@ -3,9 +3,7 @@
  */
 
 import * as d3 from 'd3';
-import RangeManager from './RangeManager';
 import App from './app';
-import Range1D from 'phovea_core/src/range/Range1D';
 
 
 export default class FilterManager {
@@ -32,7 +30,6 @@ export default class FilterManager {
 
   createFilter(block, self) {
 
-    console.log(block.data, block.uid);
     const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
@@ -44,7 +41,7 @@ export default class FilterManager {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
 
-        var uniqCat = (<any>data).desc.value.categories;
+        const uniqCat = (<any>data).desc.value.categories;
         block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo, block, self);
@@ -104,24 +101,24 @@ function makeCategories(divInfo, dataInfo, block, self) {
         if (d3.select(this).classed('active') === false) {
           const catSelected = true;
           const catName = (d3.select(this).datum());
-          var cat = block.activeCategories;
+          const cat = block.activeCategories;
           cat.push(catName);
           block.activeCategories = cat;
-          var filterType = cat;
+          const filterType = cat;
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType);
         } else if (d3.select(this).classed('active') === true) {
           const catSelected = false;
           const catName = (d3.select(this).datum());
-          var cat = block.activeCategories;
-          var ind = -1;
-          for (var i = 0; i < cat.length; ++i) {
+          const cat = block.activeCategories;
+          let ind = -1;
+          for (let i = 0; i < cat.length; ++i) {
             if (cat[i] === catName) {
               ind = i;
             }
           }
           cat.splice(ind, 1);
           block.activeCategories = cat;
-          var filterType = cat;
+          const filterType = cat;
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType);
 
           block.filterDiv = divBlock;
@@ -181,7 +178,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     brush.extent(range);
 
     brush.on('brushend', function () {
-      console.log(brush.extent());
+     // console.log(brush.extent());
       const filterType = {numerical: brush.extent()};
       self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
     });
@@ -268,7 +265,6 @@ function checkMeIfExist(id) {
   let count = 0;
   App.blockList.forEach((value, key) => {
     const dataId = value.data.desc.id;
-    console.log(value)
     if ((id === dataId)) {
       count = count + 1;
     }

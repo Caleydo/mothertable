@@ -7,7 +7,7 @@ import * as d3 from 'd3';
 export default class RangeManager {
 
 
-  private  _visManager;
+  private _visManager;
 
   constructor(visManager) {
     this._visManager = visManager;
@@ -17,14 +17,11 @@ export default class RangeManager {
   updateVis(range) {
 
     App.blockList.forEach((value, key) => {
-      console.log(key);
-      console.log((<any>value).data.data(range));
-
       (<any>value).data.idView(range).then((d) => {
 
         d3.selectAll(`[data-uid="${key}"]`).remove();
 
-       // const newVis = new VisManager(d, key);
+        // const newVis = new VisManager(d, key);
 
         this._visManager.createVis((<any>value).data, d, key);
 
@@ -35,11 +32,11 @@ export default class RangeManager {
 
 
   onClickCat(data, uniqueID, filterType?) {
-   // const data = data;
+    // const data = data;
     const catFilter = filterType;
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
-        console.log(vectorView.data());
+        // console.log(vectorView.data());
         this.updateVis(vectorView.range);
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
@@ -47,7 +44,7 @@ export default class RangeManager {
   }
 
   onBrushNumerical(data, uniqueID, filterType?) {
-   // const data = data;
+    // const data = data;
     const numFilter = filterType.numerical;
     (<any>data).filter(numericalFilter.bind(this, numFilter))
       .then((vectorView) => {
@@ -77,9 +74,9 @@ export default class RangeManager {
 }
 
 
-function findCatName(catName:any[], value, index,) {
-  for (var i = 0; i < catName.length; ++i) {
-     if (value === catName[i]) {
+function findCatName(catName: any[], value, index,) {
+  for (let i = 0; i < catName.length; ++i) {
+    if (value === catName[i]) {
       return value;
     }
   }

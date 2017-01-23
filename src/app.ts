@@ -6,14 +6,10 @@ import * as d3 from 'd3';
 import {IDataType} from 'phovea_core/src/datatype';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {choose} from 'phovea_ui/src/dialogs';
-import {create as createMultiForm} from 'phovea_core/src/multiform';
-import {IMultiForm} from 'phovea_core/src/multiform';
 import {randomId} from 'phovea_core/src/index';
 import VisManager from './VisManager';
 import FilterManager from './FilterManager';
 import RangeManager from './RangeManager';
-import Block from './Block';
-
 
 
 /**
@@ -35,11 +31,9 @@ export default class App {
     this.$node.select('main').append('div').classed('visManager', true);
     App.visNode = d3.select('.visManager');
     App.filterNode = d3.select('#filterView');
-    this.visManager =new VisManager();
+    this.visManager = new VisManager();
     this.rangeManager = new RangeManager(this.visManager);
     this.filterManager = new FilterManager(this.rangeManager);
-
-
 
   }
 
@@ -59,7 +53,6 @@ export default class App {
    */
   private build() {
     this.setBusy(true);
-    const blockList = new Map();
     this.$node.select('main').append('div').classed('visManager', true);
     this.visManager.filterManager = this.filterManager;
 
@@ -80,8 +73,8 @@ export default class App {
 
   private addDataset(data: IDataType) {
 
-    var id =randomId();
-    this.visManager.createVis(data, data, id);
+    const id = randomId();
+    this.visManager.createVis(data, data, id);  //first is new data and second is for filtered data purporse which is same as data at first
 
     const filterNode = d3.select('#filterView');
     this.filterManager.createFilter(App.blockList.get(id), this.filterManager);

@@ -5,7 +5,6 @@
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
 import App from './app';
 import {MultiForm} from 'phovea_core/src/multiform';
-import FilterManager from './FilterManager';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {IMultiForm} from 'phovea_core/src/multiform';
 import {choose} from 'phovea_ui/src/dialogs';
@@ -19,32 +18,32 @@ export default class VisManager {
   private _filterManager;
   private blocks: Block[] = [];
 
- // private visUID = [];
- // private visData = [];
- // private blocks: MultiForm[] = [];
- // private blockDivs: HTMLDivElement[] = [];
+  // private visUID = [];
+  // private visData = [];
+  // private blocks: MultiForm[] = [];
+  // private blockDivs: HTMLDivElement[] = [];
 
 
   constructor() {
- //   this._visData = visData;
- //   this._visUID = visUID;
+    //   this._visData = visData;
+    //   this._visUID = visUID;
   }
 
-/*  get visData() {
-    return this._visData;
-  }
+  /*  get visData() {
+   return this._visData;
+   }
 
-  set visData(value) {
-    this._visData = value;
-  }
+   set visData(value) {
+   this._visData = value;
+   }
 
-  get visUID() {
-    return this._visUID;
-  }
+   get visUID() {
+   return this._visUID;
+   }
 
-  set visUID(value) {
-    this._visUID = value;
-  }*/
+   set visUID(value) {
+   this._visUID = value;
+   }*/
 
   get parentDiv() {
     return this._parentDiv;
@@ -65,30 +64,29 @@ export default class VisManager {
       // .call(drag)
       .html(`<header class="toolbar"></header><main class="vis"></main>`);
     const vis = createMultiForm(filteredVisData, <HTMLElement>parent.select('main').node());
-    var block:Block = new Block(visData,filteredVisData, visUID, vis,parent);
+    const block: Block = new Block(visData, filteredVisData, visUID, vis, parent);
     App.blockList.set(block.uid, block);
-    this.addIconVisChooser(visUID,<HTMLElement>parent.select('header').node(), vis);
+    this.addIconVisChooser(visUID, <HTMLElement>parent.select('header').node(), vis);
 
 
-  /*  this.visData.push(visData);
-    this.visUID.push(visUID);
-    this.blocks.push(vis);
-    this.blockDivs.push(parent);*/
+    /*  this.visData.push(visData);
+     this.visUID.push(visUID);
+     this.blocks.push(vis);
+     this.blockDivs.push(parent);*/
 
   }
 
 
-  private addIconVisChooser(visUID,toolbar: HTMLElement, ...forms: IMultiForm[]) {
+  private addIconVisChooser(visUID, toolbar: HTMLElement, ...forms: IMultiForm[]) {
     const s = toolbar.ownerDocument.createElement('div');
     toolbar.insertBefore(s, toolbar.firstChild);
     const visses = this.toAvailableVisses(forms);
-    var multiforms: MultiForm[] = [];
-    var divs: HTMLDivElement[] = [];
-    App.blockList.forEach((block)=>{
+    const multiforms: MultiForm[] = [];
+    const divs: HTMLDivElement[] = [];
+    App.blockList.forEach((block) => {
       multiforms.push(block.multiform);
       divs.push(block.blockDiv);
     });
-
 
     visses.forEach((v) => {
       const child = createNode(s, 'i');
@@ -110,6 +108,7 @@ export default class VisManager {
 
       });
     });
+
     var child = s.ownerDocument.createElement('label');
     child.className = 'adder fa fa-sort-amount-desc fa-0.5x';
     child.style.cursor = 'pointer';
@@ -130,12 +129,12 @@ export default class VisManager {
     s.appendChild(child);
     child.onclick = () => {
       child.parentElement.parentElement.parentElement.remove();
-      var nodes: HTMLElement[] = this._filterManager.filterDiv[0][0].children;
-      for (var index = 0; index < nodes.length; ++index) {
-         if(nodes[index].getAttribute('f-uid') == visUID){
-            nodes[index].remove();
-            App.blockList.delete(visUID);
-         }
+      const nodes: HTMLElement[] = this._filterManager.filterDiv[0][0].children;
+      for (let index = 0; index < nodes.length; ++index) {
+        if (nodes[index].getAttribute('f-uid') === visUID) {
+          nodes[index].remove();
+          App.blockList.delete(visUID);
+        }
 
       }
 
