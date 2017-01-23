@@ -47,14 +47,12 @@ export default class FilterManager {
 
   createFilter() {
 
-    console.log(this._filterData, this._filterUID);
     const data = this._filterData;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
     const fid = this._filterUID;
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 274, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
-
 
     if (vectorOrMatrix === 'vector') {
       const dataType = (<any>data.desc).value.type;

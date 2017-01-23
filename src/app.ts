@@ -77,10 +77,14 @@ export default class App {
     filter.createFilter();
 
 
+    (<any>block.data).sort(minSort).then((d) => console.log((<any>d).data()))
+    // ((<any>sorta).data().then((d) => console.log(d)))
+
     console.log(App.blockList);
 
 
   }
+
 
   /**
    * Show or hide the application loading indicator
@@ -92,6 +96,14 @@ export default class App {
 
 }
 
+
+function minSort(aVal, bVal) {
+
+  console.log(aVal, bVal, aVal.localeCompare(bVal))
+
+  return (aVal.localeCompare(bVal));
+
+}
 /**
  * Factory method to create a new app instance
  * @param parent
