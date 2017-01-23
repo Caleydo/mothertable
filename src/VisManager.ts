@@ -5,25 +5,32 @@
 import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
 import App from './app';
 import {MultiForm} from 'phovea_core/src/multiform';
+import FilterManager from './FilterManager';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {IMultiForm} from 'phovea_core/src/multiform';
 import {choose} from 'phovea_ui/src/dialogs';
+import Block from './Block';
 
 export default class VisManager {
 
-  private _visData;
-  private _visUID;
+  //private _visData;
+  //private _visUID;
   private _parentDiv = App.visNode;
-  private blocks: MultiForm[] = [];
-  private blockDivs: HTMLDivElement[] = [];
+  private _filterManager;
+  private blocks: Block[] = [];
+
+ // private visUID = [];
+ // private visData = [];
+ // private blocks: MultiForm[] = [];
+ // private blockDivs: HTMLDivElement[] = [];
 
 
-  constructor(visData, visUID) {
-    this._visData = visData;
-    this._visUID = visUID;
+  constructor() {
+ //   this._visData = visData;
+ //   this._visUID = visUID;
   }
 
-  get visData() {
+/*  get visData() {
     return this._visData;
   }
 
@@ -37,7 +44,7 @@ export default class VisManager {
 
   set visUID(value) {
     this._visUID = value;
-  }
+  }*/
 
   get parentDiv() {
     return this._parentDiv;
@@ -47,32 +54,49 @@ export default class VisManager {
     this._parentDiv = value;
   }
 
-  createVis() {
+  set filterManager(value) {
+    this._filterManager = value;
+  }
+
+  createVis(visData, filteredVisData, visUID) {
     const parent = this._parentDiv
       .append('div')
-      .attr('data-uid', this._visUID)
+      .attr('data-uid', visUID)
       // .call(drag)
       .html(`<header class="toolbar"></header><main class="vis"></main>`);
-    const vis = createMultiForm(this._visData, <HTMLElement>parent.select('main').node());
-    this.addIconVisChooser(<HTMLElement>parent.select('header').node(), vis);
+    const vis = createMultiForm(filteredVisData, <HTMLElement>parent.select('main').node());
+    var block:Block = new Block(visData,filteredVisData, visUID, vis,parent);
+    App.blockList.set(block.uid, block);
+    this.addIconVisChooser(visUID,<HTMLElement>parent.select('header').node(), vis);
+
+
+  /*  this.visData.push(visData);
+    this.visUID.push(visUID);
     this.blocks.push(vis);
-    this.blockDivs.push(parent);
+    this.blockDivs.push(parent);*/
 
   }
 
 
-  private addIconVisChooser(toolbar: HTMLElement, ...forms: IMultiForm[]) {
+  private addIconVisChooser(visUID,toolbar: HTMLElement, ...forms: IMultiForm[]) {
     const s = toolbar.ownerDocument.createElement('div');
     toolbar.insertBefore(s, toolbar.firstChild);
     const visses = this.toAvailableVisses(forms);
+    var multiforms: MultiForm[] = [];
+    var divs: HTMLDivElement[] = [];
+    App.blockList.forEach((block)=>{
+      multiforms.push(block.multiform);
+      divs.push(block.blockDiv);
+    });
+
 
     visses.forEach((v) => {
       const child = createNode(s, 'i');
       v.iconify(child);
       child.onclick = () => forms.forEach((f) => {
         f.switchTo(v).then(() =>
-          this.blockDivs.forEach((b, index) => {
-            this.blocks[index].transform([1, 1]);
+          divs.forEach((b, index) => {
+            multiforms[index].transform([1, 1]);
             const svg = b[0][0].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
             const visHeight = svg.clientHeight;
             const visWidth = svg.clientWidth;
@@ -80,7 +104,7 @@ export default class VisManager {
             svg.setAttribute('viewbox', '0 0 200 200');
             svg.setAttribute('height', '200');
             svg.setAttribute('width', '200');
-            this.blocks[index].transform([200 / visWidth, 200 / visHeight]);
+            multiforms[index].transform([200 / visWidth, 200 / visHeight]);
           })
         );
 
@@ -104,8 +128,18 @@ export default class VisManager {
     child.className = 'adder fa fa-close fa-0.8x';
     child.style.cursor = 'pointer';
     s.appendChild(child);
-    child.onclick = () => child.parentElement.parentElement.parentElement.remove();
+    child.onclick = () => {
+      child.parentElement.parentElement.parentElement.remove();
+      var nodes: HTMLElement[] = this._filterManager.filterDiv[0][0].children;
+      for (var index = 0; index < nodes.length; ++index) {
+         if(nodes[index].getAttribute('f-uid') == visUID){
+            nodes[index].remove();
+            App.blockList.delete(visUID);
+         }
 
+      }
+
+    }
 
   }
 

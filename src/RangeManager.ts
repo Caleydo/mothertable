@@ -2,72 +2,57 @@
  * Created by bikramkawan on 21/01/2017.
  */
 
-import UpdateBlockManager from './UpdateBlockManager';
+import App from './app';
+import * as d3 from 'd3';
 export default class RangeManager {
 
 
-  private _data;
-  private _filterType;
-  private _uniqueID;
-  private _narrowRange;
-  private _numericalRange;
+  private  _visManager;
 
-  constructor(data, uniqueID, filterType?) {
-    this._data = data;
-    this._uniqueID = uniqueID;
-    this._filterType = filterType;
+  constructor(visManager) {
+    this._visManager = visManager;
   }
 
-  get data() {
-    return this._data;
+
+  updateVis(range) {
+
+    App.blockList.forEach((value, key) => {
+      console.log(key);
+      console.log((<any>value).data.data(range));
+
+      (<any>value).data.idView(range).then((d) => {
+
+        d3.selectAll(`[data-uid="${key}"]`).remove();
+
+       // const newVis = new VisManager(d, key);
+
+        this._visManager.createVis((<any>value).data, d, key);
+
+      });
+
+    });
   }
 
-  set data(value) {
-    this._data = value;
-  }
 
-  get uniqueID() {
-    return this._uniqueID;
-  }
-
-  set uniqueID(value) {
-    this._uniqueID = value;
-  }
-
-  getRange() {
-    return this._narrowRange;
-
-  }
-
-  setRange(value) {
-    this._narrowRange = value;
-  }
-
-  onClickCat(catSelected) {
-    const data = this._data;
-    const catFilter = this._filterType.category;
+  onClickCat(data, uniqueID, filterType?) {
+   // const data = data;
+    const catFilter = filterType;
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
         console.log(vectorView.data());
-        this.setRange(vectorView.range);
-        const updateVis = new UpdateBlockManager(vectorView.range);
-        updateVis.updateVis(catSelected);
-
-
+        this.updateVis(vectorView.range);
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
       });
   }
 
-  onBrushNumerical() {
-    const data = this._data;
-    const numFilter = this._filterType.numerical;
+  onBrushNumerical(data, uniqueID, filterType?) {
+   // const data = data;
+    const numFilter = filterType.numerical;
     (<any>data).filter(numericalFilter.bind(this, numFilter))
       .then((vectorView) => {
         console.log(vectorView.data(), numFilter);
-        // this.setRange(vectorView.range);
-        const updateVis = new UpdateBlockManager(vectorView.range);
-        updateVis.updateVis(true);
+        this.updateVis(vectorView.range);
         // this.calculateRangeIntersect(App.blockList, vectorView.range);
 
       });
@@ -92,13 +77,14 @@ export default class RangeManager {
 }
 
 
-function findCatName(catName, value, index,) {
-
-  if (value === catName) {
-    return value;
-  } else {
-    return;
+function findCatName(catName:any[], value, index,) {
+  for (var i = 0; i < catName.length; ++i) {
+     if (value === catName[i]) {
+      return value;
+    }
   }
+  return;
+
 }
 
 

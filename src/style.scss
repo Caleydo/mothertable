@@ -104,12 +104,12 @@ body {
   margin: 1px;
   flex-grow: 1;
   width: 100%;
-  opacity: 0.5;
+  opacity: 1;
 }
 
 .categories.active {
 
-  opacity: 1;
+  opacity: 0.5;
 }
 
 .numerical {

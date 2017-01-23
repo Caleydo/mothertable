@@ -9,9 +9,11 @@ import {choose} from 'phovea_ui/src/dialogs';
 import {create as createMultiForm} from 'phovea_core/src/multiform';
 import {IMultiForm} from 'phovea_core/src/multiform';
 import {randomId} from 'phovea_core/src/index';
-import BlockManager from './BlockManager';
 import VisManager from './VisManager';
 import FilterManager from './FilterManager';
+import RangeManager from './RangeManager';
+import Block from './Block';
+
 
 
 /**
@@ -24,11 +26,21 @@ export default class App {
   public static visNode;
   public static filterNode;
 
+  private visManager: VisManager;
+  private filterManager: FilterManager;
+  private rangeManager: RangeManager;
+
   constructor(parent: Element) {
     this.$node = d3.select(parent);
     this.$node.select('main').append('div').classed('visManager', true);
     App.visNode = d3.select('.visManager');
     App.filterNode = d3.select('#filterView');
+    this.visManager =new VisManager();
+    this.rangeManager = new RangeManager(this.visManager);
+    this.filterManager = new FilterManager(this.rangeManager);
+
+
+
   }
 
   /**
@@ -47,6 +59,9 @@ export default class App {
    */
   private build() {
     this.setBusy(true);
+    const blockList = new Map();
+    this.$node.select('main').append('div').classed('visManager', true);
+    this.visManager.filterManager = this.filterManager;
 
 
     return listData().then((datasets) => {
@@ -65,20 +80,15 @@ export default class App {
 
   private addDataset(data: IDataType) {
 
-    const block = new BlockManager(data, randomId());
-
-    App.blockList.set(block.uid, block.data);
-
-    const vis = new VisManager(block.data, block.uid);
-    vis.createVis();
+    var id =randomId();
+    this.visManager.createVis(data, data, id);
 
     const filterNode = d3.select('#filterView');
-    const filter = new FilterManager(block.data, block.uid)
-    filter.createFilter();
+    this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
 
-
-    (<any>block.data).sort(minSort).then((d) => console.log((<any>d).data()))
-    // ((<any>sorta).data().then((d) => console.log(d)))
+    //
+    // (<any>block.data).sort(minSort).then((d) => console.log((<any>d).data()))
+    // // ((<any>sorta).data().then((d) => console.log(d)))
 
     console.log(App.blockList);
 
