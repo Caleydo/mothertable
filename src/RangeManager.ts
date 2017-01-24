@@ -39,14 +39,9 @@ export default class RangeManager {
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
 
-        Block.filtersRange.delete(uniqueID);
         Block.filtersRange.set(uniqueID, vectorView.range);
-        //   console.log(Block.filtersRange)
-        // console.log(vectorView)
-        // console.log(vectorView.range)
-        // console.log(vectorView.data());
-        this.updateVis((vectorView.range));
-        //this.updateVis(calculateRangeIntersect(vectorView.range));
+        this.calculateRangeIntersect(vectorView.range);
+
       });
   }
 
@@ -55,10 +50,9 @@ export default class RangeManager {
     const numFilter = filterType.numerical;
     (<any>data).filter(numericalFilter.bind(this, numFilter))
       .then((vectorView) => {
-        //  console.log(vectorView.data(), numFilter);
-        Block.filtersRange.delete(uniqueID);
+
         Block.filtersRange.set(uniqueID, vectorView.range);
-        this.updateVis(calculateRangeIntersect(vectorView.range));
+        this.calculateRangeIntersect(vectorView.range);
 
 
       });
@@ -66,20 +60,37 @@ export default class RangeManager {
   }
 
 
-  //
-  //
-  // Block.filtersRange.forEach((value, key) => {
-  //   console.log(key);
-  //   (<any>value).ids().then((r) => {
-  //
-  //     rangeIntersected = range.intersect(r);
-  //     console.log(rangeIntersected);
-  //   });
-  // });
+  calculateRangeIntersect(range) {
+
+    let rangeIntersected = range;
+    //To Do
+    Block.filtersRange.forEach(function (value, key) {
+
+      // console.log(range.dim(0).asList(), value.dim(0).asList())
+      // console.log(range.intersect(value).dim(0).asList())
+      rangeIntersected = range.intersect(value);
+      //Block.filtersRange.delete(key);
+      Block.filtersRange.set(key, rangeIntersected);
+
+    });
+
+
+    Block.filtersRange.forEach(function (value, key) {
+
+      Block.filtersRange.set(key, rangeIntersected);
+
+    });
+
+    this.updateVis(rangeIntersected);
+  }
 }
 
 
 function findCatName(catName: any[], value, index,) {
+
+
+
+
   for (let i = 0; i < catName.length; ++i) {
     if (value === catName[i]) {
       return value;
@@ -102,18 +113,3 @@ function numericalFilter(numRange, value, index) {
 }
 
 
-function calculateRangeIntersect(range) {
-
-  let rangeIntersected = range;
-  //To Do
-  Block.filtersRange.forEach(function (value, key) {
-    // console.log(range, key)
-    // console.log(range.union(value))
-    // console.log(range.intersect(value))
-    rangeIntersected = range.intersect(value);
-
-
-  });
-  return rangeIntersected;
-
-}

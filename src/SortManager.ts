@@ -58,7 +58,7 @@ export default class SortManager {
     if (this._sortCriteria === 'alphabetical') {
       (<any>block.data).sort(stringSort).then((d) => {
         this.updateVis((<any>d.range));
-      })
+      });
 
     } else if (this._sortCriteria === 'min') {
 
@@ -72,6 +72,23 @@ export default class SortManager {
         this.updateVis((<any>d.range));
       });
 
+    } else if (this._sortCriteria === 'count') {
+      (<any>block).data.data().then((d) => {
+        const unique = (d.filter(uniqueCat));
+        let uniqueCount = [];
+        var size = d.filter(function (value) {
+          return value !== 'active'
+        }).length;
+        uniqueCount.push(size);
+        console.log(size);
+
+        (<any>block.data).sort(catSort.bind(this, unique)).then((d) => {
+          this.updateVis((<any>d.range));
+        });
+
+      });
+
+
     }
 
 
@@ -83,7 +100,7 @@ export default class SortManager {
 
 export function makeSort(block, sortMethod) {
 
-  const s = new SortManager(block, sortMethod)
+  const s = new SortManager(block, sortMethod);
 
   return s.sortedRange();
 }
@@ -105,3 +122,17 @@ function maxSort(aVal, bVal) {
 
   return bVal - aVal;
 }
+
+
+function catSort(cat, aVal, bVal) {
+
+  console.log(cat, aVal, bVal)
+
+  return;
+
+}
+
+function uniqueCat(value, index, self) {
+  return self.indexOf(value) === index;
+}
+

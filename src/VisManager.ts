@@ -114,13 +114,15 @@ export default class VisManager {
     child.className = 'adder fa fa-sort-amount-desc fa-0.5x';
     child.style.cursor = 'pointer';
     s.appendChild(child);
-    const sort = ['min', 'max', 'median', 'q1', 'q3','alphabetical'];
 
-    child.onclick = () => choose(sort.map((d) => d), 'Choose sorting criteria').then((selection) => {
+    const block = (App.blockList.get(visUID));
+    const columnType = (<any> block.data).desc.value.type;
+    const sortList = getSortList(columnType);
+
+    child.onclick = () => choose(sortList.map((d) => d), 'Choose sorting criteria').then((selection) => {
       const div: HTMLDivElement = <HTMLDivElement>child.parentElement.parentElement.parentElement;
       const multiform = div.childNodes[1].childNodes[0];
-      const sort = makeSort(visUID,selection);
-      console.log(sort)
+      const sort = makeSort(visUID, selection);
       return selection;
     });
 
@@ -153,6 +155,18 @@ export default class VisManager {
     }
     //intersection of all
     return forms[0].visses.filter((vis) => forms.every((f) => f.visses.indexOf(vis) >= 0));
+  }
+}
+
+
+function getSortList(type) {
+
+  if (type === 'string') {
+    return ['alphabetical'];
+  } else if (type === 'int' || type === 'real') {
+    return ['min', 'max'];
+  } else if (type === 'categorical') {
+    return ['count'];
   }
 
 

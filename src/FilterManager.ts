@@ -46,7 +46,6 @@ export default class FilterManager {
 
         const uniqCat = (<any>data).desc.value.categories;
         block.activeCategories = uniqCat;
-        console.log(block.activeCategories)
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo, block, self);
 
@@ -113,7 +112,6 @@ function makeCategories(divInfo, dataInfo, block, self) {
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
         } else if (d3.select(this).classed('active') === true) {
           const catName = (d3.select(this).datum());
-          console.log(block.activeCategories)
           const cat = block.activeCategories;
           let ind = -1;
           for (let i = 0; i < cat.length; ++i) {
@@ -213,7 +211,6 @@ function makeNumerical(divInfo, dataInfo, block, self) {
 
 function makeMatrix(divInfo, dataInfo, block, self) {
   const id = dataInfo.data.desc.id;
-  console.log(id)
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
     const cellHeight = divInfo.filterRowHeight;
