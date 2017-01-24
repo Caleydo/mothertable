@@ -45,7 +45,7 @@ export default class FilterManager {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
 
-        var uniqCat = (<any>data).desc.value.categories;
+        const uniqCat = (<any>data).desc.value.categories;
         block.activeCategories = uniqCat;
         block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
