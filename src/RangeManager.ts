@@ -32,8 +32,8 @@ export default class RangeManager {
   }
 
 
-  onClickCat(data, uniqueID, filterType?, block?) {
-    // const data = data;
+  onClickCat(data, uniqueID, filterType?) {
+   // const data = data;
     const catFilter = filterType;
 
     (<any>data).filter(findCatName.bind(this, catFilter))

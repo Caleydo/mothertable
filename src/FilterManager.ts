@@ -30,10 +30,11 @@ export default class FilterManager {
 
   createFilter(block, self) {
 
+    console.log(block.data, block.uid);
     const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
-    const fid = block.uid;
+    const fid =block.uid;
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 274, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
     console.log(block);
@@ -44,20 +45,21 @@ export default class FilterManager {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
 
-        const uniqCat = (<any>data).desc.value.categories;
+        var uniqCat = (<any>data).desc.value.categories;
+        block.activeCategories = uniqCat;
         block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
-        makeCategories(divInfo, dataInfo, block, self);
+        makeCategories(divInfo, dataInfo,block,self);
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
           const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data, 'range': range};
-          makeNumerical(divInfo, dataInfo, block, self);
+          makeNumerical(divInfo, dataInfo,block,self);
         });
       } else {
         (<any>data).data().then(function (dataVal) {
           const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data};
-          makeStringRect(divInfo, dataInfo, block, self);
+          makeStringRect(divInfo, dataInfo,block,self);
 
         });
       }
@@ -66,17 +68,17 @@ export default class FilterManager {
     } else if (vectorOrMatrix === 'matrix') {
       (<any>data).data().then(function (dataVal) {
         const dataInfo = {'name': name, value: dataVal[0], type: vectorOrMatrix, 'range': range, 'data': data};
-        makeMatrix(divInfo, dataInfo, block, self);
+        makeMatrix(divInfo, dataInfo,block,self);
       });
     }
-    this.filterData.push(block.data);
-    this.filterUID.push(block.uid);
+     this.filterData.push(block.data);
+     this.filterUID.push(block.uid);
 
   }
 
 }
 
-function makeCategories(divInfo, dataInfo, block, self) {
+function makeCategories(divInfo, dataInfo,block,self) {
   const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
@@ -115,11 +117,11 @@ function makeCategories(divInfo, dataInfo, block, self) {
           const cat = block.activeCategories;
           let ind = -1;
           for (let i = 0; i < cat.length; ++i) {
-            if (cat[i] === catName) {
-              ind = i;
-            }
+              if (cat[i] === catName) {
+                  ind = i;
+              }
           }
-          cat.splice(ind, 1);
+          cat.splice(ind,1);
           block.activeCategories = cat;
           const filterType = cat;
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
@@ -137,7 +139,7 @@ function makeCategories(divInfo, dataInfo, block, self) {
 }
 
 
-function makeNumerical(divInfo, dataInfo, block, self) {
+function makeNumerical(divInfo, dataInfo,block,self) {
   const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
@@ -153,7 +155,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     // div.append('div')
     //   .attr('class', 'numerical')
     //   .text((d: any) => d);
-    block.filterDiv = divBlock;
+  block.filterDiv = divBlock;
 
     const svg = divBlock.append('svg')
       .attr('height', cellHeight)
@@ -209,7 +211,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
 }
 
 
-function makeMatrix(divInfo, dataInfo, block, self) {
+function makeMatrix(divInfo, dataInfo, block,self) {
   const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
@@ -226,7 +228,7 @@ function makeMatrix(divInfo, dataInfo, block, self) {
       .attr('class', 'matrix')
       .style('background-color', colorScale);
 
-    block.filterDiv = divBlock;
+  block.filterDiv = divBlock;
     const matrixName = divBlock.selectAll('div.matrixName').data([dataInfo.name]).enter();
     matrixName.append('div')
       .attr('class', 'matrixName')
@@ -238,15 +240,16 @@ function makeMatrix(divInfo, dataInfo, block, self) {
 
 }
 
-function makeStringRect(divInfo, dataInfo, block, self) {
-  const id = dataInfo.data.desc.id;
+function makeStringRect(divInfo, dataInfo,block,self) {
+
+const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
     const cellHeight = divInfo.filterRowHeight;
     const filterDiv = divInfo.div;
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid);
-    block.filterDiv = divBlock;
+     block.filterDiv = divBlock;
     divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]).enter()
       .append('div')
       .classed(dataInfo.name, true)
@@ -265,8 +268,8 @@ function makeStringRect(divInfo, dataInfo, block, self) {
 function checkMeIfExist(id) {
   let count = 0;
   App.blockList.forEach((value, key) => {
-    const dataId = value.data.desc.id;
-    if ((id === dataId)) {
+
+    if ((id === value.uid)) {
       count = count + 1;
     }
   });

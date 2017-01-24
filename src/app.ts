@@ -53,6 +53,7 @@ export default class App {
    */
   private build() {
     this.setBusy(true);
+    const blockList = new Map();
     this.$node.select('main').append('div').classed('visManager', true);
     this.visManager.filterManager = this.filterManager;
 
