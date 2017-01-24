@@ -75,13 +75,11 @@ export default class SortManager {
     } else if (this._sortCriteria === 'count') {
       (<any>block).data.data().then((d) => {
         const unique = (d.filter(uniqueCat));
-        let uniqueCount = [];
-        var size = d.filter(function (value) {
-          return value !== 'active'
+        const uniqueCount = [];
+        const size = d.filter(function (value) {
+          return value !== 'active';
         }).length;
         uniqueCount.push(size);
-        console.log(size);
-
         (<any>block.data).sort(catSort.bind(this, unique)).then((d) => {
           this.updateVis((<any>d.range));
         });
@@ -125,8 +123,6 @@ function maxSort(aVal, bVal) {
 
 
 function catSort(cat, aVal, bVal) {
-
-  console.log(cat, aVal, bVal)
 
   return;
 

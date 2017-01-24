@@ -59,7 +59,7 @@ export default class App {
 
     return listData().then((datasets) => {
       datasets = convertTableToVectors(datasets);
-      console.log(datasets)
+      console.log(datasets);
       this.$node.select('h3').remove();
       this.$node.select('button.adder').on('click', () => {
         choose(datasets.map((d) => d.desc.name), 'Choose dataset').then((selection) => {

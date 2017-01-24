@@ -88,15 +88,13 @@ export default class RangeManager {
 
 function findCatName(catName: any[], value, index,) {
 
-
-
-
-  for (let i = 0; i < catName.length; ++i) {
-    if (value === catName[i]) {
+  for (const x in catName) {
+    if (catName[x] === value) {
       return value;
     }
   }
   return;
+
 
 }
 

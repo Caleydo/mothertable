@@ -9,7 +9,8 @@ import {createNode} from 'phovea_core/src/multiform/internal';
 import {IMultiForm} from 'phovea_core/src/multiform';
 import {choose} from 'phovea_ui/src/dialogs';
 import Block from './Block';
-import {makeSort} from "./SortManager";
+import {makeSort} from './SortManager';
+import * as d3 from 'd3';
 
 export default class VisManager {
 
@@ -110,39 +111,49 @@ export default class VisManager {
       });
     });
 
-    var child = s.ownerDocument.createElement('label');
-    child.className = 'adder fa fa-sort-amount-desc fa-0.5x';
-    child.style.cursor = 'pointer';
-    s.appendChild(child);
+    const childSort = s.ownerDocument.createElement('label');
+    childSort.className = 'adder fa fa-sort-amount-desc fa-0.5x';
+    childSort.style.cursor = 'pointer';
+    s.appendChild(childSort);
 
     const block = (App.blockList.get(visUID));
     const columnType = (<any> block.data).desc.value.type;
     const sortList = getSortList(columnType);
 
-    child.onclick = () => choose(sortList.map((d) => d), 'Choose sorting criteria').then((selection) => {
-      const div: HTMLDivElement = <HTMLDivElement>child.parentElement.parentElement.parentElement;
+    childSort.onclick = () => choose(sortList.map((d) => d), 'Choose sorting criteria').then((selection) => {
+      const div: HTMLDivElement = <HTMLDivElement>childSort.parentElement.parentElement.parentElement;
       const multiform = div.childNodes[1].childNodes[0];
       const sort = makeSort(visUID, selection);
       return selection;
     });
 
 
-    var child = s.ownerDocument.createElement('label');
-    child.className = 'adder fa fa-close fa-0.8x';
-    child.style.cursor = 'pointer';
-    s.appendChild(child);
-    child.onclick = () => {
-      child.parentElement.parentElement.parentElement.remove();
+    const childCloseMe = s.ownerDocument.createElement('label');
+    childCloseMe.className = 'adder fa fa-close fa-0.8x';
+    childCloseMe.style.cursor = 'pointer';
+    s.appendChild(childCloseMe);
+    childCloseMe.onclick = () => {
+
+      childCloseMe.parentElement.parentElement.parentElement.remove();
       const nodes: HTMLElement[] = this._filterManager.filterDiv[0][0].children;
-      for (let index = 0; index < nodes.length; ++index) {
-        if (nodes[index].getAttribute('f-uid') === visUID) {
-          nodes[index].remove();
+
+      // for (let index = 0; index < nodes.length; ++index) {
+      //
+      //   if (nodes[index].getAttribute('f-uid') === visUID) {
+      //     nodes[index].remove();
+      //     App.blockList.delete(visUID);
+      //   }
+      //
+      // }
+
+
+      for (const n of nodes) {
+        if (n.getAttribute('f-uid') === visUID) {
+          n.remove();
           App.blockList.delete(visUID);
         }
-
       }
-
-    }
+    };
 
   }
 
