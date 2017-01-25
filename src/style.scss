@@ -138,3 +138,13 @@ body {
 .stop-right {
   stop-color: #009688; /* Teal */
 }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+  .brush .extent {
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+  }
