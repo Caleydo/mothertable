@@ -144,7 +144,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
     const brushHeight = 20;
-    const cellHeight = divInfo.filterRowHeight+brushHeight;
+    const cellHeight = divInfo.filterRowHeight + brushHeight;
     const cellWidth = divInfo.filterDialogWidth;
 
     const range = dataInfo.range;
@@ -154,33 +154,18 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .style('height', cellHeight + 'px')
       .style('margin', '1px');
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
-    const numDiv=  div.append('div')
+    const numDiv = div.append('div')
       .attr('class', 'numerical')
       .text((d: any) => d);
     block.filterDiv = divBlock;
 
     const svg = divBlock.append('svg')
-      .attr('height', cellHeight-brushHeight)
+      .attr('height', cellHeight - brushHeight)
       .attr('width', cellWidth)
       .append('g')
       .attr('transform', 'translate(2,0)');
-    // const svgDefs = svg.append('defs');
-    //
-    // const mainGradient = svgDefs.append('linearGradient')
-    //   .attr('id', 'numGradient');
-    //
-    // mainGradient.append('stop')
-    //   .attr('class', 'stop-left')
-    //   .attr('offset', '0');
-    // mainGradient.append('stop')
-    //   .attr('class', 'stop-right')
-    //   .attr('offset', '1');
 
-    //
-    // var x = d3.scale.linear()
-    //   .domain([0, 100])
-    //   .range([0, 100]);
-
+    //Adapted from https://bl.ocks.org/alexmacy/eb284831aff6f9d0119b
 
     const scale = d3.scale.linear()
       .domain(range)
@@ -203,9 +188,9 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .selectAll('text')
       .attr('y', 6)
       .attr('x', 0)
-      .attr('dx',(d,i)=> (i===0)?'0px':'-3px')
-      .attr('dy','8px')
-      .style('text-anchor', (d, i) =>(i === 0) ? 'start' : 'end');
+      .attr('dx', (d, i) => (i === 0) ? '0px' : '-3px')
+      .attr('dy', '8px')
+      .style('text-anchor', (d, i) => (i === 0) ? 'start' : 'end');
 
     const brushg = svg.append('g').attr('class', 'brush')
       .call(brush);
@@ -218,45 +203,6 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       //console.log(brush.extent());
     });
 
-
-    // const scale = d3.scale.linear()
-    //   .domain(range)
-    //   .range([0, cellWidth]);
-    //
-    // const brush = d3.svg.brush();
-    // brush.x(scale);
-    // brush.extent(range);
-    //
-    // brush.on('brushend', function () {
-    //   // console.log(brush.extent());
-    //   const filterType = {numerical: brush.extent()};
-    //   self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
-    // });
-    //
-    // const g = svg.append('g');
-    //
-    // brush(g);
-    // g.selectAll('rect').attr('height', cellHeight);
-    // g.selectAll('.background')
-    //   .style({fill: 'url(#numGradient)', visibility: 'visible', opacity: 0.5});
-    // g.selectAll('.extent')
-    //   .style({fill: 'url(#numGradient)', visibility: 'visible', opacity: 1});
-    // g.selectAll('.resize rect')
-    //   .style({fill: 'url(#numGradient)', visibility: 'visible'});
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // const textDiv = svg.selectAll('.text').data([dataInfo.name]).enter();
-    // textDiv.append('text')
-    //   .attr('x', 0)
-    //   .attr('y', cellHeight / 2)
-    //   .text((d: any) => d);
   } else {
     return console.log('Already Exists');
   }
