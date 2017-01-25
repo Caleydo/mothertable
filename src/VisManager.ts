@@ -120,11 +120,11 @@ export default class VisManager {
     const columnType = (<any> block.data).desc.value.type;
     const sortList = getSortList(columnType);
     //add icon for dragging
-    var child = s.ownerDocument.createElement('label');
+    const child = s.ownerDocument.createElement('label');
     child.className = 'adder fa fa-arrows fa-0.8x';
     child.style.cursor = 'move';
     s.appendChild(child);
-    child.onclick = () => console.log("You clicked on Dragging icon.");
+    child.onclick = () => console.log('You clicked on Dragging icon.');
 
     childSort.onclick = () => choose(sortList.map((d) => d), 'Choose sorting criteria').then((selection) => {
       const div: HTMLDivElement = <HTMLDivElement>childSort.parentElement.parentElement.parentElement;

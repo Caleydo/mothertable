@@ -10,7 +10,8 @@ import {randomId} from 'phovea_core/src/index';
 import VisManager from './VisManager';
 import FilterManager from './FilterManager';
 import RangeManager from './RangeManager';
-
+import Block from './Block';
+import any = jasmine.any;
 
 /**
  * The main class for the App app
@@ -75,10 +76,23 @@ export default class App {
   private addDataset(data: IDataType) {
 
     const id = randomId();
-    this.visManager.createVis(data, data, id);  //first is new data and second is for filtered data purporse which is same as data at first
+
+    const currentRange: any = Block.currentRange;
+
+    <any>data.ids(currentRange).then((d) => {
+
+      (<any>data).idView(d).then((e) => {
+
+        this.visManager.createVis(data, e, id);
+        this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
+      });
+
+    });
+
+    //this.visManager.createVis(data, data, id);  //first is new data and second is for filtered data purporse which is same as data at first
 
     const filterNode = d3.select('#filterView');
-    this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
+    // this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
 
     //
 
@@ -100,13 +114,6 @@ export default class App {
 }
 
 
-function minSort(aVal, bVal) {
-
-  //console.log(aVal, bVal, aVal.localeCompare(bVal))
-
-  return (aVal.localeCompare(bVal));
-
-}
 /**
  * Factory method to create a new app instance
  * @param parent

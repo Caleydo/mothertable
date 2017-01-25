@@ -39,7 +39,7 @@ export default class RangeManager {
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
 
-       // console.log(vectorView.range.dim(0).asList(), uniqueID, 'start');
+        // console.log(vectorView.range.dim(0).asList(), uniqueID, 'start');
         Block.filtersRange.set(uniqueID, vectorView.range);
         this.calculateRangeIntersect(vectorView.range, uniqueID);
 
@@ -69,7 +69,6 @@ export default class RangeManager {
 
     Block.filtersRange.forEach(function (value, key) {
 
-
       rangeIntersected = rangeIntersected.intersect(value);
 
     });
@@ -78,6 +77,7 @@ export default class RangeManager {
     // console.log(rangeIntersected.dim(0).asList(), 'intersected',key)
     Block.filtersRange.set(key, range);
 
+    Block.currentRange = rangeIntersected;
     this.updateVis(rangeIntersected);
   }
 }

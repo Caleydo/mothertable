@@ -29,15 +29,12 @@ export default class FilterManager {
   }
 
   createFilter(block, self) {
-
-    console.log(block.data, block.uid);
     const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
     const fid = block.uid;
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 274, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
-    console.log(block);
 
     Block.filtersRange.set(fid, data.indices);
 
@@ -270,8 +267,7 @@ function makeStringRect(divInfo, dataInfo, block, self) {
 function checkMeIfExist(id) {
   let count = 0;
   App.blockList.forEach((value, key) => {
-
-    if ((id === value.uid)) {
+    if ((id === value.data.desc.id)) {
       count = count + 1;
     }
   });

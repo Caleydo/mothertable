@@ -3,7 +3,7 @@
  */
 
 import {MultiForm} from 'phovea_core/src/multiform';
-
+import Range1D from 'phovea_core/src/range/Range1D';
 export default class Block {
 
   private _data;
@@ -12,13 +12,14 @@ export default class Block {
   private _blockDiv: HTMLDivElement;
   private _filteredVisData;
   private _filterDiv;
-  private _activeCategories : string[];
+  private _activeCategories: string[];
   public static filtersRange = new Map();
+  public static currentRange: Range1D = Range1D.all();
 
   constructor(data, filteredVisData, uid, multifom, div) {
     this._data = data;
     this._uid = uid;
-    this._multiform= multifom;
+    this._multiform = multifom;
     this._blockDiv = div;
     this._filteredVisData = filteredVisData;
 
@@ -65,7 +66,7 @@ export default class Block {
     this._uid = value;
   }
 
-   get filterDiv() {
+  get filterDiv() {
     return this._filterDiv;
   }
 
@@ -74,11 +75,11 @@ export default class Block {
   }
 
 
-  get activeCategories(){
+  get activeCategories() {
     return this._activeCategories;
   }
 
-  set activeCategories(value){
+  set activeCategories(value) {
     this._activeCategories = value;
   }
 
