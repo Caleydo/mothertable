@@ -107,30 +107,10 @@ export default class VisManager {
       });
     });
 
-    /*
-    const drag = d3.behavior.drag()
-      .on('dragstart', function() {
-        console.log("Yea, I am here.");
-        d3.select(this.classed('block-select-selected', true));
-      })
-      .on('drag', function () {
-        console.log("Yea, I am here drag.");
-        d3.select(this).style('position', 'absolute')
-          .style('top', d3.mouse(this)[1] + 'px')
-          .style('left', d3.select(this)[0] + 'px');
-      })
-      .on('dragend', function () {
-        d3.select(this).style('position', 'absolute')
-          .style('top', d3.mouse(this)[1] + 'px')
-          .style('left', d3.select(this)[0] + 'px')
-          .classed('block-select-selected', false);
-      });
-      */
-
     //add icon for dragging
     var child = s.ownerDocument.createElement('label');
     child.className = 'adder fa fa-arrows fa-0.8x';
-    child.style.cursor = 'ew-resize';
+    child.style.cursor = 'move';
     s.appendChild(child);
     child.onclick = () => console.log("You clicked on Dragging icon.");
 
