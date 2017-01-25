@@ -200,6 +200,8 @@ function makeNumerical(divInfo, dataInfo, block, self) {
 
 
     brush.on('brush', function () {
+      const filterType = {numerical: brush.extent()};
+      self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
       //console.log(brush.extent());
     });
 
