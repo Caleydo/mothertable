@@ -33,14 +33,15 @@ export default class RangeManager {
 
 
   onClickCat(data, uniqueID, filterType?) {
-   // const data = data;
+    // const data = data;
     const catFilter = filterType;
 
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
 
+       // console.log(vectorView.range.dim(0).asList(), uniqueID, 'start');
         Block.filtersRange.set(uniqueID, vectorView.range);
-        this.calculateRangeIntersect(vectorView.range);
+        this.calculateRangeIntersect(vectorView.range, uniqueID);
 
       });
   }
@@ -52,7 +53,7 @@ export default class RangeManager {
       .then((vectorView) => {
 
         Block.filtersRange.set(uniqueID, vectorView.range);
-        this.calculateRangeIntersect(vectorView.range);
+        this.calculateRangeIntersect(vectorView.range, uniqueID);
 
 
       });
@@ -60,26 +61,22 @@ export default class RangeManager {
   }
 
 
-  calculateRangeIntersect(range) {
+  calculateRangeIntersect(range, key) {
 
     let rangeIntersected = range;
     //To Do
-    Block.filtersRange.forEach(function (value, key) {
-
-      // console.log(range.dim(0).asList(), value.dim(0).asList())
-      // console.log(range.intersect(value).dim(0).asList())
-      rangeIntersected = range.intersect(value);
-      //Block.filtersRange.delete(key);
-      Block.filtersRange.set(key, rangeIntersected);
-
-    });
 
 
     Block.filtersRange.forEach(function (value, key) {
 
-      Block.filtersRange.set(key, rangeIntersected);
+
+      rangeIntersected = rangeIntersected.intersect(value);
 
     });
+
+
+    // console.log(rangeIntersected.dim(0).asList(), 'intersected',key)
+    Block.filtersRange.set(key, range);
 
     this.updateVis(rangeIntersected);
   }
