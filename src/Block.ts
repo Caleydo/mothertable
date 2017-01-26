@@ -30,7 +30,7 @@ export default class Block {
     this._multiform = multifom;
     this._blockDiv = div;
     this._filteredVisData = filteredVisData;
-    this.strings.forEach((d)=>Block.stringRange.set(d.id,d.value));
+    this.strings.forEach((d) => Block.stringRange.set(d.id, d.value));
 
   }
 

@@ -261,18 +261,18 @@ function makeStringRect(divInfo, dataInfo, block, self) {
 
     const textFilter = divBlock.append('div').classed('stringFilter', true).style('display', 'flex');
     const a = d3.select('div.stringFilter').append('div').style('flex-grow', 1).text('A');
+    const stringRangeVal = divBlock.append('div').classed('stringFilterValue', true);
     d3.select('div.stringFilter').append('input')
       .attr('type', 'range')
-      .attr('min', 0)
+      .attr('min', 1)
       .attr('max', 26)
-      .attr('value', 15)
       .attr('step', 1)
       .on('change', function () {
-        console.log(Block.stringRange.get(parseFloat(this.value)));
+        const filterType = Block.stringRange.get(parseFloat(this.value));
+        self._rangeManager.onStringSlider(dataInfo.data, divInfo.uid, filterType, block);
+        stringRangeVal.text(filterType);
 
-      })
-
-
+      });
     d3.select('div.stringFilter').append('div').style('flex-grow', 1).text('Z');
 
 

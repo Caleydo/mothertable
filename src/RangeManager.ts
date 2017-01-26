@@ -61,6 +61,21 @@ export default class RangeManager {
   }
 
 
+  onStringSlider(data, uniqueID, filterType?) {
+
+    const stringFilter = filterType;
+    (<any>data).filter(findString.bind(this, stringFilter))
+      .then((vectorView) => {
+
+        // console.log(vectorView.range.dim(0).asList(), uniqueID, 'start');
+
+        Block.filtersRange.set(uniqueID, vectorView.range);
+        this.calculateRangeIntersect(vectorView.range, uniqueID);
+
+      });
+  }
+
+
   calculateRangeIntersect(range, key) {
 
     let rangeIntersected = range;
@@ -72,7 +87,6 @@ export default class RangeManager {
       rangeIntersected = rangeIntersected.intersect(value);
 
     });
-
 
     // console.log(rangeIntersected.dim(0).asList(), 'intersected',key)
     Block.filtersRange.set(key, range);
@@ -102,6 +116,21 @@ function numericalFilter(numRange, value, index) {
     return value;
   } else {
     return;
+  }
+
+
+}
+
+
+function findString(stringFilter, value, index) {
+  const re = new RegExp(stringFilter, 'gi');
+
+  if (value.match(re) === null) {
+    return;
+
+  } else {
+
+    return value;
   }
 
 
