@@ -248,7 +248,7 @@ function makeStringRect(divInfo, dataInfo, block, self) {
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid);
     block.filterDiv = divBlock;
-    const textBlock = divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name])
+    const textBlock = divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]);
     textBlock.enter()
       .append('div')
       .classed(dataInfo.name, true)
