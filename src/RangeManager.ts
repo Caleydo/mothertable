@@ -62,8 +62,8 @@ export default class RangeManager {
 
 
   onStringSlider(data, uniqueID, filterType?) {
+    const stringFilter = [Block.stringRange.get(Math.floor(filterType[0])), Block.stringRange.get(Math.floor(filterType[1]))];
 
-    const stringFilter = filterType;
     (<any>data).filter(findString.bind(this, stringFilter))
       .then((vectorView) => {
 
@@ -123,13 +123,16 @@ function numericalFilter(numRange, value, index) {
 
 
 function findString(stringFilter, value, index) {
-  const re = new RegExp(stringFilter, 'gi');
+
+  const re = new RegExp(`[${stringFilter[0]}-${stringFilter[0]}]`, 'gi');
 
   if (value.match(re) === null) {
+    console.log(value.match(re))
     return;
 
   } else {
 
+    console.log(value.match(re))
     return value;
   }
 
