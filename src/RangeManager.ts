@@ -127,12 +127,10 @@ function findString(stringFilter, value, index) {
   const re = new RegExp(`[${stringFilter[0]}-${stringFilter[0]}]`, 'gi');
 
   if (value.match(re) === null) {
-    console.log(value.match(re))
     return;
 
   } else {
 
-    console.log(value.match(re))
     return value;
   }
 
