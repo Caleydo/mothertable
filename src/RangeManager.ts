@@ -14,11 +14,11 @@ export default class RangeManager {
     this._visManager = visManager;
   }
 
-
   updateVis(range) {
 
     App.blockList.forEach((value, key) => {
       (<any>value).data.idView(range).then((d) => {
+
 
         d3.selectAll(`[data-uid="${key}"]`).remove();
 
