@@ -44,7 +44,6 @@ export default class FilterManager {
 
         const uniqCat = (<any>data).desc.value.categories;
         block.activeCategories = uniqCat;
-        block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo, block, self);
 
@@ -249,7 +248,8 @@ function makeStringRect(divInfo, dataInfo, block, self) {
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid);
     block.filterDiv = divBlock;
-    divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]).enter()
+    const textBlock = divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name])
+    textBlock.enter()
       .append('div')
       .classed(dataInfo.name, true)
       .style('height', cellHeight + 'px')
@@ -257,6 +257,25 @@ function makeStringRect(divInfo, dataInfo, block, self) {
       .style('background-color', 'grey')
       .style('border', '1px')
       .text((d) => d);
+    textBlock.exit().remove();
+
+    const textFilter = divBlock.append('div').classed('stringFilter', true).style('display', 'flex');
+    const a = d3.select('div.stringFilter').append('div').style('flex-grow', 1).text('A');
+    d3.select('div.stringFilter').append('input')
+      .attr('type', 'range')
+      .attr('min', 0)
+      .attr('max', 26)
+      .attr('value', 15)
+      .attr('step', 1)
+      .on('change', function () {
+        console.log(Block.stringRange.get(parseFloat(this.value)));
+
+      })
+
+
+    d3.select('div.stringFilter').append('div').style('flex-grow', 1).text('Z');
+
+
   } else {
     return console.log('Already Exists');
   }
