@@ -47,7 +47,6 @@ export default class FilterManager {
 
         const uniqCat = (<any>data).desc.value.categories;
         block.activeCategories = uniqCat;
-        block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo, block, self);
         this._connectionLines.makeLines(divInfo, dataInfo, block, self);
@@ -247,20 +246,73 @@ function makeStringRect(divInfo, dataInfo, block, self) {
 
   const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
+  const brushHeight = 20;
+  const cellHeight = divInfo.filterRowHeight + brushHeight;
+  const stringRange = [1, 26];
+  const cellWidth = divInfo.filterDialogWidth;
   if (checkMe === false) {
-    const cellHeight = divInfo.filterRowHeight;
     const filterDiv = divInfo.div;
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid);
     block.filterDiv = divBlock;
-    divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]).enter()
+    const textBlock = divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]);
+    textBlock.enter()
       .append('div')
       .classed(dataInfo.name, true)
-      .style('height', cellHeight + 'px')
+      .style('height', cellHeight - brushHeight + 'px')
       .style('margin', '1px')
       .style('background-color', 'grey')
       .style('border', '1px')
       .text((d) => d);
+    textBlock.exit().remove();
+
+
+    const svg = divBlock.append('svg')
+      .attr('height', cellHeight - brushHeight)
+      .attr('width', cellWidth)
+      .append('g')
+      .attr('transform', 'translate(2,0)');
+
+    const scale = d3.scale.linear()
+      .domain(stringRange)
+      .range([0, cellWidth]);
+
+    const brush = d3.svg.brush()
+      .x(scale)
+      .extent([stringRange[0], stringRange[1]]);
+
+
+    const xAxis = d3.svg.axis()
+      .scale(scale)
+      .orient('bottom')
+      .tickValues(scale.domain())
+      .tickFormat(d3.format(''));
+
+    svg.append('g')
+      .attr('class', 'x axis')
+      .call(xAxis)
+      .selectAll('text')
+      .attr('y', 6)
+      .attr('x', 0)
+      .attr('dx', (d, i) => (i === 0) ? '0px' : '-3px')
+      .attr('dy', '8px')
+      .text((d, i) => (i === 0) ? 'A' : 'Z')
+      .style('text-anchor', (d, i) => (i === 0) ? 'start' : 'end');
+
+    const brushg = svg.append('g').attr('class', 'brush')
+      .call(brush);
+
+    brushg.selectAll('rect')
+      .attr('height', brushHeight);
+
+
+    brush.on('brush', function () {
+      const filterType = brush.extent();
+      self._rangeManager.onStringSlider(dataInfo.data, divInfo.uid, filterType, block);
+      //console.log(brush.extent());
+    });
+
+
   } else {
     return console.log('Already Exists');
   }
