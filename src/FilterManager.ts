@@ -5,6 +5,7 @@
 import * as d3 from 'd3';
 import App from './app';
 import Block from './Block';
+import ConnectionLines from './ConnectionLines';
 
 export default class FilterManager {
 
@@ -12,10 +13,12 @@ export default class FilterManager {
   private filterData = [];
   private _filterDiv = App.filterNode;
   private _rangeManager;
+  private _connectionLines;
 
 
   constructor(rangeManager) {
     this._rangeManager = rangeManager;
+    this._connectionLines = new ConnectionLines();
 
   }
 
@@ -47,6 +50,7 @@ export default class FilterManager {
         block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo, block, self);
+        this._connectionLines.makeLines(divInfo, dataInfo, block, self);
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
