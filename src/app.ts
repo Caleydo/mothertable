@@ -12,6 +12,7 @@ import FilterManager from './FilterManager';
 import RangeManager from './RangeManager';
 import Block from './Block';
 import any = jasmine.any;
+import ConnectionLines from './ConnectionLines';
 
 /**
  * The main class for the App app
@@ -26,6 +27,7 @@ export default class App {
   private visManager: VisManager;
   private filterManager: FilterManager;
   private rangeManager: RangeManager;
+  private connectionLines: ConnectionLines;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent);
@@ -35,6 +37,8 @@ export default class App {
     this.visManager = new VisManager();
     this.rangeManager = new RangeManager(this.visManager);
     this.filterManager = new FilterManager(this.rangeManager);
+
+
 
   }
 
@@ -85,6 +89,8 @@ export default class App {
 
         this.visManager.createVis(data, e, id);
         this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
+
+
       });
 
     });
@@ -93,13 +99,13 @@ export default class App {
 
     const filterNode = d3.select('#filterView');
     // this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
-
+ console.log(App.blockList);
     //
 
 
     // // ((<any>sorta).data().then((d) => console.log(d)))
 
-    console.log(App.blockList);
+
   }
 
 

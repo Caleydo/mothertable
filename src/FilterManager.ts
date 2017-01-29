@@ -6,6 +6,7 @@ import * as d3 from 'd3';
 import App from './app';
 import Block from './Block';
 import ConnectionLines from './ConnectionLines';
+import VisManager from './VisManager';
 
 export default class FilterManager {
 
@@ -13,12 +14,12 @@ export default class FilterManager {
   private filterData = [];
   private _filterDiv = App.filterNode;
   private _rangeManager;
-  private _connectionLines;
-
+  public static filterList = new Map();
+  public static filterListOrder = [];
 
   constructor(rangeManager) {
     this._rangeManager = rangeManager;
-    this._connectionLines = new ConnectionLines();
+
 
   }
 
@@ -49,7 +50,7 @@ export default class FilterManager {
         block.activeCategories = uniqCat;
         const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
         makeCategories(divInfo, dataInfo, block, self);
-        this._connectionLines.makeLines(divInfo, dataInfo, block, self);
+
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
@@ -82,21 +83,30 @@ function makeCategories(divInfo, dataInfo, block, self) {
   const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
+
     const cellHeight = divInfo.filterRowHeight;
+    const cellWidth = divInfo.filterDialogWidth;
+    const cellDimension = (100 / dataInfo.value.length);
     const filterDiv = divInfo.div;
     const c20 = d3.scale.category20();
     const divBlock = filterDiv.append('div')
-      .attr('f-uid', divInfo.uid)
+      .attr('f-uid', divInfo.uid);
+
+    const divCat = divBlock.append('div').classed('catentries',true)
       .style('display', 'flex')
       .style('margin', '1px')
       .style('height', cellHeight + 'px');
-    const div = divBlock
+
+
+    const div = divCat
       .selectAll('div.categories')
       .data(dataInfo.value);
-
     div.enter()
       .append('div')
       .attr('class', 'categories')
+      //.style('width', (d, i) => cellDimension + '%')
+      //.style('height', cellHeight + 'px')
+      //.style('float','left')
       .style('background-color', c20)
       .text((d: any) => {
         return d;
@@ -130,8 +140,13 @@ function makeCategories(divInfo, dataInfo, block, self) {
 
 
       });
-
     div.exit().remove();
+
+    FilterManager.filterList.set(divInfo.uid, self);
+    const connectionLine = new ConnectionLines(self)
+    connectionLine.makeLines(divBlock, divInfo.uid);
+
+
   } else {
     return console.log('Already Exists');
   }
@@ -143,6 +158,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
   const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
+
     const brushHeight = 20;
     const cellHeight = divInfo.filterRowHeight + brushHeight;
     const cellWidth = divInfo.filterDialogWidth;
@@ -153,6 +169,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .attr('f-uid', divInfo.uid)
       .style('height', cellHeight + 'px')
       .style('margin', '1px');
+
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
     const numDiv = div.append('div')
       .attr('class', 'numerical')
@@ -205,6 +222,11 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       //console.log(brush.extent());
     });
 
+    FilterManager.filterList.set(divInfo.uid, self);
+    const connectionLine = new ConnectionLines(self)
+    connectionLine.makeLines(divBlock, divInfo.uid);
+
+
   } else {
     return console.log('Already Exists');
   }
@@ -217,6 +239,8 @@ function makeMatrix(divInfo, dataInfo, block, self) {
   const id = dataInfo.data.desc.id;
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
+
+    FilterManager.filterList.set(divInfo.uid, self);
     const cellHeight = divInfo.filterRowHeight;
     const filterDiv = divInfo.div;
     const divBlock = filterDiv.append('div')
@@ -224,6 +248,8 @@ function makeMatrix(divInfo, dataInfo, block, self) {
       .style('display', 'flex')
       .style('height', cellHeight + 'px')
       .style('margin', '1px');
+
+
     const div = divBlock.selectAll('div.matrix').data(dataInfo.value).enter();
     const colorScale = d3.scale.linear<string, number>().domain(dataInfo.range).range(['white', 'red']);
     div.append('div')
@@ -251,9 +277,11 @@ function makeStringRect(divInfo, dataInfo, block, self) {
   const stringRange = [1, 26];
   const cellWidth = divInfo.filterDialogWidth;
   if (checkMe === false) {
+
     const filterDiv = divInfo.div;
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid);
+
     block.filterDiv = divBlock;
     const textBlock = divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]);
     textBlock.enter()
@@ -311,6 +339,10 @@ function makeStringRect(divInfo, dataInfo, block, self) {
       self._rangeManager.onStringSlider(dataInfo.data, divInfo.uid, filterType, block);
       //console.log(brush.extent());
     });
+
+    FilterManager.filterList.set(divInfo.uid, self);
+    const connectionLine = new ConnectionLines(self)
+    connectionLine.makeLines(divBlock, divInfo.uid);
 
 
   } else {
