@@ -167,7 +167,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     const filterDiv = divInfo.div;
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid)
-      .style('height', cellHeight + 'px')
+      //.style('height', cellHeight + 'px')
       .style('margin', '1px');
 
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();

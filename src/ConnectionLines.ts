@@ -47,7 +47,7 @@ export default class ConnectionLines {
 
               // console.log(currentValue, previousValue, currentValue[1], previousValue[1])
 
-              if (previousDataType === 'string') {
+              if (previousDataType === 'string' || previousDataType === 'real' || previousDataType === 'int') {
 
 
                 const topPathData = new Map();
@@ -103,8 +103,11 @@ export default class ConnectionLines {
                 const tableVector = {previous: previousData, current: currentData};
                 const cellData = {width: cellWidth, height: cellHeight};
 
-                if (currentData.desc.value.type === 'categorical') {
+                if (currentDataType === 'categorical') {
                   categoricalLines(topPathData, values, tableVector, keys, cellData);
+                } else if (currentDataType === 'string' || currentDataType === 'real' || currentDataType === 'int') {
+
+                  nonCategoricalLines(topPathData, values, tableVector, keys, cellData);
                 }
               }
 
