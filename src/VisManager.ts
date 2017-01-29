@@ -10,6 +10,7 @@ import {IMultiForm} from 'phovea_core/src/multiform';
 import {choose} from 'phovea_ui/src/dialogs';
 import Block from './Block';
 import {makeSort} from './SortManager';
+import FilterManager from './FilterManager';
 import * as d3 from 'd3';
 
 export default class VisManager {
@@ -154,6 +155,16 @@ export default class VisManager {
 
 
       for (const n of nodes) {
+
+        FilterManager.filterListOrder.forEach(function (d, i) {
+
+          if (d === visUID) {
+            const previousFID = FilterManager.filterListOrder[i - 1];
+            const previousDiv = d3.select(`[f-uid="${previousFID}"]`);
+            previousDiv.selectAll('.lineConnection').remove();
+          }
+        });
+
         if (n.getAttribute('f-uid') === visUID) {
           n.remove();
           App.blockList.delete(visUID);
