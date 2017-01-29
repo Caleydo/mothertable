@@ -23,90 +23,78 @@ export default class ConnectionLines {
   makeLines(div, id) {
 
     FilterManager.filterListOrder.push(id);
-    console.log(FilterManager.filterListOrder);
-
 
     if (FilterManager.filterList.size > 1) {
 
       const cellWidth = parseFloat(d3.select(`[f-uid="${id}"]`).style('width'));
-      const rowHeight = parseFloat(d3.select(`[f-uid="${id}"]`).style('height'));
+      const cellHeight = parseFloat(d3.select(`[f-uid="${id}"]`).style('height'));
 
       FilterManager.filterListOrder.forEach(function (d, i) {
 
         if (d === id) {
-
 
           const previousKey = FilterManager.filterListOrder[i - 1];
           const previousBlock = App.blockList.get(previousKey);
           const previousData = previousBlock.data;
           const currentBlock = App.blockList.get(id);
           const currentData = currentBlock.data;
-          console.log(previousData)
 
           previousData.data().then((previousValue) => {
 
             currentData.data().then((currentValue) => {
 
-              console.log(currentValue, previousValue, currentValue[1], previousValue[1])
+              // console.log(currentValue, previousValue, currentValue[1], previousValue[1])
 
-              const data = previousValue;
-              const cellDimension = cellWidth / 5;  //To be modified
-              console.log(cellDimension)
-              const startingLineFrom = previousKey;
-              const currentGroup = d3.selectAll(`[f-uid="${id}"]`);
-              const catNames = currentGroup.selectAll('.categories');
-              const currentPathData = new Map();
-              catNames[0].forEach(function (d, i) {
-                const name = d3.select(catNames[0][i]).datum();
-                const xpos =  5+i * cellDimension;
-                const ypos = rowHeight;
+              if ((<any>previousData).desc.value.type === 'string') {
 
-                currentPathData.set(name, {'xpos': xpos, 'ypos': ypos});
+                console.log('yes');
+                const topPathData = new Map();
+                const stringName = (<any>previousData).desc.name;
+                const xpos = cellWidth / 2;
+                const ypos = cellHeight - cellHeight;
 
-              });
+                console.log(currentValue);
+                previousValue.forEach((d, i) => {
+                  console.log(d, i);
+                  topPathData.set(d, {'x': xpos, 'y': ypos})
+                });
 
-              console.log(currentPathData)
-              const checkXposOverlap = new Map();
-              const lineDiv = d3.select(`[f-uid="${previousKey}"]`).append('div').classed('lineConnection', true);
-              const svg = lineDiv.append('svg').attr('width', cellWidth)
-                .attr('height', rowHeight).selectAll('path').data(data)
-              svg.enter().append('path').attr('d', function (d, i) {
-                console.log(currentValue[i]);
-                const xposition = currentPathData.get(currentValue[i]).xpos;
-                const yposition = currentPathData.get(currentValue[i]).ypos;
-                console.log(checkXposOverlap, d)
+                const values = {previous: previousValue, current: currentValue};
+                const keys = {previous: previousKey, current: id};
+                const tableVector = {previous: previousData, current: currentData};
+                const cellData = {width: cellWidth, height: cellHeight};
+                categoricalLines(topPathData, values, tableVector, keys, cellData);
+              } else if ((<any>previousData).desc.value.type === 'categorical') {
 
-                if (checkXposOverlap.has(currentValue[i])) {
-                  console.log('yes')
-                  const xpos = checkXposOverlap.get(currentValue[i]).x;
+                console.log('hello cat');
+                const categories = previousData.desc.value.categories;
+                const bottomCellDimension = cellWidth / categories.length;
+                console.log(bottomCellDimension)
 
-                  checkXposOverlap.set(currentValue[i], {x: xpos + 10, y: yposition});
-                  console.log(checkXposOverlap.get(currentValue[i]));
+                const topCatGroup = d3.selectAll(`[f-uid="${previousKey}"]`);
+                const divCatNames = topCatGroup.selectAll('.categories');
+                const topPathData = new Map();
+                divCatNames[0].forEach(function (d, i) {
+                  const catName = d3.select(divCatNames[0][i]).datum();
+                  const xpos = bottomCellDimension / 2 + i * bottomCellDimension;
+                  const ypos = cellHeight-cellHeight;
+                  topPathData.set(catName, {x: xpos, y: ypos});
 
+                });
+                console.log(topPathData);
+                const values = {previous: previousValue, current: currentValue};
+                const keys = {previous: previousKey, current: id};
+                const tableVector = {previous: previousData, current: currentData};
+                const cellData = {width: cellWidth, height: cellHeight};
+                categoricalLines(topPathData, values, tableVector, keys, cellData);
 
-                } else {
-                  console.log('no')
-                  checkXposOverlap.set(currentValue[i], {x: xposition, y: yposition});
-                  console.log(checkXposOverlap.get(currentValue[i]));
-
-                }
-
-
-                const xpos = checkXposOverlap.get(currentValue[i]).x;
-
-                const ypos = yposition;
-
-                return `M ${cellWidth / 2} 0 L ${xpos} ${yposition}`;
-
-              })
-                .attr('stroke', 'red')
-                .attr('stroke-width', 1)
-                .attr('fill', 'red');
-
-            })
+              }
 
 
-          })
+            });
+
+
+          });
 
         }
 
@@ -125,3 +113,59 @@ export default class ConnectionLines {
 
 }
 
+
+function categoricalLines(topPathData, values, tableVector, keys, cellData) {
+
+  const categories = tableVector.current.desc.value.categories;
+  const bottomCellDimension = cellData.width / categories.length;
+
+  const data = values.previous;
+
+  console.log(tableVector.previous)
+  console.log(tableVector.current)
+
+  const currentCatGroup = d3.selectAll(`[f-uid="${keys.current}"]`);
+  const divCatNames = currentCatGroup.selectAll('.categories');
+  const bottomPathData = new Map();
+  divCatNames[0].forEach(function (d, i) {
+    const name = d3.select(divCatNames[0][i]).datum();
+    const xpos = 5 + i * bottomCellDimension;
+    const ypos = cellData.height;
+
+    bottomPathData.set(name, {'xpos': xpos, 'ypos': ypos});
+
+  });
+
+  // console.log(currentPathData)
+  const checkXposOverlap = new Map();
+  const lineDiv = d3.select(`[f-uid="${keys.previous}"]`).append('div').classed('lineConnection', true);
+  const svg = lineDiv.append('svg').attr('width', cellData.width)
+    .attr('height', cellData.height).selectAll('path').data(data)
+  svg.enter().append('path').attr('d', function (d, i) {
+    // console.log(currentValue[i]);
+    const xposition = bottomPathData.get(values.current[i]).xpos;
+    const yposition = bottomPathData.get(values.current[i]).ypos;
+    //  console.log(checkXposOverlap, d)
+
+    console.log(values.current[i], values.previous[i])
+    if (checkXposOverlap.has(values.current[i])) {
+      const xpos = checkXposOverlap.get(values.current[i]).x;
+      checkXposOverlap.set(values.current[i], {x: xpos + 10, y: yposition});
+
+    } else {
+      checkXposOverlap.set(values.current[i], {x: xposition, y: yposition});
+
+    }
+
+    const bottomXpos = checkXposOverlap.get(values.current[i]).x;
+
+    const ypos = yposition;
+
+    return `M ${topPathData.get(values.previous[i]).x} ${topPathData.get(values.previous[i]).y} L ${bottomXpos} ${yposition}`;
+
+  })
+    .attr('stroke', 'red')
+    .attr('stroke-width', 1)
+    .attr('fill', 'red');
+
+}
