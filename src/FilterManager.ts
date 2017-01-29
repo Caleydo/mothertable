@@ -92,7 +92,7 @@ function makeCategories(divInfo, dataInfo, block, self) {
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid);
 
-    const divCat = divBlock.append('div').classed('catentries',true)
+    const divCat = divBlock.append('div').classed('catentries', true)
       .style('display', 'flex')
       .style('margin', '1px')
       .style('height', cellHeight + 'px');
@@ -143,7 +143,7 @@ function makeCategories(divInfo, dataInfo, block, self) {
     div.exit().remove();
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self)
+    const connectionLine = new ConnectionLines(self);
     connectionLine.makeLines(divBlock, divInfo.uid);
 
 
@@ -223,7 +223,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     });
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self)
+    const connectionLine = new ConnectionLines(self);
     connectionLine.makeLines(divBlock, divInfo.uid);
 
 
@@ -341,7 +341,7 @@ function makeStringRect(divInfo, dataInfo, block, self) {
     });
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self)
+    const connectionLine = new ConnectionLines(self);
     connectionLine.makeLines(divBlock, divInfo.uid);
 
 

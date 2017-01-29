@@ -70,9 +70,7 @@ export default class ConnectionLines {
                   categoricalLines(topPathData, values, tableVector, keys, cellData);
                 } else if (currentDataType === 'string' || currentDataType === 'real' || currentDataType === 'int') {
 
-                  console.log('single attribute');
-
-                  nonCategoricalLines(topPathData, values, tableVector, keys, cellData)
+                  nonCategoricalLines(topPathData, values, tableVector, keys, cellData);
 
                 } else {
 
@@ -85,7 +83,6 @@ export default class ConnectionLines {
 
                 const categories = previousData.desc.value.categories;
                 const bottomCellDimension = cellWidth / categories.length;
-                console.log(bottomCellDimension)
 
                 const topCatGroup = d3.selectAll(`[f-uid="${previousKey}"]`);
                 const divCatNames = topCatGroup.selectAll('.categories');
@@ -95,43 +92,27 @@ export default class ConnectionLines {
                   const xpos = bottomCellDimension / 2 + i * bottomCellDimension;
                   const ypos = cellHeight - cellHeight;
                   topPathData.set(catName, {x: xpos, y: ypos});
-
                 });
-                console.log(topPathData);
                 const values = {previous: previousValue, current: currentValue};
                 const keys = {previous: previousKey, current: id};
                 const tableVector = {previous: previousData, current: currentData};
                 const cellData = {width: cellWidth, height: cellHeight};
-
                 if (currentDataType === 'categorical') {
                   categoricalLines(topPathData, values, tableVector, keys, cellData);
                 } else if (currentDataType === 'string' || currentDataType === 'real' || currentDataType === 'int') {
-
                   nonCategoricalLines(topPathData, values, tableVector, keys, cellData);
                 }
               }
-
-
             });
-
-
           });
-
         }
-
-
       });
-      console.log('I  make line');
 
     } else {
 
       console.log('cannot make line');
     }
-
-
   }
-
-
 }
 
 
@@ -139,12 +120,7 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
 
   const categories = tableVector.current.desc.value.categories;
   const bottomCellDimension = cellData.width / categories.length;
-
   const data = values.previous;
-
-  console.log(tableVector.previous)
-  console.log(tableVector.current)
-
   const currentCatGroup = d3.selectAll(`[f-uid="${keys.current}"]`);
   const divCatNames = currentCatGroup.selectAll('.categories');
   const bottomPathData = new Map();
@@ -152,16 +128,14 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
     const name = d3.select(divCatNames[0][i]).datum();
     const xpos = 5 + i * bottomCellDimension;
     const ypos = cellData.height;
-
     bottomPathData.set(name, {'xpos': xpos, 'ypos': ypos});
-
   });
 
   // console.log(currentPathData)
   const checkXposOverlap = new Map();
   const lineDiv = d3.select(`[f-uid="${keys.previous}"]`).append('div').classed('lineConnection', true);
   const svg = lineDiv.append('svg').attr('width', cellData.width)
-    .attr('height', cellData.height).selectAll('path').data(data)
+    .attr('height', cellData.height).selectAll('path').data(data);
   svg.enter().append('path').attr('d', function (d, i) {
     // console.log(currentValue[i]);
     const xposition = bottomPathData.get(values.current[i]).xpos;
@@ -192,10 +166,7 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
 
 function nonCategoricalLines(topPathData, values, tableVector, keys, cellData) {
 
-  console.log('noncategorical lines');
-
   const data = values.previous;
-  console.log(data, values.current)
   const bottomCellDimension = cellData.width / data.length;
 
 
@@ -213,7 +184,7 @@ function nonCategoricalLines(topPathData, values, tableVector, keys, cellData) {
   const checkXposOverlap = new Map();
   const lineDiv = d3.select(`[f-uid="${keys.previous}"]`).append('div').classed('lineConnection', true);
   const svg = lineDiv.append('svg').attr('width', cellData.width)
-    .attr('height', cellData.height).selectAll('path').data(data)
+    .attr('height', cellData.height).selectAll('path').data(data);
   svg.enter().append('path').attr('d', function (d, i) {
 
     const xposition = bottomPathData.get(values.current[i]).xpos;
@@ -225,7 +196,6 @@ function nonCategoricalLines(topPathData, values, tableVector, keys, cellData) {
       checkXposOverlap.set(values.current[i], {x: xpos + 10, y: yposition});
     } else {
       checkXposOverlap.set(values.current[i], {x: xposition, y: yposition});
-
     }
     const bottomXpos = checkXposOverlap.get(values.current[i]).x;
 
@@ -238,5 +208,5 @@ function nonCategoricalLines(topPathData, values, tableVector, keys, cellData) {
     .attr('stroke-width', 1)
     .attr('fill', 'red');
 
-
+  svg.exit().remove();
 }
