@@ -175,6 +175,25 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData, bloc
         d3.select(this).classed('active', !d3.select(this).classed('active'));
         if (d3.select(this).classed('active') === false) {
           d3.select(this).attr('opacity', 1);
+
+          const divNames = d3.select(`[f-uid="${keys.current}"]`)
+            .selectAll('.catentries')
+            .selectAll('.categories');
+
+
+          divNames[0].forEach((e, i) => {
+
+            const name = d3.select(divNames[0][i]).datum();
+
+            if (name === d) {
+
+              d3.select(divNames[0][i]).classed('active', false);
+
+            }
+
+          });
+
+
           const catName = (d3.select(this).datum());
 
           const cat = block.activeCategories;
@@ -185,6 +204,23 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData, bloc
           self.onClickCat(tableVector.current, keys.current, filterType, block);
         } else if (d3.select(this).classed('active') === true) {
           d3.select(this).attr('opacity', 0.1);
+          const divNames = d3.select(`[f-uid="${keys.current}"]`)
+            .selectAll('.catentries')
+            .selectAll('.categories');
+
+
+          divNames[0].forEach((e, i) => {
+
+            const name = d3.select(divNames[0][i]).datum();
+
+            if (name === d) {
+
+              d3.select(divNames[0][i]).classed('active', true);
+
+            }
+
+          });
+
           const catName = (d3.select(this).datum());
           const cat = block.activeCategories;
           let ind = -1;
@@ -196,8 +232,7 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData, bloc
           cat.splice(ind, 1);
           block.activeCategories = cat;
           const filterType = cat;
-          console.log(filterType)
-          console.log(block, self)
+
           self.onClickCat(tableVector.current, keys.current, filterType, block);
           // block.filterDiv = divBlock;
         }
