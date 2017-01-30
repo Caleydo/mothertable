@@ -127,6 +127,15 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
   const bottomPathData = new Map();
   const countArray = [];
   const uniqCatNames = [];
+  const pathData = [];
+  const lineDiv = d3.select(`[f-uid="${keys.previous}"]`).append('div').classed('lineConnection', true);
+  // const domain = d3.extent(pathData, function (d) {
+  //   return d.bottomCatCount;
+  //
+  // })
+
+  const domain = [1, 30];
+  const lineScale = d3.scale.linear().domain(domain).range([1, 5]);
   divCatNames[0].forEach(function (d, i) {
     const name = d3.select(divCatNames[0][i]).datum();
     const xpos = 5 + i * bottomCellDimension;
@@ -141,80 +150,96 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
   if (cellData.type !== 'categorical') {
 
     data = uniqCatNames;
+    const svg = lineDiv.append('svg').attr('width', cellData.width)
+      .attr('height', cellData.height).selectAll('path').data(data);
+    let toggle = true;
+    svg.enter().append('path')
+      .attr('d', function (d, i) {
+        console.log(bottomPathData, uniqCatNames)
+
+        // console.log(currentValue[i]);
+        console.log(bottomPathData.get(uniqCatNames[i]))
+        const xposition = bottomPathData.get(uniqCatNames[i]).xpos;
+        const yposition = bottomPathData.get(uniqCatNames[i]).ypos;
+        return `M ${topPathData.get(values.previous[i]).x} ${topPathData.get(values.previous[i]).y} L ${xposition} ${yposition}`;
+
+      })
+      .attr('stroke', 'red')
+      .attr('stroke-width', function (d, i) {
+        return lineScale(bottomPathData.get(uniqCatNames[i]).count);
+      })
+      .attr('fill', 'red')
+      .on('click', function (d) {
+        d3.select(this).attr('opacity', toggle ? 0.1 : 1);
+        toggle = !toggle;
+
+      })
+
+
   } else if (cellData.type === 'categorical') {
-    data = data;
+
+
+    tableVector.previous.desc.value.categories.forEach((d, i) => {
+
+      const indexs = []
+      values.previous.filter(function (elem, index, array) {
+        if (elem === d) {
+          indexs.push(index);
+        }
+      });
+
+      const status = indexs.map((item) => values.current[item])
+
+      const temp = new Map();
+      status.forEach((e, i) => {
+        const countMe = status.filter(isSame.bind(this, e));
+        temp.set(e, {bottomCatName: e, bottomCatCount: countMe.length});
+
+
+      })
+
+      temp.forEach(function (value, key) {
+
+        const val = value;
+        pathData.push({topCatName: d, bottomCatName: value.bottomCatName, bottomCatCount: value.bottomCatCount});
+
+
+      })
+
+
+    })
+
+
+    const svg = lineDiv.append('svg').attr('width', cellData.width)
+      .attr('height', cellData.height).selectAll('path').data(pathData);
+    let toggle = true;
+    svg.enter().append('path')
+      .attr('d', function (d, i) {
+        console.log(d, i, values.current[i], uniqCatNames[i])
+        // console.log(currentValue[i]);
+        console.log(bottomPathData)
+        const t = d;
+        console.log(t, t.bottomCatCount)
+        console.log(bottomPathData.get(d.bottomCatName))
+        const xposition = bottomPathData.get(d.bottomCatName).xpos;
+        const yposition = bottomPathData.get(d.bottomCatName).ypos;
+        return `M ${topPathData.get(d.topCatName).x} ${topPathData.get(d.topCatName).y} L ${xposition} ${yposition}`;
+
+      })
+      .attr('stroke', 'red')
+      .attr('stroke-width', function (d, i) {
+        return lineScale(d.bottomCatCount);
+      })
+      .attr('fill', 'red')
+      .on('click', function (d) {
+        d3.select(this).attr('opacity', toggle ? 0.1 : 1);
+        toggle = !toggle;
+
+      })
+
+
   }
 
-  const pathData = []
-  tableVector.previous.desc.value.categories.forEach((d, i) => {
-
-
-    const indexs = []
-    values.previous.filter(function (elem, index, array) {
-      if (elem === d) {
-        indexs.push(index);
-      }
-    });
-
-    const status = indexs.map((item) => values.current[item])
-
-    const temp = new Map();
-    status.forEach((e, i) => {
-      const countMe = status.filter(isSame.bind(this, e));
-      temp.set(e, {bottomCatName: e, bottomCatCount: countMe.length});
-
-
-    })
-
-    temp.forEach(function (value, key) {
-
-      const val = value;
-      console.log(key)
-      pathData.push({topCatName: d, bottomCatName: value.bottomCatName, bottomCatCount: value.bottomCatCount});
-
-
-    })
-
-
-
-  })
-
-
-  const lineDiv = d3.select(`[f-uid="${keys.previous}"]`).append('div').classed('lineConnection', true);
-  const domain = d3.extent(pathData,function (d) {
-    console.log(d)
-    return d.bottomCatCount;
-
-  })
-
-  const lineScale = d3.scale.linear().domain(domain).range([1, 5]);
-  console.log(lineScale(6),d3.extent(countArray),countArray)
-  const svg = lineDiv.append('svg').attr('width', cellData.width)
-    .attr('height', cellData.height).selectAll('path').data(pathData);
-  let toggle = true;
-  svg.enter().append('path')
-    .attr('d', function (d, i) {
-      console.log(d, i, values.current[i], uniqCatNames[i])
-      // console.log(currentValue[i]);
-      console.log(bottomPathData)
-      const t= d;
-      console.log(t,t.bottomCatCount)
-      console.log(bottomPathData.get(d.bottomCatName))
-      const xposition = bottomPathData.get(d.bottomCatName).xpos;
-      const yposition = bottomPathData.get(d.bottomCatName).ypos;
-      return `M ${topPathData.get(d.topCatName).x} ${topPathData.get(d.topCatName).y} L ${xposition} ${yposition}`;
-
-    })
-    .attr('stroke', 'red')
-    .attr('stroke-width', function (d, i) {
-      return lineScale(d.bottomCatCount);
-    })
-    .attr('fill', 'red')
-    .on('click', function (d) {
-      d3.select(this).attr('opacity', toggle ? 0.1 : 1);
-      toggle = !toggle;
-
-    })
 
 }
 
