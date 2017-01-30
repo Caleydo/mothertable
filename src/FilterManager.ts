@@ -37,6 +37,7 @@ export default class FilterManager {
 
 
   createFilter(block, self) {
+    console.log(self,block)
     const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
@@ -136,6 +137,7 @@ function makeCategories(divInfo, dataInfo, block, self) {
           cat.splice(ind, 1);
           block.activeCategories = cat;
           const filterType = cat;
+          console.log(block,self)
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
           block.filterDiv = divBlock;
         }
@@ -145,8 +147,10 @@ function makeCategories(divInfo, dataInfo, block, self) {
     div.exit().remove();
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self);
-    connectionLine.makeLines(divBlock, divInfo.uid);
+    const connectionLine = new ConnectionLines(self._rangeManager, self);
+    console.log(connectionLine);
+    console.log((<any>connectionLine)._rangeManager);
+    connectionLine.makeLines(divBlock, divInfo.uid,block, self._rangeManager);
 
 
   } else {
@@ -225,8 +229,8 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     });
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self);
-    connectionLine.makeLines(divBlock, divInfo.uid);
+    const connectionLine = new ConnectionLines(self._rangeManager, self);
+    connectionLine.makeLines(divBlock, divInfo.uid, block,self);
 
 
   } else {
@@ -343,8 +347,8 @@ function makeStringRect(divInfo, dataInfo, block, self) {
     });
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self);
-    connectionLine.makeLines(divBlock, divInfo.uid);
+    const connectionLine = new ConnectionLines(self._rangeManager, self);
+    connectionLine.makeLines(divBlock, divInfo.uid, block,self);
 
 
   } else {

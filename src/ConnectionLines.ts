@@ -9,17 +9,24 @@ import Block from './Block';
 import VisManager from './VisManager';
 import FilterManager from './FilterManager';
 import values = d3.values;
+import RangeManager from './RangeManager';
 
 export default class ConnectionLines {
 
   private _filterManager: FilterManager;
+  private _rangeManager: RangeManager;
 
-  constructor(filterManager) {
+  constructor(rangeManager, filterManager) {
     this._filterManager = filterManager;
+    this._rangeManager = rangeManager;
+
   }
 
 
-  makeLines(div, id) {
+  makeLines(div, id, block, self) {
+
+    console.log(this._filterManager)
+    console.log(this._rangeManager)
 
     FilterManager.filterListOrder.push(id);
 
@@ -66,7 +73,7 @@ export default class ConnectionLines {
 
                 if (currentData.desc.value.type === 'categorical') {
 
-                  categoricalLines(topPathData, values, tableVector, keys, cellData);
+                  categoricalLines(topPathData, values, tableVector, keys, cellData, block, self);
                 } else if (currentDataType === 'string' || currentDataType === 'real' || currentDataType === 'int') {
 
                   nonCategoricalLines(topPathData, values, tableVector, keys, cellData);
@@ -98,7 +105,7 @@ export default class ConnectionLines {
                 const cellData = {width: cellWidth, height: cellHeight, type: previousDataType};
                 if (currentDataType === 'categorical') {
 
-                  categoricalLines(topPathData, values, tableVector, keys, cellData);
+                  categoricalLines(topPathData, values, tableVector, keys, cellData, block, self);
                 } else if (currentDataType === 'string' || currentDataType === 'real' || currentDataType === 'int') {
                   nonCategoricalLines(topPathData, values, tableVector, keys, cellData);
                 }
@@ -116,7 +123,7 @@ export default class ConnectionLines {
 }
 
 
-function categoricalLines(topPathData, values, tableVector, keys, cellData) {
+function categoricalLines(topPathData, values, tableVector, keys, cellData, block, self) {
 
   const categories = tableVector.current.desc.value.categories;
   const bottomCellDimension = cellData.width / categories.length;
@@ -149,7 +156,6 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
     data = bottomUniqCatNames;
     const svg = lineDiv.append('svg').attr('width', cellData.width)
       .attr('height', cellData.height).selectAll('path').data(data);
-    let toggle = true;
     svg.enter().append('path')
       .attr('d', function (d, i) {
         // console.log(currentValue[i]);
@@ -164,8 +170,38 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
       })
       .attr('fill', 'red')
       .on('click', function (d) {
-        d3.select(this).attr('opacity', toggle ? 0.1 : 1);
-        toggle = !toggle;
+        // d3.select(this).attr('opacity', toggle ? 0.1 : 1);
+        // toggle = !toggle;
+        d3.select(this).classed('active', !d3.select(this).classed('active'));
+        if (d3.select(this).classed('active') === false) {
+          d3.select(this).attr('opacity', 1);
+          const catName = (d3.select(this).datum());
+
+          const cat = block.activeCategories;
+          cat.push(catName);
+          block.activeCategories = cat;
+
+          const filterType = cat;
+          self.onClickCat(tableVector.current, keys.current, filterType, block);
+        } else if (d3.select(this).classed('active') === true) {
+          d3.select(this).attr('opacity', 0.1);
+          const catName = (d3.select(this).datum());
+          const cat = block.activeCategories;
+          let ind = -1;
+          for (let i = 0; i < cat.length; ++i) {
+            if (cat[i] === catName) {
+              ind = i;
+            }
+          }
+          cat.splice(ind, 1);
+          block.activeCategories = cat;
+          const filterType = cat;
+          console.log(filterType)
+          console.log(block, self)
+          self.onClickCat(tableVector.current, keys.current, filterType, block);
+          // block.filterDiv = divBlock;
+        }
+
 
       });
 
@@ -220,6 +256,7 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
       })
       .attr('fill', 'red')
       .on('click', function (d) {
+
         d3.select(this).attr('opacity', toggle ? 0.1 : 1);
         toggle = !toggle;
       });
