@@ -93,8 +93,7 @@ function makeCategories(divInfo, dataInfo, block, self) {
     const filterDiv = divInfo.div;
     const c20 = d3.scale.category20();
     const divBlock = filterDiv.append('div')
-      .attr('f-uid', divInfo.uid)
-
+      .attr('f-uid', divInfo.uid);
     const divCat = divBlock.append('div').classed('catentries', true)
       .style('display', 'flex')
       .style('margin', '1px')
