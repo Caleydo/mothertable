@@ -35,6 +35,7 @@ export default class RangeManager {
   onClickCat(data, uniqueID, filterType?) {
     // const data = data;
     const catFilter = filterType;
+    console.log(catFilter);
 
     (<any>data).filter(findCatName.bind(this, catFilter))
       .then((vectorView) => {
@@ -90,7 +91,6 @@ export default class RangeManager {
 
     // console.log(rangeIntersected.dim(0).asList(), 'intersected',key)
     Block.filtersRange.set(key, range);
-
     Block.currentRange = rangeIntersected;
     this.updateVis(rangeIntersected);
   }
@@ -101,6 +101,8 @@ function findCatName(catName: any[], value, index,) {
 
   for (const x in catName) {
     if (catName[x] === value) {
+
+      console.log(catName[x],value)
       return value;
     }
   }

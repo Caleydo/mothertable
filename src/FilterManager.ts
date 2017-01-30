@@ -7,13 +7,16 @@ import App from './app';
 import Block from './Block';
 import ConnectionLines from './ConnectionLines';
 import VisManager from './VisManager';
+import drag = d3.behavior.drag;
 
 export default class FilterManager {
+
 
   private filterUID = [];
   private filterData = [];
   private _filterDiv = App.filterNode;
   private _rangeManager;
+  private _drag;
   public static filterList = new Map();
   public static filterListOrder = [];
 
@@ -32,6 +35,7 @@ export default class FilterManager {
     this._filterDiv = value;
   }
 
+
   createFilter(block, self) {
     const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
@@ -39,6 +43,7 @@ export default class FilterManager {
     const fid = block.uid;
     const range = (<any>data).desc.value.range;
     const divInfo = {filterDialogWidth: 274, filterRowHeight: 30, 'uid': fid, 'div': this._filterDiv};
+
 
     Block.filtersRange.set(fid, data.indices);
 
@@ -85,12 +90,10 @@ function makeCategories(divInfo, dataInfo, block, self) {
   if (checkMe === false) {
 
     const cellHeight = divInfo.filterRowHeight;
-    const cellWidth = divInfo.filterDialogWidth;
-    const cellDimension = (100 / dataInfo.value.length);
     const filterDiv = divInfo.div;
     const c20 = d3.scale.category20();
     const divBlock = filterDiv.append('div')
-      .attr('f-uid', divInfo.uid);
+      .attr('f-uid', divInfo.uid)
 
     const divCat = divBlock.append('div').classed('catentries', true)
       .style('display', 'flex')
@@ -363,3 +366,4 @@ function checkMeIfExist(id) {
   return ((count > 1) ? true : false);
 
 }
+
