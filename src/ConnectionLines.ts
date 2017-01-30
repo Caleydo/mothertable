@@ -124,8 +124,8 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
   const currentCatGroup = d3.selectAll(`[f-uid="${keys.current}"]`);
   const divCatNames = currentCatGroup.selectAll('.categories');
   const bottomPathData = new Map();
-  const countArray = [];
-  const uniqCatNames = [];
+  const bottomCatCount = [];
+  const bottomUniqCatNames = [];
   const pathData = [];
 
   divCatNames[0].forEach(function (d, i) {
@@ -133,8 +133,8 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
     const xpos = 5 + i * bottomCellDimension;
     const ypos = cellData.height;
     const countSameLikeMe = values.current.filter(isSame.bind(this, name));
-    countArray.push(countSameLikeMe.length);
-    uniqCatNames.push(name);
+    bottomCatCount.push(countSameLikeMe.length);
+    bottomUniqCatNames.push(name);
     bottomPathData.set(name, {'xpos': xpos, 'ypos': ypos, count: countSameLikeMe.length});
   });
 
@@ -142,25 +142,25 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
   if (cellData.type !== 'categorical') {
 
     const lineDiv = d3.select(`[f-uid="${keys.previous}"]`).append('div').classed('lineConnection', true);
-    const domain = d3.extent(countArray);
+    const domain = d3.extent(bottomCatCount);
 
     // const domain = [1, 30];
     const lineScale = d3.scale.linear().domain(domain).range([1, 5]);
-    data = uniqCatNames;
+    data = bottomUniqCatNames;
     const svg = lineDiv.append('svg').attr('width', cellData.width)
       .attr('height', cellData.height).selectAll('path').data(data);
     let toggle = true;
     svg.enter().append('path')
       .attr('d', function (d, i) {
         // console.log(currentValue[i]);
-        const xposition = bottomPathData.get(uniqCatNames[i]).xpos;
-        const yposition = bottomPathData.get(uniqCatNames[i]).ypos;
+        const xposition = bottomPathData.get(bottomUniqCatNames[i]).xpos;
+        const yposition = bottomPathData.get(bottomUniqCatNames[i]).ypos;
         return `M ${topPathData.get(values.previous[i]).x} ${topPathData.get(values.previous[i]).y} L ${xposition} ${yposition}`;
 
       })
       .attr('stroke', 'red')
       .attr('stroke-width', function (d, i) {
-        return lineScale(bottomPathData.get(uniqCatNames[i]).count);
+        return lineScale(bottomPathData.get(bottomUniqCatNames[i]).count);
       })
       .attr('fill', 'red')
       .on('click', function (d) {
@@ -172,25 +172,24 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
 
   } else if (cellData.type === 'categorical') {
 
-
     tableVector.previous.desc.value.categories.forEach((d, i) => {
 
-      const indexs = [];
+      const prevCatIndexes = [];
       values.previous.filter(function (elem, index, array) {
         if (elem === d) {
-          indexs.push(index);
+          prevCatIndexes.push(index);
         }
       });
 
-      const status = indexs.map((item) => values.current[item]);
-      const temp = new Map();
-      status.forEach((e, i) => {
-        const countMe = status.filter(isSame.bind(this, e));
-        temp.set(e, {bottomCatName: e, bottomCatCount: countMe.length});
+      const currentCatValues = prevCatIndexes.map((item) => values.current[item]);
+      const bottomCatData = new Map();
+      currentCatValues.forEach((e, i) => {
+        const countMe = currentCatValues.filter(isSame.bind(this, e));
+        bottomCatData.set(e, {bottomCatName: e, bottomCatCount: countMe.length});
 
       });
 
-      temp.forEach(function (value, key) {
+      bottomCatData.forEach(function (value, key) {
 
         const val = value;
         pathData.push({topCatName: d, bottomCatName: value.bottomCatName, bottomCatCount: value.bottomCatCount});
@@ -223,13 +222,8 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData) {
       .on('click', function (d) {
         d3.select(this).attr('opacity', toggle ? 0.1 : 1);
         toggle = !toggle;
-
       });
-
-
   }
-
-
 }
 
 function nonCategoricalLines(topPathData, values, tableVector, keys, cellData) {
