@@ -15,6 +15,7 @@ export default class ConnectionLines {
 
   private _filterManager: FilterManager;
   private _rangeManager: RangeManager;
+  public static previousKey;
 
   constructor(rangeManager, filterManager) {
     this._filterManager = filterManager;
@@ -24,10 +25,6 @@ export default class ConnectionLines {
 
 
   makeLines(div, id, block, self) {
-
-    console.log(this._filterManager)
-    console.log(this._rangeManager)
-
     FilterManager.filterListOrder.push(id);
 
     if (FilterManager.filterList.size > 1) {
@@ -40,6 +37,7 @@ export default class ConnectionLines {
         if (d === id) {
 
           const previousKey = FilterManager.filterListOrder[i - 1];
+          ConnectionLines.previousKey = previousKey;
           const previousBlock = App.blockList.get(previousKey);
           const previousData = previousBlock.data;
           const currentBlock = App.blockList.get(id);

@@ -37,7 +37,7 @@ export default class FilterManager {
 
 
   createFilter(block, self) {
-    console.log(self,block)
+    console.log(self, block)
     const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
@@ -114,18 +114,41 @@ function makeCategories(divInfo, dataInfo, block, self) {
       .text((d: any) => {
         return d;
       })
-      .on('click', function () {
+      .on('click', function (e, j) {
         d3.select(this).classed('active', !d3.select(this).classed('active'));
         if (d3.select(this).classed('active') === false) {
-          const catName = (d3.select(this).datum());
 
+          const previousKey = ConnectionLines.previousKey;
+          const paths = d3.select(`[f-uid="${previousKey}"]`).selectAll('.lineConnection').selectAll('path');
+          paths[0].forEach((d, i) => {
+            const thisPath = d3.select(paths[0][i]);
+            if (thisPath.datum() === e) {
+              thisPath.attr('opacity', 1);
+
+            }
+
+          });
+
+          const catName = (d3.select(this).datum());
           const cat = block.activeCategories;
           cat.push(catName);
           block.activeCategories = cat;
-
           const filterType = cat;
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
         } else if (d3.select(this).classed('active') === true) {
+          const previousKey = ConnectionLines.previousKey;
+          const paths = d3.select(`[f-uid="${previousKey}"]`).selectAll('.lineConnection').selectAll('path');
+          paths[0].forEach((d, i) => {
+            const thisPath = d3.select(paths[0][i]);
+            if (thisPath.datum() === e) {
+
+              thisPath.attr('opacity', 0.1);
+
+            }
+
+          });
+
+
           const catName = (d3.select(this).datum());
           const cat = block.activeCategories;
           let ind = -1;
@@ -137,7 +160,6 @@ function makeCategories(divInfo, dataInfo, block, self) {
           cat.splice(ind, 1);
           block.activeCategories = cat;
           const filterType = cat;
-          console.log(block,self)
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
           block.filterDiv = divBlock;
         }
@@ -148,9 +170,7 @@ function makeCategories(divInfo, dataInfo, block, self) {
 
     FilterManager.filterList.set(divInfo.uid, self);
     const connectionLine = new ConnectionLines(self._rangeManager, self);
-    console.log(connectionLine);
-    console.log((<any>connectionLine)._rangeManager);
-    connectionLine.makeLines(divBlock, divInfo.uid,block, self._rangeManager);
+    connectionLine.makeLines(divBlock, divInfo.uid, block, self._rangeManager);
 
 
   } else {
@@ -230,7 +250,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
 
     FilterManager.filterList.set(divInfo.uid, self);
     const connectionLine = new ConnectionLines(self._rangeManager, self);
-    connectionLine.makeLines(divBlock, divInfo.uid, block,self);
+    connectionLine.makeLines(divBlock, divInfo.uid, block, self);
 
 
   } else {
@@ -348,7 +368,7 @@ function makeStringRect(divInfo, dataInfo, block, self) {
 
     FilterManager.filterList.set(divInfo.uid, self);
     const connectionLine = new ConnectionLines(self._rangeManager, self);
-    connectionLine.makeLines(divBlock, divInfo.uid, block,self);
+    connectionLine.makeLines(divBlock, divInfo.uid, block, self);
 
 
   } else {
