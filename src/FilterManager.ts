@@ -93,6 +93,10 @@ function makeCategories(divInfo, dataInfo, block, self) {
     const divBlock = filterDiv.append('div')
       .attr('f-uid', divInfo.uid);
 
+    const tooltipDiv = filterDiv.append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0);
+
     const divCat = divBlock.append('div').classed('catentries', true)
       .style('display', 'flex')
       .style('margin', '1px')
@@ -110,11 +114,9 @@ function makeCategories(divInfo, dataInfo, block, self) {
       const countId = dataVal.filter(isSame.bind(this, val));
       categoriesName.push(val);
       bins.push(countId.length);
-
-
     }));
     const binScale = d3.scale.linear()
-      .domain(d3.extent(bins)).range([cellHeight/2, cellHeight]);
+      .domain(d3.extent(bins)).range([cellHeight / 2, cellHeight]);
 
 
     const div = divCat
@@ -123,7 +125,9 @@ function makeCategories(divInfo, dataInfo, block, self) {
     div.enter()
       .append('div')
       .attr('class', 'categories')
-      .style('height', (d,i) => { console.log(binScale(bins[i]) + 'px'); return binScale(bins[i]) + 'px'})
+      .style('height', (d, i) => {
+        return binScale(bins[i]) + 'px';
+      })
       .style('background-color', c20)
       .text((d: any) => {
         return d;
@@ -154,8 +158,19 @@ function makeCategories(divInfo, dataInfo, block, self) {
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
           block.filterDiv = divBlock;
         }
-
-
+      })
+      .on('mouseover', function (d, i) {
+        tooltipDiv.transition()
+          .duration(200)
+          .style('opacity', 1);
+        tooltipDiv.html(`${d} </br> count = ${bins[i]}`)
+          .style('left', ((<any>d3).event.pageX) + 'px')
+          .style('top', ((<any>d3).event.pageY - 28) + 'px');
+      })
+      .on('mouseout', function (d) {
+        tooltipDiv.transition()
+          .duration(500)
+          .style('opacity', 0);
       });
     div.exit().remove();
 
@@ -186,6 +201,10 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .attr('f-uid', divInfo.uid)
       //.style('height', cellHeight + 'px')
       .style('margin', '1px');
+    const tooltipDiv = filterDiv.append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0);
+
     const dataVal = dataInfo.value;
     const histData = [];
     const uniqueValues = dataVal.filter((x, i, a) => a.indexOf(x) === i);
@@ -202,7 +221,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     block.filterDiv = divBlock;
 
     const binScale = d3.scale.linear()
-      .domain(d3.extent(histData, (d) => d.bins)).range([10, 20]);
+      .domain(d3.extent(histData, (d) => d.bins)).range([cellHeight/2, cellHeight]);
 
     const color = d3.scale.category20();
     const histDivs = numDiv.append('div').classed('binsEntries', true)
@@ -213,7 +232,20 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .style('flex-grow', '1')
       .style('background-color', (d) => color(d.value))
       .style('height', (d) => binScale(d.bins) + 'px')
-      .text((d: any) => d.bins);
+      //.text((d: any) => d.value)
+      .on('mouseover', function (d, i) {
+        tooltipDiv.transition()
+          .duration(200)
+          .style('opacity', 1);
+        tooltipDiv.html(`${d.value} </br> count = ${d.bins}`)
+          .style('left', ((<any>d3).event.pageX) + 'px')
+          .style('top', ((<any>d3).event.pageY - 28) + 'px');
+      })
+      .on('mouseout', function (d) {
+        tooltipDiv.transition()
+          .duration(500)
+          .style('opacity', 0);
+      });
 
 
     const svg = divBlock.append('svg')
