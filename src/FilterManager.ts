@@ -283,6 +283,15 @@ function makeStringRect(divInfo, dataInfo, block, self) {
       .attr('f-uid', divInfo.uid);
 
     block.filterDiv = divBlock;
+
+    const textSearch = divBlock.append('input', 'text').classed('textField', true);
+    textSearch.on('keyup', function (d) {
+      const filterType = this.value;
+      self._rangeManager.inputTextSearch(dataInfo.data, divInfo.uid, filterType, block);
+
+    });
+
+
     const textBlock = divBlock.selectAll('div.' + dataInfo.name).data([dataInfo.name]);
     textBlock.enter()
       .append('div')

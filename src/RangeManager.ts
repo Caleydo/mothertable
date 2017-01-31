@@ -76,6 +76,22 @@ export default class RangeManager {
   }
 
 
+  inputTextSearch(data, uniqueID, filterType?) {
+
+    const stringFilter = filterType;
+
+    (<any>data).filter(inputStringPattern.bind(this, stringFilter))
+      .then((vectorView) => {
+
+        // console.log(vectorView.range.dim(0).asList(), uniqueID, 'start');
+
+        Block.filtersRange.set(uniqueID, vectorView.range);
+        this.calculateRangeIntersect(vectorView.range, uniqueID);
+
+      });
+  }
+
+
   calculateRangeIntersect(range, key) {
 
     let rangeIntersected = range;
@@ -137,4 +153,19 @@ function findString(stringFilter, value, index) {
 
 }
 
+
+function inputStringPattern(stringFilter, value, index) {
+
+  const re = new RegExp(`${stringFilter}`, 'gi');
+  if (value.match(re) === null) {
+
+    return;
+
+  } else {
+
+    return value;
+  }
+
+
+}
 

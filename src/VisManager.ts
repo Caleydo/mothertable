@@ -64,6 +64,8 @@ export default class VisManager {
     const parent = this._parentDiv
       .append('div')
       .attr('data-uid', visUID)
+      .style('height', '300px')
+      .style('width', '200px')
       // .call(drag)
       .html(`<header class="toolbar"></header><main class="vis"></main>`);
     const vectorOrMatrix = (<any>filteredVisData.desc).type;
@@ -78,8 +80,7 @@ export default class VisManager {
 
       initialVis = 'phovea-vis-heatmap';
     }
-
-    const vis = createMultiForm(filteredVisData, <HTMLElement>parent.select('main').node(), {'initialVis': initialVis});
+    const vis = createMultiForm(filteredVisData, <HTMLElement>parent.node(), {'initialVis': initialVis});
     const block: Block = new Block(visData, filteredVisData, visUID, vis, parent);
     App.blockList.set(block.uid, block);
     this.addIconVisChooser(visUID, <HTMLElement>parent.select('header').node(), vis);
