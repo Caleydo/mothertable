@@ -45,11 +45,12 @@ export default class FilterManager {
     if (vectorOrMatrix === 'vector') {
       const dataType = (<any>data.desc).value.type;
       if (dataType === 'categorical') {
-
-        const uniqCat = (<any>data).desc.value.categories;
-        block.activeCategories = uniqCat;
-        const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data};
-        makeCategories(divInfo, dataInfo, block, self);
+        (<any>data).data().then(function (dataVal) {
+          const uniqCat = (<any>data).desc.value.categories;
+          block.activeCategories = uniqCat;
+          const dataInfo = {'name': name, value: uniqCat, type: dataType, 'data': data, allCategories: dataVal};
+          makeCategories(divInfo, dataInfo, block, self);
+        });
 
 
       } else if (dataType === 'int' || dataType === 'real') {
@@ -95,18 +96,34 @@ function makeCategories(divInfo, dataInfo, block, self) {
     const divCat = divBlock.append('div').classed('catentries', true)
       .style('display', 'flex')
       .style('margin', '1px')
+      .style('align-items', 'flex-end')
+      .style('background-color', 'lightgrey')
       .style('height', cellHeight + 'px');
+
+    const dataVal = dataInfo.allCategories;
+    const histData = [];
+    const uniqueValues = dataVal.filter((x, i, a) => a.indexOf(x) === i);
+
+    const categoriesName = [];
+    const bins = [];
+    uniqueValues.forEach(((val, i) => {
+      const countId = dataVal.filter(isSame.bind(this, val));
+      categoriesName.push(val);
+      bins.push(countId.length);
+
+
+    }));
+    const binScale = d3.scale.linear()
+      .domain(d3.extent(bins)).range([cellHeight/2, cellHeight]);
 
 
     const div = divCat
       .selectAll('div.categories')
-      .data(dataInfo.value);
+      .data(categoriesName);
     div.enter()
       .append('div')
       .attr('class', 'categories')
-      //.style('width', (d, i) => cellDimension + '%')
-      //.style('height', cellHeight + 'px')
-      //.style('float','left')
+      .style('height', (d,i) => { console.log(binScale(bins[i]) + 'px'); return binScale(bins[i]) + 'px'})
       .style('background-color', c20)
       .text((d: any) => {
         return d;
@@ -173,11 +190,10 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     const histData = [];
     const uniqueValues = dataVal.filter((x, i, a) => a.indexOf(x) === i);
     uniqueValues.forEach(((val, i) => {
-      const countId = dataVal.filter(isSame.bind(this, val))
+      const countId = dataVal.filter(isSame.bind(this, val));
       histData.push({value: val, bins: countId.length});
 
     }));
-
 
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
     const numDiv = div.append('div')
