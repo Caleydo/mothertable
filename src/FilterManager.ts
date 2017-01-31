@@ -6,6 +6,7 @@ import * as d3 from 'd3';
 import App from './app';
 import Block from './Block';
 import ConnectionLines from './ConnectionLines';
+import ascending = d3.ascending;
 
 
 export default class FilterManager {
@@ -104,13 +105,9 @@ function makeCategories(divInfo, dataInfo, block, self) {
 
     const divCat = divBlock.append('div').classed('catentries', true)
       .style('display', 'flex')
-      .style('margin', '1px')
-      .style('align-items', 'flex-end')
-      .style('background-color', 'lightgrey')
-      .style('height', cellHeight + 'px');
+      .style('align-items', 'flex-end');
 
     const dataVal = dataInfo.allCategories;
-    const histData = [];
     const uniqueValues = dataVal.filter((x, i, a) => a.indexOf(x) === i);
 
     const categoriesName = [];
@@ -208,10 +205,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     const tooltipDiv = filterDiv.append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
-
-
-    const dataVal = dataInfo.value.slice().sort();
-
+    const dataVal = dataInfo.value.slice().sort(ascending);
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
     const numDiv = div.append('div')
       .attr('class', 'numerical')
