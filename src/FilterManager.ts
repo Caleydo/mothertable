@@ -185,13 +185,18 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .text((d: any) => d);
     block.filterDiv = divBlock;
 
+    const binScale = d3.scale.linear()
+      .domain(d3.extent(histData, (d) => d.bins)).range([10, 20]);
+
     const color = d3.scale.category20();
     const histDivs = numDiv.append('div').classed('binsEntries', true)
       .style('display', 'flex')
+      .style('align-items', 'flex-end')
       .selectAll('div.bins').data(histData).enter();
     histDivs.append('div').classed('bins', true)
       .style('flex-grow', '1')
       .style('background-color', (d) => color(d.value))
+      .style('height', (d) => binScale(d.bins) + 'px')
       .text((d: any) => d.bins);
 
 
