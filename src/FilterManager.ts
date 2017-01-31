@@ -271,7 +271,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
         self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
         block.filterDiv = divBlock;
       }
-    })
+    });
 
 
     const svg = divBlock.append('svg')
