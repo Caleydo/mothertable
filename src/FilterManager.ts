@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import App from './app';
 import Block from './Block';
 import ConnectionLines from './ConnectionLines';
-import VisManager from './VisManager';
+
 
 export default class FilterManager {
 
@@ -54,7 +54,10 @@ export default class FilterManager {
 
 
       } else if (dataType === 'int' || dataType === 'real') {
+
+
         (<any>data).data().then(function (dataVal) {
+
           const uniqVal = dataVal.filter((x, i, a) => a.indexOf(x) === i);
           block.activeNuericalValue = uniqVal;
           const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data, 'range': range};
@@ -206,14 +209,8 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .attr('class', 'tooltip')
       .style('opacity', 0);
 
-    const dataVal = dataInfo.value;
-    const histData = [];
-    const uniqueValues = dataVal.filter((x, i, a) => a.indexOf(x) === i);
-    uniqueValues.forEach(((val, i) => {
-      const countId = dataVal.filter(isSame.bind(this, val));
-      histData.push({value: val, bins: countId.length});
 
-    }));
+    const dataVal = dataInfo.value.slice().sort();
 
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
     const numDiv = div.append('div')
@@ -221,24 +218,22 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .text((d: any) => d);
     block.filterDiv = divBlock;
 
-    const binScale = d3.scale.linear()
-      .domain(d3.extent(histData, (d) => d.bins)).range([cellHeight / 2, cellHeight]);
+    const colorScale = d3.scale.linear<string,number>().domain(d3.extent(dataVal)).range(['white', 'red']);
 
-    const color = d3.scale.category20();
-    const histDivs = numDiv.append('div').classed('binsEntries', true)
+    const bidDivs = numDiv.append('div').classed('binsEntries', true)
       .style('display', 'flex')
       .style('align-items', 'flex-end')
-      .selectAll('div.bins').data(histData).enter();
-    histDivs.append('div').classed('bins', true)
+      .selectAll('div.bins').data(dataVal).enter();
+    bidDivs.append('div').classed('bins', true)
       .style('flex-grow', '1')
-      .style('background-color', (d) => color(d.value))
-      .style('height', (d) => binScale(d.bins) + 'px')
+      .style('background-color', (d) => colorScale(d))
+      .style('height', cellHeight + 'px')
       //.text((d: any) => d.value)
       .on('mouseover', function (d, i) {
         tooltipDiv.transition()
           .duration(200)
           .style('opacity', 1);
-        tooltipDiv.html(`${d.value} </br> count = ${d.bins}`)
+        tooltipDiv.html(`${d}`)
           .style('left', ((<any>d3).event.pageX) + 'px')
           .style('top', ((<any>d3).event.pageY - 28) + 'px');
       })
@@ -246,32 +241,33 @@ function makeNumerical(divInfo, dataInfo, block, self) {
         tooltipDiv.transition()
           .duration(500)
           .style('opacity', 0);
-      })      .on('click', function () {
-      d3.select(this).classed('active', !d3.select(this).classed('active'));
-      if (d3.select(this).classed('active') === false) {
-        const catName = (d3.select(this).datum().value);
-        const cat = block.activeNuericalValue;
-        cat.push(catName);
-        block.activeNuericalValue = cat;
+      })
+      .on('click', function () {
+        d3.select(this).classed('active', !d3.select(this).classed('active'));
+        if (d3.select(this).classed('active') === false) {
+          const catName = (d3.select(this).datum());
+          const cat = block.activeNuericalValue;
+          cat.push(catName);
+          block.activeNuericalValue = cat;
 
-        const filterType = cat;
-        self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
-      } else if (d3.select(this).classed('active') === true) {
-        const catName = (d3.select(this).datum().value);
-        const cat = block.activeNuericalValue;
-        let ind = -1;
-        for (let i = 0; i < cat.length; ++i) {
-          if (cat[i] === catName) {
-            ind = i;
+          const filterType = cat;
+          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
+        } else if (d3.select(this).classed('active') === true) {
+          const catName = (d3.select(this).datum());
+          const cat = block.activeNuericalValue;
+          let ind = -1;
+          for (let i = 0; i < cat.length; ++i) {
+            if (cat[i] === catName) {
+              ind = i;
+            }
           }
+          cat.splice(ind, 1);
+          block.activeNuericalValue = cat;
+          const filterType = cat;
+          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
+          block.filterDiv = divBlock;
         }
-        cat.splice(ind, 1);
-        block.activeNuericalValue = cat;
-        const filterType = cat;
-        self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
-        block.filterDiv = divBlock;
-      }
-    });
+      });
 
 
     const svg = divBlock.append('svg')
