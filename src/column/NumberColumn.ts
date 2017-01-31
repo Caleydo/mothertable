@@ -7,32 +7,16 @@ import {INumericalVector} from 'phovea_core/src/vector';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   readonly columnNode: HTMLElement;
-  readonly filterNode: HTMLElement;
 
-  constructor(data: INumericalVector, columnParent: HTMLElement, filterParent: HTMLElement) {
+  constructor(data: INumericalVector, columnParent: HTMLElement) {
     super(data);
-    this.columnNode = this.buildColumn(columnParent);
-    this.filterNode = this.buildFilter(filterParent);
+    this.columnNode = this.build(columnParent);
   }
 
-  private buildColumn(parent: HTMLElement) {
+  private build(parent: HTMLElement) {
     const node = <HTMLDivElement><any>parent.ownerDocument.createElement('div');
     parent.appendChild(node);
     return node;
-  }
-
-  private buildFilter(parent: HTMLElement) {
-    const node = <HTMLDivElement><any>parent.ownerDocument.createElement('div');
-    parent.appendChild(node);
-    return node;
-  }
-
-  isFiltered() {
-    return false;
-  }
-
-  filter(v: number) {
-    return true;
   }
 
   update(range: CompositeRange1D) {

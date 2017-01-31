@@ -6,32 +6,16 @@ import CompositeRange1D from 'phovea_core/src/range/CompositeRange1D';
 
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
   readonly columnNode: HTMLElement;
-  readonly filterNode: HTMLElement;
 
-  constructor(data: IStringVector, columnParent: HTMLElement, filterParent: HTMLElement) {
+  constructor(data: IStringVector, columnParent: HTMLElement) {
     super(data);
-    this.columnNode = this.buildColumn(columnParent);
-    this.filterNode = this.buildFilter(filterParent);
+    this.columnNode = this.build(columnParent);
   }
 
-  private buildColumn(parent: HTMLElement) {
+  private build(parent: HTMLElement) {
     const node = <HTMLDivElement><any>parent.ownerDocument.createElement('div');
     parent.appendChild(node);
     return node;
-  }
-
-  private buildFilter(parent: HTMLElement) {
-    const node = <HTMLDivElement><any>parent.ownerDocument.createElement('div');
-    parent.appendChild(node);
-    return node;
-  }
-
-  isFiltered() {
-    return false;
-  }
-
-  filter(v: string) {
-    return true;
   }
 
   update(range: CompositeRange1D) {

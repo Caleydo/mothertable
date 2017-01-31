@@ -12,17 +12,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   constructor(data: DATATYPE) {
     super(data);
   }
-
-  sortAndFilter(idRange: CompositeRange1D): Promise<CompositeRange1D> {
-    if (!this.isFiltered() || idRange.isNone) {
-      return Promise.resolve(idRange);
-    }
-    return Promise.reject('not implemented');
-    //const subset = range.isAll ? this.data : this.data.view(rlist(range));
-    //return subset.filter(this.filter.bind(this))
-    //  .then((filtered) => filtered.)
-    //  .then((idRange))
-  }
 }
 
 export default AVectorColumn;

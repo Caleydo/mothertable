@@ -20,36 +20,32 @@ declare type AnyColumn = AColumn<any, IDataType>;
 
 export default class ColumnManager {
   private columns: AnyColumn[] = [];
-  private filterOrder: AnyColumn[] = [];
   private readonly columnNode: HTMLElement;
-  private readonly filterNode: HTMLElement;
 
   constructor(public readonly idType: IDType, parent: HTMLElement) {
-    this.columnNode = <HTMLElement><any>parent.ownerDocument.createElement('div');
-    this.filterNode = <HTMLElement><any>parent.ownerDocument.createElement('div');
+    this.columnNode = parent.ownerDocument.createElement('div');
   }
 
   push(data: IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix) {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
-    const f = this.createFilter(data, this.columnNode, this.filterNode);
+    const f = ColumnManager.createColumn(data, this.columnNode);
     this.columns.push(f);
-    this.filterOrder.push(f);
   }
 
-  private createFilter(data: IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix, columnNode: HTMLElement, filterNode: HTMLElement): AnyColumn {
+  private static createColumn(data: IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix, columnNode: HTMLElement): AnyColumn {
     switch (data.desc.type) {
       case 'vector':
         const v = <IStringVector|ICategoricalVector|INumericalVector>data;
         switch (v.desc.value.type) {
           case VALUE_TYPE_STRING:
-            return new StringColumn(<IStringVector>v, this.columnNode, this.filterNode);
+            return new StringColumn(<IStringVector>v, columnNode);
           case VALUE_TYPE_CATEGORICAL:
-            return new CategoricalColumn(<ICategoricalVector>v, this.columnNode, this.filterNode);
+            return new CategoricalColumn(<ICategoricalVector>v, columnNode);
           case VALUE_TYPE_INT:
           case VALUE_TYPE_REAL:
-            return new NumberColumn(<INumericalVector>v, this.columnNode, this.filterNode);
+            return new NumberColumn(<INumericalVector>v, columnNode);
         }
         throw new Error('invalid vector type');
       case 'matrix':
@@ -57,17 +53,11 @@ export default class ColumnManager {
         switch (m.desc.value.type) {
           case VALUE_TYPE_INT:
           case VALUE_TYPE_REAL:
-            return new MatrixColumn(<INumericalMatrix>m, this.columnNode, this.filterNode);
+            return new MatrixColumn(<INumericalMatrix>m, columnNode);
         }
         throw new Error('invalid matrix type');
       default:
         throw new Error('invalid data type');
-    }
-  }
-
-  private filter(): Promise<CompositeRange1D> {
-    if (this.columns.length === 0) {
-      return Promise.reject('no filter');
     }
   }
 }

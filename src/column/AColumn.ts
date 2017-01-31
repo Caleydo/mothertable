@@ -16,20 +16,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> {
   }
 
   abstract readonly columnNode: HTMLElement;
-  abstract readonly filterNode: HTMLElement;
-
-  /**
-   * filter the given value
-   * @param value
-   */
-  abstract filter(value: T): boolean;
-
-  /**
-   * is a filter set
-   */
-  abstract isFiltered(): boolean;
-
-  abstract sortAndFilter(idRange: CompositeRange1D): Promise<CompositeRange1D>;
 
   abstract update(idRange: CompositeRange1D);
 }
