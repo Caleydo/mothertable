@@ -55,6 +55,8 @@ export default class FilterManager {
 
       } else if (dataType === 'int' || dataType === 'real') {
         (<any>data).data().then(function (dataVal) {
+          const uniqVal = dataVal.filter((x, i, a) => a.indexOf(x) === i);
+          block.activeNuericalValue = uniqVal;
           const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data, 'range': range};
           makeNumerical(divInfo, dataInfo, block, self);
         });
@@ -178,7 +180,6 @@ function makeCategories(divInfo, dataInfo, block, self) {
     const connectionLine = new ConnectionLines(self);
     connectionLine.makeLines(divBlock, divInfo.uid);
 
-
   } else {
     return console.log('Already Exists');
   }
@@ -221,7 +222,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     block.filterDiv = divBlock;
 
     const binScale = d3.scale.linear()
-      .domain(d3.extent(histData, (d) => d.bins)).range([cellHeight/2, cellHeight]);
+      .domain(d3.extent(histData, (d) => d.bins)).range([cellHeight / 2, cellHeight]);
 
     const color = d3.scale.category20();
     const histDivs = numDiv.append('div').classed('binsEntries', true)
@@ -245,7 +246,32 @@ function makeNumerical(divInfo, dataInfo, block, self) {
         tooltipDiv.transition()
           .duration(500)
           .style('opacity', 0);
-      });
+      })      .on('click', function () {
+      d3.select(this).classed('active', !d3.select(this).classed('active'));
+      if (d3.select(this).classed('active') === false) {
+        const catName = (d3.select(this).datum().value);
+        const cat = block.activeNuericalValue;
+        cat.push(catName);
+        block.activeNuericalValue = cat;
+
+        const filterType = cat;
+        self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
+      } else if (d3.select(this).classed('active') === true) {
+        const catName = (d3.select(this).datum().value);
+        const cat = block.activeNuericalValue;
+        let ind = -1;
+        for (let i = 0; i < cat.length; ++i) {
+          if (cat[i] === catName) {
+            ind = i;
+          }
+        }
+        cat.splice(ind, 1);
+        block.activeNuericalValue = cat;
+        const filterType = cat;
+        self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
+        block.filterDiv = divBlock;
+      }
+    })
 
 
     const svg = divBlock.append('svg')
