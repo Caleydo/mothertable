@@ -21,8 +21,8 @@ declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
 export default class ColumnManager {
-  private readonly columns: AnyColumn[] = [];
-  private readonly node: HTMLElement;
+  readonly columns: AnyColumn[] = [];
+  readonly node: HTMLElement;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -35,14 +35,37 @@ export default class ColumnManager {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
-    const f = ColumnManager.createColumn(data, this.node);
-    f.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    this.columns.push(f);
+    const col = ColumnManager.createColumn(data, this.node);
+    col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    this.columns.push(col);
+    this.relayout();
   }
 
-  remove(v: AnyColumn) {
-    this.columns.splice(this.columns.indexOf(v), 1);
-    v.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+  remove(col: AnyColumn) {
+    this.columns.splice(this.columns.indexOf(col), 1);
+    col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    this.relayout();
+  }
+
+  /**
+   * move a column at the given index
+   * @param col
+   * @param index
+   */
+  move(col: AnyColumn, index: number) {
+    const old = this.columns.indexOf(col);
+    if (old === index) {
+      return;
+    }
+    //move the dom element, too
+    this.node.insertBefore(col.node, this.node.childNodes[index]);
+
+    this.columns.splice(old, 1);
+    if (old < index) {
+      index -= 1; //shifted because of deletion
+    }
+    this.columns.splice(index, 0, col);
+    this.relayout();
   }
 
   private static createColumn(data: IMotherTableType, parent: HTMLElement): AnyColumn {
@@ -73,6 +96,13 @@ export default class ColumnManager {
   }
 
   update(idRange: CompositeRange1D) {
-    this.columns.forEach((c) => c.update(idRange));
+    this.columns.forEach((col) => col.update(idRange));
+  }
+
+  relayout() {
+    this.columns.forEach((col) => {
+      const bb = col.node.getBoundingClientRect();
+      col.layout(bb.width, bb.height);
+    });
   }
 }
