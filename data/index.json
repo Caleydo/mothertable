@@ -44,19 +44,9 @@
         "value": {
           "type": "categorical",
           "categories": [
-            {
-              "name": "female",
-              "color": "red"
-            },
-            {
-              "name": "group",
-              "color": "#ff00ff"
-            },
-            {
-              "name": "male",
-              "color": "blue"
-            }
-          ]
+            "female",
+            "group",
+            "male" ]
         }
       },
       {
