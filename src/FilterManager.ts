@@ -37,7 +37,7 @@ export default class FilterManager {
 
 
   createFilter(block, self) {
-    console.log(self, block)
+
     const data = block.data;
     const vectorOrMatrix = (<any>data.desc).type;
     const name = (<any>data.desc).name;
@@ -117,7 +117,6 @@ function makeCategories(divInfo, dataInfo, block, self) {
       .on('click', function (e, j) {
         d3.select(this).classed('active', !d3.select(this).classed('active'));
         if (d3.select(this).classed('active') === false) {
-
           const previousKey = ConnectionLines.previousKey;
           const paths = d3.select(`[f-uid="${previousKey}"]`).selectAll('.lineConnection').selectAll('path');
           paths[0].forEach((d, i) => {

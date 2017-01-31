@@ -272,10 +272,10 @@ function categoricalLines(topPathData, values, tableVector, keys, cellData, bloc
     });
 
     // const domain = [1, 30];
+    let toggle = true;
     const lineScale = d3.scale.linear().domain(domain).range([1, 5]);
     const svg = lineDiv.append('svg').attr('width', cellData.width)
       .attr('height', cellData.height).selectAll('path').data(pathData);
-    let toggle = true;
     svg.enter().append('path')
       .attr('d', function (d, i) {
         const xposition = bottomPathData.get(d.bottomCatName).xpos;

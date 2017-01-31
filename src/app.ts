@@ -39,7 +39,6 @@ export default class App {
     this.filterManager = new FilterManager(this.rangeManager);
 
 
-
   }
 
   /**
@@ -99,7 +98,7 @@ export default class App {
 
     const filterNode = d3.select('#filterView');
     // this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
- console.log(App.blockList);
+    console.log(App.blockList);
     //
 
 
