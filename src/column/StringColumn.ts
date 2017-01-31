@@ -5,20 +5,10 @@ import CompositeRange1D from 'phovea_core/src/range/CompositeRange1D';
  */
 
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
-  readonly columnNode: HTMLElement;
+  readonly node: HTMLElement;
 
   constructor(data: IStringVector, columnParent: HTMLElement) {
     super(data);
-    this.columnNode = this.build(columnParent);
-  }
-
-  private build(parent: HTMLElement) {
-    const node = <HTMLDivElement><any>parent.ownerDocument.createElement('div');
-    parent.appendChild(node);
-    return node;
-  }
-
-  update(range: CompositeRange1D) {
-    // TODO
+    this.node = this.build(columnParent);
   }
 }
