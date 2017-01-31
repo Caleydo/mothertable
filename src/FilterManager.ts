@@ -169,12 +169,31 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .attr('f-uid', divInfo.uid)
       //.style('height', cellHeight + 'px')
       .style('margin', '1px');
+    const dataVal = dataInfo.value;
+    const histData = [];
+    const uniqueValues = dataVal.filter((x, i, a) => a.indexOf(x) === i);
+    uniqueValues.forEach(((val, i) => {
+      const countId = dataVal.filter(isSame.bind(this, val))
+      histData.push({value: val, bins: countId.length});
+
+    }));
+
 
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
     const numDiv = div.append('div')
       .attr('class', 'numerical')
       .text((d: any) => d);
     block.filterDiv = divBlock;
+
+    const color = d3.scale.category20();
+    const histDivs = numDiv.append('div').classed('binsEntries', true)
+      .style('display', 'flex')
+      .selectAll('div.bins').data(histData).enter();
+    histDivs.append('div').classed('bins', true)
+      .style('flex-grow', '1')
+      .style('background-color', (d) => color(d.value))
+      .text((d: any) => d.bins);
+
 
     const svg = divBlock.append('svg')
       .attr('height', cellHeight - brushHeight)
@@ -371,4 +390,11 @@ function checkMeIfExist(id) {
 
   return ((count > 1) ? true : false);
 
+}
+
+
+function isSame(value, compareWith) {
+
+
+  return value === compareWith;
 }
