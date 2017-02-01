@@ -15,7 +15,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
 
-    // TODO
+    node.innerHTML = `<strong>TODO</strong>`;
 
     return node;
   }

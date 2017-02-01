@@ -22,6 +22,7 @@ export declare type IMotherTableType = IStringVector|ICategoricalVector|INumeric
 
 export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
+  static readonly EVENT_DATA_REMOVED = 'removedData';
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
@@ -31,6 +32,16 @@ export default class ColumnManager extends EventHandler {
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
     this.node.classList.add('column-manager');
+  }
+
+  get length() {
+    return this.columns.length;
+  }
+
+  destroy() {
+    // delete all columns, can't remove myself, since I'm using the parent
+    const items = <HTMLElement[]>Array.from(this.node.querySelectorAll('.column'));
+    items.forEach((d) => d.remove());
   }
 
   push(data: IMotherTableType) {
@@ -48,6 +59,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
+    this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.relayout();
   }
 

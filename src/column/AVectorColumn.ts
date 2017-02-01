@@ -19,28 +19,29 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected multiFormParams(): IMultiFormOptions {
-    return {
-      initialVis: 'phovea-vis-heatmap1d'
-    };
+    return {};
   }
 
   protected buildBody(body: HTMLElement) {
-    this.multiform = this.createMultiForm(this.data, body);
+    this.multiform = new MultiForm(this.data, body, this.multiFormParams());
   }
 
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('afterbegin', `<div class="vislist"></div>`);
+    if (this.multiform) {
+      const vislist = <HTMLElement>toolbar.querySelector('div.vislist');
+      this.multiform.addIconVisChooser(vislist);
+    }
     super.buildToolbar(toolbar);
   }
 
-  private createMultiForm(data: IDataType, body: HTMLElement) {
+  private replaceMultiForm(data: IDataType, body: HTMLElement) {
     const m = new MultiForm(this.data, body, this.multiFormParams());
-    const toolbar = <HTMLElement>this.toolbar.querySelector('div.vislist');
-    toolbar.innerHTML = '';
-    m.addIconVisChooser(toolbar);
+    const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
+    vislist.innerHTML = ''; // clear old
+    this.multiform.addIconVisChooser(vislist);
     return m;
   }
-
 
   layout(width: number, height: number) {
     scaleTo(this.multiform, width, height);
@@ -49,7 +50,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   update(idRange: CompositeRange1D) {
     this.multiform.destroy();
     this.data.idView(rlist(idRange)).then((view) => {
-      this.multiform = this.createMultiForm(view, this.body);
+      this.multiform = this.replaceMultiForm(view, this.body);
     });
   }
 }

@@ -11,4 +11,5 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
     super(data);
     this.node = this.build(columnParent);
   }
+
 }

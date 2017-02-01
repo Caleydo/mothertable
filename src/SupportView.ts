@@ -19,11 +19,19 @@ export default class SupportView extends EventHandler {
   static EVENT_DATASET_ADDED = 'added';
 
   private readonly filter: FilterManager;
+  readonly node: HTMLElement;
 
-  constructor(public readonly idType: IDType, readonly node: HTMLElement) {
+  constructor(public readonly idType: IDType, parent: HTMLElement) {
     super();
+    this.node = parent.ownerDocument.createElement('div');
+    parent.appendChild(this.node);
     this.node.classList.add('support-view');
-    this.filter = new FilterManager(idType, node);
+    this.buildSelectionBox(this.node);
+    this.filter = new FilterManager(idType, this.node);
+  }
+
+  destroy() {
+    this.node.remove();
   }
 
   private addDataset(data: IDataType) {
@@ -31,6 +39,12 @@ export default class SupportView extends EventHandler {
       this.filter.push(<IFilterAbleType>data);
     }
     this.fire(SupportView.EVENT_DATASET_ADDED, data);
+  }
+
+  public remove(data: IDataType) {
+    if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
+      this.filter.removeData(<IFilterAbleType>data);
+    }
   }
 
   private async buildSelectionBox(parent: HTMLElement) {
@@ -42,10 +56,9 @@ export default class SupportView extends EventHandler {
     const select = <HTMLSelectElement>parent.querySelector('select');
 
     // list all data, filter to the matching ones, and prepare them
-    let datasets = (await listData())
+    const datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
       .map((d) => transposeMatrixIfNeeded(this.idType, d));
-    datasets = convertTableToVectors(datasets);
 
     //
     datasets.forEach((d) => {

@@ -37,6 +37,11 @@ export default class FilterManager extends EventHandler {
     return this.filters.some((d) => d.data === data);
   }
 
+  removeData(data: IFilterAbleType) {
+    const f = this.filters.find((d) => d.data === data);
+    return f ? this.remove(f) : null;
+  }
+
   remove(col: AnyColumn) {
     col.node.remove();
     this.filters.splice(this.filters.indexOf(col), 1);

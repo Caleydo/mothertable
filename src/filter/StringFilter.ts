@@ -14,7 +14,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
 
-    // TODO
+    node.innerHTML = `<strong>TODO</strong>`;
 
     return node;
   }

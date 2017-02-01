@@ -51,7 +51,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
 
-    toolbar.querySelector('i.fa-close').addEventListener('click', () => {
+    toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
     });

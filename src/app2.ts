@@ -4,7 +4,7 @@
 
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import {select} from 'd3';
-import ColumnManager from './column/ColumnManager';
+import ColumnManager,{IMotherTableType} from './column/ColumnManager';
 import SupportView from './SupportView';
 
 /**
@@ -46,12 +46,37 @@ export default class App {
     elems.exit().remove();
   }
 
+  private hideSelection() {//remove start selection
+    const elem = <HTMLElement>this.node.querySelector('#startSelection');
+    elem.style.display = 'none';
+  }
+
+  private showSelection() {
+    const elem = <HTMLElement>this.node.querySelector('#startSelection');
+    elem.style.display = null;
+  }
+
+  private reset() {
+    this.supportView.destroy();
+    this.manager.destroy();
+    this.showSelection();
+  }
+
   private setPrimaryIDType(idtype: IDType) {
-    //remove start selection
-    this.node.querySelector('#startSelection').remove();
+    this.hideSelection();
     // create a column manager
     this.manager = new ColumnManager(idtype, <HTMLElement>this.node.querySelector('main'));
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
+    // add to the columns if we add a dataset
+    this.supportView.on(SupportView.EVENT_DATASET_ADDED,(evt: any, data: IMotherTableType) => {
+      this.manager.push(data);
+    });
+    this.manager.on(ColumnManager.EVENT_DATA_REMOVED,(evt: any, data: IMotherTableType) => {
+      this.supportView.remove(data);
+      if (this.manager.length === 0) {
+        this.reset();
+      }
+    });
   }
 }
 

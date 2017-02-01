@@ -16,7 +16,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
 
-    // TODO
+
+    node.innerHTML = `<strong>TODO</strong>`;
 
     return node;
   }
