@@ -147,9 +147,15 @@ body {
 
 .brush .extent {
   stroke: #000000;
-  fill-opacity: .25;
+  fill:#777;
+  fill-opacity: 0.3;
   shape-rendering: crispEdges;
 }
+.brush.background {
+  fill:#666;
+  fill-opacity: 0.8;
+ }
+
 
 .stringFilterValue {
   text-align: center;
