@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width">
     <link href="//fonts.googleapis.com/css?family=Yantramanav:500,400,300" rel="stylesheet" type="text/css">
     <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
-    <link href="./style.css"rel="stylesheet" type="text/css">
+    <link href="./style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 
@@ -34,25 +34,34 @@
 -->
 <main id="app">
     <main>
+        <div class="container" id="startSelection">
+            <div class="jumbotron">
+                <h1>What do you wanna rank today?</h1>
+                <div class="btn-group btn-group-justified btn-group-lg" role="group">
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default btn-lg">Artists</button>
+                  </div>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default btn-lg">Countries</button>
+                  </div>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default btn-lg">Patients</button>
+                  </div>
+                </div>
+            </div>
+        </div>
     </main>
     <section class="rightPanel">
-        <div class="appToolBar">
-            <button class="adder fa fa-plus fa-2x"></button>
-        </div>
-        <div class="filter-view" id="filterView">
-        </div>
     </section>
-
-    <div class="busy"></div>
 </main>
 
 <script>
-  (function() {
-    var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-    if (!isChrome) {
-      alert('This application was designed to be used in Google Chrome.\nRunning the application in other browsers might result in performance issues or other misbehavior.');
-    }
-  })();
+    (function () {
+        var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+        if (!isChrome) {
+            alert('This application was designed to be used in Google Chrome.\nRunning the application in other browsers might result in performance issues or other misbehavior.');
+        }
+    })();
 </script>
 <script src="./common.js"></script>
 <script src="./app.js"></script>

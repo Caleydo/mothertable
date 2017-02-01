@@ -11,7 +11,6 @@ import VisManager from './VisManager';
 import FilterManager from './FilterManager';
 import RangeManager from './RangeManager';
 import Block from './Block';
-import any = jasmine.any;
 import ConnectionLines from './ConnectionLines';
 
 /**

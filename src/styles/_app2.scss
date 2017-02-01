@@ -14,23 +14,17 @@ body {
 #app {
   display: flex;
   flex-direction: row;
-
   align-items: stretch;
-  justify-content: left;
+  height: 100%;
 
   > .rightPanel {
     display: flex;
     overflow: hidden;
     flex-direction: column;
     border-left: $border-ui;
-    width: 30vw;
-
-    > .appToolBar {
-      height: 40px;
-      padding: 4px;
-    }
 
     > .filter-view {
+      width: 20vw;
       flex: 1 1 auto;
       overflow: scroll;
       padding: 4px;
