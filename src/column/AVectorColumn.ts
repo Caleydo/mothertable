@@ -1,7 +1,7 @@
 import AColumn from './AColumn';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
-import CompositeRange1D from 'phovea_core/src/range/CompositeRange1D';
+import Range1D from 'phovea_core/src/range/Range1D';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {list as rlist} from 'phovea_core/src/range';
 import {scaleTo} from './utils';
@@ -47,7 +47,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     scaleTo(this.multiform, width, height);
   }
 
-  update(idRange: CompositeRange1D) {
+  update(idRange: Range1D) {
     this.multiform.destroy();
     this.data.idView(rlist(idRange)).then((view) => {
       this.multiform = this.replaceMultiForm(view, this.body);

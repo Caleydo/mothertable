@@ -3,7 +3,7 @@
  */
 
 import {IDataType} from 'phovea_core/src/datatype';
-import CompositeRange1D from 'phovea_core/src/range/CompositeRange1D';
+import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
@@ -21,7 +21,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract layout(width: number, height: number);
 
-  abstract update(idRange: CompositeRange1D);
+  abstract update(idRange: Range1D);
 
   get body() {
     return <HTMLElement>this.node.querySelector('main');

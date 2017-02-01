@@ -17,6 +17,7 @@ import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 
 export default class SupportView extends EventHandler {
   static EVENT_DATASET_ADDED = 'added';
+  static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
   private readonly filter: FilterManager;
   readonly node: HTMLElement;
@@ -28,6 +29,8 @@ export default class SupportView extends EventHandler {
     this.node.classList.add('support-view');
     this.buildSelectionBox(this.node);
     this.filter = new FilterManager(idType, this.node);
+
+    this.propagate(this.filter, FilterManager.EVENT_FILTER_CHANGED);
   }
 
   destroy() {

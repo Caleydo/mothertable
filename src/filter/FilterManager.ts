@@ -13,12 +13,15 @@ import CategoricalFilter from './CategoricalFilter';
 import StringFilter from './StringFilter';
 import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
+import {Range1D} from 'phovea_core/src/range';
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector;
 
 export default class FilterManager extends EventHandler {
+  static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   readonly filters: AnyColumn[] = [];
+  private onFilterChanged = () => this.refilter();
 
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
@@ -30,6 +33,7 @@ export default class FilterManager extends EventHandler {
       throw new Error('invalid idtype');
     }
     const col = FilterManager.createFilter(data, this.node);
+    col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(col);
   }
 
@@ -65,6 +69,20 @@ export default class FilterManager extends EventHandler {
       index -= 1; //shifted because of deletion
     }
     this.filters.splice(index, 0, col);
+  }
+
+  async currentFilter() {
+    let filtered = Range1D.all();
+    for (const f of this.filters) {
+      filtered = await f.filter(filtered);
+    }
+    return filtered;
+  }
+
+  private async refilter() {
+    // compute the new filter
+    const filter = await this.currentFilter();
+    this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
   }
 
   private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {

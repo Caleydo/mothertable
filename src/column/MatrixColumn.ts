@@ -1,5 +1,5 @@
 import AColumn from './AColumn';
-import CompositeRange1D from 'phovea_core/src/range/CompositeRange1D';
+import Range1D from 'phovea_core/src/range/Range1D';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {list as rlist} from 'phovea_core/src/range';
@@ -49,7 +49,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     scaleTo(this.multiform, width, height);
   }
 
-  update(idRange: CompositeRange1D) {
+  update(idRange: Range1D) {
     this.multiform.destroy();
     this.data.idView(rlist(idRange)).then((view) => {
       this.multiform = this.replaceMultiForm(view, this.body);

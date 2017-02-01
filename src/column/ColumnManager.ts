@@ -5,7 +5,7 @@ import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
-import CompositeRange1D from 'phovea_core/src/range/CompositeRange1D';
+import Range1D from 'phovea_core/src/range/Range1D';
 import {IStringVector} from './AVectorColumn';
 import AColumn from './AColumn';
 import CategoricalColumn from './CategoricalColumn';
@@ -113,7 +113,7 @@ export default class ColumnManager extends EventHandler {
     }
   }
 
-  update(idRange: CompositeRange1D) {
+  update(idRange: Range1D) {
     this.columns.forEach((col) => col.update(idRange));
   }
 
