@@ -25,13 +25,11 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
-  readonly node: HTMLElement;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
-  constructor(public readonly idType: IDType, parent: HTMLElement) {
+  constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
-    this.node = parent.ownerDocument.createElement('div');
     this.node.classList.add('column-manager');
   }
 

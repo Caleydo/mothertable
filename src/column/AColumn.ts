@@ -6,7 +6,6 @@ import {IDataType} from 'phovea_core/src/datatype';
 import CompositeRange1D from 'phovea_core/src/range/CompositeRange1D';
 import {EventHandler} from 'phovea_core/src/event';
 
-
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
 
