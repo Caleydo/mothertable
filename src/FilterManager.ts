@@ -61,8 +61,26 @@ export default class FilterManager {
 
           const uniqVal = dataVal.filter((x, i, a) => a.indexOf(x) === i);
           block.activeNuericalValue = uniqVal;
-          const dataInfo = {'name': name, value: dataVal, type: dataType, 'data': data, 'range': range};
-          makeNumerical(divInfo, dataInfo, block, self);
+
+          const binSize = [];
+          (<any>data).hist().then((d, i) => {
+            const binSize = [];
+            d.forEach((bins, index) => {
+              binSize.push(bins);
+            });
+
+            const dataInfo = {
+              'name': name,
+              value: dataVal,
+              type: dataType,
+              'data': data,
+              'range': range,
+              bins: binSize
+            };
+            makeNumerical(divInfo, dataInfo, block, self);
+          });
+
+
         });
       } else {
         (<any>data).data().then(function (dataVal) {
@@ -192,8 +210,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
   const checkMe = checkMeIfExist(id);
   if (checkMe === false) {
 
-    const brushHeight = 20;
-    const cellHeight = divInfo.filterRowHeight + brushHeight;
+    const cellHeight = divInfo.filterRowHeight;
     const cellWidth = divInfo.filterDialogWidth;
 
     const range = dataInfo.range;
@@ -205,29 +222,30 @@ function makeNumerical(divInfo, dataInfo, block, self) {
     const tooltipDiv = filterDiv.append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
-    const dataVal = dataInfo.value.slice().sort(ascending);
     const div = divBlock.selectAll('div.numerical').data([dataInfo.name]).enter();
     const numDiv = div.append('div')
       .attr('class', 'numerical')
       .text((d: any) => d);
     block.filterDiv = divBlock;
+    const svgDIV = div.append('svg')
+      .attr('height', cellHeight + 10)
+      .attr('width', cellWidth);
+    const binSize = dataInfo.bins;
 
-    const colorScale = d3.scale.linear<string,number>().domain(d3.extent(dataVal)).range(['white', 'red']);
-
-    const bidDivs = numDiv.append('div').classed('binsEntries', true)
-      .style('display', 'flex')
-      .style('align-items', 'flex-end')
-      .selectAll('div.bins').data(dataVal).enter();
-    bidDivs.append('div').classed('bins', true)
-      .style('flex-grow', '1')
-      .style('background-color', (d) => colorScale(d))
-      .style('height', cellHeight + 'px')
-      //.text((d: any) => d.value)
+    const cellDimension = cellWidth / binSize.length;
+    const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(binSize)]).range(['white', 'red']);
+    const bidDivs = svgDIV.append('g').classed('binsEntries', true)
+      .selectAll('g.bins').data(binSize).enter();
+    bidDivs.append('rect').classed('bins', true)
+      .attr('x', (d, i) => i * cellDimension)
+      .attr('width', cellDimension)
+      .attr('height', cellHeight)
+      .attr('fill', (d: any) => colorScale(d))
       .on('mouseover', function (d, i) {
         tooltipDiv.transition()
           .duration(200)
           .style('opacity', 1);
-        tooltipDiv.html(`${d}`)
+        tooltipDiv.html(`Bin:${i + 1}, Entries: ${d}`)
           .style('left', ((<any>d3).event.pageX) + 'px')
           .style('top', ((<any>d3).event.pageY - 28) + 'px');
       })
@@ -235,40 +253,8 @@ function makeNumerical(divInfo, dataInfo, block, self) {
         tooltipDiv.transition()
           .duration(500)
           .style('opacity', 0);
-      })
-      .on('click', function () {
-        d3.select(this).classed('active', !d3.select(this).classed('active'));
-        if (d3.select(this).classed('active') === false) {
-          const catName = (d3.select(this).datum());
-          const cat = block.activeNuericalValue;
-          cat.push(catName);
-          block.activeNuericalValue = cat;
-
-          const filterType = cat;
-          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
-        } else if (d3.select(this).classed('active') === true) {
-          const catName = (d3.select(this).datum());
-          const cat = block.activeNuericalValue;
-          let ind = -1;
-          for (let i = 0; i < cat.length; ++i) {
-            if (cat[i] === catName) {
-              ind = i;
-            }
-          }
-          cat.splice(ind, 1);
-          block.activeNuericalValue = cat;
-          const filterType = cat;
-          self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
-          block.filterDiv = divBlock;
-        }
       });
 
-
-    const svg = divBlock.append('svg')
-      .attr('height', cellHeight - brushHeight)
-      .attr('width', cellWidth)
-      .append('g')
-      .attr('transform', 'translate(2,0)');
 
     //Adapted from https://bl.ocks.org/alexmacy/eb284831aff6f9d0119b
 
@@ -280,35 +266,41 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .x(scale)
       .extent(range);
 
-
-    const xAxis = d3.svg.axis()
-      .scale(scale)
-      .orient('bottom')
-      .tickValues(scale.domain())
-      .tickFormat(d3.format(''));
-
-    svg.append('g')
-      .attr('class', 'x axis')
-      .call(xAxis)
-      .selectAll('text')
-      .attr('y', 6)
-      .attr('x', 0)
-      .attr('dx', (d, i) => (i === 0) ? '0px' : '-3px')
-      .attr('dy', '8px')
-      .style('text-anchor', (d, i) => (i === 0) ? 'start' : 'end');
-
-    const brushg = svg.append('g').attr('class', 'brush')
-      .call(brush);
+    const brushg = svgDIV.select('g.binsEntries').append('g').classed('brush', true).call(brush);
 
     brushg.selectAll('rect')
-      .attr('height', brushHeight);
+      .attr('height', cellHeight);
+    const textA = svgDIV.append('text').classed('leftVal', true)
+      .attr('x', 0)
+      .attr('y', cellHeight + 10)
+      .attr('font-family', 'sans-serif')
+      .attr('font-size', '12px')
+      .attr('fill', 'red');
+    const textB = svgDIV.append('text').classed('rightVal', true)
+      .attr('x', cellWidth - 20)
+      .attr('y', cellHeight + 10)
+      .attr('font-family', 'sans-serif')
+      .attr('font-size', '10px')
+      .attr('fill', 'red');
 
+    let brushVal = (<any>brush).extent();
+    textA.text(`${(<any>Math).floor(brushVal[0])}`);
+    textB.text(`${(<any>Math).floor(brushVal[1])}`);
+
+    const scalePos = d3.scale.linear().domain(brushVal).range([0, cellWidth]);
 
     brush.on('brush', function () {
+      brushVal = brush.extent();
+
+      textA.attr('x', scalePos(brushVal[0]))
+        .text(`${(<any>Math).floor(brushVal[0])}`);
+      textB.attr('x', scalePos(brushVal[1]) - 20).text(`${(<any>Math).floor(brushVal[1])}`);
+
       const filterType = {numerical: brush.extent()};
       self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
-      //console.log(brush.extent());
+
     });
+
 
     FilterManager.filterList.set(divInfo.uid, self);
     const connectionLine = new ConnectionLines(self);
