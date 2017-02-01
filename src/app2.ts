@@ -2,11 +2,10 @@
  * Created by Caleydo Team on 31.08.2016.
  */
 
-import {IDataType} from 'phovea_core/src/datatype';
-import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import {select} from 'd3';
-import ColumnManager from 'mothertable/src/column/ColumnManager';
+import ColumnManager from './column/ColumnManager';
+import SupportView from './SupportView';
 
 /**
  * The main class for the App app
@@ -16,6 +15,7 @@ export default class App {
   private readonly node: HTMLElement;
 
   private manager: ColumnManager;
+  private supportView: SupportView;
 
   constructor(parent: HTMLElement) {
     this.node = parent;
@@ -51,7 +51,7 @@ export default class App {
     this.node.querySelector('#startSelection').remove();
     // create a column manager
     this.manager = new ColumnManager(idtype, <HTMLElement>this.node.querySelector('main'));
-    //this.filter = new FilterManager(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
+    this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
   }
 }
 
