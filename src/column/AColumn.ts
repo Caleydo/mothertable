@@ -23,7 +23,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract update(idRange: CompositeRange1D);
 
-  protected get body() {
+  get body() {
     return <HTMLElement>this.node.querySelector('main');
   }
 

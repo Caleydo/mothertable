@@ -19,6 +19,7 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
 
   protected build(parent: HTMLElement) {
     const node = parent.ownerDocument.createElement('div');
+    parent.appendChild(node);
     node.classList.add('filter');
     return node;
   }

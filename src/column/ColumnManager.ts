@@ -13,6 +13,7 @@ import StringColumn from './StringColumn';
 import NumberColumn from './NumberColumn';
 import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
+import {resolveIn} from 'phovea_core/src';
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -115,9 +116,11 @@ export default class ColumnManager extends EventHandler {
     this.columns.forEach((col) => col.update(idRange));
   }
 
-  relayout() {
+  async relayout() {
+    // wait 10ms to be layouted
+    await resolveIn(10);
     this.columns.forEach((col) => {
-      const bb = col.node.getBoundingClientRect();
+      const bb = col.body.getBoundingClientRect();
       col.layout(bb.width, bb.height);
     });
   }
