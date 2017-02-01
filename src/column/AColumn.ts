@@ -41,8 +41,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         </header>
         <main></main>`;
     parent.appendChild(node);
-    this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));
     this.buildBody(<HTMLElement>node.querySelector('main'));
+    this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));
     return node;
   }
 

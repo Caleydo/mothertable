@@ -58,6 +58,7 @@ export default class ColumnManager extends EventHandler {
 
   remove(col: AnyColumn) {
     this.columns.splice(this.columns.indexOf(col), 1);
+    col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
