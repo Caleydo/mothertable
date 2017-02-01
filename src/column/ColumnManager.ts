@@ -12,7 +12,7 @@ import CategoricalColumn from './CategoricalColumn';
 import StringColumn from './StringColumn';
 import NumberColumn from './NumberColumn';
 import MatrixColumn from './MatrixColumn';
-import {IEvent} from 'phovea_core/src/event';
+import {IEvent, EventHandler} from 'phovea_core/src/event';
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -20,13 +20,17 @@ import {IEvent} from 'phovea_core/src/event';
 declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
-export default class ColumnManager {
+export default class ColumnManager extends EventHandler {
+  static readonly EVENT_COLUMN_REMOVED = 'removed';
+  static readonly EVENT_COLUMN_ADDED = 'added';
+
   readonly columns: AnyColumn[] = [];
   readonly node: HTMLElement;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
   constructor(public readonly idType: IDType, parent: HTMLElement) {
+    super();
     this.node = parent.ownerDocument.createElement('div');
     this.node.classList.add('column-manager');
   }
@@ -38,12 +42,14 @@ export default class ColumnManager {
     const col = ColumnManager.createColumn(data, this.node);
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
+    this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     this.relayout();
   }
 
   remove(col: AnyColumn) {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.relayout();
   }
 
