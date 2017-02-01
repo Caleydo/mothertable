@@ -28,9 +28,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     this.multiform = this.createMultiForm(this.data, body);
   }
 
+  protected buildToolbar(toolbar: HTMLElement) {
+    toolbar.insertAdjacentHTML('afterbegin', `<div class="vislist"></div>`);
+    super.buildToolbar(toolbar);
+  }
+
   private createMultiForm(data: IDataType, body: HTMLElement) {
     const m = new MultiForm(this.data, body, this.multiFormParams());
-    const toolbar = this.toolbar;
+    const toolbar = <HTMLElement>this.toolbar.querySelector('div.vislist');
     toolbar.innerHTML = '';
     m.addIconVisChooser(toolbar);
     return m;

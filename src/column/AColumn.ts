@@ -27,6 +27,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected get body() {
     return <HTMLElement>this.node.querySelector('main');
   }
+
   protected get toolbar() {
     return <HTMLElement>this.node.querySelector('div.toolbar');
   }
@@ -36,20 +37,26 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     node.classList.add('column');
     node.innerHTML = `
         <header>
-            <div class="toolbar"></div><button class="fa fa-close"></button>
+            <div class="toolbar"></div>
             <span>${this.data.desc.name}</span>
         </header>
         <main></main>`;
-    node.querySelector('i.fa-close').addEventListener('click', () => {
-      this.fire(AColumn.EVENT_REMOVE_ME);
-      return false;
-    });
     parent.appendChild(node);
+    this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));
     this.buildBody(<HTMLElement>node.querySelector('main'));
     return node;
   }
 
   protected abstract buildBody(body: HTMLElement);
+
+  protected buildToolbar(toolbar: HTMLElement) {
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
+
+    toolbar.querySelector('i.fa-close').addEventListener('click', () => {
+      this.fire(AColumn.EVENT_REMOVE_ME);
+      return false;
+    });
+  }
 
 }
 
