@@ -38,7 +38,6 @@ export default class App {
     this.rangeManager = new RangeManager(this.visManager);
     this.filterManager = new FilterManager(this.rangeManager);
 
-
   }
 
   /**
@@ -61,32 +60,74 @@ export default class App {
     this.$node.select('main').append('div').classed('visManager', true);
     this.visManager.filterManager = this.filterManager;
 
-
     return listData().then((datasets) => {
       datasets = convertTableToVectors(datasets);
       console.log(datasets);
       this.$node.select('h3').remove();
+
       this.$node.select('button.adder').on('click', () => {
-        choose(datasets.map((d) => d.desc.name), 'Choose dataset').then((selection) => {
-          this.addDataset(datasets.find((d) => d.desc.name === selection));
+
+        const uniqIdtype = [];
+        datasets.forEach((d) => {
+          ((<any>d.desc).idtype === undefined) ? 0 : uniqIdtype.push((<any>d.desc).idtype);
         });
+
+        const uni = uniqIdtype.filter((x, i, a) => a.indexOf(x) === i);
+
+        choose(uni.map((d) => d), 'Choose IDTypes').then((selection) => {
+          this.addDataset(selection, datasets);
+        });
+
       });
       this.setBusy(false);
     });
   }
 
 
-  private addDataset(data: IDataType) {
+  private addDataset(selection, datasets) {
+
+    const idtypeDiv = App.filterNode.append('div').classed(selection, true);
+
+    idtypeDiv.append('div').text('sss')
+    const columnNames = [];
+
+    datasets.forEach((d, i) => {
+
+      if (d.desc.idtype === selection) {
+
+        columnNames.push(d);
+      }
+    });
+
+    idtypeDiv.html(`IDType = ${selection}<br><select class="${selection}">${columnNames.map((d) => {
+
+      return `<option value="${d.desc.name}">${d.desc.name}</option><br>`;
+
+    }).join('\n')} </select>`);
+
+
+    const selectEl = d3.select(`select.${selection}`)
+      .on('change',function (d,i) {
+        console.log(this.value)
+
+
+      })
+
+
+    console.log(columnNames);
 
     const id = randomId();
 
     const currentRange: any = Block.currentRange;
+
 
     <any>data.ids(currentRange).then((d) => {
 
       (<any>data).idView(d).then((e) => {
 
         this.visManager.createVis(data, e, id);
+
+        ;
         this.filterManager.createFilter(App.blockList.get(id), this.filterManager);
 
 
