@@ -7,6 +7,7 @@ import {select} from 'd3';
 import ColumnManager,{IMotherTableType} from './column/ColumnManager';
 import SupportView from './SupportView';
 import {Range1D} from 'phovea_core/src/range';
+import {EOrientation} from 'mothertable/src/column/AColumn';
 
 /**
  * The main class for the App app
@@ -66,7 +67,7 @@ export default class App {
   private setPrimaryIDType(idtype: IDType) {
     this.hideSelection();
     // create a column manager
-    this.manager = new ColumnManager(idtype, <HTMLElement>this.node.querySelector('main'));
+    this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED,(evt: any, data: IMotherTableType) => {
