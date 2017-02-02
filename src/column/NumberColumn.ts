@@ -1,6 +1,7 @@
 import {AVectorColumn} from './AVectorColumn';
 import {INumericalVector} from 'phovea_core/src/vector';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
+import {EOrientation} from './AColumn';
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -8,9 +9,9 @@ import {IMultiFormOptions} from 'phovea_core/src/multiform';
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   readonly node: HTMLElement;
 
-  constructor(data: INumericalVector, columnParent: HTMLElement) {
-    super(data);
-    this.node = this.build(columnParent);
+  constructor(data: INumericalVector, orientation: EOrientation, parent: HTMLElement) {
+    super(data, orientation);
+    this.node = this.build(parent);
   }
 
   protected multiFormParams(): IMultiFormOptions {

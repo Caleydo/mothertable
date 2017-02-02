@@ -71,6 +71,10 @@ export default class FilterManager extends EventHandler {
     this.filters.splice(index, 0, col);
   }
 
+  /**
+   * returns the current filter
+   * @return {Promise<Range1D>}
+   */
   async currentFilter() {
     let filtered = Range1D.all();
     for (const f of this.filters) {

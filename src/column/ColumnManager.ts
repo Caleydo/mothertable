@@ -7,7 +7,7 @@ import {
 } from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {IStringVector} from './AVectorColumn';
-import AColumn from './AColumn';
+import AColumn, {EOrientation} from './AColumn';
 import CategoricalColumn from './CategoricalColumn';
 import StringColumn from './StringColumn';
 import NumberColumn from './NumberColumn';
@@ -30,7 +30,7 @@ export default class ColumnManager extends EventHandler {
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
-  constructor(public readonly idType: IDType, readonly node: HTMLElement) {
+  constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
     this.node.classList.add('column-manager');
   }
@@ -49,7 +49,7 @@ export default class ColumnManager extends EventHandler {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
-    const col = ColumnManager.createColumn(data, this.node);
+    const col = createColumn(data, this.orientation, this.node);
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
@@ -86,33 +86,6 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  private static createColumn(data: IMotherTableType, parent: HTMLElement): AnyColumn {
-    switch (data.desc.type) {
-      case 'vector':
-        const v = <IStringVector|ICategoricalVector|INumericalVector>data;
-        switch (v.desc.value.type) {
-          case VALUE_TYPE_STRING:
-            return new StringColumn(<IStringVector>v, parent);
-          case VALUE_TYPE_CATEGORICAL:
-            return new CategoricalColumn(<ICategoricalVector>v, parent);
-          case VALUE_TYPE_INT:
-          case VALUE_TYPE_REAL:
-            return new NumberColumn(<INumericalVector>v, parent);
-        }
-        throw new Error('invalid vector type');
-      case 'matrix':
-        const m = <INumericalMatrix>data;
-        switch (m.desc.value.type) {
-          case VALUE_TYPE_INT:
-          case VALUE_TYPE_REAL:
-            return new MatrixColumn(<INumericalMatrix>m, parent);
-        }
-        throw new Error('invalid matrix type');
-      default:
-        throw new Error('invalid data type');
-    }
-  }
-
   update(idRange: Range1D) {
     this.columns.forEach((col) => col.update(idRange));
   }
@@ -120,9 +93,47 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     // wait 10ms to be layouted
     await resolveIn(10);
+
+    const height = Math.min(...this.columns.map((c) => c.body.clientHeight));
+
+    // compute margin
+    const verticalMargin = this.columns.reduce((prev, c) => {
+      const act = c.getVerticalMargin();
+      return {top: Math.max(prev.top, act.top), bottom: Math.max(prev.bottom, act.bottom)};
+    }, {top: 0, bottom: 0});
+
     this.columns.forEach((col) => {
-      const bb = col.body.getBoundingClientRect();
-      col.layout(bb.width, bb.height);
+      const margin= col.getVerticalMargin();
+      col.node.style.marginTop = (verticalMargin.top - margin.top)+'px';
+      col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom)+'px';
+      col.layout(col.body.clientWidth, height);
     });
+  }
+}
+
+export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
+  switch (data.desc.type) {
+    case 'vector':
+      const v = <IStringVector|ICategoricalVector|INumericalVector>data;
+      switch (v.desc.value.type) {
+        case VALUE_TYPE_STRING:
+          return new StringColumn(<IStringVector>v, orientation, parent);
+        case VALUE_TYPE_CATEGORICAL:
+          return new CategoricalColumn(<ICategoricalVector>v, orientation, parent);
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return new NumberColumn(<INumericalVector>v, orientation, parent);
+      }
+      throw new Error('invalid vector type');
+    case 'matrix':
+      const m = <INumericalMatrix>data;
+      switch (m.desc.value.type) {
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return new MatrixColumn(<INumericalMatrix>m, orientation, parent);
+      }
+      throw new Error('invalid matrix type');
+    default:
+      throw new Error('invalid data type');
   }
 }

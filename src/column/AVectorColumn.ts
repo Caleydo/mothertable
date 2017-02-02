@@ -1,4 +1,4 @@
-import AColumn from './AColumn';
+import AColumn, {EOrientation, orientation2rotation} from './AColumn';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
@@ -14,8 +14,8 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
   protected multiform: MultiForm;
 
-  constructor(data: DATATYPE) {
-    super(data);
+  constructor(data: DATATYPE, orientation: EOrientation) {
+    super(data, orientation);
   }
 
   protected multiFormParams(): IMultiFormOptions {
@@ -44,7 +44,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   layout(width: number, height: number) {
-    scaleTo(this.multiform, width, height);
+    scaleTo(this.multiform, width, height, this.orientation);
   }
 
   update(idRange: Range1D) {

@@ -1,4 +1,4 @@
-import AColumn from './AColumn';
+import AColumn, {EOrientation} from './AColumn';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
@@ -13,8 +13,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   readonly node: HTMLElement;
   private multiform: MultiForm;
 
-  constructor(data: INumericalMatrix, columnParent: HTMLElement) {
-    super(data);
+  constructor(data: INumericalMatrix, orientation: EOrientation, columnParent: HTMLElement) {
+    super(data, orientation);
     this.node = this.build(columnParent);
   }
 
@@ -46,7 +46,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   layout(width: number, height: number) {
-    scaleTo(this.multiform, width, height);
+    scaleTo(this.multiform, width, height, this.orientation);
+  }
+
+  getVerticalMargin() {
+    // TODO if other columns are added
+    return {top: 0, bottom: 0};
   }
 
   update(idRange: Range1D) {

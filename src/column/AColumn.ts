@@ -6,10 +6,15 @@ import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
 
+export enum EOrientation {
+  Horizontal,
+  Vertical
+}
+
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
 
-  constructor(public readonly data: DATATYPE) {
+  constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
   }
 
@@ -23,9 +28,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract update(idRange: Range1D);
 
+  getVerticalMargin() {
+    return {top: 0, bottom: 0};
+  }
+
   get body() {
     return <HTMLElement>this.node.querySelector('main');
   }
+
 
   protected get toolbar() {
     return <HTMLElement>this.node.querySelector('div.toolbar');
@@ -34,6 +44,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected build(parent: HTMLElement) {
     const node = parent.ownerDocument.createElement('div');
     node.classList.add('column');
+    node.classList.add('column-'+(this.orientation === EOrientation.Horizontal ? 'hor': 'ver'));
     node.innerHTML = `
         <header>
             <div class="toolbar"></div>
