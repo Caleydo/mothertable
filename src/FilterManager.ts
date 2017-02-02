@@ -6,14 +6,18 @@ import * as d3 from 'd3';
 import App from './app';
 import Block from './Block';
 import ConnectionLines from './ConnectionLines';
+import VisManager from './VisManager';
+import drag = d3.behavior.drag;
 import ascending = d3.ascending;
 
 export default class FilterManager {
+
 
   private filterUID = [];
   private filterData = [];
   private _filterDiv = App.filterNode;
   private _rangeManager;
+  private _drag;
   public static filterList = new Map();
   public static filterListOrder = [];
 
@@ -151,9 +155,20 @@ function makeCategories(divInfo, dataInfo, block, self) {
       .text((d: any) => {
         return d;
       })
-      .on('click', function () {
+      .on('click', function (e, j) {
         d3.select(this).classed('active', !d3.select(this).classed('active'));
         if (d3.select(this).classed('active') === false) {
+          const previousKey = ConnectionLines.previousKey;
+          const paths = d3.select(`[f-uid="${previousKey}"]`).selectAll('.lineConnection').selectAll('path');
+          paths[0].forEach((d, i) => {
+            const thisPath = d3.select(paths[0][i]);
+            if (thisPath.datum() === e) {
+              thisPath.attr('opacity', 1);
+
+            }
+
+          });
+
           const catName = (d3.select(this).datum());
 
           const cat = block.activeCategories;
@@ -163,6 +178,19 @@ function makeCategories(divInfo, dataInfo, block, self) {
           const filterType = cat;
           self._rangeManager.onClickCat(dataInfo.data, divInfo.uid, filterType, block);
         } else if (d3.select(this).classed('active') === true) {
+          const previousKey = ConnectionLines.previousKey;
+          const paths = d3.select(`[f-uid="${previousKey}"]`).selectAll('.lineConnection').selectAll('path');
+          paths[0].forEach((d, i) => {
+            const thisPath = d3.select(paths[0][i]);
+            if (thisPath.datum() === e) {
+
+              thisPath.attr('opacity', 0.1);
+
+            }
+
+          });
+
+
           const catName = (d3.select(this).datum());
           const cat = block.activeCategories;
           let ind = -1;
@@ -194,8 +222,8 @@ function makeCategories(divInfo, dataInfo, block, self) {
     div.exit().remove();
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self);
-    connectionLine.makeLines(divBlock, divInfo.uid);
+    const connectionLine = new ConnectionLines(self._rangeManager, self);
+    connectionLine.makeLines(divBlock, divInfo.uid, block, self._rangeManager);
 
   } else {
     return console.log('Already Exists');
@@ -401,10 +429,9 @@ function makeNumerical(divInfo, dataInfo, block, self) {
 
     // });
 
-
-    FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self);
-    connectionLine.makeLines(divBlock, divInfo.uid);
+ FilterManager.filterList.set(divInfo.uid, self);
+    const connectionLine = new ConnectionLines(self._rangeManager, self);
+    connectionLine.makeLines(divBlock, divInfo.uid, block, self);
 
 
   } else {
@@ -530,8 +557,8 @@ function makeStringRect(divInfo, dataInfo, block, self) {
     });
 
     FilterManager.filterList.set(divInfo.uid, self);
-    const connectionLine = new ConnectionLines(self);
-    connectionLine.makeLines(divBlock, divInfo.uid);
+    const connectionLine = new ConnectionLines(self._rangeManager, self);
+    connectionLine.makeLines(divBlock, divInfo.uid, block, self);
 
 
   } else {
