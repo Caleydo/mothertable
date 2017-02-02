@@ -1,4 +1,4 @@
-import AColumn, {EOrientation, orientation2rotation} from './AColumn';
+import AColumn, {EOrientation} from './AColumn';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
