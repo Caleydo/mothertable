@@ -10,18 +10,17 @@ import color = d3.color;
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly node: HTMLElement;
-  private _filterDim: {width: number, height: number};
+  private _filterDim: {width: number, height: number} = {width: 200, height: 35};
+
 
   constructor(data: ICategoricalVector, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
-    this._filterDim = {width: 200, height: 35};
-
   }
 
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
-     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
+    // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
     //   this.triggerFilterChanged();
     // });
@@ -40,6 +39,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   }
 
   private async generateCategories(node) {
+
+    console.log(this._filterDim)
     const allCatNames = await(<any>this.data).data();
     const categories = (<any>this.data).desc.value.categories;
     const c20 = d3.scale.category20();
