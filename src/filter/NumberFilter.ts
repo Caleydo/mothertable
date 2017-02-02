@@ -17,7 +17,9 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const node = super.build(parent);
 
     node.innerHTML = `<button>TODO for ${this.data.desc.name}</button>`;
+    console.log('hi');
     (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
+
       this.triggerFilterChanged();
     });
 

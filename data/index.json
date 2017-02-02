@@ -21,11 +21,26 @@
         "value": {
           "type": "categorical",
           "categories": [
-            "Barbados",
-            "Ireland",
-            "Sweden",
-            "UK",
-            "US"
+            {
+              "name": "Barbados",
+              "color": "#a6cee3"
+            },
+            {
+              "name": "Ireland",
+              "color": "#1f78b4"
+            },
+            {
+              "name": "Sweden",
+              "color": "#b2df8a"
+            },
+            {
+              "name": "UK",
+              "color": "#33a02c"
+            },
+            {
+              "name": "US",
+              "color": "#fb9a99"
+            }
           ]
         }
       },
@@ -44,9 +59,19 @@
         "value": {
           "type": "categorical",
           "categories": [
-            "female",
-            "group",
-            "male" ]
+            {
+              "name": "female",
+              "color": "red"
+            },
+            {
+              "name": "group",
+              "color": "#ff00ff"
+            },
+            {
+              "name": "male",
+              "color": "blue"
+            }
+          ]
         }
       },
       {

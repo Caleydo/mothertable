@@ -3,6 +3,7 @@
  */
 import {AVectorFilter, IStringVector} from './AVectorFilter';
 import {Range1D} from 'phovea_core/src/range';
+import * as d3 from 'd3';
 
 export default class StringFilter extends AVectorFilter<string, IStringVector> {
   readonly node: HTMLElement;
@@ -15,10 +16,13 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
 
-    node.innerHTML = `<button>TODO for ${this.data.desc.name}</button>`;
-    (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
-      this.triggerFilterChanged();
-    });
+    const labelNode = d3.select(this.node).append('div').classed('label',true);
+
+
+    // node.innerHTML = `<button>${this.data.desc.name}</button>`;
+    // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
+    //   this.triggerFilterChanged();
+    // });
 
     return node;
   }
