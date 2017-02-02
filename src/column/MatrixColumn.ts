@@ -5,13 +5,22 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {list as rlist} from 'phovea_core/src/range';
 import {IDataType} from 'phovea_core/src/datatype';
 import {scaleTo} from './utils';
+import {IEvent} from 'phovea_core/src/event';
+import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
+  static readonly EVENT_COLUMN_REMOVED = 'removed';
+  static readonly EVENT_DATA_REMOVED = 'removedData';
+  static readonly EVENT_COLUMN_ADDED = 'added';
+
   readonly node: HTMLElement;
   private multiform: MultiForm;
+
+  readonly columns: AnyColumn[] = [];
+  private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
   constructor(data: INumericalMatrix, orientation: EOrientation, columnParent: HTMLElement) {
     super(data, orientation);
@@ -47,6 +56,15 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   layout(width: number, height: number) {
     scaleTo(this.multiform, width, height, this.orientation);
+
+    this.columns.forEach((col) => {
+      const margin= col.getVerticalMargin();
+      col.layout(width, height);
+    });
+  }
+
+  private relayout() {
+    // TODO
   }
 
   getVerticalMargin() {
@@ -59,5 +77,50 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.data.idView(rlist(idRange)).then((view) => {
       this.multiform = this.replaceMultiForm(view, this.body);
     });
+  }
+
+  push(data: IMotherTableType) {
+    if (data.idtypes[0] !== this.data.coltype) {
+      throw new Error('invalid idtype');
+    }
+    const col = createColumn(data, this.orientation, this.node);
+    col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    this.columns.push(col);
+    this.fire(MatrixColumn.EVENT_COLUMN_ADDED, col);
+    this.relayout();
+  }
+
+  remove(col: AnyColumn) {
+    this.columns.splice(this.columns.indexOf(col), 1);
+    col.node.remove();
+    col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    this.fire(MatrixColumn.EVENT_COLUMN_REMOVED, col);
+    this.fire(MatrixColumn.EVENT_DATA_REMOVED, col.data);
+    this.relayout();
+  }
+
+  /**
+   * move a column at the given index
+   * @param col
+   * @param index
+   */
+  move(col: AnyColumn, index: number) {
+    const old = this.columns.indexOf(col);
+    if (old === index) {
+      return;
+    }
+    //move the dom element, too
+    this.node.insertBefore(col.node, this.node.childNodes[index]);
+
+    this.columns.splice(old, 1);
+    if (old < index) {
+      index -= 1; //shifted because of deletion
+    }
+    this.columns.splice(index, 0, col);
+    this.relayout();
+  }
+
+  updateColumns(idRange: Range1D) {
+    this.columns.forEach((col) => col.update(idRange));
   }
 }

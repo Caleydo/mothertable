@@ -18,7 +18,7 @@ import {resolveIn} from 'phovea_core/src';
  * Created by Samuel Gratzl on 19.01.2017.
  */
 
-declare type AnyColumn = AColumn<any, IDataType>;
+export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
 export default class ColumnManager extends EventHandler {
