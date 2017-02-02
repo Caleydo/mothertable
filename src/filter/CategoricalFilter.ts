@@ -1,4 +1,3 @@
-
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -17,9 +16,16 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
 
-
-    node.innerHTML = `<strong>TODO for ${this.data.desc.name}</strong>`;
+    node.innerHTML = `<button>TODO for ${this.data.desc.name}</button>`;
+    (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
+      this.triggerFilterChanged();
+    });
 
     return node;
+  }
+
+  async filter(current: Range1D) {
+    // TODO
+    return current;
   }
 }

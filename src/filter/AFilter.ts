@@ -30,6 +30,10 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   async filter(current: Range1D) {
     return current;
   }
+
+  protected triggerFilterChanged() {
+    this.fire(AFilter.EVENT_FILTER_CHANGED, this);
+  }
 }
 
 export default AFilter;
