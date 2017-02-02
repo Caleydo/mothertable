@@ -13,6 +13,7 @@ export default class Block {
   private _filteredVisData;
   private _filterDiv;
   private _activeCategories: string[];
+  private _activeNuericalValue: number[];
   public static filtersRange = new Map();
   public static stringRange = new Map();
   public static currentRange: Range1D = Range1D.all();
@@ -77,6 +78,14 @@ export default class Block {
 
   get filterDiv() {
     return this._filterDiv;
+  }
+
+  get activeNuericalValue(): number[] {
+    return this._activeNuericalValue;
+  }
+
+  set activeNuericalValue(value: number[]) {
+    this._activeNuericalValue = value;
   }
 
   set filterDiv(value) {
