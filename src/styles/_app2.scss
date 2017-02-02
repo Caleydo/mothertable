@@ -1,0 +1,51 @@
+@import "vars";
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+#app {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+
+  > .rightPanel {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    border-left: $border-ui;
+
+    > .filter-view {
+      width: 20vw;
+      flex: 1 1 auto;
+      overflow: scroll;
+      padding: 4px;
+      border-top: $border-ui;
+
+      &.block-select-selected {
+        border: 1px solid red;
+        background: none;
+      }
+      &.block-select-hovered {
+        border: 1px solid red;
+        background: none;
+      }
+    }
+  }
+
+  > main {
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 10px 5px 10px 20px;
+  }
+
+  @import "columnManager";
+}
