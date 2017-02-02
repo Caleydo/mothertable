@@ -16,8 +16,9 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
 
-    const labelNode = d3.select(this.node).append('div').classed('label',true);
 
+    this.generateLabel(node);
+    this.generateSearchInput(node);
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
@@ -26,6 +27,22 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
 
     return node;
   }
+
+
+  private generateLabel(node) {
+    const labelNode = d3.select(node).append('div').classed('filterlabel', true);
+    labelNode.text(`Label: ${this.data.desc.name}`);
+  }
+
+
+  private async generateSearchInput(node) {
+    const textSearch = (<any>d3).select(node).append('input', 'text').classed('textSearch', true);
+    textSearch.on('keyup', function (d) {
+      const filterType = this.value;
+    });
+
+  }
+
 
   async filter(current: Range1D) {
     // TODO
