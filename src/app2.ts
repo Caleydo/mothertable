@@ -7,7 +7,7 @@ import {select} from 'd3';
 import ColumnManager,{IMotherTableType} from './column/ColumnManager';
 import SupportView from './SupportView';
 import {Range1D} from 'phovea_core/src/range';
-import {EOrientation} from 'mothertable/src/column/AColumn';
+import {EOrientation} from './AColumn';
 
 /**
  * The main class for the App app
