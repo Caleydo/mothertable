@@ -6,4 +6,16 @@
     background-color: lightgray;
 
   }
+
+  .tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: white;
+    border: 0px;
+    pointer-events: none;
+  }
 }

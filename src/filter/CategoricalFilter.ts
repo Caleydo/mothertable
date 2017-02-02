@@ -10,7 +10,7 @@ import color = d3.color;
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly node: HTMLElement;
-  private _filterDim: {width: number, height: number} = {width: 200, height: 35};
+  private _filterDim: {width: number, height: number};
 
 
   constructor(data: ICategoricalVector, parent: HTMLElement) {
@@ -26,9 +26,20 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     // });
 
     this.generateLabel(node);
-    this.generateCategories(node);
+    const dispHistogram = true;
+    this.generateCategories(node, dispHistogram);
 
     return node;
+  }
+
+
+  get filterDim(): {width: number; height: number} {
+    this._filterDim = {width: 205, height: 35};
+    return this._filterDim;
+  }
+
+  set filterDim(value: {width: number; height: number}) {
+    this._filterDim = value;
   }
 
 
@@ -38,12 +49,24 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     labelNode.text(`Label: ${this.data.desc.name}`);
   }
 
-  private async generateCategories(node) {
+  private generateTooltip(node) {
+    const tooltipDiv = d3.select(node).append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0);
+    return tooltipDiv;
+  }
 
-    console.log(this._filterDim)
+
+  private async generateCategories(node, dispHistogram) {
+
+    const cellHeight = this.filterDim.height;
+    const cellWidth = this.filterDim.width;
     const allCatNames = await(<any>this.data).data();
     const categories = (<any>this.data).desc.value.categories;
     const c20 = d3.scale.category20();
+
+    const toolTip = (this.generateTooltip(node));
+
     const catData = [];
     const uniqueValues = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
     uniqueValues.forEach(((val, i) => {
@@ -65,19 +88,33 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const catListDiv = catEntries
       .selectAll('div.categories')
       .data(catData).enter();
-    const cellDimension = this._filterDim.width / catData.length;
+
+
     catListDiv.append('div')
       .attr('class', 'categories')
       .style('flex-grow', 1)
-      .style('height', (d, i) => binScale(d.count) + 'px')
+      .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
+      .style('width', '100%')
+      //.style('height', (d, i) => binScale(d.count) + 'px')
       .style('background-color', (d) => d.color)
       .text((d: any) => {
         return d.name;
       })
       .on('click', function (d, i) {
-
         console.log(d);
-
+      })
+      .on('mouseover', function (d, i) {
+        toolTip.transition()
+          .duration(200)
+          .style('opacity', 1);
+        toolTip.html(`${d.count}`)
+          .style('left', ((<any>d3).event.pageX) + 'px')
+          .style('top', ((<any>d3).event.pageY - 10) + 'px');
+      })
+      .on('mouseout', function (d) {
+        toolTip.transition()
+          .duration(500)
+          .style('opacity', 0);
       });
 
 
@@ -85,7 +122,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
 
   async filter(current: Range1D) {
-    // TODO
+
+    console.log(current);
     return current;
   }
 }
