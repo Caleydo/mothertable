@@ -274,7 +274,6 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .attr('d', `M${iconAPos} 0,L${iconAPos} ${cellHeight + 5}`)
       .attr('stroke', 'black');
 
-
     const lineB = svgDIV.append('path')
       .classed('brushline', true)
       .attr('d', `M${iconBPos} 0,L${iconBPos} ${cellHeight + 5}`)
@@ -315,9 +314,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
         iconAPos = x;
         if (x >= 5 && x <= cellWidth - 5) {
           if ((iconBPos - iconAPos) > 20) {
-            console.log(iconAPos, iconBPos)
             brushVal = [axisScale(iconAPos), axisScale(iconBPos)];
-            console.log(brushVal)
             textA.attr('x', iconAPos)
               .text(`${Math.floor(brushVal[0])}`);
             textB.attr('x', iconBPos).text(`${Math.floor(brushVal[1])}`);
@@ -331,9 +328,8 @@ function makeNumerical(divInfo, dataInfo, block, self) {
               .attr('visibility', 'visible')
               .attr('opacity', 0.8);
 
-            lineA.attr('d', `M${iconAPos} 0,L${iconAPos} ${cellHeight + 5}`)
-            lineB.attr('d', `M${iconBPos} 0,L${iconBPos} ${cellHeight + 5}`)
-
+            lineA.attr('d', `M${iconAPos} 0,L${iconAPos} ${cellHeight + 5}`);
+            lineB.attr('d', `M${iconBPos} 0,L${iconBPos} ${cellHeight + 5}`);
 
             const filterType = {numerical: brushVal};
             self._rangeManager.onBrushNumerical(dataInfo.data, divInfo.uid, filterType);
@@ -348,9 +344,7 @@ function makeNumerical(divInfo, dataInfo, block, self) {
         const x = (<any>d3).event.x;
         iconBPos = x;
         if (x >= 5 && x <= cellWidth - 5 && (iconBPos - iconAPos) > 20) {
-          console.log(iconAPos, iconBPos)
           brushVal = [axisScale(iconAPos), axisScale(iconBPos)];
-          console.log(brushVal)
           textA.attr('x', iconAPos)
             .text(`${Math.floor(brushVal[0])}`);
           textB.attr('x', iconBPos).text(`${Math.floor(brushVal[1])}`);
@@ -379,13 +373,12 @@ function makeNumerical(divInfo, dataInfo, block, self) {
       .classed('draggable', true)
       .attr('d', triangleSymbol)
       .attr('transform', `translate(${5},${cellHeight + 10})`)
-      .call(dragA)
+      .call(dragA);
 
     const iconB = svgDIV.append('path')
       .attr('d', triangleSymbol)
       .attr('transform', `translate(${cellWidth - 5},${cellHeight + 10})`)
       .call(dragB);
-
 
     textA.text(`${(<any>Math).floor(brushVal[0])}`);
     textB.text(`${(<any>Math).floor(brushVal[1])}`);
