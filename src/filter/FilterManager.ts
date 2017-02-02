@@ -19,14 +19,18 @@ declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector;
 
 export default class FilterManager extends EventHandler {
+
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   readonly filters: AnyColumn[] = [];
   private onFilterChanged = () => this.refilter();
 
+
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
     this.node.classList.add('filter-manager');
+
   }
+
 
   push(data: IFilterAbleType) {
     if (data.idtypes[0] !== this.idType) {
