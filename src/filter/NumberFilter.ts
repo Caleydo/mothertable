@@ -13,7 +13,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
   private _numericalFilterRange: number[];
-  private _toolTip: HTMLElement;
+  private _toolTip;
+  private _SVG;
 
   constructor(data: INumericalVector, parent: HTMLElement) {
     super(data);
@@ -67,30 +68,27 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const tooltipDiv = d3.select(node).append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
-
+    this._toolTip = tooltipDiv;
     return tooltipDiv;
   }
 
   private async getHistData() {
 
     const histData = await (<any>this.data).hist();
-
     const bins = [];
     histData.forEach((d, i) => bins.push(d));
-
-
     return bins;
 
   }
 
-  private async generateDensityPlot(node) {
+  private async generateDensityPlot(node: HTMLElement) {
 
 
     const cellWidth = this.filterDim.width;
     const cellHeight = this.filterDim.height;
     const range = this.data.desc.value.range;
     console.log(range);
-    const histData = await this.getHistData();
+
     const svgHeight = cellHeight + 25;
     const arrowYPos = svgHeight - 15;
     const lineYPos = cellHeight + 5;
@@ -98,84 +96,65 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const brushWindowY = cellWidth - 5;
     const gapBetweenTriangle = 20;
 
-    const svg = d3.select(node).append('svg')
-      .attr('height', svgHeight + 'px')
-      .attr('width', this.filterDim.width + 'px')
-      .style('margin-left', '5px');
+    const svg = this.makeSVG(node);
+    this.makeBins(svg);
+    const rectA = this.makeBrushRect(svg, brushWindowX, brushWindowY);
+    const rectB = this.makeBrushRect(svg, brushWindowX, brushWindowY);
+
+    const lineA = this.makeBrushLine(svg, brushWindowX, brushWindowY);
+    const lineB = this.makeBrushLine(svg, brushWindowY, brushWindowY);
 
 
-    const toolTip = (this.generateTooltip(node));
+    const textA = this.makeText(svg, 0, svgHeight);
+    const textB = this.makeText(svg, brushWindowY, svgHeight)
 
-    const cellDimension = cellWidth / histData.length;
-    const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(histData)]).range(['white', 'darkgrey']);
-    const binsRect = svg.append('g').classed('binsEntries', true)
-      .selectAll('g.bins').data(histData).enter();
-
-
-    binsRect.append('rect').classed('bins', true)
-      .attr('x', (d, i) => i * cellDimension)
-      .attr('width', cellDimension)
-      .attr('height', cellHeight)
-      .style('opacity', 1)
-      .attr('fill', (d: any) => colorScale(d))
-      .on('mouseover', function (d, i) {
-        toolTip.transition()
-          .duration(200)
-          .style('opacity', 1);
-        toolTip.html(`Bin:${i + 1}, Entries: ${d}`)
-          .style('left', ((<any>d3).event.pageX) + 'px')
-          .style('top', ((<any>d3).event.pageY - 10) + 'px');
-      })
-      .on('mouseout', function (d) {
-        toolTip.transition()
-          .duration(500)
-          .style('opacity', 0);
-      });
+    const iconA = this.makeTriangleIcon(svg, brushWindowX, arrowYPos);
+    const iconB = this.makeTriangleIcon(svg, brushWindowY, arrowYPos);
 
     let iconAPos = brushWindowX;
     let iconBPos = brushWindowY;
 
-    const leftRectBrush = svg.append('rect')
-      .attr('x', brushWindowX)
-      .attr('width', brushWindowY)
-      .attr('height', cellHeight)
-      .attr('visibility', 'hidden')
-      .attr('opacity', 1)
-      .attr('fill', '#666');
+    // const leftRectBrush = svg.append('rect')
+    //   .attr('x', brushWindowX)
+    //   .attr('width', brushWindowY)
+    //   .attr('height', cellHeight)
+    //   .attr('visibility', 'hidden')
+    //   .attr('opacity', 1)
+    //   .attr('fill', '#666');
+    //
+    // const rightRectBrush = svg.append('rect')
+    //   .attr('x', brushWindowX)
+    //   .attr('width', brushWindowY)
+    //   .attr('height', cellHeight)
+    //   .attr('visibility', 'hidden')
+    //   .attr('opacity', 0.2)
+    //   .attr('fill', '#666');
 
-    const rightRectBrush = svg.append('rect')
-      .attr('x', brushWindowX)
-      .attr('width', brushWindowY)
-      .attr('height', cellHeight)
-      .attr('visibility', 'hidden')
-      .attr('opacity', 0.2)
-      .attr('fill', '#666');
-
-    const lineA = svg.append('path')
-      .classed('brushline', true)
-      .attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`)
-      .attr('stroke', 'black');
-
-    const lineB = svg.append('path')
-      .classed('brushline', true)
-      .attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`)
-      .attr('stroke', 'black');
+    // const lineA = svg.append('path')
+    //   .classed('brushline', true)
+    //   .attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`)
+    //   .attr('stroke', 'black');
+    //
+    // const lineB = svg.append('path')
+    //   .classed('brushline', true)
+    //   .attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`)
+    //   .attr('stroke', 'black');
 
 
     const axisScale = d3.scale.linear().domain([brushWindowX, brushWindowY]).range(range);
 
-    const textA = svg.append('text').classed('leftVal', true)
-      .attr('x', 0)
-      .attr('y', svgHeight)
-      .attr('font-family', 'sans-serif')
-      .attr('font-size', '12px')
-      .attr('fill', 'black');
-    const textB = svg.append('text').classed('rightVal', true)
-      .attr('x', brushWindowY)
-      .attr('y', svgHeight)
-      .attr('font-family', 'sans-serif')
-      .attr('font-size', '10px')
-      .attr('fill', 'black');
+    // const textA = svg.append('text').classed('leftVal', true)
+    //   .attr('x', 0)
+    //   .attr('y', svgHeight)
+    //   .attr('font-family', 'sans-serif')
+    //   .attr('font-size', '12px')
+    //   .attr('fill', 'black');
+    // const textB = svg.append('text').classed('rightVal', true)
+    //   .attr('x', brushWindowY)
+    //   .attr('y', svgHeight)
+    //   .attr('font-family', 'sans-serif')
+    //   .attr('font-size', '10px')
+    //   .attr('fill', 'black');
 
     let brushVal = range;
     const that = this;
@@ -190,12 +169,12 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
             .text(`${Math.floor(brushVal[0])}`);
           textB.attr('x', iconBPos).text(`${Math.floor(brushVal[1])}`);
 
-          leftRectBrush.attr('width', iconAPos)
+          rectA.attr('width', iconAPos)
             .attr('visibility', 'visible')
             .attr('opacity', 0.8);
 
           //  console.log(iconBPos,brushWindowY - iconBPos,'Arect')
-          rightRectBrush.attr('x', iconBPos)
+          rectB.attr('x', iconBPos)
             .attr('width', brushWindowY - iconBPos)
             .attr('visibility', 'visible')
             .attr('opacity', 0.8);
@@ -222,41 +201,162 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
           textB.attr('x', iconBPos).text(`${Math.floor(brushVal[1])}`);
           console.log(brushVal)
 
-          leftRectBrush.attr('width', iconAPos)
+          rectA.attr('width', iconAPos)
             .attr('visibility', 'visible')
             .attr('opacity', 0.8);
 
-          rightRectBrush.attr('x', iconBPos)
+          rectB.attr('x', iconBPos)
             .attr('width', brushWindowY - iconBPos)
             .attr('visibility', 'visible')
             .attr('opacity', 0.8);
 
           lineA.attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`);
           lineB.attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`);
-          that._numericalFilterRange=brushVal;
+          that._numericalFilterRange = brushVal;
           that.triggerFilterChanged();
           d3.select(this).attr('transform', `translate(${iconBPos},${arrowYPos})`);
         }
       });
 
 
-    const triangleSymbol = d3.svg.symbol().type('triangle-up').size(100);
-    const iconA = svg.append('path')
-      .classed('draggable', true)
-      .attr('d', triangleSymbol)
-      .attr('transform', `translate(${brushWindowX},${arrowYPos})`)
-      .call(dragA);
+    //  const triangleSymbol = d3.svg.symbol().type('triangle-up').size(100);
+    // const iconA = svg.append('path')
+    //   .classed('draggable', true)
+    //   .attr('d', triangleSymbol)
+    //   .attr('transform', `translate(${brushWindowX},${arrowYPos})`)
+    //   .call(dragA);
 
-    const iconB = svg.append('path')
-      .attr('d', triangleSymbol)
-      .attr('transform', `translate(${brushWindowY},${arrowYPos})`)
-      .call(dragB);
+
+    // const iconB = svg.append('path')
+    //   .attr('d', triangleSymbol)
+    //   .attr('transform', `translate(${brushWindowY},${arrowYPos})`)
+    //   .call(dragB);
 
     textA.text(`${(<any>Math).floor(brushVal[0])}`);
     textB.text(`${(<any>Math).floor(brushVal[1])}`);
 
 
-    //const cellDimension = this._filterDim.width / binSize.length;
+  }
+
+  private makeSVG(node: HTMLElement) {
+    const cellWidth = this.filterDim.width;
+    const cellHeight = this.filterDim.height;
+    const svgHeight = cellHeight + 25;
+    const svg = d3.select(node).append('svg')
+      .attr('height', svgHeight + 'px')
+      .attr('width', cellWidth + 'px')
+      .style('margin-left', '5px');
+    this._SVG = svg;
+    return svg;
+  }
+
+  private async makeBins(svg) {
+    const cellWidth = this.filterDim.width;
+    const cellHeight = this.filterDim.height;
+    const toolTip = (this._toolTip);
+    const histData = await this.getHistData();
+    const cellDimension = cellWidth / histData.length;
+    const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(histData)]).range(['white', 'darkgrey']);
+    const binsRect = svg.append('g').classed('binsEntries', true)
+      .selectAll('g.bins').data(histData).enter();
+
+    binsRect.append('rect').classed('bins', true)
+      .attr('x', (d, i) => i * cellDimension)
+      .attr('width', cellDimension)
+      .attr('height', cellHeight)
+      .style('opacity', 1)
+      .attr('fill', (d: any) => colorScale(d))
+      .on('mouseover', function (d, i) {
+        toolTip.transition()
+          .duration(200)
+          .style('opacity', 1);
+        toolTip.html(`Bin:${i + 1}, Entries: ${d}`)
+          .style('left', ((<any>d3).event.pageX) + 'px')
+          .style('top', ((<any>d3).event.pageY - 10) + 'px');
+      })
+      .on('mouseout', function (d) {
+        toolTip.transition()
+          .duration(500)
+          .style('opacity', 0);
+      });
+
+
+  }
+
+  private makeBrushLine(svg, posX, posY) {
+
+    const cellWidth = this.filterDim.width;
+    const cellHeight = this.filterDim.height;
+    const range = this.data.desc.value.range;
+    console.log(range);
+    const lineYPos = cellHeight + 5;
+    const svgHeight = cellHeight + 25;
+    const arrowYPos = svgHeight - 15;
+
+    const brushWindowX = 5;
+    const brushWindowY = cellWidth - 5;
+    const gapBetweenTriangle = 20;
+    console.log(posY)
+    const line = svg.append('path')
+      .classed('brushline', true)
+      .attr('d', `M${posX} 0,L${posX} ${lineYPos}`)
+      .attr('stroke', 'red');
+
+    return line;
+
+
+  }
+
+  private makeBrushRect(svg, posX, width) {
+
+
+    const cellWidth = this.filterDim.width;
+    const cellHeight = this.filterDim.height;
+    const range = this.data.desc.value.range;
+    console.log(range);
+
+    const svgHeight = cellHeight + 25;
+    const arrowYPos = svgHeight - 15;
+    const lineYPos = cellHeight + 5;
+    const brushWindowX = 5;
+    const brushWindowY = cellWidth - 5;
+
+    const gapBetweenTriangle = 20;
+    const rect = svg.append('rect')
+      .attr('x', posX)
+      .attr('width', width)
+      .attr('height', cellHeight)
+      .attr('visibility', 'visible')
+      .attr('opacity', 1)
+      .attr('fill', 'red');
+
+    return rect;
+
+  }
+
+  private makeText(svg, posX, posY) {
+    const cellHeight = this.filterDim.height;
+    const svgHeight = cellHeight + 25;
+    const text = svg.append('text').classed('leftVal', true)
+      .attr('x', posX)
+      .attr('y', posY)
+      .attr('font-family', 'sans-serif')
+      .attr('font-size', '12px')
+      .attr('fill', 'black');
+
+    return text;
+
+  }
+
+  private  makeTriangleIcon(svg, posX, posY) {
+    const triangleSymbol = d3.svg.symbol().type('triangle-up').size(100);
+    const triangle = svg.append('path')
+      .classed('draggable', true)
+      .attr('d', triangleSymbol)
+      .attr('transform', `translate(${posX},${posY})`);
+
+    return triangle;
+
 
   }
 
