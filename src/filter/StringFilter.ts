@@ -7,6 +7,7 @@ import * as d3 from 'd3';
 
 export default class StringFilter extends AVectorFilter<string, IStringVector> {
   readonly node: HTMLElement;
+  private _textSearch: string;
 
   constructor(data: IStringVector, parent: HTMLElement) {
     super(data);
@@ -22,6 +23,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
+    //   console.log(this.data)
     //   this.triggerFilterChanged();
     // });
 
@@ -29,23 +31,44 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   }
 
 
-  private generateLabel(node) {
+  private generateLabel(node: HTMLElement) {
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
     labelNode.text(`Label: ${this.data.desc.name}`);
   }
 
 
-  private async generateSearchInput(node) {
+  private async generateSearchInput(node: HTMLElement) {
+    const that = this;
     const textSearch = (<any>d3).select(node).append('input', 'text').classed('textSearch', true);
     textSearch.on('keyup', function (d) {
-      const filterType = this.value;
+      that._textSearch = this.value;
+      that.triggerFilterChanged();
     });
 
   }
 
 
   async filter(current: Range1D) {
-    // TODO
-    return current;
+
+    const vectorView = await(<any>this.data).filter(stringPattern.bind(this, this._textSearch));
+    const filteredRange = await vectorView.ids();
+    const rangeIntersected = current.intersect(filteredRange);
+    console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    return rangeIntersected;
   }
+}
+
+function stringPattern(stringFilter, value, index) {
+
+  const re = new RegExp(`${stringFilter}`, 'gi');
+  if (value.match(re) === null) {
+
+    return;
+
+  } else {
+
+    return value;
+  }
+
+
 }

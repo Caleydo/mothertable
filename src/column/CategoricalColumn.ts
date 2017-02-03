@@ -19,4 +19,6 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
       initialVis: 'phovea-vis-heatmap1d'
     };
   }
+
+
 }

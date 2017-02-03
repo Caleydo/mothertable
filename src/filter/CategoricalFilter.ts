@@ -5,13 +5,11 @@ import AVectorFilter from './AVectorFilter';
 import {ICategoricalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
-import any = jasmine.any;
-import color = d3.color;
-import day = d3.time.day;
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
+  private _activeCategories: string[];
 
 
   constructor(data: ICategoricalVector, parent: HTMLElement) {
@@ -23,11 +21,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const node = super.build(parent);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
+    //
     //   this.triggerFilterChanged();
     // });
 
     this.generateLabel(node);
-    const dispHistogram = true;
+    const dispHistogram: boolean = true;
     this.generateCategories(node, dispHistogram);
 
     return node;
@@ -44,13 +43,13 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   }
 
 
-  private generateLabel(node) {
+  private generateLabel(node: HTMLElement) {
 
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
     labelNode.text(`Label: ${this.data.desc.name}`);
   }
 
-  private generateTooltip(node) {
+  private generateTooltip(node: HTMLElement) {
     const tooltipDiv = d3.select(node).append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
@@ -58,8 +57,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   }
 
 
-  private async generateCategories(node, dispHistogram) {
-
+  private async generateCategories(node: HTMLElement, dispHistogram: boolean) {
+    const that = this;
     const cellHeight = this.filterDim.height;
     const cellWidth = this.filterDim.width;
     const allCatNames = await(<any>this.data).data();
@@ -87,9 +86,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const binScale = d3.scale.linear()
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
 
-    let activeCategories = catData;
-
-
+    that._activeCategories = catData;
     const catListDiv = catEntries
       .selectAll('div.categories')
       .data(catData).enter();
@@ -120,61 +117,51 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .on('click', function (d, i) {
         d3.select(this).classed('active', !d3.select(this).classed('active'));
         if (d3.select(this).classed('active') === false) {
-          const cat = activeCategories;
+          const cat = that._activeCategories;
           cat.push(d);
-          activeCategories = cat;
+          that._activeCategories = cat;
 
-          onClickCatA(myData, cat);
+          //  that.onClick(cat);
+          that.triggerFilterChanged();
 
         } else if (d3.select(this).classed('active') === true) {
           let ind = -1;
-          const cat = activeCategories;
+          const cat = that._activeCategories;
           for (let i = 0; i < cat.length; ++i) {
-            if (cat[i].name === d.name) {
+            if ((<any>cat[i]).name === d.name) {
               ind = i;
             }
           }
           cat.splice(ind, 1);
-          activeCategories = cat;
-          onClickCatA(myData, cat);
+          that._activeCategories = cat;
+          that.triggerFilterChanged();
 
         }
       });
-
-
   }
-
 
   async filter(current: Range1D) {
 
-    return current;
+    const vectorView = await(<any>this.data).filter(findCatName.bind(this, this._activeCategories));
+    const filteredRange = await vectorView.ids();
+    const rangeIntersected = current.intersect(filteredRange);
+    console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    return rangeIntersected;
   }
-}
-
-
-async function onClickCatA(data, filterType?) {
-  const vectorView = await (<any>data).filter(findCatName.bind(this, filterType));
-  const filteredRange = await vectorView.ids();
-  console.log((<any>filteredRange).dim(0).asList());
 
 }
+
 
 function isSame(value, compareWith) {
-
-
   return value === compareWith;
 }
 
 
 function findCatName(catName: any[], value, index,) {
-
   for (const x in catName) {
     if (catName[x].name === value) {
-      console.log(value, catName[x].name)
       return value;
     }
   }
   return;
-
-
 }

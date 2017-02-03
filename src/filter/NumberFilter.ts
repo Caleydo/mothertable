@@ -12,8 +12,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
-  private _histData;
-  private _toolTip;
+  private _numericalFilterRange: number[];
+  private _toolTip: HTMLElement;
 
   constructor(data: INumericalVector, parent: HTMLElement) {
     super(data);
@@ -89,12 +89,11 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const cellWidth = this.filterDim.width;
     const cellHeight = this.filterDim.height;
     const range = this.data.desc.value.range;
+    console.log(range);
     const histData = await this.getHistData();
     const svgHeight = cellHeight + 25;
     const arrowYPos = svgHeight - 15;
     const lineYPos = cellHeight + 5;
-    let iconAPos = 5;
-    let iconBPos = cellWidth - 5;
     const brushWindowX = 5;
     const brushWindowY = cellWidth - 5;
     const gapBetweenTriangle = 20;
@@ -133,6 +132,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
           .style('opacity', 0);
       });
 
+    let iconAPos = brushWindowX;
+    let iconBPos = brushWindowY;
 
     const leftRectBrush = svg.append('rect')
       .attr('x', brushWindowX)
@@ -177,7 +178,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .attr('fill', 'black');
 
     let brushVal = range;
-
+    const that = this;
     const dragA = d3.behavior.drag()
       .on('drag', function (d, i) {
         const x = (<any>d3).event.x;
@@ -202,6 +203,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
           lineA.attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`);
           lineB.attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`);
           // console.log(iconAPos, iconBPos,'dragA')
+          that._numericalFilterRange = brushVal;
+          that.triggerFilterChanged();
           d3.select(this).attr('transform', `translate(${iconAPos},${arrowYPos})`);
 
         }
@@ -217,7 +220,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
           textA.attr('x', iconAPos)
             .text(`${Math.floor(brushVal[0])}`);
           textB.attr('x', iconBPos).text(`${Math.floor(brushVal[1])}`);
-
+          console.log(brushVal)
 
           leftRectBrush.attr('width', iconAPos)
             .attr('visibility', 'visible')
@@ -230,7 +233,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
           lineA.attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`);
           lineB.attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`);
-
+          that._numericalFilterRange=brushVal;
+          that.triggerFilterChanged();
           d3.select(this).attr('transform', `translate(${iconBPos},${arrowYPos})`);
         }
       });
@@ -258,7 +262,22 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
 
   async filter(current: Range1D) {
-    // TODO
-    return current;
+    console.log(this._numericalFilterRange);
+    const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
+    const filteredRange = await vectorView.ids();
+    const rangeIntersected = current.intersect(filteredRange);
+    console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    return rangeIntersected;
   }
+}
+
+function numericalFilter(numRange, value, index) {
+
+  if (value >= numRange[0] && value <= numRange[1]) {
+    return value;
+  } else {
+    return;
+  }
+
+
 }
