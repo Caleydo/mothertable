@@ -145,7 +145,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const vectorView = await(<any>this.data).filter(findCatName.bind(this, this._activeCategories));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
-    console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    //  console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
     return rangeIntersected;
   }
 

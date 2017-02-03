@@ -84,7 +84,7 @@ export default class FilterManager extends EventHandler {
     for (const f of this.filters) {
     filtered = await f.filter(filtered);
     }
-    console.log((<any>filtered).dim(0).asList())
+  //  console.log((<any>filtered).dim(0).asList())
     return filtered;
   }
 

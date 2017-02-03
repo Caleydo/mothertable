@@ -53,7 +53,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
     const vectorView = await(<any>this.data).filter(stringPattern.bind(this, this._textSearch));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
-    console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+   // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
     return rangeIntersected;
   }
 }

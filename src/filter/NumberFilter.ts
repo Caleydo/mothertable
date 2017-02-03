@@ -7,14 +7,32 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 
 
+export const drag = {left: 'dragLeft', right: 'dragRight'};
+
+
+interface IPosition {
+  'left': number;
+  'right': number;
+}
+
+interface ISVGObject {
+  'left': d3.Selection<SVGElement>; right: d3.Selection<SVGElement>;
+}
+
+
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
 
 
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
   private _numericalFilterRange: number[];
-  private _toolTip;
-  private _SVG;
+  private _toolTip: d3.Selection<SVGElement>;
+  private _SVG: d3.Selection<SVGElement>;
+  private _rect: ISVGObject;
+  private _line: ISVGObject;
+  private _textVal: ISVGObject;
+  private _triangleIcon: ISVGObject;
+  private _position: IPosition;
 
   constructor(data: INumericalVector, parent: HTMLElement) {
     super(data);
@@ -83,158 +101,53 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   private async generateDensityPlot(node: HTMLElement) {
 
-
-    const cellWidth = this.filterDim.width;
-    const cellHeight = this.filterDim.height;
     const range = this.data.desc.value.range;
-    console.log(range);
-
-    const svgHeight = cellHeight + 25;
-    const arrowYPos = svgHeight - 15;
-    const lineYPos = cellHeight + 5;
-    const brushWindowX = 5;
-    const brushWindowY = cellWidth - 5;
-    const gapBetweenTriangle = 20;
-
-    const svg = this.makeSVG(node);
-    this.makeBins(svg);
-    const rectA = this.makeBrushRect(svg, brushWindowX, brushWindowY);
-    const rectB = this.makeBrushRect(svg, brushWindowX, brushWindowY);
-
-    const lineA = this.makeBrushLine(svg, brushWindowX, brushWindowY);
-    const lineB = this.makeBrushLine(svg, brushWindowY, brushWindowY);
-
-
-    const textA = this.makeText(svg, 0, svgHeight);
-    const textB = this.makeText(svg, brushWindowY, svgHeight)
-
-    const iconA = this.makeTriangleIcon(svg, brushWindowX, arrowYPos);
-    const iconB = this.makeTriangleIcon(svg, brushWindowY, arrowYPos);
-
-    let iconAPos = brushWindowX;
-    let iconBPos = brushWindowY;
-
-    // const leftRectBrush = svg.append('rect')
-    //   .attr('x', brushWindowX)
-    //   .attr('width', brushWindowY)
-    //   .attr('height', cellHeight)
-    //   .attr('visibility', 'hidden')
-    //   .attr('opacity', 1)
-    //   .attr('fill', '#666');
-    //
-    // const rightRectBrush = svg.append('rect')
-    //   .attr('x', brushWindowX)
-    //   .attr('width', brushWindowY)
-    //   .attr('height', cellHeight)
-    //   .attr('visibility', 'hidden')
-    //   .attr('opacity', 0.2)
-    //   .attr('fill', '#666');
-
-    // const lineA = svg.append('path')
-    //   .classed('brushline', true)
-    //   .attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`)
-    //   .attr('stroke', 'black');
-    //
-    // const lineB = svg.append('path')
-    //   .classed('brushline', true)
-    //   .attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`)
-    //   .attr('stroke', 'black');
-
-
-    const axisScale = d3.scale.linear().domain([brushWindowX, brushWindowY]).range(range);
-
-    // const textA = svg.append('text').classed('leftVal', true)
-    //   .attr('x', 0)
-    //   .attr('y', svgHeight)
-    //   .attr('font-family', 'sans-serif')
-    //   .attr('font-size', '12px')
-    //   .attr('fill', 'black');
-    // const textB = svg.append('text').classed('rightVal', true)
-    //   .attr('x', brushWindowY)
-    //   .attr('y', svgHeight)
-    //   .attr('font-family', 'sans-serif')
-    //   .attr('font-size', '10px')
-    //   .attr('fill', 'black');
-
-    let brushVal = range;
     const that = this;
-    const dragA = d3.behavior.drag()
+    const coordinates = this.computeCoordinates();
+    const svgHeight = coordinates.svg.height;
+    const triangleYPos = coordinates.triangle.yPos;
+
+    const brushRectPosX = coordinates.brushRect.left;
+    const brushRectPosY = coordinates.brushRect.right;
+    const brushVal = range;
+    const svg = this.makeSVG(node);
+    const bins = await this.makeBins(svg);
+
+    const rectLeft = this.makeBrushRect(svg, brushRectPosX, brushRectPosY);
+    const rectRight = this.makeBrushRect(svg, brushRectPosX, brushRectPosY);
+
+    const lineLeft = this.makeBrushLine(svg, brushRectPosX);
+    const lineRight = this.makeBrushLine(svg, brushRectPosY);
+
+    const textleft = this.makeText(svg, 0, svgHeight);
+    const textRight = this.makeText(svg, brushRectPosY, svgHeight);
+
+    textleft.text(`${(<any>Math).floor(brushVal[0])}`);
+    textRight.text(`${(<any>Math).floor(brushVal[1])}`);
+
+
+    this._position = {left: brushRectPosX, right: brushRectPosY};
+
+    const dragLeft = d3.behavior.drag()
       .on('drag', function (d, i) {
-        const x = (<any>d3).event.x;
-
-        if (x >= brushWindowX && x <= brushWindowY && (iconBPos - iconAPos) > gapBetweenTriangle) {
-          iconAPos = x;
-          brushVal = [axisScale(iconAPos), axisScale(iconBPos)];
-          textA.attr('x', iconAPos)
-            .text(`${Math.floor(brushVal[0])}`);
-          textB.attr('x', iconBPos).text(`${Math.floor(brushVal[1])}`);
-
-          rectA.attr('width', iconAPos)
-            .attr('visibility', 'visible')
-            .attr('opacity', 0.8);
-
-          //  console.log(iconBPos,brushWindowY - iconBPos,'Arect')
-          rectB.attr('x', iconBPos)
-            .attr('width', brushWindowY - iconBPos)
-            .attr('visibility', 'visible')
-            .attr('opacity', 0.8);
-
-          lineA.attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`);
-          lineB.attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`);
-          // console.log(iconAPos, iconBPos,'dragA')
-          that._numericalFilterRange = brushVal;
-          that.triggerFilterChanged();
-          d3.select(this).attr('transform', `translate(${iconAPos},${arrowYPos})`);
-
-        }
+        that.updateDragging(this, drag.left);
       });
 
-    const dragB = d3.behavior.drag()
+    const dragRight = d3.behavior.drag()
       .on('drag', function (d, i) {
-        const x = (<any>d3).event.x;
+        that.updateDragging(this, drag.right);
 
-        if (x >= brushWindowX && x <= brushWindowY && (iconBPos - iconAPos) > gapBetweenTriangle) {
-          iconBPos = x;
-          brushVal = [axisScale(iconAPos), axisScale(iconBPos)];
-          textA.attr('x', iconAPos)
-            .text(`${Math.floor(brushVal[0])}`);
-          textB.attr('x', iconBPos).text(`${Math.floor(brushVal[1])}`);
-          console.log(brushVal)
-
-          rectA.attr('width', iconAPos)
-            .attr('visibility', 'visible')
-            .attr('opacity', 0.8);
-
-          rectB.attr('x', iconBPos)
-            .attr('width', brushWindowY - iconBPos)
-            .attr('visibility', 'visible')
-            .attr('opacity', 0.8);
-
-          lineA.attr('d', `M${iconAPos} 0,L${iconAPos} ${lineYPos}`);
-          lineB.attr('d', `M${iconBPos} 0,L${iconBPos} ${lineYPos}`);
-          that._numericalFilterRange = brushVal;
-          that.triggerFilterChanged();
-          d3.select(this).attr('transform', `translate(${iconBPos},${arrowYPos})`);
-        }
       });
 
+    const triangleLeft = this.makeTriangleIcon(svg, brushRectPosX, triangleYPos);
+    const triangleRight = this.makeTriangleIcon(svg, brushRectPosY, triangleYPos);
+    triangleLeft.call(dragLeft);
+    triangleRight.call(dragRight);
 
-    //  const triangleSymbol = d3.svg.symbol().type('triangle-up').size(100);
-    // const iconA = svg.append('path')
-    //   .classed('draggable', true)
-    //   .attr('d', triangleSymbol)
-    //   .attr('transform', `translate(${brushWindowX},${arrowYPos})`)
-    //   .call(dragA);
-
-
-    // const iconB = svg.append('path')
-    //   .attr('d', triangleSymbol)
-    //   .attr('transform', `translate(${brushWindowY},${arrowYPos})`)
-    //   .call(dragB);
-
-    textA.text(`${(<any>Math).floor(brushVal[0])}`);
-    textB.text(`${(<any>Math).floor(brushVal[1])}`);
-
+    this._rect = {'left': rectLeft, 'right': rectRight};
+    this._line = {'left': lineLeft, 'right': lineRight};
+    this._triangleIcon = {'left': triangleLeft, 'right': triangleRight};
+    this._textVal = {'left': textleft, 'right': textRight};
 
   }
 
@@ -251,12 +164,14 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   }
 
   private async makeBins(svg) {
+
     const cellWidth = this.filterDim.width;
     const cellHeight = this.filterDim.height;
     const toolTip = (this._toolTip);
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
     const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(histData)]).range(['white', 'darkgrey']);
+
     const binsRect = svg.append('g').classed('binsEntries', true)
       .selectAll('g.bins').data(histData).enter();
 
@@ -280,64 +195,41 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
           .style('opacity', 0);
       });
 
+    return binsRect;
 
   }
 
-  private makeBrushLine(svg, posX, posY) {
+  private makeBrushLine(svg, posX: number) {
 
-    const cellWidth = this.filterDim.width;
-    const cellHeight = this.filterDim.height;
-    const range = this.data.desc.value.range;
-    console.log(range);
-    const lineYPos = cellHeight + 5;
-    const svgHeight = cellHeight + 25;
-    const arrowYPos = svgHeight - 15;
-
-    const brushWindowX = 5;
-    const brushWindowY = cellWidth - 5;
-    const gapBetweenTriangle = 20;
-    console.log(posY)
+    const coordinates = this.computeCoordinates();
+    const lineYPos = coordinates.line.yPos;
     const line = svg.append('path')
       .classed('brushline', true)
       .attr('d', `M${posX} 0,L${posX} ${lineYPos}`)
-      .attr('stroke', 'red');
-
+      .attr('stroke', 'black');
     return line;
 
 
   }
 
-  private makeBrushRect(svg, posX, width) {
+  private makeBrushRect(svg, posX: number, width: number) {
 
-
-    const cellWidth = this.filterDim.width;
     const cellHeight = this.filterDim.height;
-    const range = this.data.desc.value.range;
-    console.log(range);
-
-    const svgHeight = cellHeight + 25;
-    const arrowYPos = svgHeight - 15;
-    const lineYPos = cellHeight + 5;
-    const brushWindowX = 5;
-    const brushWindowY = cellWidth - 5;
-
-    const gapBetweenTriangle = 20;
     const rect = svg.append('rect')
       .attr('x', posX)
       .attr('width', width)
       .attr('height', cellHeight)
-      .attr('visibility', 'visible')
+      .attr('visibility', 'hidden')
       .attr('opacity', 1)
-      .attr('fill', 'red');
+      .attr('fill', '#666');
 
     return rect;
 
   }
 
-  private makeText(svg, posX, posY) {
-    const cellHeight = this.filterDim.height;
-    const svgHeight = cellHeight + 25;
-    const text = svg.append('text').classed('leftVal', true)
+  private makeText(svg, posX: number, posY: number) {
+
+    const text = svg.append('text').classed('textVal', true)
       .attr('x', posX)
       .attr('y', posY)
       .attr('font-family', 'sans-serif')
@@ -348,25 +240,106 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private  makeTriangleIcon(svg, posX, posY) {
+  private  makeTriangleIcon(svg, posX: number, posY: number) {
     const triangleSymbol = d3.svg.symbol().type('triangle-up').size(100);
     const triangle = svg.append('path')
       .classed('draggable', true)
       .attr('d', triangleSymbol)
       .attr('transform', `translate(${posX},${posY})`);
-
     return triangle;
+
+  }
+
+  private updateDragging(dragMe, myName: string) {
+
+    const rectLeft = this._rect.left;
+    const rectRight = this._rect.right;
+    const textLeft = this._textVal.left;
+    const textRight = this._textVal.right;
+    const lineLeft = this._line.left;
+    const lineRight = this._line.right;
+
+    const coordinates = this.computeCoordinates();
+    let brushVal = this.data.desc.value.range;
+
+    const triangleYPos = coordinates.triangle.yPos;
+    const lineYPos = coordinates.line.yPos;
+    const brushRectLeft = coordinates.brushRect.left;
+    const brushRectRight = coordinates.brushRect.right;
+    const gapBetweenTriangle = coordinates.gap;
+
+    const axisScale = coordinates.axisScale;
+
+
+    const x = (<any>d3).event.x;
+
+    if (x >= brushRectLeft && x <= brushRectRight && (this._position.right - this._position.left) > gapBetweenTriangle) {
+      if (myName === drag.left) {
+        this._position.left = x;
+      } else if (myName === drag.right) {
+
+        this._position.right = x;
+      }
+      console.log(x)
+      brushVal = [axisScale(this._position.left), axisScale(this._position.right)];
+      textLeft.attr('x', this._position.left)
+        .text(`${Math.floor(brushVal[0])}`);
+      textRight.attr('x', this._position.right).text(`${Math.floor(brushVal[1])}`);
+
+      rectLeft.attr('width', this._position.left)
+        .attr('visibility', 'visible')
+        .attr('opacity', 0.8);
+
+      //  console.log(iconBPos,brushWindowY - iconBPos,'Arect')
+      rectRight.attr('x', this._position.right)
+        .attr('width', brushRectRight - this._position.right)
+        .attr('visibility', 'visible')
+        .attr('opacity', 0.8);
+
+      lineLeft.attr('d', `M${this._position.left} 0,L${this._position.left} ${lineYPos}`);
+      lineRight.attr('d', `M${this._position.right} 0,L${this._position.right} ${lineYPos}`);
+      // console.log(iconAPos, iconBPos,'dragA')
+      this._numericalFilterRange = brushVal;
+      this.triggerFilterChanged();
+      d3.select(dragMe).attr('transform', `translate(${x},${triangleYPos})`);
+      return dragMe;
+    }
+  }
+
+
+  private computeCoordinates() {
+
+    const range = this.data.desc.value.range;
+    const cellWidth = this.filterDim.width;
+    const cellHeight = this.filterDim.height;
+
+    const svg = {height: cellHeight + 25};
+    const triangle = {yPos: svg.height - 15};
+    const line = {yPos: cellHeight + 5};
+    const brushRect = {'left': 5, 'right': cellWidth - 5};
+    const gapBetweenTriangle = 20;
+    const axisScale = d3.scale.linear().domain([brushRect.left, brushRect.right]).range(range);
+
+    const coordinate = {
+      'svg': svg,
+      'line': line,
+      'triangle': triangle,
+      'brushRect': brushRect,
+      'gap': gapBetweenTriangle,
+      'axisScale': axisScale
+    };
+    return coordinate;
 
 
   }
 
 
   async filter(current: Range1D) {
-    console.log(this._numericalFilterRange);
+    // console.log(this._numericalFilterRange);
     const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
-    console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
     return rangeIntersected;
   }
 }
