@@ -7,6 +7,7 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import any = jasmine.any;
 import color = d3.color;
+import day = d3.time.day;
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly node: HTMLElement;
@@ -64,12 +65,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const allCatNames = await(<any>this.data).data();
     const categories = (<any>this.data).desc.value.categories;
     const c20 = d3.scale.category20();
-
+    const myData = this.data;
     const toolTip = (this.generateTooltip(node));
 
     const catData = [];
-    const uniqueValues = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-    uniqueValues.forEach(((val, i) => {
+    const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
+    uniqueCategories.forEach(((val, i) => {
       const count = allCatNames.filter(isSame.bind(this, val));
       let colcat;
       if (typeof categories !== 'undefined') {
@@ -85,10 +86,13 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .style('align-items', 'flex-end');
     const binScale = d3.scale.linear()
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
+
+    let activeCategories = catData;
+
+
     const catListDiv = catEntries
       .selectAll('div.categories')
       .data(catData).enter();
-
 
     catListDiv.append('div')
       .attr('class', 'categories')
@@ -99,9 +103,6 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .style('background-color', (d) => d.color)
       .text((d: any) => {
         return d.name;
-      })
-      .on('click', function (d, i) {
-        console.log(d);
       })
       .on('mouseover', function (d, i) {
         toolTip.transition()
@@ -115,6 +116,29 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
         toolTip.transition()
           .duration(500)
           .style('opacity', 0);
+      })
+      .on('click', function (d, i) {
+        d3.select(this).classed('active', !d3.select(this).classed('active'));
+        if (d3.select(this).classed('active') === false) {
+          const cat = activeCategories;
+          cat.push(d);
+          activeCategories = cat;
+
+          onClickCatA(myData, cat);
+
+        } else if (d3.select(this).classed('active') === true) {
+          let ind = -1;
+          const cat = activeCategories;
+          for (let i = 0; i < cat.length; ++i) {
+            if (cat[i].name === d.name) {
+              ind = i;
+            }
+          }
+          cat.splice(ind, 1);
+          activeCategories = cat;
+          onClickCatA(myData, cat);
+
+        }
       });
 
 
@@ -123,14 +147,34 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
   async filter(current: Range1D) {
 
-    console.log(current);
     return current;
   }
 }
 
 
+async function onClickCatA(data, filterType?) {
+  const vectorView = await (<any>data).filter(findCatName.bind(this, filterType));
+  const filteredRange = await vectorView.ids();
+  console.log((<any>filteredRange).dim(0).asList());
+
+}
+
 function isSame(value, compareWith) {
 
 
   return value === compareWith;
+}
+
+
+function findCatName(catName: any[], value, index,) {
+
+  for (const x in catName) {
+    if (catName[x].name === value) {
+      console.log(value, catName[x].name)
+      return value;
+    }
+  }
+  return;
+
+
 }
