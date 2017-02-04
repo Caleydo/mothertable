@@ -60,11 +60,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   private async generateCategories(node: HTMLElement, dispHistogram: boolean) {
     const that = this;
     const cellHeight = this.filterDim.height;
-    const cellWidth = this.filterDim.width;
     const allCatNames = await(<any>this.data).data();
     const categories = (<any>this.data).desc.value.categories;
     const c20 = d3.scale.category20();
-    const myData = this.data;
     const toolTip = (this.generateTooltip(node));
 
     const catData = [];

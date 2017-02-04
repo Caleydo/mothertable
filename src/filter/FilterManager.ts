@@ -3,6 +3,7 @@
  */
 import IDType from 'phovea_core/src/idtype/IDType';
 import {ICategoricalVector, INumericalVector} from 'phovea_core/src/vector';
+import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
@@ -14,9 +15,10 @@ import StringFilter from './StringFilter';
 import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
+import MatrixFilter from './MatrixFilter';
 
 declare type AnyColumn = AFilter<any, IDataType>;
-export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector;
+export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
 export default class FilterManager extends EventHandler {
 
@@ -36,6 +38,7 @@ export default class FilterManager extends EventHandler {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
+
     const col = FilterManager.createFilter(data, this.node);
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(col);
@@ -82,9 +85,9 @@ export default class FilterManager extends EventHandler {
   async currentFilter() {
     let filtered = Range1D.all();
     for (const f of this.filters) {
-    filtered = await f.filter(filtered);
+      filtered = await f.filter(filtered);
     }
-  //  console.log((<any>filtered).dim(0).asList())
+    //  console.log((<any>filtered).dim(0).asList())
     return filtered;
   }
 
@@ -95,6 +98,7 @@ export default class FilterManager extends EventHandler {
   }
 
   private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {
+
     switch (data.desc.type) {
       case 'vector':
         const v = <IStringVector|ICategoricalVector|INumericalVector>data;
@@ -108,8 +112,13 @@ export default class FilterManager extends EventHandler {
             return new NumberFilter(<INumericalVector>v, parent);
         }
         throw new Error('invalid vector type');
+      case 'matrix':
+        const m = data;
+        return new MatrixFilter(<INumericalMatrix>m, parent);
       default:
         throw new Error('invalid data type');
+
+
     }
   }
 }

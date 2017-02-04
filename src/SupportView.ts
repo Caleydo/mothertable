@@ -87,40 +87,44 @@ export default class SupportView extends EventHandler {
 
 function isFilterAble(data: IDataType) {
   // everything except matrices can be filtered
-  return data.desc.type !== 'matrix';
+
+  return true;
+  //return data.desc.type !== 'matrix';
 }
 
 function isPossibleDataset(data: IDataType) {
   switch (data.desc.type) {
-      case 'vector':
-        const v = <IAnyVector>data;
-        switch (v.desc.value.type) {
-          case VALUE_TYPE_STRING:
-            return true;
-          case VALUE_TYPE_CATEGORICAL:
-            return true;
-          case VALUE_TYPE_INT:
-          case VALUE_TYPE_REAL:
-            return true;
-        }
-        return false;
-      case 'matrix':
-        const m = <INumericalMatrix>data;
-        switch (m.desc.value.type) {
-          case VALUE_TYPE_INT:
-          case VALUE_TYPE_REAL:
-            return true;
-        }
-        return false;
-      default:
-        return false;
-    }
+    case 'vector':
+      const v = <IAnyVector>data;
+      switch (v.desc.value.type) {
+        case VALUE_TYPE_STRING:
+          return true;
+        case VALUE_TYPE_CATEGORICAL:
+          return true;
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return true;
+      }
+      return false;
+    case 'matrix':
+      const m = <INumericalMatrix>data;
+      switch (m.desc.value.type) {
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return true;
+      }
+      return false;
+    default:
+      return false;
+  }
 }
 
 function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
   // tranpose if the rowtype is not the target one
   if (d.desc.type === 'matrix' && d.idtypes[0] !== rowtype) {
+    console.log(d)
     return (<INumericalMatrix>d).t;
   }
+
   return d;
 }

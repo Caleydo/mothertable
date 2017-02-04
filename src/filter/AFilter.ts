@@ -21,10 +21,25 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
 
 
   protected build(parent: HTMLElement) {
-    const node = parent.ownerDocument.createElement('div');
-    parent.appendChild(node);
-    node.classList.add('filter');
+    let node;
+    const idType = this.idtype.id;
+    const element = document.querySelector(`.${idType}`);
+    if (typeof(element) !== 'undefined' && element != null) {
+      const p = document.querySelector(`.${idType}`);
+      node = document.createElement('div');
+      p.appendChild(node);
+      node.classList.add('filter');
+    } else {
+      const p = parent.ownerDocument.createElement('div');
+      parent.appendChild(p);
+      p.classList.add(`${idType}`);
+      node = document.createElement('div');
+      p.appendChild(node);
+      node.classList.add('filter');
+    }
+
     return node;
+
   }
 
   async filter(current: Range1D) {
