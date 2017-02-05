@@ -44,9 +44,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
 
   private generateLabel(node: HTMLElement) {
-
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    labelNode.text(`Name: ${this.data.desc.name}`);
+    const name = this.data.desc.name;
+    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
   }
 
   private generateTooltip(node: HTMLElement) {

@@ -122,7 +122,6 @@ function isPossibleDataset(data: IDataType) {
 function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
   // tranpose if the rowtype is not the target one
   if (d.desc.type === 'matrix' && d.idtypes[0] !== rowtype) {
-    console.log(d)
     return (<INumericalMatrix>d).t;
   }
 

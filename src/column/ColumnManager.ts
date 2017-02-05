@@ -112,6 +112,7 @@ export default class ColumnManager extends EventHandler {
 }
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
+  console.log(data)
   switch (data.desc.type) {
     case 'vector':
       const v = <IStringVector|ICategoricalVector|INumericalVector>data;

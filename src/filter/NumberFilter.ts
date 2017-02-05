@@ -70,9 +70,9 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
 
   private generateLabel(node) {
-
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    labelNode.text(`Name: ${this.data.desc.name}`);
+    const name = this.data.desc.name;
+    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
   }
 
   private generateTooltip(node) {
@@ -317,12 +317,10 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     };
     return coordinate;
 
-
   }
 
 
   async filter(current: Range1D) {
-    console.log(this.data, this._numericalFilterRange)
     const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);

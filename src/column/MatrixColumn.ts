@@ -83,6 +83,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     if (data.idtypes[0] !== this.data.coltype) {
       throw new Error('invalid idtype');
     }
+
     const col = createColumn(data, this.orientation, this.node);
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);

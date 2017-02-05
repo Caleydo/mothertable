@@ -60,12 +60,15 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   private generateLabel(node) {
 
     const labelNode = node.append('div').classed('filterlabel', true);
-
-
-    labelNode.text(`Name: ${node.attr('class')}`);
+    const name = node.attr('class');
+    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
   }
 
   private async generateMatrixHeatmap(node) {
+
+
+    const a = await this.data.data();
+
     const rowOrCol = node.attr('class');
     let transpose = false;
     if (rowOrCol === this.data.rowtype.id) {
