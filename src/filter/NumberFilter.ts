@@ -330,6 +330,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 }
 
 function numericalFilter(numRange, value, index) {
+  console.log(numRange)
   if (value >= numRange[0] && value <= numRange[1]) {
     return value;
   } else {

@@ -12,6 +12,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   constructor(data: IStringVector, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
+    this._textSearch = null;
   }
 
   protected build(parent: HTMLElement) {
@@ -34,7 +35,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   private generateLabel(node: HTMLElement) {
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
     const name = this.data.desc.name;
-    labelNode.text(`Name: ${name.substring(0,1).toUpperCase()+name.substring(1)}`);
+    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
   }
 
 
@@ -54,12 +55,15 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
     const vectorView = await(<any>this.data).filter(stringPattern.bind(this, this._textSearch));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
-   // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
     return rangeIntersected;
   }
 }
 
 function stringPattern(stringFilter, value, index) {
+  if (stringFilter === null) {
+    return value;
+  }
 
   const re = new RegExp(`${stringFilter}`, 'gi');
   if (value.match(re) === null) {
