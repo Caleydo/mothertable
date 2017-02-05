@@ -14,6 +14,7 @@ import NumberColumn from './NumberColumn';
 import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
+
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -27,6 +28,7 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
+  private rangeNow: Range1D;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -49,11 +51,27 @@ export default class ColumnManager extends EventHandler {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
-    const col = createColumn(data, this.orientation, this.node);
-    col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    this.columns.push(col);
-    this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    this.relayout();
+
+    if (this.rangeNow !== undefined) {
+      (<any>data).idView(this.rangeNow).then((view) => {
+        const col = createColumn(view, this.orientation, this.node);
+        col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+        this.columns.push(col);
+        this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
+        this.relayout();
+      });
+
+    } else {
+
+      const col = createColumn(data, this.orientation, this.node);
+      col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+      this.columns.push(col);
+      this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
+      this.relayout();
+
+    }
+
+
   }
 
   remove(col: AnyColumn) {
@@ -87,8 +105,11 @@ export default class ColumnManager extends EventHandler {
   }
 
   update(idRange: Range1D) {
+    this.rangeNow = idRange;
     this.columns.forEach((col) => col.update(idRange));
+
   }
+
 
   async relayout() {
     // wait 10ms to be layouted
@@ -103,16 +124,15 @@ export default class ColumnManager extends EventHandler {
     }, {top: 0, bottom: 0});
 
     this.columns.forEach((col) => {
-      const margin= col.getVerticalMargin();
-      col.node.style.marginTop = (verticalMargin.top - margin.top)+'px';
-      col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom)+'px';
+      const margin = col.getVerticalMargin();
+      col.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
+      col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
       col.layout(col.body.clientWidth, height);
     });
   }
 }
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
-  console.log(data)
   switch (data.desc.type) {
     case 'vector':
       const v = <IStringVector|ICategoricalVector|INumericalVector>data;

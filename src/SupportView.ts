@@ -39,6 +39,7 @@ export default class SupportView extends EventHandler {
 
   private addDataset(data: IDataType) {
     if (isFilterAble(data) && !this.filter.contains(<IFilterAbleType>data)) {
+
       this.filter.push(<IFilterAbleType>data);
     }
     this.fire(SupportView.EVENT_DATASET_ADDED, data);
