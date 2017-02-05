@@ -37,6 +37,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   constructor(data: INumericalVector, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
+    this._numericalFilterRange = this.data.desc.value.range;
 
   }
 
@@ -67,19 +68,11 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this._filterDim = value;
   }
 
-  get toolTip() {
-    return this._toolTip;
-  }
-
-  set toolTip(value) {
-    this._toolTip = value;
-  }
-
 
   private generateLabel(node) {
 
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    labelNode.text(`Label: ${this.data.desc.name}`);
+    labelNode.text(`Name: ${this.data.desc.name}`);
   }
 
   private generateTooltip(node) {
@@ -250,7 +243,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private updateDragging(dragMe, myName: string) {
+  private  updateDragging(dragMe, myName: string) {
 
     const rectLeft = this._rect.left;
     const rectRight = this._rect.right;
@@ -258,7 +251,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const textRight = this._textVal.right;
     const lineLeft = this._line.left;
     const lineRight = this._line.right;
-
     const coordinates = this.computeCoordinates();
     let brushVal = this.data.desc.value.range;
 
@@ -267,9 +259,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const brushRectLeft = coordinates.brushRect.left;
     const brushRectRight = coordinates.brushRect.right;
     const gapBetweenTriangle = coordinates.gap;
-
     const axisScale = coordinates.axisScale;
-
 
     const x = (<any>d3).event.x;
 
@@ -289,7 +279,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
         .attr('visibility', 'visible')
         .attr('opacity', 0.8);
 
-      //  console.log(iconBPos,brushWindowY - iconBPos,'Arect')
       rectRight.attr('x', this._position.right)
         .attr('width', brushRectRight - this._position.right)
         .attr('visibility', 'visible')
@@ -297,7 +286,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
       lineLeft.attr('d', `M${this._position.left} 0,L${this._position.left} ${lineYPos}`);
       lineRight.attr('d', `M${this._position.right} 0,L${this._position.right} ${lineYPos}`);
-      // console.log(iconAPos, iconBPos,'dragA')
       this._numericalFilterRange = brushVal;
       this.triggerFilterChanged();
       d3.select(dragMe).attr('transform', `translate(${x},${triangleYPos})`);
@@ -334,7 +322,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
 
   async filter(current: Range1D) {
-    // console.log(this._numericalFilterRange);
+    console.log(this.data, this._numericalFilterRange)
     const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
@@ -344,7 +332,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 }
 
 function numericalFilter(numRange, value, index) {
-
   if (value >= numRange[0] && value <= numRange[1]) {
     return value;
   } else {

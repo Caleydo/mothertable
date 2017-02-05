@@ -21,16 +21,13 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const rowid = this.data.rowtype.id;
     const colid = this.data.coltype.id;
-    const p = parent;
-    const element = p.querySelector(`.country`);
+
     const rowEl = d3.select(parent).append('div').classed(`${rowid}`, true);
+
     const colEl = d3.select(parent).append('div').classed(`${colid}`, true);
 
-
-    console.log(rowid, colid, p, element, rowEl, colEl);
     const node = super.build(parent);
 
-    console.log(node)
     this.generateLabel(rowEl);
     this.generateLabel(colEl);
     this.generateMatrixHeatmap(rowEl);
@@ -45,22 +42,30 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     return node;
   }
 
-  get filterDim(): {width: number; height: number} {
+  get filterDim(): {
+    width: number;
+    height: number
+  } {
     this._filterDim = {width: 205, height: 35};
     return this._filterDim;
   }
 
-  set filterDim(value: {width: number; height: number}) {
+  set filterDim(value: {
+    width: number;
+    height: number
+  }) {
     this._filterDim = value;
   }
 
+  private generateLabel(node) {
 
-  private generateLabel(node: d3.Selection<HTMLElement>) {
     const labelNode = node.append('div').classed('filterlabel', true);
-    labelNode.text(`Label: ${node.attr('class')}`);
+
+
+    labelNode.text(`Name: ${node.attr('class')}`);
   }
 
-  private async generateMatrixHeatmap(node: d3.Selection<HTMLElement>) {
+  private async generateMatrixHeatmap(node) {
     const rowOrCol = node.attr('class');
     let transpose = false;
     if (rowOrCol === this.data.rowtype.id) {
@@ -70,7 +75,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     }
 
     const cellHeight = this.filterDim.height;
-    const avgdata = await  this.calculateAvg(transpose);
+    const avgdata = await this.calculateAvg(transpose);
     const domain = d3.extent(avgdata);
     const colorRange = ['lightgrey', 'grey'];
     const colorScale = d3.scale.linear<string,number>();
@@ -97,21 +102,16 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   private async calculateAvg(transpose) {
 
     let v = await this.data.data();
-    console.log(v, 'i')
     if (transpose === true) {
-      console.log('tyes')
       const t = (<any>this.data).t;
       v = await t.data();
     }
-
-    console.log(v, 'b')
 
     const avg = [];
     v.forEach((d: any, i) => avg.push(d3.mean(d)));
     return avg;
 
   }
-
 
   async filter(current: Range1D) {
 

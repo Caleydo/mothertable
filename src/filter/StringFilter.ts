@@ -33,7 +33,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
 
   private generateLabel(node: HTMLElement) {
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    labelNode.text(`Label: ${this.data.desc.name}`);
+    labelNode.text(`Name: ${this.data.desc.name}`);
   }
 
 
