@@ -22,16 +22,52 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     const rowid = this.data.rowtype.id;
     const colid = this.data.coltype.id;
 
-    const rowEl = d3.select(parent).append('div').classed(`${rowid}`, true);
+    const rowSelect = d3.select(`.${rowid}`);
+    const colSelect = d3.select(`.${colid}`)
+    let rowNode;
+    let colNode;
 
-    const colEl = d3.select(parent).append('div').classed(`${colid}`, true);
+    if (rowSelect[0][0] !== null) {
+
+      rowNode = d3.select(parent).append('div')
+        .classed(`${rowid}`, true)
+        .append('div')
+        .classed('filter', true);
+    } else {
+      rowNode = d3.select(parent).append('div')
+        .classed(`${rowid}`, true)
+        .append('div').classed('idType', true)
+        .text(`IDType : ${rowid.toUpperCase()}`)
+        .append('div')
+        .classed('filter', true);
+    }
+
+    if (colSelect[0][0] !== null) {
+
+      colNode = d3.select(parent).append('div')
+        .classed(`${colid}`, true).append('div')
+        .classed('filter', true);
+    } else {
+      colNode = d3.select(parent).append('div')
+        .classed(`${colid}`, true)
+        .append('div').classed('idType', true)
+        .text(`IDType : ${colid.toUpperCase()}`)
+        .append('div')
+        .classed('filter', true);
+
+    }
+
+
+    // rowEl = d3.select(parent).append('div').classed(`${rowid}`, true).append('div').classed('filter', true);
+
+    //colEl = d3.select(parent).append('div').classed(`${colid}`, true).text('hkkk').append('div').classed('filter', true);
 
     const node = super.build(parent);
 
-    this.generateLabel(rowEl);
-    this.generateLabel(colEl);
-    this.generateMatrixHeatmap(rowEl);
-    this.generateMatrixHeatmap(colEl);
+    this.generateLabel(rowNode, rowid);
+    this.generateLabel(colNode, colid);
+    this.generateMatrixHeatmap(rowNode, rowid);
+    this.generateMatrixHeatmap(colNode, colid);
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
@@ -57,19 +93,19 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     this._filterDim = value;
   }
 
-  private generateLabel(node) {
+  private generateLabel(node, idtype) {
 
     const labelNode = node.append('div').classed('filterlabel', true);
-    const name = node.attr('class');
+    const name = idtype;
     labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
   }
 
-  private async generateMatrixHeatmap(node) {
+  private async generateMatrixHeatmap(node, idtype) {
 
 
     const a = await this.data.data();
 
-    const rowOrCol = node.attr('class');
+    const rowOrCol = idtype;
     let transpose = false;
     if (rowOrCol === this.data.rowtype.id) {
       transpose = false;

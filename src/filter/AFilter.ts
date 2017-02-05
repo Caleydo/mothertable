@@ -33,7 +33,10 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
       const p = parent.ownerDocument.createElement('div');
       parent.appendChild(p);
       p.classList.add(`${idType}`);
-      p.innerHTML = `IDType: ${idType.toLocaleUpperCase()}`;
+      const idTypeNode = document.createElement('div');
+      p.appendChild(idTypeNode);
+      idTypeNode.classList.add('idType');
+      idTypeNode.innerHTML = `IDType: ${idType.toLocaleUpperCase()}`;
       node = document.createElement('div');
       p.appendChild(node);
       node.classList.add('filter');
