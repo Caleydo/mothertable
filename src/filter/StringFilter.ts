@@ -19,7 +19,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
     const node = super.build(parent);
 
 
-    this.generateLabel(node);
+    this.generateLabel(node,this.data.desc.name);
     this.generateSearchInput(node);
 
 
@@ -32,36 +32,35 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
     return node;
   }
 
-  private generateTooltip(node) {
-    const tooltipDiv = d3.select(node).append('div')
-      .attr('class', 'tooltip')
-      .style('opacity', 0);
-    return tooltipDiv;
-  }
-
-  private generateLabel(node: HTMLElement) {
-    const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    let name = this.data.desc.name;
-    if (name.length > 6) {
-      name = name.slice(0, 6) + '..';
-    }
-    const toolTip = (this.generateTooltip(node));
-    const fullName = this.data.desc.name;
-    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`)
-      .on('mouseover', function (d, i) {
-        toolTip.transition()
-          .duration(200)
-          .style('opacity', 1);
-        toolTip.html(`${fullName}`)
-          .style('left', ((<any>d3).event.pageX) + 'px')
-          .style('top', ((<any>d3).event.pageY - 10) + 'px');
-      })
-      .on('mouseout', function (d) {
-        toolTip.transition()
-          .duration(500)
-          .style('opacity', 0);
-      });
-  }
+  // private generateTooltip(node) {
+  //   const tooltipDiv = d3.select(node).append('div')
+  //     .attr('class', 'tooltip')
+  //     .style('opacity', 0);
+  //       return tooltipDiv;
+  // }
+  // private generateLabel(node: HTMLElement) {
+  //   const labelNode = d3.select(node).append('div').classed('filterlabel', true);
+  //   let name = this.data.desc.name;
+  //   if (name.length > 6) {
+  //     name = name.slice(0, 6) + '..';
+  //   }
+  //   const toolTip = (this.generateTooltip(node));
+  //   const fullName = this.data.desc.name;
+  //   labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}:`)
+  //     .on('mouseover', function (d, i) {
+  //       toolTip.transition()
+  //         .duration(200)
+  //         .style('opacity', 1);
+  //       toolTip.html(`${fullName}`)
+  //         .style('left', ((<any>d3).event.pageX) + 'px')
+  //         .style('top', ((<any>d3).event.pageY - 10) + 'px');
+  //     })
+  //     .on('mouseout', function (d) {
+  //       toolTip.transition()
+  //         .duration(500)
+  //         .style('opacity', 0);
+  //     });
+  // }
 
 
   private async generateSearchInput(node: HTMLElement) {

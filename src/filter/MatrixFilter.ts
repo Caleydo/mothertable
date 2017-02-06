@@ -29,7 +29,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     const rowid = this.data.rowtype.id;
     const colid = this.data.coltype.id;
     const rowSelect = d3.select(`.${rowid}`);
-    const colSelect = d3.select(`.${colid}`)
+    const colSelect = d3.select(`.${colid}`);
     let rowNode;
     let colNode;
     if (rowSelect[0][0] !== null) {
@@ -66,10 +66,13 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     colNode = d3.select(`.${colid}`);
     const node = super.build(parent);
-    this.generateLabel(rowNode, this.data.desc.name);
-    this.generateMatrixHeatmap(rowNode, rowid);
+
+    const lableNode = d3.select(`.${rowid}`).append('div').classed('filter', true);
+    const n = <HTMLElement>lableNode.node();
+
+    this.generateLabel(n, this.data.desc.name);
+    this.generateMatrixHeatmap(lableNode, rowid);
     this.loadData(colid, colNode);
-    // this.generateLabel(colNode, this.data.desc.name);
 
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
@@ -90,7 +93,8 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     this.manager = new ColumnManager(data[0], EOrientation.Horizontal, <HTMLElement>document.querySelector(`.column-manager`));
     this.supportView = new SupportView(data[0], <HTMLElement>document.querySelector(`.${colid}`));
     const colNode = d3.select(`.${colid}`).append('div').classed('filter', true);
-    this.generateLabel(colNode, this.data.desc.name);
+    const n = <HTMLElement>colNode.node();
+    this.generateLabel(n, this.data.desc.name);
     this.generateMatrixHeatmap(colNode, colid);
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       this.manager.push(data);
@@ -114,15 +118,15 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     this._filterDim = value;
   }
 
-  private generateLabel(node, idtype) {
-
-    const labelNode = node.append('div').classed('filterlabel', true);
-    let name = idtype;
-    if (name.length > 6) {
-      name = name.slice(0, 6) + '..';
-    }
-    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
-  }
+  // private generateLabel(node, idtype) {
+  //
+  //   const labelNode = node.append('div').classed('filterlabel', true);
+  //   let name = idtype;
+  //   if (name.length > 6) {
+  //     name = name.slice(0, 6) + '..';
+  //   }
+  //   labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
+  // }
 
   private async generateMatrixHeatmap(node, idtype) {
 
