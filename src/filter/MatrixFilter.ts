@@ -28,57 +28,49 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const rowid = this.data.rowtype.id;
     const colid = this.data.coltype.id;
-
     const rowSelect = d3.select(`.${rowid}`);
     const colSelect = d3.select(`.${colid}`)
     let rowNode;
     let colNode;
-
     if (rowSelect[0][0] !== null) {
-
       rowNode = d3.select(parent).append('div')
         .classed(`${rowid}`, true)
         .append('div')
         .classed('filter', true);
     } else {
+      const p = parent.ownerDocument.createElement('div');
+      parent.appendChild(p);
+      p.classList.add(`${rowid}`);
+      const idTypeNode = document.createElement('div');
+      parent.insertBefore(idTypeNode, parent.childNodes[0]);
+      idTypeNode.classList.add('idType');
+      idTypeNode.innerHTML = `${rowid.toLocaleUpperCase()}`;
       rowNode = d3.select(parent).append('div')
-        .classed(`${rowid}`, true)
-        .append('div').classed('idType', true)
-        .text(`IDType : ${rowid.toUpperCase()}`)
-        .append('div')
         .classed('filter', true);
     }
 
     if (colSelect[0][0] !== null) {
-
       colNode = d3.select(parent).append('div')
         .classed(`${colid}`, true).append('div')
         .classed('filter', true);
     } else {
-      colNode = d3.select(parent).append('div')
-        .classed(`${colid}`, true)
-        .append('div').classed('idType', true)
-        .text(` ${colid.toUpperCase()}`)
-        .append('div')
-        .classed('filter', true);
+      const p = parent.ownerDocument.createElement('div');
+      parent.appendChild(p);
+      p.classList.add(`${colid}`);
+      const idTypeNode = document.createElement('div');
+      p.appendChild(idTypeNode);
+      idTypeNode.classList.add('idType');
+      idTypeNode.innerHTML = `${colid.toLocaleUpperCase()}`;
 
     }
 
-    console.log(parent, colid, rowid)
-    //this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
-    // console.log(idtype, this.node)
-    this.loadData(colid, parent);
-
-    // rowEl = d3.select(parent).append('div').classed(`${rowid}`, true).append('div').classed('filter', true);
-
-    //colEl = d3.select(parent).append('div').classed(`${colid}`, true).text('hkkk').append('div').classed('filter', true);
-
+    colNode = d3.select(`.${colid}`);
     const node = super.build(parent);
-
-    this.generateLabel(rowNode, rowid);
-    this.generateLabel(colNode, colid);
+    this.generateLabel(rowNode, this.data.desc.name);
     this.generateMatrixHeatmap(rowNode, rowid);
-    this.generateMatrixHeatmap(colNode, colid);
+    this.loadData(colid, colNode);
+    // this.generateLabel(colNode, this.data.desc.name);
+
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
@@ -93,14 +85,14 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   private async loadData(colid, parent) {
     const data: IDType[] = (await listAll())
       .filter((d) => d.id === colid)
-      .map((d) => <IDType>d)
-    // .sort((a, b) => a.name.localeCompare(b.name));
-    this.manager = new ColumnManager(data[0], EOrientation.Horizontal, <HTMLElement>document.querySelector('main'));
-    console.log(parent);
-    this.supportView = new SupportView(data[0], parent);
-    const datasets = convertTableToVectors(await listData());
-    this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
+      .map((d) => <IDType>d);
 
+    this.manager = new ColumnManager(data[0], EOrientation.Horizontal, <HTMLElement>document.querySelector(`.column-manager`));
+    this.supportView = new SupportView(data[0], <HTMLElement>document.querySelector(`.${colid}`));
+    const colNode = d3.select(`.${colid}`).append('div').classed('filter', true);
+    this.generateLabel(colNode, this.data.desc.name);
+    this.generateMatrixHeatmap(colNode, colid);
+    this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       this.manager.push(data);
     });
 
@@ -129,11 +121,10 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     if (name.length > 6) {
       name = name.slice(0, 6) + '..';
     }
-    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
+    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
   }
 
   private async generateMatrixHeatmap(node, idtype) {
-
 
     const a = await this.data.data();
 
@@ -154,8 +145,8 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const entries = node.append('div').classed('entries', true)
       .style('display', 'flex')
-      .style('align-items', 'flex-end');
-
+      .style('align-items', 'flex-end')
+      .style('flex-grow', 1);
 
     const list = entries
       .selectAll('div.matlist')

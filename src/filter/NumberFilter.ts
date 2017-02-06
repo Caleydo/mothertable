@@ -290,6 +290,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
         this._position.right = x;
       }
 
+      console.log(this._position.left, this._position.right, x)
       brushVal = [axisScale(this._position.left), axisScale(this._position.right)];
       textLeft.attr('x', this._position.left)
         .text(`${Math.floor(brushVal[0])}`);

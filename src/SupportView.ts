@@ -52,7 +52,8 @@ export default class SupportView extends EventHandler {
   }
 
   private async buildSelectionBox(parent: HTMLElement) {
-    parent.insertAdjacentHTML('afterbegin', `<div class="selection">
+
+      parent.insertAdjacentHTML('afterbegin', `<div class="selection">
        <select class="form-control">
        <option value="attribute">Select Attribute</option>             
       </select>
