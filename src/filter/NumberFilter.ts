@@ -73,10 +73,25 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   private generateLabel(node) {
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
     let name = this.data.desc.name;
-       if (name.length > 6) {
+    if (name.length > 6) {
       name = name.slice(0, 6) + '..';
     }
-    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}:`);
+    const toolTip = (this.generateTooltip(node));
+    const fullName = this.data.desc.name;
+    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`)
+      .on('mouseover', function (d, i) {
+        toolTip.transition()
+          .duration(200)
+          .style('opacity', 1);
+        toolTip.html(`${fullName}`)
+          .style('left', ((<any>d3).event.pageX) + 'px')
+          .style('top', ((<any>d3).event.pageY - 10) + 'px');
+      })
+      .on('mouseout', function (d) {
+        toolTip.transition()
+          .duration(500)
+          .style('opacity', 0);
+      });
   }
 
   private generateTooltip(node) {
@@ -162,7 +177,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   private async makeBins(svg) {
 
-    const cellWidth = this.filterDim.width;
+    const cellWidth = this.filterDim.width - 10;
     const cellHeight = this.filterDim.height;
     const toolTip = (this._toolTip);
     const histData = await this.getHistData();
@@ -173,7 +188,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .selectAll('g.bins').data(histData).enter();
 
     binsRect.append('rect').classed('bins', true)
-      .attr('x', (d, i) => i * cellDimension)
+      .attr('x', (d, i) => (i * cellDimension))
       .attr('width', cellDimension)
       .attr('height', cellHeight)
       .style('opacity', 1)
@@ -267,13 +282,14 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const x = (<any>d3).event.x;
 
-    if (x >= brushRectLeft && x <= brushRectRight && (this._position.right - this._position.left) > gapBetweenTriangle) {
+    if (x >= brushRectLeft && x <= brushRectRight && (this._position.right - this._position.left) >= gapBetweenTriangle) {
       if (myName === drag.left) {
         this._position.left = x;
       } else if (myName === drag.right) {
 
         this._position.right = x;
       }
+
       brushVal = [axisScale(this._position.left), axisScale(this._position.right)];
       textLeft.attr('x', this._position.left)
         .text(`${Math.floor(brushVal[0])}`);
@@ -292,6 +308,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       lineRight.attr('d', `M${this._position.right} 0,L${this._position.right} ${lineYPos}`);
       this._numericalFilterRange = brushVal;
       this.triggerFilterChanged();
+
+      //  this._position.right = this._position.right + 5;
       d3.select(dragMe).attr('transform', `translate(${x},${triangleYPos})`);
       return dragMe;
     }

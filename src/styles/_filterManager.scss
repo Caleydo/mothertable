@@ -4,7 +4,8 @@
   margin-right: 5px;
   .filterlabel {
     margin-right: 5px;
-    }
+    margin-top: 15px;
+  }
   .tooltip {
     position: absolute;
     text-align: center;
@@ -16,6 +17,10 @@
     border: 0px;
     pointer-events: none;
   }
+}
+
+.form-control {
+  margin-bottom: 5px;
 }
 
 .categories {

@@ -58,7 +58,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
       colNode = d3.select(parent).append('div')
         .classed(`${colid}`, true)
         .append('div').classed('idType', true)
-        .text(`IDType : ${colid.toUpperCase()}`)
+        .text(` ${colid.toUpperCase()}`)
         .append('div')
         .classed('filter', true);
 

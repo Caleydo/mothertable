@@ -50,7 +50,24 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     if (name.length > 6) {
       name = name.slice(0, 6) + '..';
     }
-     labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}:`);
+    const toolTip = (this.generateTooltip(node));
+    const fullName = this.data.desc.name;
+    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`)
+      .on('mouseover', function (d, i) {
+        toolTip.transition()
+          .duration(200)
+          .style('opacity', 1);
+        toolTip.html(`${fullName}`)
+          .style('left', ((<any>d3).event.pageX) + 'px')
+          .style('top', ((<any>d3).event.pageY - 10) + 'px');
+      })
+      .on('mouseout', function (d) {
+        toolTip.transition()
+          .duration(500)
+          .style('opacity', 0);
+      });
+
+
   }
 
   private generateTooltip(node: HTMLElement) {

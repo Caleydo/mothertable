@@ -54,7 +54,7 @@ export default class SupportView extends EventHandler {
   private async buildSelectionBox(parent: HTMLElement) {
     parent.insertAdjacentHTML('afterbegin', `<div class="selection">
        <select class="form-control">
-           <option></option>             
+       <option value="attribute">Select Attribute</option>             
       </select>
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
@@ -64,9 +64,6 @@ export default class SupportView extends EventHandler {
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
       .map((d) => transposeMatrixIfNeeded(this.idType, d));
 
-
-    console.log(datasets);
-    //
     datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
       option.text = d.desc.name;
@@ -80,7 +77,7 @@ export default class SupportView extends EventHandler {
         return false;
       }
       // -1 because of empty option
-      this.addDataset(datasets[index - 1]);
+      this.addDataset(datasets[index-1]);
       // reset selection
       select.selectedIndex = 0;
       return false;
