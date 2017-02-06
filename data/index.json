@@ -49,8 +49,14 @@
         "value": {
           "type": "categorical",
           "categories": [
-            "active",
-            "inactive"
+            {
+              "name": "active",
+              "color": "#b3e2cd"
+            },
+            {
+              "name": "inactive",
+              "color": "#fdcdac"
+            }
           ]
         }
       },
@@ -188,9 +194,18 @@
         "value": {
           "type": "categorical",
           "categories": [
-            "Australia",
-            "Europe",
-            "North America"
+            {
+              "name": "Australia",
+              "color": "#1b9e77"
+            },
+            {
+              "name": "Europe",
+              "color": "#d95f02"
+            },
+            {
+              "name": "North America",
+              "color": "#7570b3"
+            }
           ]
         }
       },

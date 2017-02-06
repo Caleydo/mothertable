@@ -6,11 +6,18 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import AFilter from './AFilter';
+import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
+import SupportView from '../SupportView';
+import {listAll, IDType} from 'phovea_core/src/idtype';
+import ColumnManager, {IMotherTableType} from '../column/ColumnManager';
+import {EOrientation} from '../column/AColumn';
 
 export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
+  private supportView: SupportView;
+  private manager: ColumnManager;
 
   constructor(data: INumericalMatrix, parent: HTMLElement) {
     super(data);
@@ -57,6 +64,10 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     }
 
+    console.log(parent, colid, rowid)
+    //this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
+    // console.log(idtype, this.node)
+    this.loadData(colid, parent);
 
     // rowEl = d3.select(parent).append('div').classed(`${rowid}`, true).append('div').classed('filter', true);
 
@@ -77,6 +88,24 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     return node;
   }
+
+
+  private async loadData(colid, parent) {
+    const data: IDType[] = (await listAll())
+      .filter((d) => d.id === colid)
+      .map((d) => <IDType>d)
+    // .sort((a, b) => a.name.localeCompare(b.name));
+    this.manager = new ColumnManager(data[0], EOrientation.Horizontal, <HTMLElement>document.querySelector('main'));
+    console.log(parent);
+    this.supportView = new SupportView(data[0], parent);
+    const datasets = convertTableToVectors(await listData());
+    this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
+
+      this.manager.push(data);
+    });
+
+  }
+
 
   get filterDim(): {
     width: number;

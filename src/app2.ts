@@ -67,9 +67,11 @@ export default class App {
   private setPrimaryIDType(idtype: IDType) {
     this.hideSelection();
     // create a column manager
+    console.log(this.node.querySelector('main'))
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
+    console.log(idtype)
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
-    // add to the columns if we add a dataset
+      // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED,(evt: any, data: IMotherTableType) => {
 
       this.manager.push(data);

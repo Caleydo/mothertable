@@ -64,6 +64,8 @@ export default class SupportView extends EventHandler {
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
       .map((d) => transposeMatrixIfNeeded(this.idType, d));
 
+
+    console.log(datasets);
     //
     datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
