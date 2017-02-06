@@ -106,6 +106,7 @@ export default class ColumnManager extends EventHandler {
 
   update(idRange: Range1D) {
     this.rangeNow = idRange;
+    console.log(this.columns)
     this.columns.forEach((col) => col.update(idRange));
 
   }

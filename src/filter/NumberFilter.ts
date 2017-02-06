@@ -45,7 +45,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
 
-    this.generateLabel(node,this.data.desc.name);
+    this.generateLabel(node, this.data.desc.name);
     this._toolTip = this.generateTooltip(node);
     this.generateDensityPlot(node);
 
@@ -125,7 +125,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const svg = this.makeSVG(node);
     const bins = await this.makeBins(svg);
 
-    const rectLeft = this.makeBrushRect(svg, brushRectPosX, brushRectPosY);
+    const rectLeft = this.makeBrushRect(svg, brushRectPosX - 5, brushRectPosY);
     const rectRight = this.makeBrushRect(svg, brushRectPosX, brushRectPosY);
 
     const lineLeft = this.makeBrushLine(svg, brushRectPosX);
@@ -142,14 +142,30 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const dragLeft = d3.behavior.drag()
       .on('drag', function (d, i) {
+        const x = (<any>d3).event.x;
+        // console.log(that._position, x)
+        if (that._position.right - that._position.left < 20) {
+
+          that._position.left -= 5;
+console.log(that._position)
+          d3.select(this).attr('transform', `translate(${that._position.left - 5},${triangleYPos})`);
+
+        }
         that.updateDragging(this, drag.left);
       });
 
     const dragRight = d3.behavior.drag()
       .on('drag', function (d, i) {
+        const x = (<any>d3).event.x;
+        // if (that._position.right - that._position.left < 20) {
+        //   that._position.right = that._position.right + 5;
+        // }
+        console.log(that._position, x)
         that.updateDragging(this, drag.right);
 
       });
+
+
 
     const triangleLeft = this.makeTriangleIcon(svg, brushRectPosX, triangleYPos);
     const triangleRight = this.makeTriangleIcon(svg, brushRectPosY, triangleYPos);
@@ -188,7 +204,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .selectAll('g.bins').data(histData).enter();
 
     binsRect.append('rect').classed('bins', true)
-      .attr('x', (d, i) => (i * cellDimension))
+      .attr('x', (d, i) => (i * cellDimension) + 5)
       .attr('width', cellDimension)
       .attr('height', cellHeight)
       .style('opacity', 1)
@@ -282,6 +298,9 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const x = (<any>d3).event.x;
 
+    // let xpos =  Math.max(5, Math.min(this._position.right - radius, d3.event.x)))
+
+
     if (x >= brushRectLeft && x <= brushRectRight && (this._position.right - this._position.left) >= gapBetweenTriangle) {
       if (myName === drag.left) {
         this._position.left = x;
@@ -290,13 +309,13 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
         this._position.right = x;
       }
 
-      console.log(this._position.left, this._position.right, x)
       brushVal = [axisScale(this._position.left), axisScale(this._position.right)];
       textLeft.attr('x', this._position.left)
         .text(`${Math.floor(brushVal[0])}`);
       textRight.attr('x', this._position.right).text(`${Math.floor(brushVal[1])}`);
 
-      rectLeft.attr('width', this._position.left)
+      rectLeft.attr('x', brushRectLeft)
+        .attr('width', this._position.left - brushRectLeft)
         .attr('visibility', 'visible')
         .attr('opacity', 0.8);
 
