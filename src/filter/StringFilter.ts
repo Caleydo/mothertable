@@ -22,6 +22,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
     this.generateLabel(node);
     this.generateSearchInput(node);
 
+
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
     //   console.log(this.data)
@@ -34,8 +35,11 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
 
   private generateLabel(node: HTMLElement) {
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    const name = this.data.desc.name;
-    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
+    let name = this.data.desc.name;
+    if (name.length > 6) {
+      name = name.slice(0, 6) + '..';
+    }
+    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}:`);
   }
 
 

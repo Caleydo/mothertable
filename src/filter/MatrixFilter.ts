@@ -125,7 +125,10 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   private generateLabel(node, idtype) {
 
     const labelNode = node.append('div').classed('filterlabel', true);
-    const name = idtype;
+    let name = idtype;
+    if (name.length > 6) {
+      name = name.slice(0, 6) + '..';
+    }
     labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
   }
 

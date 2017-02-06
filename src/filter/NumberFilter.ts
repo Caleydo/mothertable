@@ -49,6 +49,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this.generateTooltip(node);
     this.generateDensityPlot(node);
 
+
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // console.log('hi');
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
@@ -71,8 +72,11 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   private generateLabel(node) {
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    const name = this.data.desc.name;
-    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
+    let name = this.data.desc.name;
+       if (name.length > 6) {
+      name = name.slice(0, 6) + '..';
+    }
+    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}:`);
   }
 
   private generateTooltip(node) {

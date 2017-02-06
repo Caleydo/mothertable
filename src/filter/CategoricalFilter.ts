@@ -29,6 +29,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const dispHistogram: boolean = true;
     this.generateCategories(node, dispHistogram);
 
+
     return node;
   }
 
@@ -45,8 +46,11 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
   private generateLabel(node: HTMLElement) {
     const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    const name = this.data.desc.name;
-    labelNode.text(`Name: ${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
+    let name = this.data.desc.name;
+    if (name.length > 6) {
+      name = name.slice(0, 6) + '..';
+    }
+     labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}:`);
   }
 
   private generateTooltip(node: HTMLElement) {
@@ -80,7 +84,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
     const catEntries = d3.select(node).append('div').classed('catentries', true)
       .style('display', 'flex')
-      .style('align-items', 'flex-end');
+      .style('align-items', 'flex-end')
+      .style('flex-grow', 1)
     const binScale = d3.scale.linear()
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
 

@@ -1,9 +1,10 @@
 .filter {
   margin-bottom: 10px;
+  display: flex;
+  margin-right: 5px;
   .filterlabel {
-    height: 15px;
-    background-color: lightgray;
-  }
+    margin-right: 5px;
+    }
   .tooltip {
     position: absolute;
     text-align: center;
@@ -35,5 +36,5 @@
 
 .idType {
 
-  background-color: lightcyan;
+  text-align: center;
 }
