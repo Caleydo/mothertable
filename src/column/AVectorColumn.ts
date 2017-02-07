@@ -39,7 +39,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const m = new MultiForm(data, body, this.multiFormParams());
     const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
     vislist.innerHTML = ''; // clear old
-    this.multiform.addIconVisChooser(vislist);
+    m.addIconVisChooser(vislist);
     return m;
   }
 
