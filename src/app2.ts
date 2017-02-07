@@ -12,9 +12,11 @@ import {EOrientation} from './column/AColumn';
 /**
  * The main class for the App app
  */
+
 export default class App {
 
   private readonly node: HTMLElement;
+
 
   private manager: ColumnManager;
   private supportView: SupportView;
@@ -71,8 +73,9 @@ export default class App {
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
-
       this.manager.push(data);
+
+
     });
     this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       this.manager.update(filter);

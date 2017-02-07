@@ -53,7 +53,7 @@ export default class SupportView extends EventHandler {
 
   private async buildSelectionBox(parent: HTMLElement) {
 
-      parent.insertAdjacentHTML('afterbegin', `<div class="selection">
+    parent.insertAdjacentHTML('afterbegin', `<div class="selection">
        <select class="form-control">
        <option value="attribute">Select Attribute</option>             
       </select>
@@ -78,7 +78,7 @@ export default class SupportView extends EventHandler {
         return false;
       }
       // -1 because of empty option
-      this.addDataset(datasets[index-1]);
+      this.addDataset(datasets[index - 1]);
       // reset selection
       select.selectedIndex = 0;
       return false;

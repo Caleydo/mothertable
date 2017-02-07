@@ -81,9 +81,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   update(idRange: Range1D) {
     this.multiform.destroy();
-    console.log(idRange);
     (<any>this.data).idView(idRange).then((view) => {
-      console.log(view.data())
       this.multiform = this.replaceMultiForm(view, this.body);
     });
   }

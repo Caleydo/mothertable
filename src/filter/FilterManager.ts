@@ -88,7 +88,7 @@ export default class FilterManager extends EventHandler {
 
       filtered = await f.filter(filtered);
     }
-    console.log((<any>filtered));
+    //console.log((<any>filtered));
     return filtered;
   }
 

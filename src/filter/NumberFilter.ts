@@ -142,33 +142,18 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const dragLeft = d3.behavior.drag()
       .on('drag', function (d, i) {
-        const x = (<any>d3).event.x;
-        // console.log(that._position, x)
-        if (that._position.right - that._position.left < 20) {
-
-          that._position.left -= 5;
-console.log(that._position)
-          d3.select(this).attr('transform', `translate(${that._position.left - 5},${triangleYPos})`);
-
-        }
         that.updateDragging(this, drag.left);
       });
 
     const dragRight = d3.behavior.drag()
       .on('drag', function (d, i) {
-        const x = (<any>d3).event.x;
-        // if (that._position.right - that._position.left < 20) {
-        //   that._position.right = that._position.right + 5;
-        // }
-        console.log(that._position, x)
         that.updateDragging(this, drag.right);
 
       });
 
 
-
-    const triangleLeft = this.makeTriangleIcon(svg, brushRectPosX, triangleYPos);
-    const triangleRight = this.makeTriangleIcon(svg, brushRectPosY, triangleYPos);
+    const triangleLeft = this.makeTriangleIcon(svg, brushRectPosX, triangleYPos, 'left');
+    const triangleRight = this.makeTriangleIcon(svg, brushRectPosY, triangleYPos, 'right');
     triangleLeft.call(dragLeft);
     triangleRight.call(dragRight);
 
@@ -268,10 +253,10 @@ console.log(that._position)
 
   }
 
-  private  makeTriangleIcon(svg, posX: number, posY: number) {
+  private  makeTriangleIcon(svg, posX: number, posY: number, classname) {
     const triangleSymbol = d3.svg.symbol().type('triangle-up').size(100);
     const triangle = svg.append('path')
-      .classed('draggable', true)
+      .classed(classname, true)
       .attr('d', triangleSymbol)
       .attr('transform', `translate(${posX},${posY})`);
     return triangle;
@@ -301,7 +286,17 @@ console.log(that._position)
     // let xpos =  Math.max(5, Math.min(this._position.right - radius, d3.event.x)))
 
 
-    if (x >= brushRectLeft && x <= brushRectRight && (this._position.right - this._position.left) >= gapBetweenTriangle) {
+    if (x >= brushRectLeft && x <= brushRectRight) {
+      if ((this._position.right - this._position.left) < gapBetweenTriangle) {
+        if (myName === drag.right && this._position.left >= brushRectLeft + 2) {
+          this._position.left = this._position.left - 2;
+          d3.select(dragMe.parentNode).select('.left').attr('transform', `translate(${this._position.left},${triangleYPos})`);
+        } else if (myName === drag.left && this._position.right <= brushRectRight - 2) {
+          this._position.right = this._position.right + 2;
+          d3.select(dragMe.parentNode).select('.right').attr('transform', `translate(${this._position.right},${triangleYPos})`);
+        }
+      }
+
       if (myName === drag.left) {
         this._position.left = x;
       } else if (myName === drag.right) {
@@ -330,7 +325,8 @@ console.log(that._position)
       this.triggerFilterChanged();
 
       //  this._position.right = this._position.right + 5;
-      d3.select(dragMe).attr('transform', `translate(${x},${triangleYPos})`);
+      d3.select(dragMe.parentNode).select('.left').attr('transform', `translate(${this._position.left},${triangleYPos})`);
+      d3.select(dragMe.parentNode).select('.right').attr('transform', `translate(${this._position.right},${triangleYPos})`);
       return dragMe;
     }
   }

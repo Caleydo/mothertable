@@ -21,5 +21,4 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   }
 
 
-
 }

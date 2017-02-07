@@ -181,11 +181,6 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   async filter(current: Range1D) {
 
-     //const vectorView = await(<any>this.data).filter(this);
-    //const filteredRange = await vectorView.ids();
-   // const rangeIntersected = current.intersect(filteredRange);
-    //console.log( 'f=', (<any>current).dim(0).asList());
-    //return rangeIntersected;
     return current;
 
   }

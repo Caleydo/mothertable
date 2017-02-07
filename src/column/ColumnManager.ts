@@ -51,7 +51,6 @@ export default class ColumnManager extends EventHandler {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
-
     if (this.rangeNow !== undefined) {
       (<any>data).idView(this.rangeNow).then((view) => {
         const col = createColumn(view, this.orientation, this.node);
@@ -70,8 +69,6 @@ export default class ColumnManager extends EventHandler {
       this.relayout();
 
     }
-
-
   }
 
   remove(col: AnyColumn) {
@@ -106,7 +103,6 @@ export default class ColumnManager extends EventHandler {
 
   update(idRange: Range1D) {
     this.rangeNow = idRange;
-    console.log(this.columns)
     this.columns.forEach((col) => col.update(idRange));
 
   }
