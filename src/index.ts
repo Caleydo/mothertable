@@ -8,14 +8,17 @@ import 'file-loader?name=robots.txt!./robots.txt';
 import 'phovea_ui/src/_bootstrap';
 import 'phovea_ui/src/_font-awesome';
 import './style.scss';
-import {create as createApp} from './app';
+import {create as createApp} from './app2';
 import {create as createHeader, AppHeaderLink} from 'phovea_ui/src/header';
 import {APP_NAME} from './language';
 
-createHeader(
+const header = createHeader(
   <HTMLElement>document.querySelector('#caleydoHeader'),
   { appLink: new AppHeaderLink(APP_NAME) }
 );
 
-const parent = document.querySelector('#app');
-createApp(parent).init();
+const parent = <HTMLElement>document.querySelector('#app');
+
+const app = createApp(parent);
+header.wait();
+app.build().then(() => header.ready());

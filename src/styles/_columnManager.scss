@@ -1,0 +1,19 @@
+
+
+.column-manager {
+  display: flex;
+  align-items: stretch;
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    main {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+}
