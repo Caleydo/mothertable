@@ -44,11 +44,15 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected build(parent: HTMLElement) {
     const node = parent.ownerDocument.createElement('div');
     node.classList.add('column');
-    node.classList.add('column-'+(this.orientation === EOrientation.Horizontal ? 'hor': 'ver'));
+    node.classList.add('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'));
+    let name = this.data.desc.name;
+    if (name.length > 6) {
+      name = name.slice(0, 6) + '..';
+    }
     node.innerHTML = `
         <header>
             <div class="toolbar"></div>
-            <span>${this.data.desc.name}</span>
+            <span>${name}</span>
         </header>
         <main></main>`;
     parent.appendChild(node);

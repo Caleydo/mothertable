@@ -1,0 +1,45 @@
+.filter {
+  margin-bottom: 10px;
+  display: flex;
+  margin-right: 5px;
+  .filterlabel {
+    margin-right: 5px;
+    margin-top: 15px;
+  }
+  .tooltip {
+    position: absolute;
+    text-align: center;
+    width: 20px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: white;
+    border: 0px;
+    pointer-events: none;
+  }
+}
+
+.form-control {
+  margin-bottom: 5px;
+}
+
+.categories {
+  stroke: black;
+  margin: 1px;
+  flex-grow: 1;
+  width: 100%;
+  opacity: 1;
+}
+
+.categories.active {
+  opacity: 0.5;
+}
+
+.textSearch {
+  width: 100%;
+}
+
+.idType {
+
+  text-align: center;
+}

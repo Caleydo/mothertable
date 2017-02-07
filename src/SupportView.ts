@@ -39,6 +39,7 @@ export default class SupportView extends EventHandler {
 
   private addDataset(data: IDataType) {
     if (isFilterAble(data) && !this.filter.contains(<IFilterAbleType>data)) {
+
       this.filter.push(<IFilterAbleType>data);
     }
     this.fire(SupportView.EVENT_DATASET_ADDED, data);
@@ -51,9 +52,10 @@ export default class SupportView extends EventHandler {
   }
 
   private async buildSelectionBox(parent: HTMLElement) {
+
     parent.insertAdjacentHTML('afterbegin', `<div class="selection">
        <select class="form-control">
-           <option></option>             
+       <option value="attribute">Select Attribute</option>             
       </select>
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
@@ -63,7 +65,6 @@ export default class SupportView extends EventHandler {
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
       .map((d) => transposeMatrixIfNeeded(this.idType, d));
 
-    //
     datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
       option.text = d.desc.name;
@@ -87,34 +88,36 @@ export default class SupportView extends EventHandler {
 
 function isFilterAble(data: IDataType) {
   // everything except matrices can be filtered
-  return data.desc.type !== 'matrix';
+
+  return true;
+  //return data.desc.type !== 'matrix';
 }
 
 function isPossibleDataset(data: IDataType) {
   switch (data.desc.type) {
-      case 'vector':
-        const v = <IAnyVector>data;
-        switch (v.desc.value.type) {
-          case VALUE_TYPE_STRING:
-            return true;
-          case VALUE_TYPE_CATEGORICAL:
-            return true;
-          case VALUE_TYPE_INT:
-          case VALUE_TYPE_REAL:
-            return true;
-        }
-        return false;
-      case 'matrix':
-        const m = <INumericalMatrix>data;
-        switch (m.desc.value.type) {
-          case VALUE_TYPE_INT:
-          case VALUE_TYPE_REAL:
-            return true;
-        }
-        return false;
-      default:
-        return false;
-    }
+    case 'vector':
+      const v = <IAnyVector>data;
+      switch (v.desc.value.type) {
+        case VALUE_TYPE_STRING:
+          return true;
+        case VALUE_TYPE_CATEGORICAL:
+          return true;
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return true;
+      }
+      return false;
+    case 'matrix':
+      const m = <INumericalMatrix>data;
+      switch (m.desc.value.type) {
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return true;
+      }
+      return false;
+    default:
+      return false;
+  }
 }
 
 function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
@@ -122,5 +125,6 @@ function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
   if (d.desc.type === 'matrix' && d.idtypes[0] !== rowtype) {
     return (<INumericalMatrix>d).t;
   }
+
   return d;
 }

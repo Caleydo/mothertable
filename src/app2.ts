@@ -4,7 +4,7 @@
 
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import {select} from 'd3';
-import ColumnManager,{IMotherTableType} from './column/ColumnManager';
+import ColumnManager, {IMotherTableType} from './column/ColumnManager';
 import SupportView from './SupportView';
 import {Range1D} from 'phovea_core/src/range';
 import {EOrientation} from './column/AColumn';
@@ -12,9 +12,11 @@ import {EOrientation} from './column/AColumn';
 /**
  * The main class for the App app
  */
+
 export default class App {
 
   private readonly node: HTMLElement;
+
 
   private manager: ColumnManager;
   private supportView: SupportView;
@@ -70,13 +72,15 @@ export default class App {
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
     // add to the columns if we add a dataset
-    this.supportView.on(SupportView.EVENT_DATASET_ADDED,(evt: any, data: IMotherTableType) => {
+    this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       this.manager.push(data);
+
+
     });
-    this.supportView.on(SupportView.EVENT_FILTER_CHANGED,(evt: any, filter: Range1D) => {
+    this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       this.manager.update(filter);
     });
-    this.manager.on(ColumnManager.EVENT_DATA_REMOVED,(evt: any, data: IMotherTableType) => {
+    this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
       this.supportView.remove(data);
       if (this.manager.length === 0) {
         this.reset();

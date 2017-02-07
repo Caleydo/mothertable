@@ -36,10 +36,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
-    const m = new MultiForm(this.data, body, this.multiFormParams());
+    const m = new MultiForm(data, body, this.multiFormParams());
     const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
     vislist.innerHTML = ''; // clear old
-    this.multiform.addIconVisChooser(vislist);
+    m.addIconVisChooser(vislist);
     return m;
   }
 
@@ -47,12 +47,20 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     scaleTo(this.multiform, width, height, this.orientation);
   }
 
+  // update(idRange: Range1D) {
+  //   this.multiform.destroy();
+  //   this.data.idView(rlist(idRange)).then((view) => {
+  //     this.multiform = this.replaceMultiForm(view, this.body);
+  //   });
+  // }
+
   update(idRange: Range1D) {
     this.multiform.destroy();
-    this.data.idView(rlist(idRange)).then((view) => {
+    (<any>this.data).idView(idRange).then((view) => {
       this.multiform = this.replaceMultiForm(view, this.body);
     });
   }
+
 }
 
 export default AVectorColumn;

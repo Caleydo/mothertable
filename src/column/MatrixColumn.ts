@@ -47,7 +47,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
-    const m = new MultiForm(this.data, body, this.multiFormParams());
+    const m = new MultiForm(data, body, this.multiFormParams());
     const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
     vislist.innerHTML = ''; // clear old
     this.multiform.addIconVisChooser(vislist);
@@ -58,7 +58,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     scaleTo(this.multiform, width, height, this.orientation);
 
     this.columns.forEach((col) => {
-      const margin= col.getVerticalMargin();
+      const margin = col.getVerticalMargin();
       col.layout(width, height);
     });
   }
@@ -72,9 +72,16 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return {top: 0, bottom: 0};
   }
 
+  // update(idRange: Range1D) {
+  //   this.multiform.destroy();
+  //   this.data.idView(rlist(idRange)).then((view) => {
+  //     this.multiform = this.replaceMultiForm(view, this.body);
+  //   });
+  // }
+
   update(idRange: Range1D) {
     this.multiform.destroy();
-    this.data.idView(rlist(idRange)).then((view) => {
+    (<any>this.data).idView(idRange).then((view) => {
       this.multiform = this.replaceMultiForm(view, this.body);
     });
   }
@@ -83,6 +90,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     if (data.idtypes[0] !== this.data.coltype) {
       throw new Error('invalid idtype');
     }
+
     const col = createColumn(data, this.orientation, this.node);
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
