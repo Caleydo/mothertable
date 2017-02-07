@@ -93,7 +93,7 @@ function isFilterAble(data: IDataType) {
   //return data.desc.type !== 'matrix';
 }
 
-function isPossibleDataset(data: IDataType) {
+export function isPossibleDataset(data: IDataType) {
   switch (data.desc.type) {
     case 'vector':
       const v = <IAnyVector>data;
@@ -120,7 +120,7 @@ function isPossibleDataset(data: IDataType) {
   }
 }
 
-function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
+export  function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
   // tranpose if the rowtype is not the target one
   if (d.desc.type === 'matrix' && d.idtypes[0] !== rowtype) {
     return (<INumericalMatrix>d).t;
