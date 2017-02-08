@@ -17,6 +17,32 @@ body {
 @import "styles/app2";
 
 
+.toolbar  {
+  display: none;
+  position: absolute;
+  right: 5;
+  top: 0;
+  z-index: 1000;
+  padding: 5px;
+  background: #fff;
+  border-radius: 3px;
+  border: 1px #999 solid;
+
+
+}
+
+.hidden {
+  display: none;
+}
+
+.columnHeader {
+  height: 20px;
+  position: relative;
+  background: #e6e5e5;
+  border: solid 1px #999;
+  min-width: 80px;
+}
+
 
 
 /** OLD STYLES
