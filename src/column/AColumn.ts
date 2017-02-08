@@ -5,6 +5,8 @@
 import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
+import AFilter from '../filter/AFilter';
+import FilterManager from '../filter/FilterManager';
 
 export enum EOrientation {
   Horizontal,
@@ -68,6 +70,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
+      //this.fire(AFilter.EVENT_FILTER_CHANGED, );
       return false;
     });
   }

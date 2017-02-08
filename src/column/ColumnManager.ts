@@ -51,13 +51,16 @@ export default class ColumnManager extends EventHandler {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
+
     const col = createColumn(data, this.orientation, this.node);
     const r = (<any>data).indices;
     col.update(r.intersect(this.rangeNow));
+    // console.log('r =', r.dim(0).asList(),'Current= ',(<any>this.rangeNow),'inersetct=',r.intersect(this.rangeNow).dim(0).asList())
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     this.relayout();
+
   }
 
   remove(col: AnyColumn) {

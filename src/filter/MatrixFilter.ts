@@ -72,7 +72,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     this.generateLabel(n, this.data.desc.name);
     this.generateMatrixHeatmap(lableNode, rowid);
-    this.loadData(colid, colNode);
+   // this.loadData(colid, colNode);
 
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;

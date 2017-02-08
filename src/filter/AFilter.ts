@@ -9,6 +9,7 @@ import * as d3 from 'd3';
 
 abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
+  static COL_REMOVED = 'columnRemoved';
 
   abstract readonly node: HTMLElement;
 
@@ -52,7 +53,7 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     return current;
   }
 
-  protected generateTooltip(node:HTMLElement) {
+  protected generateTooltip(node: HTMLElement) {
     const tooltipDiv = d3.select(node).append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
@@ -86,6 +87,7 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
 
   protected triggerFilterChanged() {
     this.fire(AFilter.EVENT_FILTER_CHANGED, this);
+
   }
 }
 

@@ -77,9 +77,11 @@ export default class App {
 
     });
     this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+
       this.manager.update(filter);
     });
     this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
+
       const cols = this.manager.columns;
       const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
       if (countSame < 1) {
