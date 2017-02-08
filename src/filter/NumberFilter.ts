@@ -165,7 +165,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   }
 
   private makeSVG(node: HTMLElement) {
-    const cellWidth = this.filterDim.width;
+    const cellWidth = this.filterDim.width + 10;
     const cellHeight = this.filterDim.height;
     const svgHeight = cellHeight + 25;
     const svg = d3.select(node).append('svg')
@@ -307,7 +307,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       brushVal = [axisScale(this._position.left), axisScale(this._position.right)];
       textLeft.attr('x', this._position.left)
         .text(`${Math.floor(brushVal[0])}`);
-      textRight.attr('x', this._position.right).text(`${Math.floor(brushVal[1])}`);
+      textRight.attr('x', this._position.right - 15).text(`${Math.floor(brushVal[1])}`);
 
       rectLeft.attr('x', brushRectLeft)
         .attr('width', this._position.left - brushRectLeft)
@@ -322,6 +322,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       lineLeft.attr('d', `M${this._position.left} 0,L${this._position.left} ${lineYPos}`);
       lineRight.attr('d', `M${this._position.right} 0,L${this._position.right} ${lineYPos}`);
       this._numericalFilterRange = brushVal;
+      console.log(this._numericalFilterRange)
       this.triggerFilterChanged();
 
       //  this._position.right = this._position.right + 5;
