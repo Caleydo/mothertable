@@ -5,8 +5,7 @@
 import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
-import AFilter from '../filter/AFilter';
-import FilterManager from '../filter/FilterManager';
+import * as d3 from 'd3';
 
 export enum EOrientation {
   Horizontal,
@@ -39,6 +38,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
 
+  get header() {
+    return <HTMLElement>this.node.querySelector('header.columnHeader');
+  }
+
+
   protected get toolbar() {
     return <HTMLElement>this.node.querySelector('div.toolbar');
   }
@@ -52,12 +56,24 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       name = name.slice(0, 6) + '..';
     }
     node.innerHTML = `
-        <header>
+        <header class="columnHeader">
             <div class="toolbar"></div>
             <span>${name}</span>
         </header>
         <main></main>`;
+
     parent.appendChild(node);
+
+    const header = d3.selectAll("header")
+      .on('mouseover', function () {
+        d3.select(this).select(".toolbar")
+          .style("display", "block");
+      })
+      .on('mouseleave', function () {
+        d3.select(this).select(".toolbar")
+          .style("display", "none");
+      });
+
     this.buildBody(<HTMLElement>node.querySelector('main'));
     this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));
     return node;
@@ -70,10 +86,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
-      //this.fire(AFilter.EVENT_FILTER_CHANGED, );
       return false;
     });
   }
+
 
 }
 
