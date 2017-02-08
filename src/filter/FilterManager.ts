@@ -25,7 +25,7 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   readonly filters: AnyColumn[] = [];
   private onFilterChanged = () => this.refilter();
-  private filterRemoved = false;
+  private filterRemoved;
   private rangeNow: Range1D = Range1D.all();
 
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
@@ -40,11 +40,13 @@ export default class FilterManager extends EventHandler {
       throw new Error('invalid idtype');
     }
 
+    this.filterRemoved = false;
     const col = FilterManager.createFilter(data, this.node);
     //console.log(col.data.desc.id)
 
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(col);
+
   }
 
   contains(data: IFilterAbleType) {
@@ -94,14 +96,18 @@ export default class FilterManager extends EventHandler {
   async currentFilter() {
     let filtered = Range1D.all();
     for (const f of this.filters) {
-
       filtered = await f.filter(filtered);
     }
+    //console.log(this.filterRemoved)
+   // console.log((<any>filtered).dim(0).asList());
+    if (this.filterRemoved === true) {
+      filtered = filtered.intersect(this.rangeNow);
+    }
+    filtered = filtered;
 
 
-
-    console.log(this.filterRemoved)
-    console.log((<any>filtered).dim(0).asList());
+    // console.log((<any>this.rangeNow))
+    //console.log((<any>filtered).dim(0).asList());
     return filtered;
   }
 
@@ -110,6 +116,8 @@ export default class FilterManager extends EventHandler {
     const filter = await this.currentFilter();
     console.log((<any>filter).dim(0).asList());
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
+    this.rangeNow = filter;
+
   }
 
   private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {
