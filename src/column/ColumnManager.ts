@@ -1,4 +1,3 @@
-import IDType from 'phovea_core/src/idtype/IDType';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ICategoricalVector, INumericalVector} from 'phovea_core/src/vector';
 import {
@@ -14,6 +13,7 @@ import NumberColumn from './NumberColumn';
 import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
+import {listAll, IDType} from 'phovea_core/src/idtype';
 
 /**
  * Created by Samuel Gratzl on 19.01.2017.
@@ -28,7 +28,7 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
-  private rangeNow: Range1D;
+  private rangeNow: Range1D = Range1D.all();
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -51,24 +51,13 @@ export default class ColumnManager extends EventHandler {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
-    if (this.rangeNow !== undefined) {
-      (<any>data).idView(this.rangeNow).then((view) => {
-        const col = createColumn(view, this.orientation, this.node);
-        col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-        this.columns.push(col);
-        this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-        this.relayout();
-      });
-
-    } else {
-
-      const col = createColumn(data, this.orientation, this.node);
-      col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-      this.columns.push(col);
-      this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-      this.relayout();
-
-    }
+    const col = createColumn(data, this.orientation, this.node);
+    const r = (<any>data).indices;
+    col.update(r.intersect(this.rangeNow));
+    col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    this.columns.push(col);
+    this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
+    this.relayout();
   }
 
   remove(col: AnyColumn) {
@@ -103,8 +92,9 @@ export default class ColumnManager extends EventHandler {
 
   update(idRange: Range1D) {
     this.rangeNow = idRange;
-    this.columns.forEach((col) => col.update(idRange));
-
+    this.columns.forEach((col) => {
+      return col.update(idRange);
+    });
   }
 
 
