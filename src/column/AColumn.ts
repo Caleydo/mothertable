@@ -83,10 +83,28 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
+    });
+
+  
+
+    toolbar.querySelector('button.fa-sort-amount-desc').addEventListener('click', () => {
+      const button = d3.select(toolbar).select("button.sort");
+      //const button = d3.select(this).select(".toolbar").select("button.sort");
+      //TODO sort the items
+      if (button.classed("fa-sort-amount-desc")) {
+        //want ascending order
+        button.attr("class", "fa sort fa-sort-amount-asc");
+        console.log("asc");
+      } else {
+        //want descending order
+        button.attr("class", "fa sort fa-sort-amount-asc");
+        console.log("desc");
+      }
     });
   }
 
