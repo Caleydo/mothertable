@@ -10,7 +10,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
-  private rangeNow: Range1D = Range1D.all();
+  private rangeNow: Range1D;
 
   constructor(data: ICategoricalVector, parent: HTMLElement) {
     super(data);
@@ -24,6 +24,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     //
     //   this.triggerFilterChanged();
     // });
+
+    console.log(node)
 
     this.generateLabel(node, this.data.desc.name);
     const dispHistogram: boolean = true;
@@ -111,6 +113,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .selectAll('div.categories')
       .data(catData).enter();
 
+
     catListDiv.append('div')
       .attr('class', 'categories')
       .style('flex-grow', 1)
@@ -158,13 +161,18 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
         }
       });
+
+    //this.triggerFilterChanged();
+
+
+    //  console.log(d3.select(node).selectAll('div.categories').node());
   }
 
   async filter(current: Range1D) {
+
     const vectorView = await(<any>this.data).filter(findCatName.bind(this, this._activeCategories));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
-    //  console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
     return rangeIntersected;
   }
 

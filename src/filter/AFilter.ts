@@ -9,7 +9,6 @@ import * as d3 from 'd3';
 
 abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
-  static COL_REMOVED = 'columnRemoved';
 
   abstract readonly node: HTMLElement;
 
@@ -26,24 +25,31 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
 
     let node;
     const idType = this.idtype.id;
-    const element = document.querySelector(`.${idType}`);
-    if (typeof(element) !== 'undefined' && element != null) {
-      const p = document.querySelector(`.${idType}`);
-      node = document.createElement('div');
-      p.appendChild(node);
-      node.classList.add('filter');
-    } else {
-      const p = parent.ownerDocument.createElement('div');
-      parent.appendChild(p);
-      p.classList.add(`${idType}`);
-      const idTypeNode = document.createElement('div');
-      parent.insertBefore(idTypeNode, parent.childNodes[0]);
-      idTypeNode.classList.add('idType');
-      idTypeNode.innerHTML = `${idType.toLocaleUpperCase()}`;
-      node = document.createElement('div');
-      p.appendChild(node);
-      node.classList.add('filter');
-    }
+    console.log(parent)
+
+    const element = document.querySelector(`.${idType}.filter-manager`);
+     node = document.createElement('div');
+       element.appendChild(node);
+       node.classList.add('filter')
+
+    console.log(element,idType)
+    // if (typeof(element) !== 'undefined' && element != null) {
+    //   const p = document.querySelector(`.${idType}`);
+    //   node = document.createElement('div');
+    //   p.appendChild(node);
+    //   node.classList.add('filter');
+    // } else {
+    //   const p = parent.ownerDocument.createElement('div');
+    //   parent.appendChild(p);
+    //   p.classList.add(`${idType}`);
+    //   const idTypeNode = document.createElement('div');
+    //   parent.insertBefore(idTypeNode, parent.childNodes[0]);
+    //   idTypeNode.classList.add('idType');
+    //   idTypeNode.innerHTML = `${idType.toLocaleUpperCase()}`;
+    //   node = document.createElement('div');
+    //   p.appendChild(node);
+    //   node.classList.add('filter');
+    // }
 
     return node;
 

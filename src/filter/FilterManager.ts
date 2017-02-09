@@ -46,6 +46,7 @@ export default class FilterManager extends EventHandler {
 
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(col);
+    console.log(this.filters)
 
   }
 
@@ -55,9 +56,6 @@ export default class FilterManager extends EventHandler {
 
   removeData(data: IFilterAbleType) {
     const f = this.filters.find((d) => d.data === data);
-    //console.log(f)
-    console.log(f)
-
     return f ? this.remove(f) : null;
   }
 
@@ -99,7 +97,7 @@ export default class FilterManager extends EventHandler {
       filtered = await f.filter(filtered);
     }
     //console.log(this.filterRemoved)
-   // console.log((<any>filtered).dim(0).asList());
+    // console.log((<any>filtered).dim(0).asList());
     if (this.filterRemoved === true) {
       filtered = filtered.intersect(this.rangeNow);
     }
@@ -114,7 +112,7 @@ export default class FilterManager extends EventHandler {
   private async refilter() {
     // compute the new filter
     const filter = await this.currentFilter();
-    console.log((<any>filter).dim(0).asList());
+    // console.log((<any>filter).dim(0).asList());
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
     this.rangeNow = filter;
 

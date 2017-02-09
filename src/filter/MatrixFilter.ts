@@ -25,56 +25,9 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   }
 
   protected build(parent: HTMLElement) {
-
-    const rowid = this.data.rowtype.id;
-    const colid = this.data.coltype.id;
-    const rowSelect = d3.select(`.${rowid}`);
-    const colSelect = d3.select(`.${colid}`);
-    let rowNode;
-    let colNode;
-    if (rowSelect[0][0] !== null) {
-      rowNode = d3.select(parent).append('div')
-        .classed(`${rowid}`, true)
-        .append('div')
-        .classed('filter', true);
-    } else {
-      const p = parent.ownerDocument.createElement('div');
-      parent.appendChild(p);
-      p.classList.add(`${rowid}`);
-      const idTypeNode = document.createElement('div');
-      parent.insertBefore(idTypeNode, parent.childNodes[0]);
-      idTypeNode.classList.add('idType');
-      idTypeNode.innerHTML = `${rowid.toLocaleUpperCase()}`;
-      rowNode = d3.select(parent).append('div')
-        .classed('filter', true);
-    }
-
-    if (colSelect[0][0] !== null) {
-      colNode = d3.select(parent).append('div')
-        .classed(`${colid}`, true).append('div')
-        .classed('filter', true);
-    } else {
-      const p = parent.ownerDocument.createElement('div');
-      parent.appendChild(p);
-      p.classList.add(`${colid}`);
-      const idTypeNode = document.createElement('div');
-      p.appendChild(idTypeNode);
-      idTypeNode.classList.add('idType');
-      idTypeNode.innerHTML = `${colid.toLocaleUpperCase()}`;
-
-    }
-
-    colNode = d3.select(`.${colid}`);
     const node = super.build(parent);
-
-    const lableNode = d3.select(`.${rowid}`).append('div').classed('filter', true);
-    const n = <HTMLElement>lableNode.node();
-
-    this.generateLabel(n, this.data.desc.name);
-    this.generateMatrixHeatmap(lableNode, rowid);
-   // this.loadData(colid, colNode);
-
-
+    this.generateLabel(node, this.data.desc.name);
+    this.generateMatrixHeatmap(node, this.data.rowtype.id);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
     //   console.log(this.data)
@@ -82,24 +35,6 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     // });
 
     return node;
-  }
-
-
-  private async loadData(colid, parent) {
-    const data: IDType[] = (await listAll())
-      .filter((d) => d.id === colid)
-      .map((d) => <IDType>d);
-
-    this.manager = new ColumnManager(data[0], EOrientation.Horizontal, <HTMLElement>document.querySelector(`.column-manager`));
-    this.supportView = new SupportView(data[0], <HTMLElement>document.querySelector(`.${colid}`));
-    const colNode = d3.select(`.${colid}`).append('div').classed('filter', true);
-    const n = <HTMLElement>colNode.node();
-    this.generateLabel(n, this.data.desc.name);
-    this.generateMatrixHeatmap(colNode, colid);
-    this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
-      this.manager.push(data);
-    });
-
   }
 
 
@@ -147,7 +82,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     const colorScale = d3.scale.linear<string,number>();
     colorScale.domain(domain).range(colorRange);
 
-    const entries = node.append('div').classed('entries', true)
+    const entries = d3.select(node).append('div').classed('entries', true)
       .style('display', 'flex')
       .style('align-items', 'flex-end')
       .style('flex-grow', 1);
