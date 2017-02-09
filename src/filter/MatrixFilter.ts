@@ -16,8 +16,6 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
-  private supportView: SupportView;
-  private manager: ColumnManager;
 
   constructor(data: INumericalMatrix, parent: HTMLElement) {
     super(data);
@@ -26,8 +24,13 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
-    this.generateLabel(node, this.data.desc.name);
-    this.generateRect(node);
+
+    const n = d3.select(node.parentElement).selectAll('.matrix');
+    if (n.node() === null) {
+
+      this.generateLabel(node, this.data.desc.name);
+      this.generateRect(node);
+    }
     // this.generateMatrixHeatmap(node, this.data.rowtype.id);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
