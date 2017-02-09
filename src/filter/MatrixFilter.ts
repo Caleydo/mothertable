@@ -27,7 +27,8 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
     this.generateLabel(node, this.data.desc.name);
-    this.generateMatrixHeatmap(node, this.data.rowtype.id);
+    this.generateRect(node);
+    // this.generateMatrixHeatmap(node, this.data.rowtype.id);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
     //   console.log(this.data)
@@ -54,6 +55,11 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   }
 
 
+  private generateRect(node) {
+
+    d3.select(node).append('div').classed('matrix', true);
+
+  }
 
   private async generateMatrixHeatmap(node, idtype) {
 

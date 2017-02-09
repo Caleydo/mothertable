@@ -160,7 +160,9 @@ export default class App {
     const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
     new MatrixFilter(m.t, <HTMLElement>node.node());
     this.newSupportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
+
       this.newManager.push(data);
+
     });
 
 
@@ -188,7 +190,13 @@ export default class App {
 
   private triggerFilter(filter) {
     this.manager.update(filter);
-    this.newManager.update(filter);
+    if (this.newManager === undefined) {
+
+      return
+
+    } else {
+      this.newManager.update(filter);
+    }
 
 
   }
