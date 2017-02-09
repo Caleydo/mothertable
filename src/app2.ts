@@ -110,7 +110,6 @@ export default class App {
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       this.manager.push(data);
       const checkMatrixType = data.desc.type;
-      console.log(this.newSupportView)
 
       if (checkMatrixType === 'matrix' && this.newSupportView === undefined || this.newSupportView === null) {
         const otherIdtype: IDType = this.findType(data, idtype.id);
@@ -127,13 +126,10 @@ export default class App {
       //console.log((<any>filter).dim(0).asList())
 
       this.rangeNow = filter;
-
       this.triggerFilter(filter);
     });
 
-
     this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
-
       const cols = this.manager.columns;
       const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
       if (countSame < 1) {

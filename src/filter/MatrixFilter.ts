@@ -53,15 +53,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     this._filterDim = value;
   }
 
-  // private generateLabel(node, idtype) {
-  //
-  //   const labelNode = node.append('div').classed('filterlabel', true);
-  //   let name = idtype;
-  //   if (name.length > 6) {
-  //     name = name.slice(0, 6) + '..';
-  //   }
-  //   labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`);
-  // }
+
 
   private async generateMatrixHeatmap(node, idtype) {
 

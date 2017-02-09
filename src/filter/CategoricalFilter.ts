@@ -25,12 +25,10 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     //   this.triggerFilterChanged();
     // });
 
-    console.log(node)
 
     this.generateLabel(node, this.data.desc.name);
     const dispHistogram: boolean = true;
     this.generateCategories(node, dispHistogram);
-
 
     return node;
   }
@@ -44,40 +42,6 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   set filterDim(value: {width: number; height: number}) {
     this._filterDim = value;
   }
-
-  //
-  // private generateLabel(node: HTMLElement) {
-  //   const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-  //   let name = this.data.desc.name;
-  //   if (name.length > 6) {
-  //     name = name.slice(0, 6) + '..';
-  //   }
-  //   const toolTip = (this.generateTooltip(node));
-  //   const fullName = this.data.desc.name;
-  //   labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`)
-  //     .on('mouseover', function (d, i) {
-  //       toolTip.transition()
-  //         .duration(200)
-  //         .style('opacity', 1);
-  //       toolTip.html(`${fullName}`)
-  //         .style('left', ((<any>d3).event.pageX) + 'px')
-  //         .style('top', ((<any>d3).event.pageY - 10) + 'px');
-  //     })
-  //     .on('mouseout', function (d) {
-  //       toolTip.transition()
-  //         .duration(500)
-  //         .style('opacity', 0);
-  //     });
-  //
-  //
-  // }
-
-  // private generateTooltip(node: HTMLElement) {
-  //   const tooltipDiv = d3.select(node).append('div')
-  //     .attr('class', 'tooltip')
-  //     .style('opacity', 0);
-  //   return tooltipDiv;
-  // }
 
 
   private async generateCategories(node: HTMLElement, dispHistogram: boolean) {
