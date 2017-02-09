@@ -97,10 +97,10 @@ export default class App {
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
 
-    const newdiv = document.createElement('div')
-    newdiv.classList.add(`support-view-${idtype.id}`)
-    const idName = document.createElement('div')
-    idName.classList.add('idType')
+    const newdiv = document.createElement('div');
+    newdiv.classList.add(`support-view-${idtype.id}`);
+    const idName = document.createElement('div');
+    idName.classList.add('idType');
     idName.innerHTML = (idtype.id.toUpperCase());
     newdiv.appendChild(idName);
     this.node.querySelector('section.rightPanel').appendChild(newdiv);
@@ -191,7 +191,7 @@ export default class App {
     this.manager.update(filter);
     if (this.newManager === undefined) {
 
-      return
+      return;
 
     } else {
       this.newManager.update(filter);
