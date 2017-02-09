@@ -107,12 +107,10 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-
   async relayout() {
-    // wait 10ms to be layouted
     await resolveIn(10);
 
-    const height = Math.min(...this.columns.map((c) => c.body.clientHeight));
+    const height = Math.min(...this.columns.map((c) => c.node.clientHeight - (<HTMLElement>c.node.querySelector('header')).clientHeight));
 
     // compute margin
     const verticalMargin = this.columns.reduce((prev, c) => {
