@@ -64,14 +64,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     parent.appendChild(node);
 
-    const header = d3.selectAll("header")
+    const header = d3.selectAll('header')
       .on('mouseover', function () {
-        d3.select(this).select(".toolbar")
-          .style("display", "block");
+        d3.select(this).select('.toolbar')
+          .style('display', 'block');
       })
       .on('mouseleave', function () {
-        d3.select(this).select(".toolbar")
-          .style("display", "none");
+        d3.select(this).select('.toolbar')
+          .style('display', 'none');
       });
 
     this.buildBody(<HTMLElement>node.querySelector('main'));
@@ -95,12 +95,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     sortButton.addEventListener('click', () => {
       const b = d3.select(sortButton);
       //TODO sort items
-      if (b.classed("fa-sort-amount-desc")) {
+      if (b.classed('fa-sort-amount-desc')) {
         //want ascending order
-        b.attr("class", "fa sort fa-sort-amount-asc");
+        b.attr('class', 'fa sort fa-sort-amount-asc');
       } else {
         //want descending order
-        b.attr("class", "fa sort fa-sort-amount-desc");
+        b.attr('class', 'fa sort fa-sort-amount-desc');
       }
     });
   }
