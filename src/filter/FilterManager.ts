@@ -95,16 +95,17 @@ export default class FilterManager extends EventHandler {
     for (const f of this.filters) {
       filtered = await f.filter(filtered);
     }
+    //console.log(this.filters)
     //console.log(this.filterRemoved)
-    // console.log((<any>filtered).dim(0).asList());
-    if (this.filterRemoved === true) {
-      filtered = filtered.intersect(this.rangeNow);
-    }
-    filtered = filtered;
-
-
+    // // console.log((<any>filtered).dim(0).asList());
+    // if (this.filterRemoved === true) {
+    //   filtered = filtered.intersect(this.rangeNow);
+    // }
+    // filtered = filtered;
+    //
+    //filtered = filtered.intersect(this.rangeNow);
     // console.log((<any>this.rangeNow))
-    //console.log((<any>filtered).dim(0).asList());
+    // console.log((<any>filtered).dim(0).asList(),'FM');
     return filtered;
   }
 

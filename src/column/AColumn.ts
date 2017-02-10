@@ -29,6 +29,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract update(idRange: Range1D);
 
+
   getVerticalMargin() {
     return {top: 0, bottom: 0};
   }
@@ -40,6 +41,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   get header() {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
+  }
+
+  updateMatrix(range1,range2) {
+
+    return range1;
   }
 
 

@@ -11,6 +11,7 @@ import SupportView from '../SupportView';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import ColumnManager, {IMotherTableType} from '../column/ColumnManager';
 import {EOrientation} from '../column/AColumn';
+import {__awaiter} from "tslib";
 
 export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
@@ -31,6 +32,8 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
       this.generateLabel(node, this.data.desc.name);
       this.generateRect(node);
     }
+   // this.generateMatrixHeatmap(node, this.data.rowtype.id)
+
     // this.generateMatrixHeatmap(node, this.data.rowtype.id);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
@@ -68,6 +71,9 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const a = await this.data.data();
 
+    console.log(a,'no transpose')
+    const  t  = await this.data.t.data();
+console.log(t,'trsnpose')
     const rowOrCol = idtype;
     let transpose = false;
     if (rowOrCol === this.data.rowtype.id) {

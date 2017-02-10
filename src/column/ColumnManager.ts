@@ -96,6 +96,9 @@ export default class ColumnManager extends EventHandler {
   update(idRange: Range1D) {
     this.rangeNow = idRange;
     this.columns.forEach((col) => {
+      if (col instanceof MatrixColumn) {
+        return;
+      }
       return col.update(idRange);
     });
   }

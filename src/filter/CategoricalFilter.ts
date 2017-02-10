@@ -10,7 +10,6 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
-  private rangeNow: Range1D;
 
   constructor(data: ICategoricalVector, parent: HTMLElement) {
     super(data);

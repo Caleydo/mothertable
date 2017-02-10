@@ -12,12 +12,14 @@ import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
  */
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
+
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly node: HTMLElement;
   private multiform: MultiForm;
+  private _primaryID = true;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -45,6 +47,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     }
     super.buildToolbar(toolbar);
   }
+
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
     const m = new MultiForm(data, body, this.multiFormParams());
@@ -79,12 +82,27 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   //   });
   // }
 
-  update(idRange: Range1D) {
+
+  updateMatrix(rowRange, colRange) {
     this.multiform.destroy();
-    (<any>this.data).idView(idRange).then((view) => {
-      this.multiform = this.replaceMultiForm(view, this.body);
+    (<any>this.data).idView(rowRange).then((rowView) => {
+      const transpose = rowView.t;
+      transpose.idView(colRange).then((colView) => {
+        this.multiform = this.replaceMultiForm(colView.t, this.body);
+      });
+
     });
+
   }
+
+  update(idRange: Range1D) {
+    // this.multiform.destroy();
+    // (<any>this.data).idView(idRange).then((view) => {
+    //
+    //   this.multiform = this.replaceMultiForm(view, this.body);
+    // });
+  }
+
 
   push(data: IMotherTableType) {
     if (data.idtypes[0] !== this.data.coltype) {
@@ -128,7 +146,4 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.relayout();
   }
 
-  updateColumns(idRange: Range1D) {
-    this.columns.forEach((col) => col.update(idRange));
-  }
 }
