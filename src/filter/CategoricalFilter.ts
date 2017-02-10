@@ -68,7 +68,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const catEntries = d3.select(node).append('div').classed('catentries', true)
       .style('display', 'flex')
       .style('align-items', 'flex-end')
-      .style('flex-grow', 1)
+      .style('flex-grow', 1);
     const binScale = d3.scale.linear()
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
 
@@ -133,10 +133,11 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   }
 
   async filter(current: Range1D) {
-
     const vectorView = await(<any>this.data).filter(findCatName.bind(this, this._activeCategories));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
+    // console.log(t === filteredRange);
+    // console.log(t.dim(0).asList(),filteredRange.dim(0).asList(),vectorView.data())
     return rangeIntersected;
   }
 

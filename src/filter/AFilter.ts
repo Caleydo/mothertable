@@ -10,7 +10,9 @@ import * as d3 from 'd3';
 abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
 
+
   abstract readonly node: HTMLElement;
+
 
   constructor(public readonly data: DATATYPE) {
     super();

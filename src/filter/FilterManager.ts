@@ -25,7 +25,7 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   readonly filters: AnyColumn[] = [];
   private onFilterChanged = () => this.refilter();
-  private filterRemoved;
+  private activeFilters;
   private rangeNow: Range1D = Range1D.all();
 
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
@@ -40,11 +40,12 @@ export default class FilterManager extends EventHandler {
       throw new Error('invalid idtype');
     }
 
-    this.filterRemoved = false;
+
     const col = FilterManager.createFilter(data, this.node);
     //console.log(col.data.desc.id)
 
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
+
     this.filters.push(col);
 
   }
@@ -59,9 +60,6 @@ export default class FilterManager extends EventHandler {
   }
 
   remove(col: AnyColumn) {
-    //console.log(col)
-    //console.log(col.data.desc.id)
-    this.filterRemoved = true;
     col.node.remove();
     this.filters.splice(this.filters.indexOf(col), 1);
   }
@@ -94,18 +92,8 @@ export default class FilterManager extends EventHandler {
     let filtered = Range1D.all();
     for (const f of this.filters) {
       filtered = await f.filter(filtered);
+
     }
-    //console.log(this.filters)
-    //console.log(this.filterRemoved)
-    // // console.log((<any>filtered).dim(0).asList());
-    // if (this.filterRemoved === true) {
-    //   filtered = filtered.intersect(this.rangeNow);
-    // }
-    // filtered = filtered;
-    //
-    //filtered = filtered.intersect(this.rangeNow);
-    // console.log((<any>this.rangeNow))
-    // console.log((<any>filtered).dim(0).asList(),'FM');
     return filtered;
   }
 
@@ -113,8 +101,8 @@ export default class FilterManager extends EventHandler {
     // compute the new filter
     const filter = await this.currentFilter();
     // console.log((<any>filter).dim(0).asList());
-    this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
-    this.rangeNow = filter;
+   this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
+
 
   }
 
