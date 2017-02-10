@@ -47,17 +47,18 @@ export default class ColumnManager extends EventHandler {
     items.forEach((d) => d.remove());
   }
 
-  push(data: IMotherTableType) {
+  async push(data: IMotherTableType) {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
     const col = createColumn(data, this.orientation, this.node);
     const r = (<any>data).indices;
-    col.update(r.intersect(this.rangeNow));
+    await col.update(r.intersect(this.rangeNow));
+
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    this.relayout();
+    return this.relayout();
   }
 
   remove(col: AnyColumn) {
@@ -90,10 +91,10 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  update(idRange: Range1D) {
+  async update(idRange: Range1D) {
     this.rangeNow = idRange;
-    this.columns.forEach((col) => col.update(idRange));
-    this.relayout();
+    await Promise.all(this.columns.map((col) => col.update(idRange)));
+    return this.relayout();
   }
 
   async relayout() {
