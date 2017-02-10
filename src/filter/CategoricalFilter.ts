@@ -50,6 +50,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const categories = (<any>this.data).desc.value.categories;
     const c20 = d3.scale.category20();
     const toolTip = (this.generateTooltip(node));
+    const cellDimension = this.filterDim.width / categories.length;
 
     const catData = [];
     const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
@@ -79,9 +80,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
     catListDiv.append('div')
       .attr('class', 'categories')
-      .style('flex-grow', 1)
+      //.style('flex-grow', 1)
       .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
-      .style('width', '100%')
+      .style('width', cellDimension + 'px')
       //.style('height', (d, i) => binScale(d.count) + 'px')
       .style('background-color', (d) => d.color)
       .text((d: any) => {
@@ -91,7 +92,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
         toolTip.transition()
           .duration(200)
           .style('opacity', 1);
-        toolTip.html(`${d.count}`)
+        toolTip.html(`${d.name}<br> Entries: ${d.count}`)
           .style('left', ((<any>d3).event.pageX) + 'px')
           .style('top', ((<any>d3).event.pageY - 10) + 'px');
       })
