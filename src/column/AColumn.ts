@@ -29,7 +29,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract layout(width: number, height: number);
 
-  abstract update(idRange: Range1D);
+  abstract async update(idRange: Range1D): Promise<any>;
 
   getVerticalMargin() {
     return {top: 0, bottom: 0};

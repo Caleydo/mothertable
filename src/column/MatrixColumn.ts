@@ -79,11 +79,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   //   });
   // }
 
-  update(idRange: Range1D) {
+  async update(idRange: Range1D) {
     this.multiform.destroy();
-    (<any>this.data).idView(idRange).then((view) => {
-      this.multiform = this.replaceMultiForm(view, this.body);
-    });
+    const view = await (<any>this.data).idView(idRange);
+    this.multiform = this.replaceMultiForm(view, this.body);
   }
 
   push(data: IMotherTableType) {

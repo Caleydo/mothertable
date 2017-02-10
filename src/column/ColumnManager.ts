@@ -47,17 +47,14 @@ export default class ColumnManager extends EventHandler {
     items.forEach((d) => d.remove());
   }
 
-  push(data: IMotherTableType) {
-
-
-
-
+  async push(data: IMotherTableType) {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
     const col = createColumn(data, this.orientation, this.node);
     const r = (<any>data).indices;
-    col.update(r.intersect(this.rangeNow));
+    await col.update(r.intersect(this.rangeNow));
+
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
 
     this.columns.push(col);
@@ -79,7 +76,7 @@ export default class ColumnManager extends EventHandler {
     console.log("col manager width: " + managerWidth);
     console.log("panel width: " + currentPanelWidth);
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    this.relayout();
+    return this.relayout();
   }
 
   remove(col: AnyColumn) {
@@ -112,20 +109,16 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  update(idRange: Range1D) {
+  async update(idRange: Range1D) {
     this.rangeNow = idRange;
-    this.columns.forEach((col) => {
-      return col.update(idRange);
-    });
+    await Promise.all(this.columns.map((col) => col.update(idRange)));
+    return this.relayout();
   }
 
-
   async relayout() {
-    // wait 10ms to be layouted
     await resolveIn(10);
 
-    const height = Math.min(...this.columns.map((c) => c.body.clientHeight));
-    let newWidth = 180;
+    const height = Math.min(...this.columns.map((c) => c.node.clientHeight - (<HTMLElement>c.node.querySelector('header')).clientHeight));
 
     // compute margin
     const verticalMargin = this.columns.reduce((prev, c) => {
