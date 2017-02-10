@@ -15,6 +15,8 @@ export enum EOrientation {
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
 
+  //preferredWidth: number = 100;
+
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
   }

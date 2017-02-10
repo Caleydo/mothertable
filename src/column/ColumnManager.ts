@@ -48,6 +48,10 @@ export default class ColumnManager extends EventHandler {
   }
 
   push(data: IMotherTableType) {
+
+
+
+
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
@@ -55,7 +59,25 @@ export default class ColumnManager extends EventHandler {
     const r = (<any>data).indices;
     col.update(r.intersect(this.rangeNow));
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+
     this.columns.push(col);
+    const managerWidth = this.node.clientWidth;
+
+    let currentPanelWidth: number = 0;
+
+    this.columns.forEach((col, index) => {
+      //console.log("column no."+ index + "width: " + col.node.clientWidth);
+      col.layout(300, col.body.clientHeight);
+      currentPanelWidth = col.node.clientWidth + currentPanelWidth;
+    });
+    if (managerWidth - currentPanelWidth < 0) {
+      console.log("Need relayout");
+    } else {
+      console.log("Enough space");
+    }
+
+    console.log("col manager width: " + managerWidth);
+    console.log("panel width: " + currentPanelWidth);
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     this.relayout();
   }
@@ -103,6 +125,7 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
     const height = Math.min(...this.columns.map((c) => c.body.clientHeight));
+    let newWidth = 180;
 
     // compute margin
     const verticalMargin = this.columns.reduce((prev, c) => {
