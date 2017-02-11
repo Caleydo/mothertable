@@ -21,6 +21,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   constructor(data: INumericalMatrix, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
+    this.activeFilter = false;
   }
 
   protected build(parent: HTMLElement) {
@@ -32,7 +33,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
       this.generateLabel(node, this.data.desc.name);
       this.generateRect(node);
     }
-   // this.generateMatrixHeatmap(node, this.data.rowtype.id)
+    // this.generateMatrixHeatmap(node, this.data.rowtype.id)
 
     // this.generateMatrixHeatmap(node, this.data.rowtype.id);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
@@ -71,9 +72,9 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const a = await this.data.data();
 
-    console.log(a,'no transpose')
-    const  t  = await this.data.t.data();
-console.log(t,'trsnpose')
+    console.log(a, 'no transpose')
+    const t = await this.data.t.data();
+    console.log(t, 'trsnpose')
     const rowOrCol = idtype;
     let transpose = false;
     if (rowOrCol === this.data.rowtype.id) {

@@ -11,9 +11,11 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
 
+
   constructor(data: ICategoricalVector, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
+
   }
 
   protected build(parent: HTMLElement) {
@@ -136,10 +138,17 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const vectorView = await(<any>this.data).filter(findCatName.bind(this, this._activeCategories));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
+    const fullRange = (await this.data.ids()).size();
+    const vectorRange = filteredRange.size();
+
+    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
+
+
     // console.log(t === filteredRange);
     // console.log(t.dim(0).asList(),filteredRange.dim(0).asList(),vectorView.data())
     return rangeIntersected;
   }
+
 
 }
 
@@ -157,3 +166,4 @@ function findCatName(catName: any[], value, index,) {
   }
   return;
 }
+

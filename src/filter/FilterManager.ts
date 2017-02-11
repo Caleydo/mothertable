@@ -56,7 +56,8 @@ export default class FilterManager extends EventHandler {
 
   removeData(data: IFilterAbleType) {
     const f = this.filters.find((d) => d.data === data);
-    return f ? this.remove(f) : null;
+    const checkStatus = f.activeFilter;
+    return checkStatus ? null : this.remove(f);
   }
 
   remove(col: AnyColumn) {
@@ -101,7 +102,7 @@ export default class FilterManager extends EventHandler {
     // compute the new filter
     const filter = await this.currentFilter();
     // console.log((<any>filter).dim(0).asList());
-   this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
+    this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
 
 
   }

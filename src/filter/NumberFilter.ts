@@ -39,6 +39,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this.node = this.build(parent);
     this._numericalFilterRange = this.data.desc.value.range;
 
+
   }
 
 
@@ -331,7 +332,10 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
-   // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    const fullRange = (await this.data.ids()).size();
+    const vectorRange = filteredRange.size();
+    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
+    // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
     return rangeIntersected;
   }
 }
