@@ -45,7 +45,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
   }
 
-  updateMatrix(range1, range2) {
+  updateMatrix(range1, range2?) {
 
     return range1;
   }
@@ -93,6 +93,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
+    console.log(this)
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
     if (this.data.desc.type === 'vector') {
       toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);

@@ -16,6 +16,7 @@ import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
+import AColumn from '../column/AColumn';
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -103,6 +104,8 @@ export default class FilterManager extends EventHandler {
     const filter = await this.currentFilter();
     // console.log((<any>filter).dim(0).asList());
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
+    this.fire(AColumn.EVENT_SORT_CHANGED, filter);
+
 
 
   }

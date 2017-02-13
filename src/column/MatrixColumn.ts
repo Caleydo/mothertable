@@ -82,11 +82,29 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   // }
 
 
+  private filterRows: Range1D = Range1D.all();
+  private filterCols: Range1D = Range1D.all();
+
+  updateRows(idRange: Range1D) {
+    this.filterRows = idRange;
+    this.updateMatrix(this.filterRows, this.filterCols);
+  }
+
+  updateCols(idRange: Range1D) {
+    this.filterCols = idRange;
+    this.updateMatrix(this.filterRows, this.filterCols);
+  }
+
   updateMatrix(rowRange, colRange) {
+
+    console.log(rowRange,'in matrix row')
+    console.log(colRange,'in matrix col')
     this.multiform.destroy();
     (<any>this.data).idView(rowRange).then((rowView) => {
       const transpose = rowView.t;
       transpose.idView(colRange).then((colView) => {
+        console.log(colView.t)
+        this.multiform.destroy();
         this.multiform = this.replaceMultiForm(colView.t, this.body);
       });
 
@@ -96,9 +114,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async update(idRange: Range1D) {
-    this.multiform.destroy();
-    const view = await (<any>this.data).idView(idRange);
-    this.multiform = this.replaceMultiForm(view, this.body);
+    // console.log(this.data,idRange)
+    //  this.multiform.destroy();
+    // const view = await (<any>this.data).idView(idRange);
+    // this.multiform = this.replaceMultiForm(view, this.body);
   }
 
   push(data: IMotherTableType) {
