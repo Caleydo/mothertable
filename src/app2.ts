@@ -8,6 +8,9 @@ import ColumnManager, {IMotherTableType} from './column/ColumnManager';
 import SupportView from './SupportView';
 import {Range1D} from 'phovea_core/src/range';
 import {EOrientation} from './column/AColumn';
+import MatrixFilter from './filter/MatrixFilter';
+import * as d3 from 'd3';
+import MatrixColumn from './column/MatrixColumn';
 
 /**
  * The main class for the App app
@@ -20,6 +23,11 @@ export default class App {
 
   private manager: ColumnManager;
   private supportView: SupportView;
+  private idtypes: IDType[];
+  private rowRange: Range1D;
+  private colRange: Range1D;
+  private newManager: ColumnManager;
+  private newSupportView: SupportView;
 
   constructor(parent: HTMLElement) {
     this.node = parent;
@@ -36,6 +44,8 @@ export default class App {
       .filter((d) => d instanceof IDType)
       .map((d) => <IDType>d)
       .sort((a, b) => a.name.localeCompare(b.name));
+
+    this.idtypes = data;
     // d3 binding to the dialog
     const elems = elem.select('div.btn-group[role="group"]').selectAll('div.btn-group').data(data);
     elems.enter().append('div')
@@ -66,19 +76,58 @@ export default class App {
     this.showSelection();
   }
 
+
+  private findType(data: IMotherTableType, currentIDType: string) {
+    const coltype = data.desc.coltype;
+    const rowtype = data.desc.rowtype;
+    if (rowtype === currentIDType) {
+
+      const idType = this.idtypes.filter((d) => d.id === coltype);
+      return idType[0];
+
+    } else if (coltype === currentIDType) {
+      const idType = this.idtypes.filter((d) => d.id === rowtype);
+      return idType[0];
+
+    }
+
+
+  }
+
   private setPrimaryIDType(idtype: IDType) {
     this.hideSelection();
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
-    this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector('section.rightPanel'));
+
+    const newdiv = document.createElement('div');
+    newdiv.classList.add(`support-view-${idtype.id}`);
+    const idName = document.createElement('div');
+    idName.classList.add('idType');
+    idName.innerHTML = (idtype.id.toUpperCase());
+    newdiv.appendChild(idName);
+    this.node.querySelector('section.rightPanel').appendChild(newdiv);
+
+    this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       this.manager.push(data);
+      this.triggerMatrix();
+      const checkMatrixType = data.desc.type;
+      if (checkMatrixType === 'matrix' && this.newSupportView === undefined || this.newSupportView === null) {
+        const otherIdtype: IDType = this.findType(data, idtype.id);
+        this.newSupportManger(otherIdtype);
+
+      }
 
     });
+
+
     this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       this.manager.update(filter);
+      this.rowRange = filter;
+      this.triggerMatrix();
     });
+
     this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
       const cols = this.manager.columns;
       const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
@@ -91,6 +140,71 @@ export default class App {
       }
     });
   }
+
+
+  private newSupportManger(otherIdtype: IDType) {
+
+    this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
+
+    const newdiv = document.createElement('div');
+    newdiv.classList.add(`support-view-${otherIdtype.id}`);
+    const idName = document.createElement('div');
+    idName.classList.add('idType');
+    idName.innerHTML = (otherIdtype.id.toUpperCase());
+    newdiv.appendChild(idName);
+    this.node.querySelector('section.rightPanel').appendChild(newdiv);
+    this.newSupportView = new SupportView(otherIdtype, <HTMLElement>document.querySelector(`.support-view-${otherIdtype.id}`));
+    const m = this.supportView.matrixData;
+    const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
+    new MatrixFilter(m.t, <HTMLElement>node.node());
+
+    this.newSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+      this.newManager.update(filter);
+      this.colRange = filter;
+      this.triggerMatrix();
+    });
+
+
+    this.newManager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
+      const cols = this.newManager.columns;
+      const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
+      if (countSame < 1) {
+        this.newSupportView.remove(data);
+      }
+      if (this.newManager.length === 0) {
+        this.reset();
+      }
+    });
+
+  }
+
+  private triggerMatrix() {
+
+    const matrixCol = this.manager.columns.filter((d) => d instanceof MatrixColumn);
+
+    if (matrixCol.length === 0) {
+
+      return;
+    }
+
+    const indices = (<any>matrixCol[0]).data.indices;
+    if (this.rowRange === undefined) {
+
+      this.rowRange = (indices.dim(0));
+
+    }
+
+    if (this.colRange === undefined) {
+      this.colRange = (indices.dim(1));
+
+    }
+
+    matrixCol.forEach((col) => col.updateMatrix(this.rowRange, this.colRange));
+
+
+  }
+
+
 }
 
 

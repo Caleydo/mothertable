@@ -16,17 +16,19 @@ import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 
 export default class SupportView extends EventHandler {
+
   static EVENT_DATASET_ADDED = 'added';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
   private readonly filter: FilterManager;
   readonly node: HTMLElement;
+  private _matrixData;
 
   constructor(public readonly idType: IDType, parent: HTMLElement) {
     super();
     this.node = parent.ownerDocument.createElement('div');
     parent.appendChild(this.node);
-    this.node.classList.add('support-view');
+    this.node.classList.add(idType.id);
     this.buildSelectionBox(this.node);
     this.filter = new FilterManager(idType, this.node);
 
@@ -42,11 +44,18 @@ export default class SupportView extends EventHandler {
 
       this.filter.push(<IFilterAbleType>data);
     }
+
+    this._matrixData = data;
     this.fire(SupportView.EVENT_DATASET_ADDED, data);
   }
 
+  get matrixData() {
+    return this._matrixData;
+  }
+
+
   public remove(data: IDataType) {
-    if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
+     if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
       this.filter.removeData(<IFilterAbleType>data);
     }
   }
@@ -120,7 +129,8 @@ export function isPossibleDataset(data: IDataType) {
   }
 }
 
-export  function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
+export function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
+
   // tranpose if the rowtype is not the target one
   if (d.desc.type === 'matrix' && d.idtypes[0] !== rowtype) {
     return (<INumericalMatrix>d).t;

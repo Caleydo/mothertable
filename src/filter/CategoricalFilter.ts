@@ -15,6 +15,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   constructor(data: ICategoricalVector, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
+
   }
 
   protected build(parent: HTMLElement) {
@@ -25,10 +26,10 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     //   this.triggerFilterChanged();
     // });
 
-    this.generateLabel(node,this.data.desc.name);
+
+    this.generateLabel(node, this.data.desc.name);
     const dispHistogram: boolean = true;
     this.generateCategories(node, dispHistogram);
-
 
     return node;
   }
@@ -43,40 +44,6 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     this._filterDim = value;
   }
 
-  //
-  // private generateLabel(node: HTMLElement) {
-  //   const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-  //   let name = this.data.desc.name;
-  //   if (name.length > 6) {
-  //     name = name.slice(0, 6) + '..';
-  //   }
-  //   const toolTip = (this.generateTooltip(node));
-  //   const fullName = this.data.desc.name;
-  //   labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`)
-  //     .on('mouseover', function (d, i) {
-  //       toolTip.transition()
-  //         .duration(200)
-  //         .style('opacity', 1);
-  //       toolTip.html(`${fullName}`)
-  //         .style('left', ((<any>d3).event.pageX) + 'px')
-  //         .style('top', ((<any>d3).event.pageY - 10) + 'px');
-  //     })
-  //     .on('mouseout', function (d) {
-  //       toolTip.transition()
-  //         .duration(500)
-  //         .style('opacity', 0);
-  //     });
-  //
-  //
-  // }
-
-  // private generateTooltip(node: HTMLElement) {
-  //   const tooltipDiv = d3.select(node).append('div')
-  //     .attr('class', 'tooltip')
-  //     .style('opacity', 0);
-  //   return tooltipDiv;
-  // }
-
 
   private async generateCategories(node: HTMLElement, dispHistogram: boolean) {
     const that = this;
@@ -85,6 +52,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const categories = (<any>this.data).desc.value.categories;
     const c20 = d3.scale.category20();
     const toolTip = (this.generateTooltip(node));
+    const cellDimension = this.filterDim.width / categories.length;
 
     const catData = [];
     const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
@@ -102,7 +70,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const catEntries = d3.select(node).append('div').classed('catentries', true)
       .style('display', 'flex')
       .style('align-items', 'flex-end')
-      .style('flex-grow', 1)
+      .style('flex-grow', 1);
     const binScale = d3.scale.linear()
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
 
@@ -111,11 +79,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .selectAll('div.categories')
       .data(catData).enter();
 
+
     catListDiv.append('div')
       .attr('class', 'categories')
-      .style('flex-grow', 1)
+      //.style('flex-grow', 1)
       .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
-      .style('width', '100%')
+      .style('width', cellDimension + 'px')
       //.style('height', (d, i) => binScale(d.count) + 'px')
       .style('background-color', (d) => d.color)
       .text((d: any) => {
@@ -125,7 +94,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
         toolTip.transition()
           .duration(200)
           .style('opacity', 1);
-        toolTip.html(`${d.count}`)
+        toolTip.html(`${d.name}<br> Entries: ${d.count}`)
           .style('left', ((<any>d3).event.pageX) + 'px')
           .style('top', ((<any>d3).event.pageY - 10) + 'px');
       })
@@ -158,16 +127,28 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
         }
       });
+
+    //this.triggerFilterChanged();
+
+
+    //  console.log(d3.select(node).selectAll('div.categories').node());
   }
 
   async filter(current: Range1D) {
-
     const vectorView = await(<any>this.data).filter(findCatName.bind(this, this._activeCategories));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
-    //  console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
+    const fullRange = (await this.data.ids()).size();
+    const vectorRange = filteredRange.size();
+
+    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
+
+
+    // console.log(t === filteredRange);
+    // console.log(t.dim(0).asList(),filteredRange.dim(0).asList(),vectorView.data())
     return rangeIntersected;
   }
+
 
 }
 
@@ -185,3 +166,4 @@ function findCatName(catName: any[], value, index,) {
   }
   return;
 }
+

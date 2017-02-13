@@ -7,43 +7,30 @@ import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 
+
 abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
 
   abstract readonly node: HTMLElement;
+  activeFilter: boolean;
 
   constructor(public readonly data: DATATYPE) {
     super();
+    this.activeFilter = false;
   }
 
   get idtype() {
     return this.data.idtypes[0];
   }
 
-
   protected build(parent: HTMLElement) {
 
     let node;
     const idType = this.idtype.id;
-    const element = document.querySelector(`.${idType}`);
-    if (typeof(element) !== 'undefined' && element != null) {
-      const p = document.querySelector(`.${idType}`);
-      node = document.createElement('div');
-      p.appendChild(node);
-      node.classList.add('filter');
-    } else {
-      const p = parent.ownerDocument.createElement('div');
-      parent.appendChild(p);
-      p.classList.add(`${idType}`);
-      const idTypeNode = document.createElement('div');
-      parent.insertBefore(idTypeNode, parent.childNodes[0]);
-      idTypeNode.classList.add('idType');
-      idTypeNode.innerHTML = `${idType.toLocaleUpperCase()}`;
-      node = document.createElement('div');
-      p.appendChild(node);
-      node.classList.add('filter');
-    }
-
+    const element = document.querySelector(`.${idType}.filter-manager`);
+    node = document.createElement('div');
+    element.appendChild(node);
+    node.classList.add('filter');
     return node;
 
   }
@@ -52,7 +39,8 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     return current;
   }
 
-  protected generateTooltip(node:HTMLElement) {
+
+  protected generateTooltip(node: HTMLElement) {
     const tooltipDiv = d3.select(node).append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
@@ -83,10 +71,22 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
       });
   }
 
-
   protected triggerFilterChanged() {
     this.fire(AFilter.EVENT_FILTER_CHANGED, this);
+
   }
+
+  protected checkFilterApplied(fullRange: number, vectorViewRange: number) {
+
+    if (fullRange === vectorViewRange) {
+
+      return false;
+    }
+    return true;
+
+  }
+
+
 }
 
 export default AFilter;

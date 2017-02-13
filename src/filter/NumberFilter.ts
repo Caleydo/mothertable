@@ -39,6 +39,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this.node = this.build(parent);
     this._numericalFilterRange = this.data.desc.value.range;
 
+
   }
 
 
@@ -69,38 +70,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this._filterDim = value;
   }
 
-
-  // private generateLabel(node) {
-  //   const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-  //   let name = this.data.desc.name;
-  //   if (name.length > 6) {
-  //     name = name.slice(0, 6) + '..';
-  //   }
-  //   const toolTip = (this.generateTooltip(node));
-  //   const fullName = this.data.desc.name;
-  //   labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`)
-  //     .on('mouseover', function (d, i) {
-  //       toolTip.transition()
-  //         .duration(200)
-  //         .style('opacity', 1);
-  //       toolTip.html(`${fullName}`)
-  //         .style('left', ((<any>d3).event.pageX) + 'px')
-  //         .style('top', ((<any>d3).event.pageY - 10) + 'px');
-  //     })
-  //     .on('mouseout', function (d) {
-  //       toolTip.transition()
-  //         .duration(500)
-  //         .style('opacity', 0);
-  //     });
-  // }
-
-  // private generateTooltip(node) {
-  //   const tooltipDiv = d3.select(node).append('div')
-  //     .attr('class', 'tooltip')
-  //     .style('opacity', 0);
-  //   this._toolTip = tooltipDiv;
-  //   return tooltipDiv;
-  // }
 
   private async getHistData() {
 
@@ -363,6 +332,9 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
     const filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
+    const fullRange = (await this.data.ids()).size();
+    const vectorRange = filteredRange.size();
+    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
     // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
     return rangeIntersected;
   }

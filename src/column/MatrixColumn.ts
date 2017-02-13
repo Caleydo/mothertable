@@ -18,6 +18,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   readonly node: HTMLElement;
   private multiform: MultiForm;
+  private _primaryID = true;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -45,6 +46,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     }
     super.buildToolbar(toolbar);
   }
+
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
     const m = new MultiForm(data, body, this.multiFormParams());
@@ -78,6 +80,20 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   //     this.multiform = this.replaceMultiForm(view, this.body);
   //   });
   // }
+
+
+  updateMatrix(rowRange, colRange) {
+    this.multiform.destroy();
+    (<any>this.data).idView(rowRange).then((rowView) => {
+      const transpose = rowView.t;
+      transpose.idView(colRange).then((colView) => {
+        this.multiform = this.replaceMultiForm(colView.t, this.body);
+      });
+
+    });
+
+  }
+
 
   async update(idRange: Range1D) {
     this.multiform.destroy();
