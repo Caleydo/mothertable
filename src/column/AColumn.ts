@@ -6,7 +6,8 @@ import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
-
+import SortColumn from './SortColumn';
+import {sort} from './SortColumn';
 export enum EOrientation {
   Horizontal,
   Vertical
@@ -14,6 +15,7 @@ export enum EOrientation {
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
+  static readonly EVENT_SORT_CHANGED = 'sorted';
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
@@ -43,7 +45,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
   }
 
-  updateMatrix(range1,range2) {
+  updateMatrix(range1, range2) {
 
     return range1;
   }
@@ -92,8 +94,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
-    if (this.data.desc.type == 'vector') {
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
+    if (this.data.desc.type === 'vector') {
+      toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
     }
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
@@ -105,12 +107,21 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     sortButton.addEventListener('click', () => {
       const b = d3.select(sortButton);
-      //TODO sort items
       if (b.classed('fa-sort-amount-desc')) {
-        //want ascending order
+        const sortMethod = sort.asc;
+        const s = new SortColumn(this.data, sortMethod);
+        s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
+          this.fire(AColumn.EVENT_SORT_CHANGED, range);
+
+        });
         b.attr('class', 'fa sort fa-sort-amount-asc');
       } else {
-        //want descending order
+        const sortMethod = sort.desc;
+        const s = new SortColumn(this.data, sortMethod);
+        s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
+          this.fire(AColumn.EVENT_SORT_CHANGED, range);
+
+        });
         b.attr('class', 'fa sort fa-sort-amount-desc');
       }
     });
