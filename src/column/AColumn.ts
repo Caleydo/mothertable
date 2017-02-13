@@ -31,6 +31,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract async update(idRange: Range1D): Promise<any>;
 
+
   getVerticalMargin() {
     return {top: 0, bottom: 0};
   }
@@ -42,6 +43,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   get header() {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
+  }
+
+  updateMatrix(range1,range2) {
+
+    return range1;
   }
 
 
@@ -57,8 +63,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     if (name.length > 6) {
       name = name.slice(0, 6) + '..';
     }
+
     node.innerHTML = `
         <header class="columnHeader">
+            <i class="sort_indicator fa fa-sort-desc"></i>
             <div class="toolbar"></div>
             <span>${name}</span>
         </header>
@@ -66,14 +74,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     parent.appendChild(node);
 
-    const header = d3.selectAll("header")
+    const header = d3.selectAll('header')
       .on('mouseover', function () {
-        d3.select(this).select(".toolbar")
-          .style("display", "block");
+        d3.select(this).select('.toolbar')
+          .style('display', 'block');
       })
       .on('mouseleave', function () {
-        d3.select(this).select(".toolbar")
-          .style("display", "none");
+        d3.select(this).select('.toolbar')
+          .style('display', 'none');
       });
 
     this.buildBody(<HTMLElement>node.querySelector('main'));
@@ -85,10 +93,28 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
+    if (this.data.desc.type == 'vector') {
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
+    }
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
+    });
+
+    const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
+
+    sortButton.addEventListener('click', () => {
+      const b = d3.select(sortButton);
+      //TODO sort items
+      if (b.classed('fa-sort-amount-desc')) {
+        //want ascending order
+        b.attr('class', 'fa sort fa-sort-amount-asc');
+      } else {
+        //want descending order
+        b.attr('class', 'fa sort fa-sort-amount-desc');
+      }
     });
   }
 

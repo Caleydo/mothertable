@@ -111,7 +111,12 @@ export default class ColumnManager extends EventHandler {
 
   async update(idRange: Range1D) {
     this.rangeNow = idRange;
-    await Promise.all(this.columns.map((col) => col.update(idRange)));
+    await Promise.all(this.columns.map((col) => {
+       if (col instanceof MatrixColumn) {
+        return;
+      }
+      col.update(idRange);
+    }));
     return this.relayout();
   }
 

@@ -25,7 +25,8 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   readonly filters: AnyColumn[] = [];
   private onFilterChanged = () => this.refilter();
-
+  private activeFilters;
+  private rangeNow: Range1D = Range1D.all();
 
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
@@ -39,9 +40,14 @@ export default class FilterManager extends EventHandler {
       throw new Error('invalid idtype');
     }
 
+
     const col = FilterManager.createFilter(data, this.node);
+    //console.log(col.data.desc.id)
+
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
+
     this.filters.push(col);
+
   }
 
   contains(data: IFilterAbleType) {
@@ -50,7 +56,8 @@ export default class FilterManager extends EventHandler {
 
   removeData(data: IFilterAbleType) {
     const f = this.filters.find((d) => d.data === data);
-    return f ? this.remove(f) : null;
+    const checkStatus = f.activeFilter;
+    return checkStatus ? null : this.remove(f);
   }
 
   remove(col: AnyColumn) {
@@ -85,17 +92,19 @@ export default class FilterManager extends EventHandler {
   async currentFilter() {
     let filtered = Range1D.all();
     for (const f of this.filters) {
-
       filtered = await f.filter(filtered);
+
     }
-    //console.log((<any>filtered));
     return filtered;
   }
 
   private async refilter() {
     // compute the new filter
     const filter = await this.currentFilter();
+    // console.log((<any>filter).dim(0).asList());
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
+
+
   }
 
   private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {
