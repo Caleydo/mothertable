@@ -61,8 +61,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     if (name.length > 6) {
       name = name.slice(0, 6) + '..';
     }
+
     node.innerHTML = `
         <header class="columnHeader">
+            <i class="sort_indicator fa fa-sort-desc"></i>
             <div class="toolbar"></div>
             <span>${name}</span>
         </header>
@@ -90,6 +92,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
+    if (this.data.desc.type == 'vector') {
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
+    }
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);

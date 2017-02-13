@@ -43,6 +43,14 @@ body {
   min-width: 80px;
 }
 
+.sort_indicator {
+    position: absolute;
+    display: none;
+    left: 1px;
+    top: 1px;
+    font-size: 8pt;
+}
+
 
 
 /** OLD STYLES
