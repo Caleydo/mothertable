@@ -47,20 +47,18 @@ export default class ColumnManager extends EventHandler {
     items.forEach((d) => d.remove());
   }
 
-  push(data: IMotherTableType) {
+  async push(data: IMotherTableType) {
     if (data.idtypes[0] !== this.idType) {
       throw new Error('invalid idtype');
     }
-
     const col = createColumn(data, this.orientation, this.node);
     const r = (<any>data).indices;
-    col.update(r.intersect(this.rangeNow));
-    // console.log('r =', r.dim(0).asList(),'Current= ',(<any>this.rangeNow),'inersetct=',r.intersect(this.rangeNow).dim(0).asList())
+    await col.update(r.intersect(this.rangeNow));
+
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    this.relayout();
-
+    return this.relayout();
   }
 
   remove(col: AnyColumn) {
@@ -93,22 +91,21 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  update(idRange: Range1D) {
+  async update(idRange: Range1D) {
     this.rangeNow = idRange;
-    this.columns.forEach((col) => {
-      if (col instanceof MatrixColumn) {
+    await Promise.all(this.columns.map((col) => {
+       if (col instanceof MatrixColumn) {
         return;
       }
-      return col.update(idRange);
-    });
+      col.update(idRange);
+    }));
+    return this.relayout();
   }
 
-
   async relayout() {
-    // wait 10ms to be layouted
     await resolveIn(10);
 
-    const height = Math.min(...this.columns.map((c) => c.body.clientHeight));
+    const height = Math.min(...this.columns.map((c) => c.node.clientHeight - (<HTMLElement>c.node.querySelector('header')).clientHeight));
 
     // compute margin
     const verticalMargin = this.columns.reduce((prev, c) => {

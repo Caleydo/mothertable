@@ -12,7 +12,6 @@ import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
  */
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
-
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
   static readonly EVENT_COLUMN_ADDED = 'added';
@@ -95,14 +94,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   }
 
-  update(idRange: Range1D) {
-    // this.multiform.destroy();
-    // (<any>this.data).idView(idRange).then((view) => {
-    //
-    //   this.multiform = this.replaceMultiForm(view, this.body);
-    // });
-  }
 
+  async update(idRange: Range1D) {
+    this.multiform.destroy();
+    const view = await (<any>this.data).idView(idRange);
+    this.multiform = this.replaceMultiForm(view, this.body);
+  }
 
   push(data: IMotherTableType) {
     if (data.idtypes[0] !== this.data.coltype) {
@@ -146,4 +143,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.relayout();
   }
 
+  updateColumns(idRange: Range1D) {
+    this.columns.forEach((col) => col.update(idRange));
+  }
 }

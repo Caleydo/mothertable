@@ -9,7 +9,16 @@ import {EOrientation} from './AColumn';
 
 export function scaleTo(multiform: MultiForm, width: number, height: number, orientation: EOrientation) {
   const zoom = new ZoomLogic(multiform, multiform.asMetaData);
-  zoom.zoomTo(width, height);
+  if (multiform.isBuilt) {
+    zoom.zoomTo(width, height);
+  } else {
+    const onReady = () => {
+      zoom.zoomTo(width, height);
+      multiform.off('ready', onReady);
+    };
+    // may not yet loaded
+    multiform.on('ready', onReady);
+  }
 
   // TODO orientation
 }

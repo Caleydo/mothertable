@@ -54,11 +54,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   //   });
   // }
 
-  update(idRange: Range1D) {
+  async update(idRange: Range1D) {
     this.multiform.destroy();
-    (<any>this.data).idView(idRange).then((view) => {
-      this.multiform = this.replaceMultiForm(view, this.body);
-    });
+    const view = await (<any>this.data).idView(idRange);
+    this.multiform = this.replaceMultiForm(view, this.body);
   }
 
 }
