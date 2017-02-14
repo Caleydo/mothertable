@@ -13,9 +13,11 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
   protected multiform: MultiForm;
+  dataView: DATATYPE;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
+    this.dataView = data;
   }
 
   protected multiFormParams(): IMultiFormOptions {
@@ -57,6 +59,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   async update(idRange: Range1D) {
     this.multiform.destroy();
     const view = await (<any>this.data).idView(idRange);
+    this.dataView = view;
     this.multiform = this.replaceMultiForm(view, this.body);
   }
 

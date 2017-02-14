@@ -111,11 +111,12 @@ export default class App {
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       this.manager.push(data);
-      this.triggerMatrix();
       const checkMatrixType = data.desc.type;
       if (checkMatrixType === 'matrix' && this.newSupportView === undefined || this.newSupportView === null) {
         const otherIdtype: IDType = this.findType(data, idtype.id);
+        this.triggerMatrix();
         this.newSupportManger(otherIdtype);
+
 
       }
 
@@ -179,9 +180,7 @@ export default class App {
   }
 
   private triggerMatrix() {
-
     const matrixCol = this.manager.columns.filter((d) => d instanceof MatrixColumn);
-
     if (matrixCol.length === 0) {
 
       return;
@@ -199,7 +198,12 @@ export default class App {
 
     }
 
-    matrixCol.forEach((col) => col.updateMatrix(this.rowRange, this.colRange));
+    matrixCol.forEach((col: MatrixColumn) => {
+
+      col.updateRows(this.rowRange);
+      col.updateCols(this.colRange);
+      col.updateMatrix(this.rowRange, this.colRange);
+    });
 
 
   }
