@@ -9,6 +9,9 @@ import {EOrientation} from './AColumn';
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
   readonly node: HTMLElement;
 
+  minimumWidth: number = 10;
+  preferredWidth: number = 250; //80
+
   constructor(data: ICategoricalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);
     this.node = this.build(parent);
