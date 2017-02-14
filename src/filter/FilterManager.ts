@@ -104,8 +104,6 @@ export default class FilterManager extends EventHandler {
     const filter = await this.currentFilter();
     // console.log((<any>filter).dim(0).asList());
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
-    this.fire(AColumn.EVENT_SORT_CHANGED, filter);
-
 
 
   }

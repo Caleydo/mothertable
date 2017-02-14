@@ -108,6 +108,8 @@ export default class ColumnManager extends EventHandler {
 
       col.update(idRange);
     }));
+
+
     return this.relayout();
   }
 
