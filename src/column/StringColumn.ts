@@ -7,7 +7,7 @@ import {EOrientation} from './AColumn';
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
   readonly node: HTMLElement;
 
-  minimumWidth: number = 150;
+  minimumWidth: number = 80;
   preferredWidth: number = 300;
 
   constructor(data: IStringVector, orientation: EOrientation, parent: HTMLElement) {

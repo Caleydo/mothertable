@@ -17,6 +17,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly node: HTMLElement;
+
+  minimumWidth: number = 150;
+  preferredWidth: number = 300;
+
   private multiform: MultiForm;
   private _primaryID = true;
 

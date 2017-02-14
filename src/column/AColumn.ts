@@ -76,10 +76,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         </header>
         <main></main>`;
 
-
+    parent.appendChild(node);
 
     const header = d3.selectAll('header')
-      .attr("width", 350)
       .on('mouseover', function () {
         d3.select(this).select('.toolbar')
           .style('display', 'block');
@@ -88,7 +87,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         d3.select(this).select('.toolbar')
           .style('display', 'none');
       });
-  parent.appendChild(node);
+
 
     this.buildBody(<HTMLElement>node.querySelector('main'));
     this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));
