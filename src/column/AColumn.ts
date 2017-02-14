@@ -45,9 +45,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
   }
 
-  updateMatrix(range1, range2?) {
+  async updateMatrix(rowRange, colRange) {
 
-    return range1;
+    return rowRange;
   }
 
 

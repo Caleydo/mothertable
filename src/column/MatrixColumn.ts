@@ -2,7 +2,6 @@ import AColumn, {EOrientation} from './AColumn';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
-import {list as rlist} from 'phovea_core/src/range';
 import {IDataType} from 'phovea_core/src/datatype';
 import {scaleTo} from './utils';
 import {IEvent} from 'phovea_core/src/event';
@@ -19,6 +18,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   readonly node: HTMLElement;
   private multiform: MultiForm;
   private _primaryID = true;
+  private rowRange: Range1D;
+  private colRange: Range1D;
+  private dataView: INumericalMatrix;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -81,41 +83,33 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   //   });
   // }
 
-
-  private filterRows: Range1D = Range1D.all();
-  private filterCols: Range1D = Range1D.all();
-
   updateRows(idRange: Range1D) {
-    this.filterRows = idRange;
-    this.updateMatrix(this.filterRows, this.filterCols);
+    this.rowRange = idRange.intersect(Range1D.all());
+    this.updateMatrix(this.rowRange, this.colRange);
+
   }
 
   updateCols(idRange: Range1D) {
-    this.filterCols = idRange;
-    this.updateMatrix(this.filterRows, this.filterCols);
+    this.colRange = idRange.intersect(Range1D.all());
+    this.updateMatrix(this.rowRange, this.colRange);
+
   }
 
-  updateMatrix(rowRange, colRange) {
 
-    console.log(rowRange,'in matrix row')
-    console.log(colRange,'in matrix col')
+  async updateMatrix(rowRange, colRange) {
+
+    let rowView = await (<any>this.data).idView(rowRange);
+    rowView = rowView.t;
+    let colView = await rowView.idView(colRange);
+    colView = colView.t;
+    this.dataView = colView;
     this.multiform.destroy();
-    (<any>this.data).idView(rowRange).then((rowView) => {
-      const transpose = rowView.t;
-      transpose.idView(colRange).then((colView) => {
-        console.log(colView.t)
-        this.multiform.destroy();
-        this.multiform = this.replaceMultiForm(colView.t, this.body);
-      });
-
-    });
-
+    this.multiform = this.replaceMultiForm(colView, this.body);
   }
 
 
   async update(idRange: Range1D) {
-    // console.log(this.data,idRange)
-    //  this.multiform.destroy();
+    // this.multiform.destroy();
     // const view = await (<any>this.data).idView(idRange);
     // this.multiform = this.replaceMultiForm(view, this.body);
   }

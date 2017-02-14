@@ -159,6 +159,7 @@ function isSame(value, compareWith) {
 
 
 function findCatName(catName: any[], value, index,) {
+
   for (const x in catName) {
     if (catName[x].name === value) {
       return value;
