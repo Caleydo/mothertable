@@ -62,7 +62,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     this.multiform.destroy();
     const view = await (<any>this.data).idView(idRange);
     this.dataView = view;
-    console.log(await this.dataView.data(), await this.data.data(),this)
     this.multiform = this.replaceMultiForm(view, this.body);
   }
 

@@ -169,10 +169,8 @@ export default class App {
   private triggerMatrix() {
     const matrixCol = this.manager.columns.filter((d) => d instanceof MatrixColumn);
     if (matrixCol.length === 0) {
-
       return;
     }
-
     const indices = (<any>matrixCol[0]).data.indices;
     if (this.rowRange === undefined) {
 
@@ -184,7 +182,6 @@ export default class App {
       this.colRange = (indices.dim(1));
 
     }
-
     matrixCol.forEach((col: MatrixColumn) => {
 
       col.updateRows(this.rowRange);

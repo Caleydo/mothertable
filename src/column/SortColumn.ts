@@ -33,8 +33,8 @@ export default class SortColumn extends EventHandler {
 
 
   sortMethod() {
-   // this.sortNumber()
-   // this.sortCategoricalTest()
+    // this.sortNumbertest()
+    // this.sortCategoricalTest()
     console.log(this.sortCriteria)
     const v = <IAnyVector>this.data;
     switch (v.desc.value.type) {
@@ -113,7 +113,7 @@ export default class SortColumn extends EventHandler {
     }));
     // console.log(await (<any>this.data).data())
     const sortedView = await (<IAnyVector>this.data).sort(categoricalSort.bind(this, catCount, this.sortCriteria));
-    const sortedRange = await  sortedView.ids();
+    const sortedRange = await  (sortedView).ids();
     console.log(sortedRange.dim(0).asList(), 'l', sortedRange.dim(0).asList().length)
     this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
 
@@ -133,10 +133,6 @@ export default class SortColumn extends EventHandler {
   //   console.log(sortedView,this.data);
   //
   // }
-
-
-
-
 
 
 }
@@ -159,6 +155,18 @@ function stringSort(sortCriteria, aVal, bVal) {
 
 
 function numSort(sortCriteria, aVal, bVal) {
+
+  //
+  // if (aVal === '') {
+  //   aVal = 0;
+  //
+  // }
+  //
+  // if (bVal === '') {
+  //   bVal = 0;
+  //
+  // }
+
   if (sortCriteria === sort.asc) {
 
     return (aVal - bVal);

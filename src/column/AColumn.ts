@@ -104,44 +104,18 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
       const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
 
-      console.log((<any>this).dataView)
+
       sortButton.addEventListener('click', () => {
         const b = d3.select(sortButton);
-
-       // const dummydata = [7,8,12,7,10,8,33,25,12,12,6,8]
-      //  const data = ['Barbados','US','US','US','US','US','UK','US','UK','Ireland','US','Sweden'];
         if (b.classed('fa-sort-amount-desc')) {
           const sortMethod = sort.asc;
-          // console.log((<any>this).filterRange)
-          // const d = this.data.idView((<any>this).filterRange);
-          // d.then((e) => {
-          //
-          //   const s = new SortColumn(this.data, sortMethod);
-          //   s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
-          //     this.fire(AColumn.EVENT_SORT_CHANGED, range);
-          //
-          //   });
-          //
-          // })
           const s = new SortColumn((<any>this).dataView, sortMethod);
           s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
             this.fire(AColumn.EVENT_SORT_CHANGED, range);
-
           });
           b.attr('class', 'fa sort fa-sort-amount-asc');
         } else {
           const sortMethod = sort.desc;
-          // console.log((<any>this).filterRange)
-          // const d = this.data.idView((<any>this).filterRange);
-          // d.then((e) => {
-          //
-          //   const s = new SortColumn(e, sortMethod);
-          //   s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
-          //     this.fire(AColumn.EVENT_SORT_CHANGED, range);
-          //
-          //   });
-          //
-          // })
           const s = new SortColumn((<any>this).dataView, sortMethod);
           s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
             this.fire(AColumn.EVENT_SORT_CHANGED, range);
