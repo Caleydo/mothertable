@@ -21,17 +21,20 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   preferredWidth: number = 300;
 
   private multiform: MultiForm;
-  private _primaryID = true;
   private rowRange: Range1D;
   private colRange: Range1D;
   private dataView: INumericalMatrix;
+  private defaultRange;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
   constructor(data: INumericalMatrix, orientation: EOrientation, columnParent: HTMLElement) {
     super(data, orientation);
+    this.dataView = data;
+    this.calculateDefaultRange();
     this.node = this.build(columnParent);
+
   }
 
   protected multiFormParams(): IMultiFormOptions {
@@ -41,7 +44,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   protected buildBody(body: HTMLElement) {
-    this.multiform = new MultiForm(this.data, body, this.multiFormParams());
+    this.multiform = new MultiForm(this.dataView, body, this.multiFormParams());
   }
 
   protected buildToolbar(toolbar: HTMLElement) {
@@ -87,14 +90,27 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   //   });
   // }
 
-  updateRows(idRange: Range1D) {
-    this.rowRange = idRange.intersect(Range1D.all());
-    this.updateMatrix(this.rowRange, this.colRange);
 
+  calculateDefaultRange() {
+
+    const indices = (<any>this.data).indices;
+    if (this.rowRange === undefined) {
+      this.rowRange = (indices.dim(0));
+    }
+
+    if (this.colRange === undefined) {
+      this.colRange = (indices.dim(1));
+    }
+    return ([this.rowRange, this.colRange]);
+  }
+
+  updateRows(idRange: Range1D) {
+    this.rowRange = idRange;
+    this.updateMatrix(this.rowRange, this.colRange);
   }
 
   updateCols(idRange: Range1D) {
-    this.colRange = idRange.intersect(Range1D.all());
+    this.colRange = idRange;
     this.updateMatrix(this.rowRange, this.colRange);
 
   }
@@ -102,7 +118,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   async updateMatrix(rowRange, colRange) {
 
-    let rowView = await (<any>this.data).idView(rowRange);
+    let rowView = await (<any>this.dataView).idView(rowRange);
     rowView = rowView.t;
     let colView = await rowView.idView(colRange);
     colView = colView.t;
@@ -115,7 +131,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   async update(idRange: Range1D) {
     // this.multiform.destroy();
     // const view = await (<any>this.data).idView(idRange);
-    // this.multiform = this.replaceMultiForm(view, this.body);
+    //this.multiform = this.replaceMultiForm(view, this.body);
   }
 
   push(data: IMotherTableType) {

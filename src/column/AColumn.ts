@@ -6,8 +6,8 @@ import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
-
-
+import SortColumn from './SortColumn';
+import {sort} from './SortColumn';
 export enum EOrientation {
   Horizontal,
   Vertical
@@ -15,6 +15,7 @@ export enum EOrientation {
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
+  static readonly EVENT_SORT_CHANGED = 'sorted';
 
   minimumWidth: number = 10;
   preferredWidth: number = 100;
@@ -99,29 +100,39 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
-    if (this.data.desc.type === 'vector') {
-      toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
-    }
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
     });
+    if (this.data.desc.type === 'vector') {
+      toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
+      toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
 
-    const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
+      const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
 
-    sortButton.addEventListener('click', () => {
-      const b = d3.select(sortButton);
-      //TODO sort items
-      if (b.classed('fa-sort-amount-desc')) {
-        //want ascending order
-        b.attr('class', 'fa sort fa-sort-amount-asc');
-      } else {
-        //want descending order
-        b.attr('class', 'fa sort fa-sort-amount-desc');
-      }
-    });
+
+      sortButton.addEventListener('click', () => {
+        const b = d3.select(sortButton);
+        if (b.classed('fa-sort-amount-desc')) {
+          const sortMethod = sort.asc;
+          const s = new SortColumn((<any>this).dataView, sortMethod);
+          s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
+            this.fire(AColumn.EVENT_SORT_CHANGED, range);
+          });
+          b.attr('class', 'fa sort fa-sort-amount-asc');
+        } else {
+          const sortMethod = sort.desc;
+          const s = new SortColumn((<any>this).dataView, sortMethod);
+          s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
+            this.fire(AColumn.EVENT_SORT_CHANGED, range);
+
+          });
+          b.attr('class', 'fa sort fa-sort-amount-desc');
+        }
+      });
+    }
+
   }
 
 

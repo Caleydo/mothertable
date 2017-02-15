@@ -14,10 +14,12 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
   protected multiform: MultiForm;
   dataView: DATATYPE;
+  filterRange;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
+
   }
 
   protected multiFormParams(): IMultiFormOptions {

@@ -56,6 +56,7 @@ export default class ColumnManager extends EventHandler {
     await col.update(r.intersect(this.rangeNow));
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    col.on(AColumn.EVENT_SORT_CHANGED, this.onColumnSort.bind(this));
     this.columns.push(col);
 
     const managerWidth = this.node.clientWidth;
@@ -89,6 +90,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+    col.off(AColumn.EVENT_SORT_CHANGED, this.onColumnSort.bind(this));
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.relayout();
@@ -115,6 +117,12 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
+  onColumnSort(evt: any, range: any) {
+    this.update(range);
+
+  }
+
+
   async update(idRange: Range1D) {
     this.rangeNow = idRange;
     await Promise.all(this.columns.map((col) => {
@@ -124,6 +132,8 @@ export default class ColumnManager extends EventHandler {
 
       col.update(idRange);
     }));
+
+
     return this.relayout();
   }
 

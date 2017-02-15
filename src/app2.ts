@@ -26,7 +26,6 @@ export default class App {
   private idtypes: IDType[];
   private rowRange: Range1D;
   private colRange: Range1D;
-  private newManager: ColumnManager;
   private newSupportView: SupportView;
 
   constructor(parent: HTMLElement) {
@@ -145,7 +144,7 @@ export default class App {
 
   private newSupportManger(otherIdtype: IDType) {
 
-    this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
+    // this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
 
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${otherIdtype.id}`);
@@ -160,32 +159,18 @@ export default class App {
     new MatrixFilter(m.t, <HTMLElement>node.node());
 
     this.newSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
-      this.newManager.update(filter);
       this.colRange = filter;
       this.triggerMatrix();
     });
 
-
-    this.newManager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
-      const cols = this.newManager.columns;
-      const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
-      if (countSame < 1) {
-        this.newSupportView.remove(data);
-      }
-      if (this.newManager.length === 0) {
-        this.reset();
-      }
-    });
 
   }
 
   private triggerMatrix() {
     const matrixCol = this.manager.columns.filter((d) => d instanceof MatrixColumn);
     if (matrixCol.length === 0) {
-
       return;
     }
-
     const indices = (<any>matrixCol[0]).data.indices;
     if (this.rowRange === undefined) {
 
@@ -197,7 +182,6 @@ export default class App {
       this.colRange = (indices.dim(1));
 
     }
-
     matrixCol.forEach((col: MatrixColumn) => {
 
       col.updateRows(this.rowRange);
