@@ -15,6 +15,9 @@ export enum EOrientation {
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
 
+  minimumWidth: number = 10;
+  preferredWidth: number = 100;
+
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
   }
@@ -57,6 +60,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     const node = parent.ownerDocument.createElement('div');
     node.classList.add('column');
     node.classList.add('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'));
+    //assign column with a proper width
+    node.style.minWidth = String(this.minimumWidth + "px");
+    node.style.width = String(this.preferredWidth + "px");
     let name = this.data.desc.name;
     if (name.length > 6) {
       name = name.slice(0, 6) + '..';
@@ -81,6 +87,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         d3.select(this).select('.toolbar')
           .style('display', 'none');
       });
+
 
     this.buildBody(<HTMLElement>node.querySelector('main'));
     this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));

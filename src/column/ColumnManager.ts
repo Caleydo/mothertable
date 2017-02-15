@@ -57,9 +57,33 @@ export default class ColumnManager extends EventHandler {
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
+
+    const managerWidth = this.node.clientWidth;
+    const panel = this.currentWidth(this.columns);
+
+    //if (managerWidth - panel < 0) {
+      //console.log("Need relayout");
+    //} else {
+      //console.log("Enough space");
+    //}
+
+    //console.log("col manager width: " + managerWidth);
+    //console.log("panel width: " + panel);
+
+
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     return this.relayout();
   }
+
+  currentWidth(columns) {
+    let currentPanelWidth: number = 0;
+    columns.forEach((col, index) => {
+      //console.log("column no."+ index + "width: " + col.node.clientWidth);
+      currentPanelWidth = col.node.clientWidth + currentPanelWidth;
+    });
+    return currentPanelWidth;
+}
+
 
   remove(col: AnyColumn) {
     this.columns.splice(this.columns.indexOf(col), 1);
