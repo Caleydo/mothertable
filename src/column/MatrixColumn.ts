@@ -40,7 +40,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   protected buildBody(body: HTMLElement) {
-    console.log(this.rowRange, this.colRange)
     this.multiform = new MultiForm(this.dataView, body, this.multiFormParams());
   }
 

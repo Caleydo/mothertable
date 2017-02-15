@@ -33,9 +33,6 @@ export default class SortColumn extends EventHandler {
 
 
   sortMethod() {
-    // this.sortNumbertest()
-    // this.sortCategoricalTest()
-    console.log(this.sortCriteria)
     const v = <IAnyVector>this.data;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
@@ -54,9 +51,7 @@ export default class SortColumn extends EventHandler {
     const sortedView = await (<IAnyVector>this.data).sort(stringSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
 
-    // console.log(sortedView, sortedRange.dim(0).asList(), this.sortCriteria)
-    // console.log(sortedRange)
-    console.log(sortedRange.dim(0).asList(), 'l', sortedRange.dim(0).asList().length)
+
     this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
 
 
@@ -68,40 +63,11 @@ export default class SortColumn extends EventHandler {
     const sortedView = await (<IAnyVector>this.data).sort(numSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
 
-    console.log(sortedRange.dim(0).asList(), 'l', sortedRange.dim(0).asList().length)
+
     this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
 
   }
 
-
-  // sortNumbertest() {
-  //
-  //   const sortedView = this.data.slice().sort(numSort.bind(this, this.sortCriteria));
-  //   console.log(sortedView, this.data)
-  //   //  console.log(sortedRange.dim(0).asList(), 'l', sortedRange.dim(0).asList().length)
-  //   //  this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
-  //
-  // }
-
-
-  // async sortNumber() {
-  //
-  //   if (this.sortCriteria === sort.asc) {
-  //     console.log(await (<IAnyVector>this.data).data())
-  //     const sortedView = await (<IAnyVector>this.data).sort(numSortasc.bind(this));
-  //     const sortedRange = await  sortedView.ids();
-  //     console.log(sortedRange.dim(0).asList(), 'l', sortedRange.dim(0).asList().length)
-  //     this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
-  //   } else if (this.sortCriteria === sort.desc) {
-  //     console.log(await (<IAnyVector>this.data).data())
-  //     const sortedView = await (<IAnyVector>this.data).sort(numSortdesc.bind(this));
-  //     const sortedRange = await  sortedView.ids();
-  //     console.log(sortedRange.dim(0).asList(), 'l', sortedRange.dim(0).asList().length)
-  //     this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
-  //   }
-  //
-  //
-  // }
 
   async sortCategorical() {
     const allCatNames = await(<any>this.data).data();
@@ -111,28 +77,13 @@ export default class SortColumn extends EventHandler {
       const count = allCatNames.filter(isSame.bind(this, val));
       catCount[val] = count.length;
     }));
-    // console.log(await (<any>this.data).data())
+
     const sortedView = await (<IAnyVector>this.data).sort(categoricalSort.bind(this, catCount, this.sortCriteria));
     const sortedRange = await  (sortedView).ids();
-    console.log(sortedRange.dim(0).asList(), 'l', sortedRange.dim(0).asList().length)
+
     this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
 
   }
-
-
-  //   sortCategoricalTest() {
-  //   const allCatNames = (<any>this.data);
-  //   const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-  //   const catCount = {};
-  //   uniqueCategories.forEach(((val, i) => {
-  //     const count = allCatNames.filter(isSame.bind(this, val));
-  //     catCount[val] = count.length;
-  //   }));
-  //   // console.log(await (<any>this.data).data())
-  //   const sortedView = this.data.slice().sort(categoricalSort.bind(this, catCount, this.sortCriteria));
-  //   console.log(sortedView,this.data);
-  //
-  // }
 
 
 }
