@@ -2,7 +2,6 @@ import AColumn, {EOrientation} from './AColumn';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
-import {list as rlist} from 'phovea_core/src/range';
 import {IDataType} from 'phovea_core/src/datatype';
 import {scaleTo} from './utils';
 import {IEvent} from 'phovea_core/src/event';
@@ -23,6 +22,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   private multiform: MultiForm;
   private _primaryID = true;
+  private rowRange: Range1D;
+  private colRange: Range1D;
+  private dataView: INumericalMatrix;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -85,24 +87,35 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   //   });
   // }
 
+  updateRows(idRange: Range1D) {
+    this.rowRange = idRange.intersect(Range1D.all());
+    this.updateMatrix(this.rowRange, this.colRange);
 
-  updateMatrix(rowRange, colRange) {
-    this.multiform.destroy();
-    (<any>this.data).idView(rowRange).then((rowView) => {
-      const transpose = rowView.t;
-      transpose.idView(colRange).then((colView) => {
-        this.multiform = this.replaceMultiForm(colView.t, this.body);
-      });
+  }
 
-    });
+  updateCols(idRange: Range1D) {
+    this.colRange = idRange.intersect(Range1D.all());
+    this.updateMatrix(this.rowRange, this.colRange);
 
   }
 
 
-  async update(idRange: Range1D) {
+  async updateMatrix(rowRange, colRange) {
+
+    let rowView = await (<any>this.data).idView(rowRange);
+    rowView = rowView.t;
+    let colView = await rowView.idView(colRange);
+    colView = colView.t;
+    this.dataView = colView;
     this.multiform.destroy();
-    const view = await (<any>this.data).idView(idRange);
-    this.multiform = this.replaceMultiForm(view, this.body);
+    this.multiform = this.replaceMultiForm(colView, this.body);
+  }
+
+
+  async update(idRange: Range1D) {
+    // this.multiform.destroy();
+    // const view = await (<any>this.data).idView(idRange);
+    // this.multiform = this.replaceMultiForm(view, this.body);
   }
 
   push(data: IMotherTableType) {

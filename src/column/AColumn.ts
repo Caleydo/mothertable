@@ -7,6 +7,7 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
 
+
 export enum EOrientation {
   Horizontal,
   Vertical
@@ -46,9 +47,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
   }
 
-  updateMatrix(range1,range2) {
+  async updateMatrix(rowRange, colRange) {
 
-    return range1;
+    return rowRange;
   }
 
 
@@ -99,8 +100,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected buildToolbar(toolbar: HTMLElement) {
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
-    if (this.data.desc.type == 'vector') {
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
+    if (this.data.desc.type === 'vector') {
+      toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
     }
 
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
