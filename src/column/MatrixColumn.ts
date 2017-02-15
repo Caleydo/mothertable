@@ -24,7 +24,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private rowRange: Range1D;
   private colRange: Range1D;
   private dataView: INumericalMatrix;
-  private defaultRange;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -117,8 +116,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMatrix(rowRange, colRange) {
-
-    let rowView = await (<any>this.dataView).idView(rowRange);
+    let rowView = await (<any>this.data).idView(rowRange);
     rowView = rowView.t;
     let colView = await rowView.idView(colRange);
     colView = colView.t;

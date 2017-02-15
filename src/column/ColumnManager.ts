@@ -63,9 +63,9 @@ export default class ColumnManager extends EventHandler {
     const panel = this.currentWidth(this.columns);
 
     //if (managerWidth - panel < 0) {
-      //console.log("Need relayout");
+    //console.log("Need relayout");
     //} else {
-      //console.log("Enough space");
+    //console.log("Enough space");
     //}
 
     //console.log("col manager width: " + managerWidth);
@@ -83,7 +83,7 @@ export default class ColumnManager extends EventHandler {
       currentPanelWidth = col.node.clientWidth + currentPanelWidth;
     });
     return currentPanelWidth;
-}
+  }
 
 
   remove(col: AnyColumn) {
