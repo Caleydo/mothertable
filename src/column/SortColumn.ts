@@ -107,16 +107,6 @@ function stringSort(sortCriteria, aVal, bVal) {
 
 function numSort(sortCriteria, aVal, bVal) {
 
-  //
-  // if (aVal === '') {
-  //   aVal = 0;
-  //
-  // }
-  //
-  // if (bVal === '') {
-  //   bVal = 0;
-  //
-  // }
 
   if (sortCriteria === sort.asc) {
 
@@ -130,21 +120,6 @@ function numSort(sortCriteria, aVal, bVal) {
 
 }
 
-
-function numSortasc(aVal, bVal) {
-
-
-  return (aVal - bVal);
-
-
-}
-
-function numSortdesc(aVal, bVal) {
-
-  return (bVal - aVal);
-
-
-}
 
 
 function categoricalSort(categories, sortCriteria, aVal, bVal) {
