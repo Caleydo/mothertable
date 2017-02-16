@@ -15,10 +15,13 @@ Preconditions:
 ```bash
 yo phovea:setup-workspace mothertable_product
 ```
-Next, 
+Next install and run the server via docker: 
 ```bash
 cd mothertable
 docker-compose up -d
+```
+Finally, in a separate console, run the client: 
+```bash
 npm run start:mothertable
 ```
 
