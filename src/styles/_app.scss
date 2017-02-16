@@ -16,14 +16,6 @@ $border-ui: 1px solid #bbb;
   }
 }
 
-.itemFixedWidth {
-  min-width: 350px;
-}
-
-.itemWidth {
-  flex: 1 1 auto;
-}
-
 #app {
   flex: 1 1 auto;
   flex-direction: row;
