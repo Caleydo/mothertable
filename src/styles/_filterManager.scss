@@ -43,7 +43,18 @@
 
   text-align: center;
 }
-.matrix{
+
+.matrix {
   flex-grow: 1;
   background-color: lightgray;
+}
+
+.totalData {
+  background-color: #737373;
+  height: 100%;
+}
+
+.filteredData {
+  background-color: #b3b3b3;
+  height: 100%;
 }
