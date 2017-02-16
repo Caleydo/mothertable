@@ -182,13 +182,13 @@ export default class App {
       this.colRange = (indices.dim(1));
 
     }
-    matrixCol.forEach((col: MatrixColumn) => {
+    // console.log(this.colRange)
 
+    matrixCol.forEach((col: MatrixColumn) => {
       col.updateRows(this.rowRange);
       col.updateCols(this.colRange);
       col.updateMatrix(this.rowRange, this.colRange);
     });
-
 
   }
 
