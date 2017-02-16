@@ -3,10 +3,17 @@ mothertable [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][np
 
 Mother Table Project @ JKU
 
-Installation
-------------
+## Installation
 
+### Install with all dependencies
+
+```bash
+yo phovea:setup-workspace mothertable_product
 ```
+
+### Single Plugin, no dependencies
+
+```bash
 git clone https://github.com/Caleydo/mothertable.git
 cd mothertable
 npm install
