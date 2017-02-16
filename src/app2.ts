@@ -73,6 +73,7 @@ export default class App {
   private reset() {
     this.supportView.destroy();
     this.manager.destroy();
+    this.removePreviewData();
     this.showSelection();
   }
 
@@ -233,6 +234,10 @@ export default class App {
 
   }
 
+  private  removePreviewData() {
+    d3.selectAll('.rightPanel').remove();
+
+  }
 
 }
 

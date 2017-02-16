@@ -63,9 +63,9 @@ export default class ColumnManager extends EventHandler {
     const panel = this.currentWidth(this.columns);
 
     //if (managerWidth - panel < 0) {
-      //console.log("Need relayout");
+    //console.log("Need relayout");
     //} else {
-      //console.log("Enough space");
+    //console.log("Enough space");
     //}
 
     //console.log("col manager width: " + managerWidth);
@@ -83,7 +83,7 @@ export default class ColumnManager extends EventHandler {
       currentPanelWidth = col.node.clientWidth + currentPanelWidth;
     });
     return currentPanelWidth;
-}
+  }
 
 
   remove(col: AnyColumn) {
@@ -140,8 +140,8 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
 
-    const height = Math.min(...this.columns.map((c) => c.node.clientHeight - (<HTMLElement>c.node.querySelector('header')).clientHeight));
 
+    const height = Math.min(...this.columns.map((c) => c.node.clientHeight - (<HTMLElement>c.node.querySelector('header')).clientHeight));
     // compute margin
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -150,6 +150,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col) => {
       const margin = col.getVerticalMargin();
+      console.log(margin,verticalMargin)
       col.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
       col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
       col.layout(col.body.clientWidth, height);
