@@ -63,8 +63,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     node.classList.add('column');
     node.classList.add('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'));
     //assign column with a proper width
-    node.style.minWidth = String(this.minimumWidth + "px");
-    node.style.width = String(this.preferredWidth + "px");
+    node.style.minWidth = String(this.minimumWidth + 'px');
+    node.style.width = String(this.preferredWidth + 'px');
     let name = this.data.desc.name;
     if (name.length > 6) {
       name = name.slice(0, 6) + '..';
@@ -72,8 +72,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     node.innerHTML = `
         <header class="columnHeader">
-            <i class="sort_indicator fa fa-sort-desc"></i>
-            <div class="toolbar"></div>
+               <div class="toolbar"></div>
             <span>${name}</span>
         </header>
         <main></main>`;
@@ -105,34 +104,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
     });
-    if (this.data.desc.type === 'vector') {
-      toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
-      toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
-
-      const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
-
-
-      sortButton.addEventListener('click', () => {
-        const b = d3.select(sortButton);
-        if (b.classed('fa-sort-amount-desc')) {
-          const sortMethod = sort.asc;
-          const s = new SortColumn((<any>this).dataView, sortMethod);
-          s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
-            this.fire(AColumn.EVENT_SORT_CHANGED, range);
-          });
-          b.attr('class', 'fa sort fa-sort-amount-asc');
-        } else {
-          const sortMethod = sort.desc;
-          const s = new SortColumn((<any>this).dataView, sortMethod);
-          s.on(AColumn.EVENT_SORT_CHANGED, (event: any, range) => {
-            this.fire(AColumn.EVENT_SORT_CHANGED, range);
-
-          });
-          b.attr('class', 'fa sort fa-sort-amount-desc');
-        }
-      });
-    }
-
   }
 
 
