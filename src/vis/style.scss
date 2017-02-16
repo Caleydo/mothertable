@@ -1,0 +1,24 @@
+$select-color: orange;
+$hover-color: #ffc46b;
+
+
+.phovea-table {
+  font-size: smaller;
+  border-collapse: collapse;
+
+  tr {
+    &.phovea-select-selected {
+      border: 1px solid $select-color;
+    }
+    &.phovea-select-hovered {
+      border: 1px solid $hover-color;
+    }
+  }
+}
+
+.phovea-barplot {
+  rect {
+    stroke: white;
+    fill: black;
+  }
+}
