@@ -10,7 +10,7 @@ import {
 } from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
 
-export const sort = {
+export const SORT = {
   asc: 'asc',
   desc: 'desc'
 
@@ -23,16 +23,16 @@ export default class SortColumn extends EventHandler {
   private sortCriteria: string;
   private data;
 
-  constructor(data, sortCriteria: string) {
+  constructor(data: IDataType, sortCriteria: string) {
     super();
     this.data = data;
     this.sortCriteria = sortCriteria;
-    this.sortMethod();
+    this.sortMe();
 
   }
 
 
-  sortMethod() {
+  sortMe() {
     const v = <IAnyVector>this.data;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
@@ -46,25 +46,18 @@ export default class SortColumn extends EventHandler {
   }
 
   async sortString() {
-
-    const sortedView = await (<IAnyVector>this.data).sort(stringSort.bind(this, this.sortCriteria));
+    const sortedView = await this.data.sort(stringSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
-
-
-    this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
-
+    return sortedRange;
 
   }
 
 
   async sortNumber() {
 
-    const sortedView = await (<IAnyVector>this.data).sort(numSort.bind(this, this.sortCriteria));
+    const sortedView = await this.data.sort(numSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
-
-
-    this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
-
+    return sortedRange;
   }
 
 // Unused at the moment because we are sorting categories by alphabetical order;
@@ -79,7 +72,6 @@ export default class SortColumn extends EventHandler {
 
     const sortedView = await (<IAnyVector>this.data).sort(categoricalSort.bind(this, catCount, this.sortCriteria));
     const sortedRange = await  (sortedView).ids();
-
     this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
 
   }
@@ -90,12 +82,12 @@ export default class SortColumn extends EventHandler {
 
 function stringSort(sortCriteria, aVal, bVal) {
 
-  if (sortCriteria === sort.asc) {
+  if (sortCriteria === SORT.asc) {
 
 
     return (aVal.localeCompare(bVal));
   }
-  if (sortCriteria === sort.desc) {
+  if (sortCriteria === SORT.desc) {
 
     return (bVal.localeCompare(aVal));
   }
@@ -107,12 +99,12 @@ function stringSort(sortCriteria, aVal, bVal) {
 function numSort(sortCriteria, aVal, bVal) {
 
 
-  if (sortCriteria === sort.asc) {
+  if (sortCriteria === SORT.asc) {
 
     return (aVal - bVal);
   }
 
-  if (sortCriteria === sort.desc) {
+  if (sortCriteria === SORT.desc) {
 
     return bVal - aVal;
   }
@@ -123,11 +115,11 @@ function numSort(sortCriteria, aVal, bVal) {
 // Unused at the moment.
 function categoricalSort(categories, sortCriteria, aVal, bVal) {
 
-  if (sortCriteria === sort.asc) {
+  if (sortCriteria === SORT.asc) {
 
     return categories[aVal] - categories[bVal];
   }
-  if (sortCriteria === sort.desc) {
+  if (sortCriteria === SORT.desc) {
 
     return categories[bVal] - categories[aVal];
   }
