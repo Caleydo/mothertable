@@ -150,7 +150,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col) => {
       const margin = col.getVerticalMargin();
-      console.log(margin,verticalMargin)
+      //console.log(margin,verticalMargin)
       col.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
       col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
       col.layout(col.body.clientWidth, height);

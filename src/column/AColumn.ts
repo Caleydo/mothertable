@@ -98,13 +98,35 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected abstract buildBody(body: HTMLElement);
 
   protected buildToolbar(toolbar: HTMLElement) {
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-unlock"></button>`);
+    const lockButton = toolbar.querySelector('button.fa-unlock');
+    this.lockColumnWidth(lockButton);
 
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
     });
   }
+
+  protected lockColumnWidth(lockButton) {
+    lockButton.addEventListener('click', () => {
+        const b = d3.select(lockButton);
+        if (b.classed('fa-lock')) {
+          this.node.classList.add('itemWidth');
+          this.node.classList.remove('itemFixedWidth');
+          this.node.style.minWidth = String(this.minimumWidth + 'px');
+          //d3.select(this.node).attr('class', 'itemWidth');
+          b.attr('class', 'fa fa-unlock');
+        } else {
+          this.node.classList.add('itemFixedWidth');
+          this.node.style.minWidth = this.node.style.width;
+          this.node.classList.remove('itemWidth');
+          //d3.select(this.node).attr('class', 'itemFixedWidth');
+          b.attr('class', 'fa fa-lock');
+        }
+      });
+}
 
 
 }
