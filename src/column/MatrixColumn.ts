@@ -73,8 +73,16 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     });
   }
 
-  private relayout() {
-    // TODO
+  async relayout() {
+    //  await resolveIn(10);
+
+    const height = Math.min(this.node.clientHeight - (<HTMLElement>this.node.querySelector('header')).clientHeight);
+    // compute margin
+    const verticalMargin = this.getVerticalMargin();
+    const margin = this.getVerticalMargin();
+    this.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
+    this.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
+    this.layout(this.body.clientWidth, height);
   }
 
   getVerticalMargin() {
@@ -123,6 +131,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.dataView = colView;
     this.multiform.destroy();
     this.multiform = this.replaceMultiForm(colView, this.body);
+    this.relayout();
   }
 
 
