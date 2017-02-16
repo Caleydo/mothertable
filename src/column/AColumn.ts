@@ -115,14 +115,19 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         if (b.classed('fa-lock')) {
           this.node.classList.add('itemWidth');
           this.node.classList.remove('itemFixedWidth');
+          this.node.style.width = String(this.node.clientWidth + 'px');
           this.node.style.minWidth = String(this.minimumWidth + 'px');
-          //d3.select(this.node).attr('class', 'itemWidth');
+          this.node.style.maxWidth = String(this.preferredWidth + 'px');
           b.attr('class', 'fa fa-unlock');
         } else {
+          const currentWidth = String(this.node.clientWidth + 'px');
           this.node.classList.add('itemFixedWidth');
-          this.node.style.minWidth = this.node.style.width;
           this.node.classList.remove('itemWidth');
-          //d3.select(this.node).attr('class', 'itemFixedWidth');
+          this.node.style.minWidth = currentWidth;
+          this.node.style.maxWidth = currentWidth;
+          //this.node.style.minWidth = null;
+          //this.node.style.width = null;
+
           b.attr('class', 'fa fa-lock');
         }
       });
