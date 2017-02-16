@@ -5,10 +5,21 @@ Mother Table Project @ JKU
 
 ## Installation
 
+Preconditions: 
+ * Have [git/ssh](https://help.github.com/articles/signing-commits-with-gpg/) set up.
+ * Have [Yeoman](http://yeoman.io/) installed.
+ * Have [Docker](https://www.docker.com/) installed and running.
+
 ### Install with all dependencies
 
 ```bash
 yo phovea:setup-workspace mothertable_product
+```
+Next, 
+```bash
+cd mothertable
+docker-compose up -d
+npm run start:mothertable
 ```
 
 ### Single Plugin, no dependencies
