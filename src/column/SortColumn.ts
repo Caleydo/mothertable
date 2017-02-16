@@ -36,9 +36,8 @@ export default class SortColumn extends EventHandler {
     const v = <IAnyVector>this.data;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
-        return this.sortString();
       case VALUE_TYPE_CATEGORICAL:
-        return this.sortCategorical();
+        return this.sortString();
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
         return this.sortNumber();
@@ -68,7 +67,7 @@ export default class SortColumn extends EventHandler {
 
   }
 
-
+// Unused at the moment because we are sorting categories by alphabetical order;
   async sortCategorical() {
     const allCatNames = await(<any>this.data).data();
     const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
@@ -107,16 +106,6 @@ function stringSort(sortCriteria, aVal, bVal) {
 
 function numSort(sortCriteria, aVal, bVal) {
 
-  //
-  // if (aVal === '') {
-  //   aVal = 0;
-  //
-  // }
-  //
-  // if (bVal === '') {
-  //   bVal = 0;
-  //
-  // }
 
   if (sortCriteria === sort.asc) {
 
@@ -131,22 +120,7 @@ function numSort(sortCriteria, aVal, bVal) {
 }
 
 
-function numSortasc(aVal, bVal) {
-
-
-  return (aVal - bVal);
-
-
-}
-
-function numSortdesc(aVal, bVal) {
-
-  return (bVal - aVal);
-
-
-}
-
-
+// Unused at the moment.
 function categoricalSort(categories, sortCriteria, aVal, bVal) {
 
   if (sortCriteria === sort.asc) {
