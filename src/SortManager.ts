@@ -56,19 +56,19 @@ export default class SortManager {
     const block = App.blockList.get(this._blockID);
 
     if (this._sortCriteria === 'alphabetical') {
-      (<any>block.data).sort(stringSort).then((d) => {
+      (<any>block.data).SORT(stringSort).then((d) => {
         this.updateVis((<any>d.range));
       });
 
     } else if (this._sortCriteria === 'min') {
 
-      (<any>block.data).sort(minSort).then((d) => {
+      (<any>block.data).SORT(minSort).then((d) => {
         this.updateVis((<any>d.range));
       });
 
     } else if (this._sortCriteria === 'max') {
 
-      (<any>block.data).sort(maxSort).then((d) => {
+      (<any>block.data).SORT(maxSort).then((d) => {
         this.updateVis((<any>d.range));
       });
 
@@ -80,7 +80,7 @@ export default class SortManager {
           return value !== 'active';
         }).length;
         uniqueCount.push(size);
-        (<any>block.data).sort(catSort.bind(this, unique)).then((d) => {
+        (<any>block.data).SORT(catSort.bind(this, unique)).then((d) => {
           this.updateVis((<any>d.range));
         });
 

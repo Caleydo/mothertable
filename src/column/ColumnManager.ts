@@ -14,7 +14,8 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
-
+import {IAnyVector} from 'phovea_core/src/vector';
+import SortColumn from './SortColumn';
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -56,7 +57,7 @@ export default class ColumnManager extends EventHandler {
     await col.update(r.intersect(this.rangeNow));
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.on(AVectorColumn.EVENT_SORT_CHANGED, this.onColumnSort.bind(this));
+    col.on(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
     this.columns.push(col);
 
     const managerWidth = this.node.clientWidth;
@@ -90,7 +91,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_SORT_CHANGED, this.onColumnSort.bind(this));
+    col.off(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.relayout();
@@ -117,11 +118,14 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  onColumnSort(evt: any, range: any) {
-    this.update(range);
 
+  async onSortMethod(evt: any, sortMethod: string, data: IAnyVector) {
+    const indexes = (<any>data).indices;
+    const currentData = await (<any>data).idView(indexes.intersect(this.rangeNow));
+    const s = new SortColumn(currentData, sortMethod);
+    const r:Range1D = await s.sortMe();
+    this.update(r);
   }
-
 
   async update(idRange: Range1D) {
     this.rangeNow = idRange;
@@ -150,7 +154,6 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col) => {
       const margin = col.getVerticalMargin();
-      console.log(margin,verticalMargin)
       col.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
       col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
       col.layout(col.body.clientWidth, height);
