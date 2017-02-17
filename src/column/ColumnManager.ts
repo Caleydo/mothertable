@@ -94,6 +94,7 @@ export default class ColumnManager extends EventHandler {
     col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
+    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.relayout();
