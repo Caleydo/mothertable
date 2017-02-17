@@ -16,6 +16,7 @@ export enum EOrientation {
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_SORT_CHANGED = 'sorted';
+  static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
 
   minimumWidth: number = 10;
   preferredWidth: number = 100;
@@ -113,6 +114,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     lockButton.addEventListener('click', () => {
         const b = d3.select(lockButton);
         if (b.classed('fa-lock')) {
+          // RELEASING WIDTH LOCK
+          this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED,"Lock release");
           this.node.classList.add('itemWidth');
           this.node.classList.remove('itemFixedWidth');
           this.node.style.width = String(this.node.clientWidth + 'px');
@@ -120,6 +123,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
           this.node.style.maxWidth = String(this.preferredWidth + 'px');
           b.attr('class', 'fa fa-unlock');
         } else {
+          // LOCKING WIDTH
+          this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED,"Lock closed");
           const currentWidth = String(this.node.clientWidth + 'px');
           this.node.classList.add('itemFixedWidth');
           this.node.classList.remove('itemWidth');
