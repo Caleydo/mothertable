@@ -16,6 +16,7 @@ export enum EOrientation {
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_SORT_CHANGED = 'sorted';
+  static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
 
   minimumWidth: number = 10;
   preferredWidth: number = 100;
@@ -98,13 +99,49 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected abstract buildBody(body: HTMLElement);
 
   protected buildToolbar(toolbar: HTMLElement) {
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-unlock"></button>`);
+    const lockButton = toolbar.querySelector('button.fa-unlock');
+    this.lockColumnWidth(lockButton);
 
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
     });
   }
+
+  protected lockColumnWidth(lockButton) {
+    lockButton.addEventListener('click', () => {
+        const b = d3.select(lockButton);
+        if (b.classed('fa-lock')) {
+          // UNLOCKING
+          b.attr('class', 'fa fa-unlock');
+          this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED,"unlocked");
+
+          this.node.classList.add('itemWidth');
+          this.node.classList.remove('itemFixedWidth');
+          this.node.style.flex = "1 1 " + String(this.node.clientWidth + 'px');
+          //this.node.style.width = String(this.node.clientWidth + 'px');
+          this.node.style.minWidth = String(this.minimumWidth + 'px');
+          this.node.style.maxWidth = String(this.preferredWidth + 'px');
+
+        } else {
+          // LOCKING
+           b.attr('class', 'fa fa-lock');
+          this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED,"locked");
+
+          this.node.classList.add('itemFixedWidth');
+          this.node.classList.remove('itemWidth');
+          this.node.style.flex = "0 0 " + String(this.node.clientWidth + 'px');
+          /*const currentWidth = String(this.node.clientWidth + 'px');
+            this.node.style.minWidth = currentWidth;
+            this.node.style.maxWidth = currentWidth;
+            this.node.style.minWidth = null;
+            this.node.style.width = null; */
+
+        }
+      });
+}
 
 
 }

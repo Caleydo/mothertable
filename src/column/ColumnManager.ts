@@ -58,6 +58,8 @@ export default class ColumnManager extends EventHandler {
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
+    col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
+
     this.columns.push(col);
 
     const managerWidth = this.node.clientWidth;
@@ -92,6 +94,7 @@ export default class ColumnManager extends EventHandler {
     col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
+    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.relayout();
@@ -127,6 +130,11 @@ export default class ColumnManager extends EventHandler {
     this.update(r);
   }
 
+  onLockChange(event: any, lock: any) {
+    //console.log(lock);
+    this.relayout();
+  }
+
   async update(idRange: Range1D) {
     this.rangeNow = idRange;
     await Promise.all(this.columns.map((col) => {
@@ -154,6 +162,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col) => {
       const margin = col.getVerticalMargin();
+      //console.log(margin,verticalMargin)
       col.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
       col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
       col.layout(col.body.clientWidth, height);
