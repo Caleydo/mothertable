@@ -5,7 +5,7 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {list as rlist} from 'phovea_core/src/range';
 import SortColumn from './SortColumn';
-import {sort} from './SortColumn';
+import {SORT} from './SortColumn';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 /**
@@ -19,10 +19,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   dataView: DATATYPE;
   filterRange;
   static readonly EVENT_SORT_CHANGED = 'sorted';
+  static readonly EVENT_SORT_METHOD = 'sortMe';
+  private sort: SortColumn;
+  private sortCriteria: string = null;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
+    this.sort = new SortColumn(this.dataView, this.sortCriteria)
 
   }
 
@@ -43,7 +47,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
     const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
 
-    this.performSort(sortButton);
+    this.getSortMethod(sortButton);
     super.buildToolbar(toolbar);
   }
 
@@ -66,24 +70,17 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   //   });
   // }
 
-  protected performSort(sortButton) {
+  protected getSortMethod(sortButton) {
 
     sortButton.addEventListener('click', () => {
       const b = d3.select(sortButton);
       if (b.classed('fa-sort-amount-desc')) {
-        const sortMethod = sort.asc;
-        const s = new SortColumn((<any>this).dataView, sortMethod);
-        s.on(AVectorColumn.EVENT_SORT_CHANGED, (event: any, range) => {
-          this.fire(AVectorColumn.EVENT_SORT_CHANGED, range);
-        });
+        const sortMethod = SORT.asc;
+        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod, this.data);
         b.attr('class', 'fa sort fa-sort-amount-asc');
       } else {
-        const sortMethod = sort.desc;
-        const s = new SortColumn((<any>this).dataView, sortMethod);
-        s.on(AVectorColumn.EVENT_SORT_CHANGED, (event: any, range) => {
-          this.fire(AVectorColumn.EVENT_SORT_CHANGED, range);
-
-        });
+        const sortMethod = SORT.desc;
+        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod, this.data);
         b.attr('class', 'fa sort fa-sort-amount-desc');
       }
     });
@@ -94,6 +91,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     this.multiform.destroy();
     const view = await (<any>this.data).idView(idRange);
     this.dataView = view;
+
     this.multiform = this.replaceMultiForm(view, this.body);
   }
 

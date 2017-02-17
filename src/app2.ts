@@ -39,7 +39,7 @@ export default class App {
   }
 
   private async buildStartSelection(elem: d3.Selection<any>) {
-    // get all idtypes, filter to the valid ones and sort by name
+    // get all idtypes, filter to the valid ones and SORT by name
     const data: IDType[] = (await listAll())
       .filter((d) => d instanceof IDType)
       .map((d) => <IDType>d)

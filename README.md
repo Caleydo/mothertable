@@ -3,10 +3,31 @@ mothertable [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][np
 
 Mother Table Project @ JKU
 
-Installation
-------------
+## Installation
 
+Preconditions: 
+ * Have [git/ssh](https://help.github.com/articles/signing-commits-with-gpg/) set up.
+ * Have [Yeoman](http://yeoman.io/) installed.
+ * Have [Docker](https://www.docker.com/) installed and running.
+
+### Install with all dependencies
+
+```bash
+yo phovea:setup-workspace mothertable_product
 ```
+Next install and run the server via docker: 
+```bash
+cd mothertable
+docker-compose up -d
+```
+Finally, in a separate console, run the client: 
+```bash
+npm run start:mothertable
+```
+
+### Single Plugin, no dependencies
+
+```bash
 git clone https://github.com/Caleydo/mothertable.git
 cd mothertable
 npm install
