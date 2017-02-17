@@ -52,19 +52,26 @@ export default class SortColumn extends EventHandler {
 
   }
 
-  async sortCat() {
-    const allCatNames = await(<any>this.data).data();
-    const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-    const sortedByName = uniqueCategories.sort(stringSort.bind(this, this.sortCriteria));
+  async sortCat(sortedByName) {
 
     const sortArr = [];
+    // console.log(await this.data.data())
     for (const f of sortedByName) {
+
       const u = await this.data.filter(filterCat.bind(this, f));
+
       const id = await u.ids();
-      sortArr.push(id);
-    //  console.log(id.dim(0).asList())
+
+      if (id.size()[0] >= 1) {
+        sortArr.push(id);
+        console.log(f, await this.data.data(), id.dim(0).asList())
+      }
+
 
     }
+
+
+
 
     return sortArr;
 
@@ -100,14 +107,17 @@ export default class SortColumn extends EventHandler {
 
 function filterCat(aVal, bval) {
 
+  if (aVal === bval) {
 
-  return aVal === bval;
+    return bval;
+
+  }
 
 
 }
 
 
-function stringSort(sortCriteria, aVal, bVal) {
+export function stringSort(sortCriteria, aVal, bVal) {
 
   if (sortCriteria === SORT.asc) {
 
