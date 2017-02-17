@@ -76,11 +76,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       const b = d3.select(sortButton);
       if (b.classed('fa-sort-amount-desc')) {
         const sortMethod = SORT.asc;
-        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod, this.data);
+        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod);
         b.attr('class', 'fa sort fa-sort-amount-asc');
       } else {
         const sortMethod = SORT.desc;
-        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod, this.data);
+        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod);
         b.attr('class', 'fa sort fa-sort-amount-desc');
       }
     });

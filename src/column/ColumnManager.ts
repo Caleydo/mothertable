@@ -5,6 +5,8 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
+import {join as rjoin} from 'phovea_core/src/range';
+import Range from 'phovea_core/src/range/Range';
 import {IStringVector, AVectorColumn} from './AVectorColumn';
 import AColumn, {EOrientation} from './AColumn';
 import CategoricalColumn from './CategoricalColumn';
@@ -119,13 +121,35 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  async onSortMethod(evt: any, sortMethod: string, data: IAnyVector) {
-    const indexes = (<any>data).indices;
-    const currentData = await (<any>data).idView(indexes.intersect(this.rangeNow));
-    const s = new SortColumn(currentData, sortMethod);
-    const r:Range1D = await s.sortMe();
-    this.update(r);
+  async onSortMethod(evt: any, sortMethod: string) {
+
+    for (const c of this.columns) {
+      const d: any = c.data;
+      const indexes = d.indices;
+      const currentData = await d.idView(indexes.intersect(this.rangeNow));
+      const s = new SortColumn(currentData, sortMethod);
+      const r = await s.sortCat();
+      const joinedR = await this.joinRanges(r);
+      //     console.log(joinedR.dim(0).asList(), 'total')
+
+    }
+
+    // this.update(r);
   }
+
+  async joinRanges(range) {
+
+    const joinedR = range.reduce((currentVal, nextValue) => {
+      const r = new Range();
+      r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
+      return r;
+    });
+
+    return joinedR;
+
+
+  }
+
 
   async update(idRange: Range1D) {
     this.rangeNow = idRange;
