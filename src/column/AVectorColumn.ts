@@ -26,7 +26,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
-    this.sort = new SortColumn(this.dataView, this.sortCriteria)
 
   }
 

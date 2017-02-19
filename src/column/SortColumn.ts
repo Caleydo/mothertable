@@ -9,6 +9,7 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
+import AnyColumn from './ColumnManager';
 
 export const SORT = {
   asc: 'asc',
@@ -21,87 +22,124 @@ export default class SortColumn extends EventHandler {
 
 
   private sortCriteria: string;
-  private data;
+  private columns: AnyColumn[];
 
-  constructor(data: IDataType, sortCriteria: string) {
+  constructor(cols: AnyColumn[], sortCriteria: string) {
     super();
-    this.data = data;
+    this.columns = cols;
     this.sortCriteria = sortCriteria;
-    this.sortMe();
+    //this.sortMe();
+
 
   }
 
 
-  sortMe() {
-    const v = <IAnyVector>this.data;
+  async getViewRange(newView) {
+    const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
+        return (await this.sortString(newView));
       case VALUE_TYPE_CATEGORICAL:
-        return this.sortString();
+        return (await this.getCatRange(newView));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return this.sortNumber();
+        return (await this.sortNumber(newView));
     }
-
   }
 
-  async sortString() {
-    const sortedView = await this.data.sort(stringSort.bind(this, this.sortCriteria));
+  async sortString(data) {
+    const sortedView = await data.sort(stringSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
     return sortedRange;
 
   }
 
-  async sortCat(sortedByName) {
+  async getCatRange(col) {
 
-    const sortArr = [];
-    // console.log(await this.data.data())
-    for (const f of sortedByName) {
+    const categories = await this.uniqCategories(col);
+    const sortedByName = categories.sort(stringSort.bind(this, this.sortCriteria));
+    const sortedRange = await this.sortCategory(col, sortedByName);
+    return sortedRange;
+  }
 
-      const u = await this.data.filter(filterCat.bind(this, f));
 
-      const id = await u.ids();
+  async sortByMe() {
 
-      if (id.size()[0] >= 1) {
-        sortArr.push(id);
-        console.log(f, await this.data.data(), id.dim(0).asList())
+    let range = [await (<any>this.columns[0]).data.ids()];
+    for (const col of this.columns) {
+      const nextColumnData = (<any>col).data;
+      const rangeOfView = [];
+      for (const n of range) {
+        const newView = await nextColumnData.idView(n);
+        rangeOfView.push(await this.getViewRange(newView));
       }
-
+      range = await this.concatRanges(rangeOfView);
 
     }
-
-
-
-
-    return sortArr;
+    return range;
 
   }
 
 
-  async sortNumber() {
+  async concatRanges(rangeOfViewData) {
+    if (Array.isArray(rangeOfViewData[0]) === true) {
+      return rangeOfViewData.reduce((a, b) => a.concat(b));
+    } else {
+      return rangeOfViewData;
+    }
 
-    const sortedView = await this.data.sort(numSort.bind(this, this.sortCriteria));
+
+  }
+
+  async sortCategory(col, sortedByName) {
+    const sortArr = [];
+    const coldata = col;
+    for (const f of sortedByName) {
+      const u = await coldata.filter(filterCat.bind(this, f));
+      const id = await u.ids();
+      if (id.size()[0] >= 1) {
+        sortArr.push(id);
+        console.log(f, await coldata.data(), id.dim(0).asList());
+      }
+    }
+
+    return sortArr;
+  }
+
+  async sortNumber(data) {
+
+    const sortedView = await data.sort(numSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
 
     return sortedRange;
   }
 
 // Unused at the moment because we are sorting categories by alphabetical order;
-  async sortCategorical() {
-    const allCatNames = await(<any>this.data).data();
-    const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-    const catCount = {};
-    uniqueCategories.forEach(((val, i) => {
-      const count = allCatNames.filter(isSame.bind(this, val));
-      catCount[val] = count.length;
-    }));
+  /*
+   async sortCategorical() {
+   const allCatNames = await(<any>this.data).data();
+   const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
+   const catCount = {};
+   uniqueCategories.forEach(((val, i) => {
+   const count = allCatNames.filter(isSame.bind(this, val));
+   catCount[val] = count.length;
+   }));
 
-    const sortedView = await (<IAnyVector>this.data).sort(categoricalSort.bind(this, catCount, this.sortCriteria));
-    const sortedRange = await  (sortedView).ids();
-    this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
+   const sortedView = await (<IAnyVector>this.data).sort(categoricalSort.bind(this, catCount, this.sortCriteria));
+   const sortedRange = await  (sortedView).ids();
+   this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
+
+   }
+
+   */
+
+
+  async uniqCategories(coldata) {
+    const allCatNames = await(coldata.data());
+    const uniqCat = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
+    return uniqCat;
 
   }
-
 
 }
 

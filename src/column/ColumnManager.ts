@@ -124,119 +124,27 @@ export default class ColumnManager extends EventHandler {
 
   async onSortMethod(evt: any, sortMethod: string) {
 
+    const cols: any = this.columns.filter((d) => d.data.desc.type === 'vector');
+    const s = new SortColumn(cols, sortMethod);
+    const r: any = s.sortByMe();
+    this.joinRanges(r);
 
-    const d: any = this.columns[0].data;
-    const indexes = d.indices;
-    const currentData = await d.idView(indexes.intersect(this.rangeNow));
-
-    this.recursiveSort(sortMethod);
-
-
-    // this.update(r);
   }
 
-  async joinRanges(range) {
-
-    const joinedR = range.reduce((currentVal, nextValue) => {
+  async joinRanges(r: Range[]) {
+    const ranges = await r;
+    const joinedR: any = ranges.reduce((currentVal, nextValue) => {
       const r = new Range();
       r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
       return r;
     });
+    console.log(joinedR.dim(0).asList())
+    this.update(joinedR);
 
-    return joinedR;
-
-
-  }
-
-
-  async recursiveSort(sortMethod) {
-
-    const d1: any = this.columns[0].data;
-    const indexes = d1.indices;
-    const currentData = await d1.idView(indexes.intersect(this.rangeNow));
-    const allCatNames = await(d1.data());
-    const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-
-    const sortedByName = uniqueCategories.sort(stringSort.bind(this, sortMethod));
-    console.log(sortedByName)
-
-    const s = new SortColumn(currentData, sortMethod);
-    const r = await s.sortCat(sortedByName);
-    const newView = [];
-    const d2: any = this.columns[1].data;
-    const allCatNames2 = await(d2.data());
-    const uniqueCategories2 = allCatNames2.filter((x, i, a) => a.indexOf(x) === i);
-
-    const sortedByName2 = uniqueCategories2.sort(stringSort.bind(this, sortMethod));
-    console.log(sortedByName2)
-    for (const n of r) {
-
-      newView.push(d2.idView(n));
-    }
-
-
-    const r1 = [];
-    for (const n of newView) {
-
-      const t = await n;
-      const tr = await t.ids();
-      // console.log(t.data(),tr)
-      const s = new SortColumn(t, sortMethod);
-      const r = await s.sortCat(sortedByName2);
-      console.log(r)
-
-      r1.push(r);
-
-
-    }
-
-    const f = r1.reduce((a, b) => a.concat(b));
-
-    console.log(f)
-
-
-    const newView1 = [];
-    const d3: any = this.columns[2].data;
-    const allCatNames3 = await(d3.data());
-    const uniqueCategories3 = allCatNames3.filter((x, i, a) => a.indexOf(x) === i);
-
-    const sortedByName3 = uniqueCategories3.sort(stringSort.bind(this, sortMethod));
-    console.log(sortedByName3)
-    for (const n of f) {
-
-      newView1.push(d3.idView(n));
-    }
-
-
-    const r3 = [];
-    for (const n of newView1) {
-
-      const t = await n;
-      const tr = await t.ids();
-      // console.log(t.data(),tr)
-      const s = new SortColumn(t, sortMethod);
-      const r = await s.sortCat(sortedByName3);
-      console.log(r)
-
-      r3.push(r);
-
-
-    }
-
-    const f1 = r3.reduce((a, b) => a.concat(b));
-
-    console.log(f1)
-
-
-    // const t = await newView[4];
-    //
-    // const s1 = new SortColumn(t, sortMethod);
-    // console.log(s1.sortCat())
-    //
-    // const joinedR = await this.joinRanges(r);
-    // console.log(joinedR.dim(0).asList(), 'total')
+    //   return joinedR;
 
   }
+
 
   async update(idRange: Range1D) {
     this.rangeNow = idRange;
