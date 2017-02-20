@@ -5,7 +5,6 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
-import {join as rjoin} from 'phovea_core/src/range';
 import Range from 'phovea_core/src/range/Range';
 import {IStringVector, AVectorColumn} from './AVectorColumn';
 import AColumn, {EOrientation} from './AColumn';
@@ -16,9 +15,8 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import {IAnyVector} from 'phovea_core/src/vector';
-import SortColumn from './SortColumn';
-import {stringSort} from './SortColumn';
+import SortColumn, {SORT} from './SortColumn';
+
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -32,7 +30,8 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
-  private rangeNow: Range1D = Range1D.all();
+  private rangeNow: Range1D;
+  private sortMethod: string = SORT.asc;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -57,7 +56,12 @@ export default class ColumnManager extends EventHandler {
     }
     const col = createColumn(data, this.orientation, this.node);
     const r = (<any>data).indices;
-    await col.update(r.intersect(this.rangeNow));
+    if (this.rangeNow === undefined) {
+      this.rangeNow = r.intersect(Range1D.all());
+
+    }
+    await col.update((this.rangeNow));
+
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
@@ -124,27 +128,35 @@ export default class ColumnManager extends EventHandler {
 
   async onSortMethod(evt: any, sortMethod: string) {
 
+    this.sortMethod = sortMethod;
     const cols: any = this.columns.filter((d) => d.data.desc.type === 'vector');
-    const s = new SortColumn(cols, sortMethod);
+    const s = new SortColumn(cols, this.sortMethod);
     const r: any = s.sortByMe();
-    this.joinRanges(r);
+    this.mergeRanges(r);
 
   }
 
-  async joinRanges(r: Range[]) {
+  async mergeRanges(r: Range[]) {
     const ranges = await r;
-    const joinedR: any = ranges.reduce((currentVal, nextValue) => {
-      const r = new Range();
-      r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-      return r;
-    });
-    console.log(joinedR.dim(0).asList())
-    this.update(joinedR);
+    // const mergedRange: any = ranges.reduce((currentVal, nextValue) => {
+    //   const r = new Range();
+    //   r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
+    //   return r;
+    // });
 
-    //   return joinedR;
-
+    const mergedRange: any = ranges.reduce((a, b) => a.concatenate(b));
+    console.log(mergedRange.dim(0).asList());
+    this.update(mergedRange);
   }
 
+  async filterData(idRange: Range1D) {
+    for (const col of this.columns) {
+      (<any>col).dataView = await (<any>col.data).idView(idRange);
+
+    }
+    this.onSortMethod(null, this.sortMethod);
+
+  }
 
   async update(idRange: Range1D) {
     this.rangeNow = idRange;

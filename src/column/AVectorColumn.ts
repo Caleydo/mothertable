@@ -18,10 +18,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   protected multiform: MultiForm;
   dataView: DATATYPE;
   filterRange;
-  static readonly EVENT_SORT_CHANGED = 'sorted';
   static readonly EVENT_SORT_METHOD = 'sortMe';
-  private sort: SortColumn;
-  private sortCriteria: string = null;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
@@ -90,7 +87,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     this.multiform.destroy();
     const view = await (<any>this.data).idView(idRange);
     this.dataView = view;
-
     this.multiform = this.replaceMultiForm(view, this.body);
   }
 

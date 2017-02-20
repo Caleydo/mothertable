@@ -65,9 +65,9 @@ export default class SortColumn extends EventHandler {
 
   async sortByMe() {
 
-    let range = [await (<any>this.columns[0]).data.ids()];
+    let range = [await (<any>this.columns[0]).dataView.ids()];
     for (const col of this.columns) {
-      const nextColumnData = (<any>col).data;
+      const nextColumnData = (<any>col).dataView;
       const rangeOfView = [];
       for (const n of range) {
         const newView = await nextColumnData.idView(n);
