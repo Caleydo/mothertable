@@ -141,13 +141,13 @@ export default class ColumnManager extends EventHandler {
 
   async mergeRanges(r: Range[]) {
     const ranges = await r;
-    // const mergedRange: any = ranges.reduce((currentVal, nextValue) => {
-    //   const r = new Range();
-    //   r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-    //   return r;
-    // });
+    const mergedRange: any = ranges.reduce((currentVal, nextValue) => {
+      const r = new Range();
+      r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
+      return r;
+    });
 
-    const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
+   // const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
     console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
