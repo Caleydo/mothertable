@@ -3,13 +3,13 @@
  */
 
 import {EventHandler} from 'phovea_core/src/event';
-import AColumn from './AColumn';
+import AColumn from '../column/AColumn';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
-import AnyColumn from './ColumnManager';
+import AnyColumn from '../column/ColumnManager';
 
 export const SORT = {
   asc: 'asc',

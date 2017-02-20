@@ -15,7 +15,7 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import SortColumn, {SORT} from './SortColumn';
+import SortColumn, {SORT} from '../sortColumn/SortColumn';
 
 /**
  * Created by Samuel Gratzl on 19.01.2017.

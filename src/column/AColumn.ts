@@ -6,8 +6,8 @@ import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
-import SortColumn from './SortColumn';
-import {SORT} from './SortColumn';
+import SortColumn from '../sortColumn/SortColumn';
+import {SORT} from '../sortColumn/SortColumn';
 export enum EOrientation {
   Horizontal,
   Vertical

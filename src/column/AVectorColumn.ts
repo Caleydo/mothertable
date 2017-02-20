@@ -4,8 +4,8 @@ import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {list as rlist} from 'phovea_core/src/range';
-import SortColumn from './SortColumn';
-import {SORT} from './SortColumn';
+import SortColumn from '../sortColumn/SortColumn';
+import {SORT} from '../sortColumn/SortColumn';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 /**
