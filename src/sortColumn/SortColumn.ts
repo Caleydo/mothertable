@@ -43,7 +43,7 @@ export default class SortColumn extends EventHandler {
         return (await this.getCatRange(newView));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return (await this.sortNumber(newView));
+        return (await this.getNumericalRange(newView));
     }
   }
 
@@ -56,9 +56,18 @@ export default class SortColumn extends EventHandler {
 
   async getCatRange(col) {
 
-    const categories = await this.uniqCategories(col);
+    const categories = await this.uniqueValues(col);
     const sortedByName = categories.sort(stringSort.bind(this, this.sortCriteria));
-    const sortedRange = await this.sortCategory(col, sortedByName);
+    const sortedRange = await this.sortByGroup(col, sortedByName);
+    return sortedRange;
+  }
+
+
+  async getNumericalRange(col) {
+
+    const uniqValues = await this.uniqueValues(col);
+    const sortByValue = uniqValues.sort(numSort.bind(this, this.sortCriteria));
+    const sortedRange = await this.sortByGroup(col, sortByValue);
     return sortedRange;
   }
 
@@ -91,7 +100,7 @@ export default class SortColumn extends EventHandler {
 
   }
 
-  async sortCategory(col, sortedByName) {
+  async sortByGroup(col, sortedByName) {
     const sortArr = [];
     const coldata = col;
     for (const f of sortedByName) {
@@ -107,10 +116,8 @@ export default class SortColumn extends EventHandler {
   }
 
   async sortNumber(data) {
-
     const sortedView = await data.sort(numSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
-
     return sortedRange;
   }
 
@@ -134,10 +141,10 @@ export default class SortColumn extends EventHandler {
    */
 
 
-  async uniqCategories(coldata) {
+  async uniqueValues(coldata) {
     const allCatNames = await(coldata.data());
-    const uniqCat = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-    return uniqCat;
+    const uniqvalues = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
+    return uniqvalues;
 
   }
 
