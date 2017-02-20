@@ -11,6 +11,13 @@ body {
   flex-direction: column;
 }
 
+.itemFixedWidth {
+}
+
+.itemWidth {
+  flex: 1 1 auto;
+}
+
 #app {
   display: flex;
   flex-direction: row;
