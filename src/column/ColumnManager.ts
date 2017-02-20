@@ -144,7 +144,7 @@ export default class ColumnManager extends EventHandler {
     //   return r;
     // });
 
-    const mergedRange: any = ranges.reduce((a, b) => a.concatenate(b));
+    const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
     console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
