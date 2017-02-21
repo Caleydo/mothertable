@@ -16,7 +16,8 @@ import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
-import AColumn from '../column/AColumn';
+import * as $ from 'jquery';
+import 'jquery-ui/ui/widgets/sortable';
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -32,6 +33,11 @@ export default class FilterManager extends EventHandler {
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
     this.node.classList.add('filter-manager');
+    const ol = document.createElement('ol');
+    ol.classList.add('filterlist');
+    node.appendChild(ol);
+
+    this.drag();
 
   }
 
@@ -46,7 +52,7 @@ export default class FilterManager extends EventHandler {
     //console.log(col.data.desc.id)
 
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
-
+    $("ol.filterlist").sortable();
     this.filters.push(col);
 
   }
@@ -85,6 +91,12 @@ export default class FilterManager extends EventHandler {
     }
     this.filters.splice(index, 0, col);
   }
+
+  drag() {
+
+
+  }
+
 
   /**
    * returns the current filter

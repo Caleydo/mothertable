@@ -8,6 +8,7 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 
 
+
 abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
 
@@ -24,15 +25,25 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build(parent: HTMLElement) {
-
     let node;
     const idType = this.idtype.id;
     const element = document.querySelector(`.${idType}.filter-manager`);
+    const ol = element.querySelector('.filterlist');
+    const li = document.createElement('li');
+    ol.appendChild(li);
     node = document.createElement('div');
-    element.appendChild(node);
+    li.appendChild(node);
     node.classList.add('filter');
+
     return node;
 
+  }
+
+  drag() {
+
+    $(".filter").click(function () {
+      alert("Handler for .click() called.");
+    });
   }
 
   async filter(current: Range1D) {
