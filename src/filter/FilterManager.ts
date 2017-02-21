@@ -18,6 +18,7 @@ import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
+import any = jasmine.any;
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -36,9 +37,6 @@ export default class FilterManager extends EventHandler {
     const ol = document.createElement('ol');
     ol.classList.add('filterlist');
     node.appendChild(ol);
-
-    this.drag();
-
   }
 
 
@@ -47,12 +45,11 @@ export default class FilterManager extends EventHandler {
       throw new Error('invalid idtype');
     }
 
-
     const col = FilterManager.createFilter(data, this.node);
     //console.log(col.data.desc.id)
-
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
-    $("ol.filterlist").sortable();
+    this.drag();
+
     this.filters.push(col);
 
   }
@@ -93,10 +90,31 @@ export default class FilterManager extends EventHandler {
   }
 
   drag() {
+    const that = this;
+    let posBefore = null;
+    let posAfter = null;
+    $('ol.filterlist').sortable();
+    $('ol.filterlist').on('sortstart', function (event, ui) {
+      //console.log('start: ' + ui.item.index())
+      posBefore = ui.item.index();
+
+    });
+
+    $('ol.filterlist').on('sortupdate', function (event, ui) {
+      //  console.log('update: ' + ui.item.index())
+      posAfter = ui.item.index();
+      that.updateFilterOrder(posBefore, posAfter);
+    });
 
 
   }
 
+  updateFilterOrder(posBefore, posAfter) {
+    const temp = this.filters[posAfter];
+    this.filters[posAfter] = this.filters[posBefore];
+    this.filters[posBefore] = temp;
+
+  }
 
   /**
    * returns the current filter
@@ -115,6 +133,7 @@ export default class FilterManager extends EventHandler {
     // compute the new filter
     const filter = await this.currentFilter();
     // console.log((<any>filter).dim(0).asList());
+    console.log(this.filters, 'after')
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
 
 
