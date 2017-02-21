@@ -37,6 +37,8 @@ export default class FilterManager extends EventHandler {
     const ol = document.createElement('ol');
     ol.classList.add('filterlist');
     node.appendChild(ol);
+    this.drag();
+
   }
 
 
@@ -48,9 +50,8 @@ export default class FilterManager extends EventHandler {
     const col = FilterManager.createFilter(data, this.node);
     //console.log(col.data.desc.id)
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
-    this.drag();
-
     this.filters.push(col);
+
 
   }
 
@@ -90,10 +91,12 @@ export default class FilterManager extends EventHandler {
   }
 
   drag() {
+    console.log(this.filters)
     const that = this;
-    let posBefore = null;
-    let posAfter = null;
-    $('ol.filterlist').sortable();
+    let posBefore;
+    let posAfter;
+    $('ol.filterlist').sortable({handle: '.filterlabel'});
+    // {axis: 'y'});
     $('ol.filterlist').on('sortstart', function (event, ui) {
       //console.log('start: ' + ui.item.index())
       posBefore = ui.item.index();
@@ -110,9 +113,11 @@ export default class FilterManager extends EventHandler {
   }
 
   updateFilterOrder(posBefore, posAfter) {
+    console.log(posBefore, posAfter)
     const temp = this.filters[posAfter];
     this.filters[posAfter] = this.filters[posBefore];
     this.filters[posBefore] = temp;
+
 
   }
 
@@ -132,8 +137,8 @@ export default class FilterManager extends EventHandler {
   private async refilter() {
     // compute the new filter
     const filter = await this.currentFilter();
-    // console.log((<any>filter).dim(0).asList());
-    console.log(this.filters, 'after')
+    console.log((<any>filter).dim(0).asList());
+    console.log(this.filters)
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
 
 

@@ -5,6 +5,7 @@
   .filterlabel {
     margin-right: 5px;
     margin-top: 15px;
+    cursor: move
   }
   .tooltip {
     position: absolute;
@@ -62,6 +63,7 @@
 li {
   list-style-type: none
 }
-.filterlist{
+
+.filterlist {
   padding-left: 0px
 }
