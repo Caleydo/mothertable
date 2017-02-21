@@ -126,8 +126,20 @@ export default class ColumnManager extends EventHandler {
     const indexes = (<any>data).indices;
     const currentData = await (<any>data).idView(indexes.intersect(this.rangeNow));
     const s = new SortColumn(currentData, sortMethod);
-    const r:Range1D = await s.sortMe();
+    const r: Range1D = await s.sortMe();
     this.update(r);
+  }
+
+  updateSortHierarchy(filterList) {
+    const columnHierarchy = [];
+    filterList.forEach((d) => {
+      console.log(this.columns)
+      const index = this.columns.map(function (e) {
+        return e.data.desc.id;
+      }).indexOf(d.data.desc.id);
+      columnHierarchy.push(this.columns[index]);
+    });
+    console.log(columnHierarchy, this.columns)
   }
 
   onLockChange(event: any, lock: any) {

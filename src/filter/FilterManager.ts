@@ -26,6 +26,7 @@ export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumerica
 export default class FilterManager extends EventHandler {
 
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
+  static readonly EVENT_SORT_CHANGED = 'sortChanged';
   readonly filters: AnyColumn[] = [];
   private onFilterChanged = () => this.refilter();
   private activeFilters;
@@ -90,8 +91,12 @@ export default class FilterManager extends EventHandler {
     this.filters.splice(index, 0, col);
   }
 
+  /**
+   *
+   * Filter Dragging  Event Listener
+   */
+
   drag() {
-    console.log(this.filters)
     const that = this;
     let posBefore;
     let posAfter;
@@ -112,12 +117,16 @@ export default class FilterManager extends EventHandler {
 
   }
 
-  updateFilterOrder(posBefore, posAfter) {
-    console.log(posBefore, posAfter)
+  /**
+   * Update the order of filter Array also after dragging event finish
+   * @param posBefore position of element before dragging
+   * @param posAfter  position of element after dragging
+   */
+  updateFilterOrder(posBefore: number, posAfter: number) {
     const temp = this.filters[posAfter];
     this.filters[posAfter] = this.filters[posBefore];
     this.filters[posBefore] = temp;
-
+    this.fire(FilterManager.EVENT_SORT_CHANGED, this.filters);
 
   }
 
@@ -137,7 +146,7 @@ export default class FilterManager extends EventHandler {
   private async refilter() {
     // compute the new filter
     const filter = await this.currentFilter();
-    console.log((<any>filter).dim(0).asList());
+    //console.log((<any>filter).dim(0).asList());
     console.log(this.filters)
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
 

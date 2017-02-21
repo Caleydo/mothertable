@@ -32,6 +32,10 @@ export default class SupportView extends EventHandler {
     this.buildSelectionBox(this.node);
     this.filter = new FilterManager(idType, this.node);
 
+    this.filter.on(FilterManager.EVENT_SORT_CHANGED, (evt: any, data) => {
+      this.fire(FilterManager.EVENT_SORT_CHANGED, data);
+    });
+
     this.propagate(this.filter, FilterManager.EVENT_FILTER_CHANGED);
   }
 
@@ -55,7 +59,7 @@ export default class SupportView extends EventHandler {
 
 
   public remove(data: IDataType) {
-     if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
+    if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
       this.filter.removeData(<IFilterAbleType>data);
     }
   }

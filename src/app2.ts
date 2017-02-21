@@ -11,6 +11,7 @@ import {EOrientation} from './column/AColumn';
 import MatrixFilter from './filter/MatrixFilter';
 import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
+import FilterManager from "./filter/FilterManager";
 
 /**
  * The main class for the App app
@@ -100,6 +101,7 @@ export default class App {
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
 
+
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${idtype.id}`);
     const idName = document.createElement('div');
@@ -119,6 +121,11 @@ export default class App {
 
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
 
+    this.supportView.on(FilterManager.EVENT_SORT_CHANGED, (evt: any, data) => {
+      this.manager.updateSortHierarchy(data);
+
+
+    })
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       if (this.dataSize === undefined) {
