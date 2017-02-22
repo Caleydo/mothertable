@@ -16,6 +16,7 @@ import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortColumn, {SORT} from '../sortColumn/SortColumn';
+import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
 
 /**
  * Created by Samuel Gratzl on 19.01.2017.
@@ -65,7 +66,7 @@ export default class ColumnManager extends EventHandler {
 
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.on(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
+    col.on(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.updatePrimarySortByCol.bind(this));
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
 
     this.columns.push(col);
@@ -102,7 +103,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_SORT_METHOD, this.onSortMethod.bind(this));
+    col.off(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.updatePrimarySortByCol.bind(this));
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
@@ -131,7 +132,14 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  async onSortMethod(evt: any, sortMethod: string) {
+  updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
+    this.sortMethod = sortData.sortMethod;
+    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData.col);
+  }
+
+
+  async updateSort(evt: any, sortMethod: string) {
+    console.log(sortMethod)
 
     this.sortMethod = sortMethod;
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
@@ -160,7 +168,7 @@ export default class ColumnManager extends EventHandler {
       (<any>col).dataView = await (<any>col.data).idView(idRange);
 
     }
-    this.onSortMethod(null, this.sortMethod);
+    this.updateSort(null, this.sortMethod);
 
   }
 
@@ -169,7 +177,7 @@ export default class ColumnManager extends EventHandler {
    * @param filterList
    */
 
-  updateSortHierarchy(filterList:AnyColumn[]) {
+  updateSortHierarchy(filterList: AnyColumn[]) {
     this.columnsHierarchy = [];
     filterList.forEach((d) => {
       const index = this.columns.map(function (e) {
@@ -178,7 +186,7 @@ export default class ColumnManager extends EventHandler {
       this.columnsHierarchy.push(this.columns[index]);
     });
 
-    this.onSortMethod(null, this.sortMethod);
+    this.updateSort(null, this.sortMethod);
   }
 
   onLockChange(event: any, lock: any) {

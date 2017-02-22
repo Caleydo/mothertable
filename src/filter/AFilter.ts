@@ -28,10 +28,8 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     const idType = this.idtype.id;
     const element = document.querySelector(`.${idType}.filter-manager`);
     const ol = element.querySelector('.filterlist');
-    const li = document.createElement('li');
-    ol.appendChild(li);
     node = document.createElement('div');
-    li.appendChild(node);
+    ol.appendChild(node);
     node.classList.add('filter');
 
     return node;

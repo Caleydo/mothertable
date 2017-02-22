@@ -34,8 +34,8 @@ export default class SupportView extends EventHandler {
     this.buildSelectionBox(this.node);
     this.filter = new FilterManager(idType, this.node);
 
-    this.filter.on(FilterManager.EVENT_SORT_CHANGED, (evt: any, data: AnyColumn[]) => {
-      this.fire(FilterManager.EVENT_SORT_CHANGED, data);
+    this.filter.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+      this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
 
     this.propagate(this.filter, FilterManager.EVENT_FILTER_CHANGED);
@@ -58,8 +58,8 @@ export default class SupportView extends EventHandler {
     this.fire(SupportView.EVENT_DATASET_ADDED, data);
   }
 
-  sortColumn(sortColdata) {
-    this.filter.sortColumn(sortColdata);
+  primarySortColumn(sortColdata) {
+    this.filter.primarySortColumn(sortColdata);
 
   }
 

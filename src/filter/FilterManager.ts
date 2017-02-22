@@ -27,7 +27,7 @@ export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumerica
 export default class FilterManager extends EventHandler {
 
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
-  static readonly EVENT_SORT_CHANGED = 'sortChanged';
+  static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
   readonly filters: AnyColumn[] = [];
   private onFilterChanged = () => this.refilter();
   private activeFilters;
@@ -56,8 +56,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-
-  sortColumn(sortColdata) {
+  primarySortColumn(sortColdata) {
     const dataid = sortColdata.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
@@ -89,14 +88,19 @@ export default class FilterManager extends EventHandler {
     if (old === index) {
       return;
     }
+
     //move the dom element, too
-    this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
+    const filterListNode = this.node.querySelector('.filterlist');
+    // this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
+    filterListNode.insertBefore(col.node, filterListNode.childNodes[index]);
 
     this.filters.splice(old, 1);
     if (old < index) {
       index -= 1; //shifted because of deletion
     }
     this.filters.splice(index, 0, col);
+    this.triggerSort();
+
   }
 
   /**
@@ -134,9 +138,14 @@ export default class FilterManager extends EventHandler {
     const temp = this.filters[posAfter];
     this.filters[posAfter] = this.filters[posBefore];
     this.filters[posBefore] = temp;
-    this.fire(FilterManager.EVENT_SORT_CHANGED, this.filters);
-
+    this.triggerSort();
   }
+
+  private triggerSort() {
+
+    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.filters);
+  }
+
 
   /**
    * returns the current filter
