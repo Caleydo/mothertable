@@ -46,6 +46,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
 
   private async generateCategories(node: HTMLElement, dispHistogram: boolean) {
+    console.log(this.data)
     const that = this;
     const cellHeight = this.filterDim.height;
     const allCatNames = await(<any>this.data).data();
@@ -53,19 +54,29 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const c20 = d3.scale.category20();
     const toolTip = (this.generateTooltip(node));
     const cellDimension = this.filterDim.width / categories.length;
-
     const catData = [];
     const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
+    console.log(uniqueCategories)
+    const checkDataDesc = uniqueCategories.indexOf(categories[0].name);
+    console.log(await this.data.data())
     uniqueCategories.forEach(((val, i) => {
       const count = allCatNames.filter(isSame.bind(this, val));
-      let colcat;
-      if (typeof categories !== 'undefined') {
-        colcat = categories.filter((d, i) => d.name === val);
-
+      let catName = val;
+      let colcat = [];
+      if (typeof categories !== 'undefined' && checkDataDesc !== -1) {
+        colcat = categories.filter((d, i) => {
+          return d.name === val;
+        });
       }
+      // if (typeof categories !== 'undefined' && checkDataDesc === -1) {
+      //   colcat[0] = {color: categories[val - 1].color};
+      //   catName = categories[val].name;
+      // }
       const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
-      catData.push({name: val, count: count.length, 'color': colorVal});
+      catData.push({name: catName, count: count.length, 'color': colorVal});
     }));
+
+    console.log(catData)
 
     const catEntries = d3.select(node).append('div').classed('catentries', true)
       .style('display', 'flex')

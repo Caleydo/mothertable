@@ -55,7 +55,7 @@ export default class SupportView extends EventHandler {
 
 
   public remove(data: IDataType) {
-     if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
+    if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
       this.filter.removeData(<IFilterAbleType>data);
     }
   }
@@ -69,10 +69,30 @@ export default class SupportView extends EventHandler {
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
 
-    // list all data, filter to the matching ones, and prepare them
+    const color = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5'];
     const datasets = convertTableToVectors(await listData())
-      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
-      .map((d) => transposeMatrixIfNeeded(this.idType, d));
+      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+    datasets.forEach((e) => {
+      if (e.desc.value.type === 'categorical') {
+        //  console.log(e.desc.value)
+        const categories = e.desc.value.categories;
+        categories.forEach((f, i) => {
+          if (f.color === undefined) {
+            //        console.log(f)
+            //          console.log(e.desc.value.categories, e.desc.value.categories[i])
+            e.desc.value.categories[i] = {name: f, color: color[i]};
+            //e.desc.value.categories[i]['name'] = f;
+//            console.log(e.desc.value.categories[i].color, e.desc.value.categories[i].name)
+          }
+        })
+      }
+    })
+    console.log(datasets);
+
+    // list all data, filter to the matching ones, and prepare them
+    //  const datasets = convertTableToVectors(await listData())
+    //  .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
+    datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
 
     datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
