@@ -30,6 +30,7 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
+  private columnsHierarchy: AnyColumn[] = [];
   private rangeNow: Range1D;
   private sortMethod: string = SORT.asc;
 
@@ -68,6 +69,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
 
     this.columns.push(col);
+    this.columnsHierarchy = this.columns;
 
     const managerWidth = this.node.clientWidth;
     const panel = this.currentWidth(this.columns);
@@ -132,7 +134,7 @@ export default class ColumnManager extends EventHandler {
   async onSortMethod(evt: any, sortMethod: string) {
 
     this.sortMethod = sortMethod;
-    const cols: any = this.columns.filter((d) => d.data.desc.type === 'vector');
+    const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortColumn(cols, this.sortMethod);
     const r: any = s.sortByMe();
     this.mergeRanges(r);
@@ -148,7 +150,7 @@ export default class ColumnManager extends EventHandler {
     });
 
 
-   //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
+    //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
     console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
@@ -162,14 +164,21 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  updateSortHierarchy(filterList) {
-    const columnHierarchy = [];
+  /**
+   * prepare column data same as sort hierarchy
+   * @param filterList
+   */
+
+  updateSortHierarchy(filterList:AnyColumn[]) {
+    this.columnsHierarchy = [];
     filterList.forEach((d) => {
       const index = this.columns.map(function (e) {
         return e.data.desc.id;
       }).indexOf(d.data.desc.id);
-      columnHierarchy.push(this.columns[index]);
+      this.columnsHierarchy.push(this.columns[index]);
     });
+
+    this.onSortMethod(null, this.sortMethod);
   }
 
   onLockChange(event: any, lock: any) {
@@ -186,7 +195,6 @@ export default class ColumnManager extends EventHandler {
 
       col.update(idRange);
     }));
-
 
     return this.relayout();
   }
