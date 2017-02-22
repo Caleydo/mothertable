@@ -14,6 +14,7 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
+import {AnyColumn} from './column/ColumnManager';
 
 export default class SupportView extends EventHandler {
 
@@ -32,7 +33,7 @@ export default class SupportView extends EventHandler {
     this.buildSelectionBox(this.node);
     this.filter = new FilterManager(idType, this.node);
 
-    this.filter.on(FilterManager.EVENT_SORT_CHANGED, (evt: any, data) => {
+    this.filter.on(FilterManager.EVENT_SORT_CHANGED, (evt: any, data: AnyColumn[]) => {
       this.fire(FilterManager.EVENT_SORT_CHANGED, data);
     });
 

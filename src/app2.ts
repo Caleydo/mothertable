@@ -4,14 +4,14 @@
 
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import {select} from 'd3';
-import ColumnManager, {IMotherTableType} from './column/ColumnManager';
+import ColumnManager, {IMotherTableType,AnyColumn} from './column/ColumnManager';
 import SupportView from './SupportView';
 import {Range1D} from 'phovea_core/src/range';
 import {EOrientation} from './column/AColumn';
 import MatrixFilter from './filter/MatrixFilter';
 import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
-import FilterManager from "./filter/FilterManager";
+import FilterManager from './filter/FilterManager';
 
 /**
  * The main class for the App app
@@ -121,11 +121,9 @@ export default class App {
 
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
 
-    this.supportView.on(FilterManager.EVENT_SORT_CHANGED, (evt: any, data) => {
+    this.supportView.on(FilterManager.EVENT_SORT_CHANGED, (evt: any, data:AnyColumn[]) => {
       this.manager.updateSortHierarchy(data);
-
-
-    })
+    });
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       if (this.dataSize === undefined) {

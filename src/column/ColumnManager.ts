@@ -133,13 +133,11 @@ export default class ColumnManager extends EventHandler {
   updateSortHierarchy(filterList) {
     const columnHierarchy = [];
     filterList.forEach((d) => {
-      console.log(this.columns)
       const index = this.columns.map(function (e) {
         return e.data.desc.id;
       }).indexOf(d.data.desc.id);
       columnHierarchy.push(this.columns[index]);
     });
-    console.log(columnHierarchy, this.columns)
   }
 
   onLockChange(event: any, lock: any) {

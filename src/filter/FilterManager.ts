@@ -140,14 +140,16 @@ export default class FilterManager extends EventHandler {
       filtered = await f.filter(filtered);
 
     }
+    console.log((<any>filtered).dim(0).asList());
     return filtered;
   }
 
   private async refilter() {
     // compute the new filter
+
     const filter = await this.currentFilter();
-    //console.log((<any>filter).dim(0).asList());
-    console.log(this.filters)
+    console.log((<any>filter).dim(0).asList());
+    // console.log(this.filters)
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
 
 
