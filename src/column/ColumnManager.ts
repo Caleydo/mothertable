@@ -16,7 +16,7 @@ import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortColumn, {SORT} from '../sortColumn/SortColumn';
-import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
+import {IAnyVector} from '../../../phovea_core/src/vector/IVector';
 
 /**
  * Created by Samuel Gratzl on 19.01.2017.
