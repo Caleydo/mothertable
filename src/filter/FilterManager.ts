@@ -112,12 +112,11 @@ export default class FilterManager extends EventHandler {
     const that = this;
     let posBefore;
     let posAfter;
-    $('ol.filterlist').sortable({handle: '.filterlabel'});
+    $('ol.filterlist').sortable({handle: '.filterlabel', axis: 'y'});
     // {axis: 'y'});
     $('ol.filterlist').on('sortstart', function (event, ui) {
       //console.log('start: ' + ui.item.index())
       posBefore = ui.item.index();
-
     });
 
     $('ol.filterlist').on('sortupdate', function (event, ui) {
