@@ -12,7 +12,8 @@ import MatrixFilter from './filter/MatrixFilter';
 import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
 import FilterManager from './filter/FilterManager';
-
+import {AVectorColumn} from './column/AVectorColumn';
+import {IAnyVector} from 'phovea_core/src/vector';
 /**
  * The main class for the App app
  */
@@ -90,9 +91,12 @@ export default class App {
     } else if (coltype === currentIDType) {
       const idType = this.idtypes.filter((d) => d.id === rowtype);
       return idType[0];
-
     }
+  }
 
+  private primarySortCol(evt: any, sortColdata:IAnyVector) {
+
+    this.supportView.sortColumn(sortColdata);
 
   }
 
@@ -100,6 +104,7 @@ export default class App {
     this.hideSelection();
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
+    this.manager.on(AVectorColumn.EVENT_SORT_METHOD, this.primarySortCol.bind(this));
 
 
     const newdiv = document.createElement('div');
