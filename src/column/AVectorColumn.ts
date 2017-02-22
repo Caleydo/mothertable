@@ -4,8 +4,8 @@ import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {list as rlist} from 'phovea_core/src/range';
-import SortColumn from './SortColumn';
-import {SORT} from './SortColumn';
+import SortColumn from '../sortColumn/SortColumn';
+import {SORT} from '../sortColumn/SortColumn';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 /**
@@ -18,15 +18,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   protected multiform: MultiForm;
   dataView: DATATYPE;
   filterRange;
-  static readonly EVENT_SORT_CHANGED = 'sorted';
   static readonly EVENT_SORT_METHOD = 'sortMe';
-  private sort: SortColumn;
-  private sortCriteria: string = null;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
-    this.sort = new SortColumn(this.dataView, this.sortCriteria)
 
   }
 
@@ -76,11 +72,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       const b = d3.select(sortButton);
       if (b.classed('fa-sort-amount-desc')) {
         const sortMethod = SORT.asc;
-        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod, this.data);
+        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod);
         b.attr('class', 'fa sort fa-sort-amount-asc');
       } else {
         const sortMethod = SORT.desc;
-        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod, this.data);
+        this.fire(AVectorColumn.EVENT_SORT_METHOD, sortMethod);
         b.attr('class', 'fa sort fa-sort-amount-desc');
       }
     });
@@ -91,7 +87,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     this.multiform.destroy();
     const view = await (<any>this.data).idView(idRange);
     this.dataView = view;
-
     this.multiform = this.replaceMultiForm(view, this.body);
   }
 
