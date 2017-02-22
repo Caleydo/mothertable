@@ -127,6 +127,7 @@ export default class ColumnManager extends EventHandler {
     const currentData = await (<any>data).idView(indexes.intersect(this.rangeNow));
     const s = new SortColumn(currentData, sortMethod);
     const r:Range1D = await s.sortMe();
+    this.fire(AVectorColumn.EVENT_SORT_METHOD,data)
     this.update(r);
   }
 
