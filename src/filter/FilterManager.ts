@@ -53,6 +53,7 @@ export default class FilterManager extends EventHandler {
     //console.log(col.data.desc.id)
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(col);
+    console.log(this.filters)
   }
 
 

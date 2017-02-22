@@ -84,7 +84,6 @@ export default class ColumnManager extends EventHandler {
     //console.log("col manager width: " + managerWidth);
     //console.log("panel width: " + panel);
 
-
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     return this.relayout();
   }
@@ -139,8 +138,6 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateSort(evt: any, sortMethod: string) {
-    console.log(sortMethod)
-
     this.sortMethod = sortMethod;
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortColumn(cols, this.sortMethod);

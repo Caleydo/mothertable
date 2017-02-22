@@ -20,8 +20,12 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   constructor(data: INumericalMatrix, parent: HTMLElement) {
     super(data);
+    const ol = parent.querySelector('.filterlist');
     this.node = this.build(parent);
-    this.node.classList.add('nodrag');
+    if (ol !== null) {
+      parent.insertBefore(this.node, ol.nextSibling);
+    }
+
     this.activeFilter = false;
   }
 
