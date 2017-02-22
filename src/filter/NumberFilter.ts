@@ -291,7 +291,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       lineLeft.attr('d', `M${this._position.left} 0,L${this._position.left} ${lineYPos}`);
       lineRight.attr('d', `M${this._position.right} 0,L${this._position.right} ${lineYPos}`);
       this._numericalFilterRange = brushVal;
-      console.log(this._numericalFilterRange)
       this.triggerFilterChanged();
 
       //  this._position.right = this._position.right + 5;
@@ -329,8 +328,17 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
 
   async filter(current: Range1D) {
-    const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
-    const filteredRange = await vectorView.ids();
+    const dataRange = this.data.desc.value.range;
+    let filteredRange = await <any>this.data.ids();
+    if (Math.round(this._numericalFilterRange[0]) === dataRange[0] && Math.round(this._numericalFilterRange[1]) === dataRange[1]) {
+
+      filteredRange = await this.data.ids();
+    } else {
+      const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
+      filteredRange = await vectorView.ids();
+    }
+    // const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
+    //filteredRange = await vectorView.ids();
     const rangeIntersected = current.intersect(filteredRange);
     const fullRange = (await this.data.ids()).size();
     const vectorRange = filteredRange.size();
