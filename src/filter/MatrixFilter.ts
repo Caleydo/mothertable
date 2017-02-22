@@ -21,6 +21,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   constructor(data: INumericalMatrix, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
+    this.node.classList.add('nodrag');
     this.activeFilter = false;
   }
 
