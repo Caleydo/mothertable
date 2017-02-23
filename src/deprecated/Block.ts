@@ -2,8 +2,8 @@
  * Created by bikramkawan on 20/01/2017.
  */
 
-import {MultiForm} from '../../../phovea_core/src/multiform';
-import Range1D from '../../../phovea_core/src/range/Range1D';
+import {MultiForm} from 'phovea_core/src/multiform';
+import Range1D from 'phovea_core/src/range/Range1D';
 export default class Block {
 
   private _data;
