@@ -108,7 +108,8 @@ export default class SortColumn extends EventHandler {
       const id = await u.ids();
       if (id.size()[0] >= 1) {
         sortArr.push(id);
-      //  console.log(f, await coldata.data(), id.dim(0).asList());
+        console.log(f, await coldata.data(), id.dim(0).asList());
+
       }
     }
 

@@ -20,6 +20,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   filterRange;
   static readonly EVENT_PRIMARY_SORT_COLUMN = 'sortByMe';
 
+
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
@@ -77,6 +78,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       } else {
         const sortMethod = SORT.desc;
         this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, {'sortMethod': sortMethod, col: this.data});
+
         b.attr('class', 'fa sort fa-sort-amount-desc');
       }
     });
