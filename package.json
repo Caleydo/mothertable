@@ -70,7 +70,8 @@
     "phovea_vis": "github:phovea/phovea_vis#develop",
     "phovea_ui": "github:phovea/phovea_ui#develop",
     "@types/d3": "3.5.36",
-    "d3": "3.5.17"
+    "d3": "3.5.17",
+    "jquery-ui": "1.12.1"
   },
   "name": "mothertable",
   "description": "Mother Table Project @ JKU",

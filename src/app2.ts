@@ -4,13 +4,14 @@
 
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import {select} from 'd3';
-import ColumnManager, {IMotherTableType} from './column/ColumnManager';
+import ColumnManager, {IMotherTableType, AnyColumn} from './column/ColumnManager';
 import SupportView from './SupportView';
 import {Range1D} from 'phovea_core/src/range';
 import {EOrientation} from './column/AColumn';
 import MatrixFilter from './filter/MatrixFilter';
 import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
+import FilterManager from './filter/FilterManager';
 import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
 /**
@@ -93,9 +94,8 @@ export default class App {
     }
   }
 
-  private primarySortCol(evt: any, sortColdata:IAnyVector) {
-
-    this.supportView.sortColumn(sortColdata);
+  private primarySortCol(evt: any, sortColdata: IAnyVector) {
+    this.supportView.primarySortColumn(sortColdata);
 
   }
 
@@ -103,7 +103,8 @@ export default class App {
     this.hideSelection();
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
-    this.manager.on(AVectorColumn.EVENT_SORT_METHOD, this.primarySortCol.bind(this));
+    this.manager.on(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.primarySortCol.bind(this));
+
 
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${idtype.id}`);
@@ -124,7 +125,9 @@ export default class App {
 
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
 
-
+    this.supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+      this.manager.updateSortHierarchy(data);
+    });
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       if (this.dataSize === undefined) {

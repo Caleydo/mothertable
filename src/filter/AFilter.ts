@@ -24,16 +24,18 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build(parent: HTMLElement) {
-
     let node;
     const idType = this.idtype.id;
     const element = document.querySelector(`.${idType}.filter-manager`);
+    const ol = element.querySelector('.filterlist');
     node = document.createElement('div');
-    element.appendChild(node);
+    ol.appendChild(node);
     node.classList.add('filter');
+
     return node;
 
   }
+
 
   async filter(current: Range1D) {
     return current;
