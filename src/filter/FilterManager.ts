@@ -16,8 +16,7 @@ import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
-import AColumn from '../column/AColumn';
-import {AVectorColumn} from "../column/AVectorColumn";
+
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
