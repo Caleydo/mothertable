@@ -29,6 +29,7 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
   readonly filters: AnyColumn[] = [];
+  private filterHierarchy = [];
   private onFilterChanged = () => this.refilter();
   private activeFilters;
   private rangeNow: Range1D = Range1D.all();
@@ -53,7 +54,11 @@ export default class FilterManager extends EventHandler {
     //console.log(col.data.desc.id)
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(col);
-    console.log(this.filters)
+    if (data.desc.type === 'vector') {
+      this.filterHierarchy.push(col);
+    }
+    // console.log(this.filterHierarchy, this.filters)
+    //  console.log(this.filters)
   }
 
 
@@ -100,6 +105,7 @@ export default class FilterManager extends EventHandler {
       index -= 1; //shifted because of deletion
     }
     this.filters.splice(index, 0, col);
+    console.log(this.filters)
     this.triggerSort();
 
   }
@@ -113,14 +119,15 @@ export default class FilterManager extends EventHandler {
     const that = this;
     let posBefore;
     let posAfter;
-    $('ol.filterlist').sortable({handle: '.filterlabel', axis: 'y', items: '> :not(.filter.nodrag)'});
+    //Same as using query selector)
+    $('ol.filterlist', this.node).sortable({handle: '.filterlabel', axis: 'y', items: '> :not(.filter.nodrag)'});
     // {axis: 'y'});
-    $('ol.filterlist').on('sortstart', function (event, ui) {
-      //console.log('start: ' + ui.item.index())
+    $('ol.filterlist', this.node).on('sortstart', function (event, ui) {
+      //  console.log('start: ' + ui.item.index())
       posBefore = ui.item.index();
     });
 
-    $('ol.filterlist').on('sortupdate', function (event, ui) {
+    $('ol.filterlist', this.node).on('sortupdate', function (event, ui) {
       //  console.log('update: ' + ui.item.index())
       posAfter = ui.item.index();
       that.updateFilterOrder(posBefore, posAfter);
@@ -135,15 +142,14 @@ export default class FilterManager extends EventHandler {
    * @param posAfter  position of element after dragging
    */
   updateFilterOrder(posBefore: number, posAfter: number) {
-    const temp = this.filters[posAfter];
-    this.filters[posAfter] = this.filters[posBefore];
-    this.filters[posBefore] = temp;
+    const temp = this.filterHierarchy[posBefore];
+    this.filterHierarchy.splice(posBefore, 1);
+    this.filterHierarchy.splice(posAfter, 0, temp);
     this.triggerSort();
   }
 
   private triggerSort() {
-
-    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.filters);
+    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.filterHierarchy);
   }
 
 
