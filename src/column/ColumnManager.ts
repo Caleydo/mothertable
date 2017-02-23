@@ -64,7 +64,6 @@ export default class ColumnManager extends EventHandler {
     }
     await col.update((this.rangeNow));
 
-
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.updatePrimarySortByCol.bind(this));
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
