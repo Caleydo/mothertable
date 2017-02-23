@@ -14,7 +14,7 @@ import {APP_NAME} from './language';
 
 const header = createHeader(
   <HTMLElement>document.querySelector('#caleydoHeader'),
-  { appLink: new AppHeaderLink(APP_NAME) }
+  {appLink: new AppHeaderLink(APP_NAME)}
 );
 
 const parent = <HTMLElement>document.querySelector('#app');

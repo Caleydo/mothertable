@@ -57,7 +57,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build(parent: HTMLElement) {
-    const node = parent.ownerDocument.createElement('div');
+
+    const ol = parent.querySelector('.columnList'); // Column list holder for dragging
+    const node = document.createElement('div');
+    ol.appendChild(node);
+    //  const node = parent.ownerDocument.createElement('div');
     node.classList.add('column');
     node.classList.add('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'));
     //assign column with a proper width
@@ -75,7 +79,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         </header>
         <main></main>`;
 
-    parent.appendChild(node);
+    //  parent.appendChild(node);
 
     const header = d3.selectAll('header')
       .on('mouseover', function () {
