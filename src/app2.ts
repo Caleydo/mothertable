@@ -144,7 +144,9 @@ export default class App {
 
 
     this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
-      this.manager.update(filter);
+      this.manager.filterData(filter);
+      // this.manager.update(filter);
+
       this.rowRange = filter;
       this.triggerMatrix();
       this.dataSize.filtered = filter.size();
