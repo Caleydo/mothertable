@@ -83,10 +83,13 @@ export default class SupportView extends EventHandler {
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
 
+    const datasets = await this.addColor();
+    // console.log(datasets);
+
     // list all data, filter to the matching ones, and prepare them
-    const datasets = convertTableToVectors(await listData())
-      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
-      .map((d) => transposeMatrixIfNeeded(this.idType, d));
+    // const datasets = convertTableToVectors(await listData())
+    //   .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
+    // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
 
     datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
@@ -107,6 +110,32 @@ export default class SupportView extends EventHandler {
       return false;
     });
   }
+
+  private async addColor() {
+    const color = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5'];
+    const datasets = convertTableToVectors(await listData())
+      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+
+    datasets.forEach((tableVector) => {
+      if (tableVector.desc.value.type === 'categorical') {
+        const categories = tableVector.desc.value.categories;
+        categories.forEach((v, i) => {
+          if (v.color === undefined) {
+            tableVector.desc.value.categories[i] = {name: v, color: color[i]};
+          }
+          if (v.label !== undefined) {
+            tableVector.desc.value.categories[i] = {name: v.name, color: color[i]};
+          }
+        });
+      }
+    });
+
+
+    return datasets;
+
+  }
+
+
 }
 
 function isFilterAble(data: IDataType) {
@@ -115,6 +144,7 @@ function isFilterAble(data: IDataType) {
   return true;
   //return data.desc.type !== 'matrix';
 }
+
 
 export function isPossibleDataset(data: IDataType) {
   switch (data.desc.type) {

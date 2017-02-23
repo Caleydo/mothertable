@@ -53,20 +53,19 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const c20 = d3.scale.category20();
     const toolTip = (this.generateTooltip(node));
     const cellDimension = this.filterDim.width / categories.length;
-
     const catData = [];
     const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
     uniqueCategories.forEach(((val, i) => {
       const count = allCatNames.filter(isSame.bind(this, val));
-      let colcat;
+      let colcat = [];
       if (typeof categories !== 'undefined') {
-        colcat = categories.filter((d, i) => d.name === val);
-
+        colcat = categories.filter((d, i) => {
+          return d.name === val;
+        });
       }
       const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
-
     const catEntries = d3.select(node).append('div').classed('catentries', true)
       .style('display', 'flex')
       .style('align-items', 'flex-end')
