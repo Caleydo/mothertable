@@ -33,54 +33,69 @@ export default class SortColumn extends EventHandler {
 
   }
 
+  /**
+   * Find the method to get the range
+   * @param newView {IVector)
+   * @returns {Promise<Range>}
+   */
 
-  async getViewRange(newView) {
+  async chooseType(newView: IAnyVector) {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
-        return (await this.sortString(newView));
       case VALUE_TYPE_CATEGORICAL:
-        return (await this.getCatRange(newView));
+        return (await this.collectRangeList(newView, 'sc'));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return (await this.getNumericalRange(newView));
+        return (await this.collectRangeList(newView, 'ir'));
     }
   }
 
-  async sortString(data) {
-    const sortedView = await data.sort(stringSort.bind(this, this.sortCriteria));
-    const sortedRange = await  sortedView.ids();
-    return sortedRange;
 
-  }
-
-  async getCatRange(col) {
-
-    const categories = await this.uniqueValues(col);
-    const sortedByName = categories.sort(stringSort.bind(this, this.sortCriteria));
-    const sortedRange = await this.sortByGroup(col, sortedByName);
-    return sortedRange;
-  }
-
-
-  async getNumericalRange(col) {
+  async collectRangeList(col: IAnyVector, type: string): Promise<Range[]> {
 
     const uniqValues = await this.uniqueValues(col);
-    const sortByValue = uniqValues.sort(numSort.bind(this, this.sortCriteria));
-    const sortedRange = await this.sortByGroup(col, sortByValue);
+    let sortedValue;
+    if (type === 'sc') {
+
+      sortedValue = uniqValues.sort(stringSort.bind(this, this.sortCriteria));
+    } else if (type === 'ir') {
+
+      sortedValue = uniqValues.sort(numSort.bind(this, this.sortCriteria));
+    } else {
+
+      return;
+    }
+    const sortedRange = await this.filterRangeByName(col, sortedValue);
     return sortedRange;
   }
 
 
-  async sortByMe() {
+  /**
+   *
+   * @param col Column Data {IVector}
+   * @returns {Promise<Range>}
+   */
+
+
+  async sortByMe(): Promise<Range[]> {
 
     let range = [await (<any>this.columns[0]).dataView.ids()];
+    //Iterate through all the columns
     for (const col of this.columns) {
       const nextColumnData = (<any>col).dataView;
       const rangeOfView = [];
+
+      /**
+       * Iterate through all the ranges available for that column.
+       * A column can be composed with array of ranges.
+       */
+
       for (const n of range) {
+
+        //Create VectorView  of from each array element of range.
         const newView = await nextColumnData.idView(n);
-        rangeOfView.push(await this.getViewRange(newView));
+        rangeOfView.push(await this.chooseType(newView));
       }
       range = await this.concatRanges(rangeOfView);
 
@@ -90,7 +105,7 @@ export default class SortColumn extends EventHandler {
   }
 
 
-  async concatRanges(rangeOfViewData) {
+  async concatRanges(rangeOfViewData: Range[][]) {
     if (Array.isArray(rangeOfViewData[0]) === true) {
       return rangeOfViewData.reduce((a, b) => a.concat(b));
     } else {
@@ -100,15 +115,22 @@ export default class SortColumn extends EventHandler {
 
   }
 
-  async sortByGroup(col, sortedByName) {
+  /**
+   *
+   * @param column Data {IVector}
+   * @param sortedByName {Array of unique elment  sorted by asc or dsc}
+   * @returns {Promise<Range>}
+   */
+
+  async filterRangeByName(col: IAnyVector, sortedByName: any[]): Promise<Range[]> {
     const sortArr = [];
     const coldata = col;
     for (const f of sortedByName) {
-      const u = await coldata.filter(filterCat.bind(this, f));
+      const u: IAnyVector = await coldata.filter(filterCat.bind(this, f));
       const id = await u.ids();
       if (id.size()[0] >= 1) {
         sortArr.push(id);
-        console.log(f, await coldata.data(), id.dim(0).asList());
+      //  console.log(f, await coldata.data(), id.dim(0).asList());
 
       }
     }
@@ -116,7 +138,7 @@ export default class SortColumn extends EventHandler {
     return sortArr;
   }
 
-  async sortNumber(data) {
+  async sortNumber(data: IAnyVector) {
     const sortedView = await data.sort(numSort.bind(this, this.sortCriteria));
     const sortedRange = await  sortedView.ids();
     return sortedRange;
@@ -142,7 +164,12 @@ export default class SortColumn extends EventHandler {
    */
 
 
-  async uniqueValues(coldata) {
+  /**
+   * Method to find the unique items in the IVector data
+   * @param coldata
+   * @returns {Promise<[values]>}
+   */
+  async uniqueValues(coldata: IAnyVector) {
     const allCatNames = await(coldata.data());
     const uniqvalues = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
     return uniqvalues;
