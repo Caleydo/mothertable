@@ -18,8 +18,7 @@ import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
-import AColumn from '../column/AColumn';
-import {AVectorColumn} from '../column/AVectorColumn';
+
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
