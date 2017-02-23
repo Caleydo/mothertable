@@ -79,7 +79,6 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .selectAll('div.categories')
       .data(catData).enter();
 
-
     catListDiv.append('div')
       .attr('class', 'categories')
       //.style('flex-grow', 1)
@@ -87,9 +86,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .style('width', cellDimension + 'px')
       //.style('height', (d, i) => binScale(d.count) + 'px')
       .style('background-color', (d) => d.color)
-      .text((d: any) => {
-        return d.name;
-      })
+      .text((d: any) => (d.name.length > 6) ? (d.name.slice(0, 6) + '..') : d.name)
       .on('mouseover', function (d, i) {
         toolTip.transition()
           .duration(200)

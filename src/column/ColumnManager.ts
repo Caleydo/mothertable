@@ -18,6 +18,7 @@ import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortColumn, {SORT} from '../sortColumn/SortColumn';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 
+
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -32,6 +33,7 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
+
   private rangeNow: Range1D;
   private sortMethod: string = SORT.asc;
 
@@ -128,6 +130,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(index, 0, col);
     this.relayout();
   }
+
 
 
   updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
