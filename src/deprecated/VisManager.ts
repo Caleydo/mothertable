@@ -2,11 +2,11 @@
  * Created by bikramkawan on 21/01/2017.
  */
 
-import {create as createMultiForm, addIconVisChooser} from 'phovea_core/src/multiform';
+import {create as createMultiForm, addIconVisChooser} from '../../../phovea_core/src/multiform';
 import App from './app';
-import {MultiForm} from 'phovea_core/src/multiform';
-import {createNode} from 'phovea_core/src/multiform/internal';
-import {IMultiForm} from 'phovea_core/src/multiform';
+import {MultiForm} from '../../../phovea_core/src/multiform';
+import {createNode} from '../../../phovea_core/src/multiform/internal';
+import {IMultiForm} from '../../../phovea_core/src/multiform';
 import {choose} from 'phovea_ui/src/dialogs';
 import Block from './Block';
 import {makeSort} from './SortManager';
