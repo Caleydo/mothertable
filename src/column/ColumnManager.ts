@@ -128,7 +128,6 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-
   async onSortMethod(evt: any, sortMethod: string) {
 
     this.sortMethod = sortMethod;
@@ -159,6 +158,7 @@ export default class ColumnManager extends EventHandler {
 
     }
     this.onSortMethod(null, this.sortMethod);
+
 
   }
 

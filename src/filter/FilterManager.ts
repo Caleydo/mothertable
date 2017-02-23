@@ -16,7 +16,7 @@ import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
-import AColumn from '../column/AColumn';
+
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -46,10 +46,16 @@ export default class FilterManager extends EventHandler {
     //console.log(col.data.desc.id)
 
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
-
     this.filters.push(col);
-
   }
+
+
+  sortColumn(sortColdata) {
+    const dataid = sortColdata.desc.id;
+    const col = this.filters.filter((d) => d.data.desc.id === dataid);
+    this.move(col[0], 0);
+  }
+
 
   contains(data: IFilterAbleType) {
     return this.filters.some((d) => d.data === data);
@@ -77,7 +83,7 @@ export default class FilterManager extends EventHandler {
       return;
     }
     //move the dom element, too
-    this.node.insertBefore(col.node, this.node.childNodes[index]);
+    this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
 
     this.filters.splice(old, 1);
     if (old < index) {

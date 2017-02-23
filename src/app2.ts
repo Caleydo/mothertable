@@ -11,7 +11,8 @@ import {EOrientation} from './column/AColumn';
 import MatrixFilter from './filter/MatrixFilter';
 import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
-
+import {AVectorColumn} from './column/AVectorColumn';
+import {IAnyVector} from 'phovea_core/src/vector';
 /**
  * The main class for the App app
  */
@@ -89,9 +90,12 @@ export default class App {
     } else if (coltype === currentIDType) {
       const idType = this.idtypes.filter((d) => d.id === rowtype);
       return idType[0];
-
     }
+  }
 
+  private primarySortCol(evt: any, sortColdata:IAnyVector) {
+
+    this.supportView.sortColumn(sortColdata);
 
   }
 
@@ -99,6 +103,7 @@ export default class App {
     this.hideSelection();
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
+    this.manager.on(AVectorColumn.EVENT_SORT_METHOD, this.primarySortCol.bind(this));
 
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${idtype.id}`);
@@ -118,6 +123,7 @@ export default class App {
 
 
     this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
+
 
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
