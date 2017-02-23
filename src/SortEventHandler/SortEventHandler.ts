@@ -3,7 +3,6 @@
  */
 
 import {EventHandler} from 'phovea_core/src/event';
-import AColumn from '../column/AColumn';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
@@ -18,7 +17,7 @@ export const SORT = {
 };
 
 
-export default class SortColumn extends EventHandler {
+export default class SortEventHandler extends EventHandler {
 
 
   private sortCriteria: string;

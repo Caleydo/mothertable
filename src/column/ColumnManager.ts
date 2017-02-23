@@ -15,7 +15,7 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import SortColumn, {SORT} from '../sortColumn/SortColumn';
+import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 
 
@@ -33,7 +33,7 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
-  private sortColumn: SortColumn;
+  private sortColumn: SortEventHandler;
 
   private rangeNow: Range1D;
   private sortMethod: string = SORT.asc;
@@ -142,7 +142,7 @@ export default class ColumnManager extends EventHandler {
   async updateSort(evt: any, sortMethod: string) {
     this.sortMethod = sortMethod;
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
-    const s = new SortColumn(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
+    const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
     const r: any = s.sortByMe();
     this.mergeRanges(r);
 
