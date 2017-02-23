@@ -90,7 +90,7 @@ export default class FilterManager extends EventHandler {
    * @param index
    */
   move(col: AnyColumn, index: number) {
-    const old = this.filters.indexOf(col);
+    const old = this.filterHierarchy.indexOf(col);
     if (old === index) {
       return;
     }
@@ -100,12 +100,11 @@ export default class FilterManager extends EventHandler {
     // this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
     filterListNode.insertBefore(col.node, filterListNode.childNodes[index]);
 
-    this.filters.splice(old, 1);
+    this.filterHierarchy.splice(old, 1);
     if (old < index) {
       index -= 1; //shifted because of deletion
     }
-    this.filters.splice(index, 0, col);
-    console.log(this.filters)
+    this.filterHierarchy.splice(index, 0, col);
     this.triggerSort();
 
   }
