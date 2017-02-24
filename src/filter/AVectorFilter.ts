@@ -9,6 +9,19 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends AFilter<T, DATATYPE> {
 
+  protected build(parent: HTMLElement) {
+
+    let node;
+    const idType = this.idtype.id;
+    const element = document.querySelector(`.${idType}.filter-manager`);
+    const ol = element.querySelector('.filterlist');
+    node = document.createElement('div');
+    ol.appendChild(node);
+    node.classList.add('filter');
+
+    return node;
+  }
+
 }
 
 export default AVectorFilter;
