@@ -103,7 +103,7 @@ export default class App {
     this.hideSelection();
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
-    this.manager.on(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.primarySortCol.bind(this));
+    this.manager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
 
     const newdiv = document.createElement('div');

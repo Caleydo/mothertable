@@ -16,9 +16,8 @@ import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
-import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import AVectorFilter from '../filter/AVectorFilter';
-import {on, fire} from 'phovea_core/src/event';
+import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
@@ -38,9 +37,8 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
-
   private rangeNow: Range1D;
-  private sortMethod: string = SORT.asc;
+
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -52,14 +50,14 @@ export default class ColumnManager extends EventHandler {
     node.appendChild(colList);
     this.node.classList.add('column-manager');
     this.drag();
-    on(AVectorFilter.EVENT_SORT_FILTER, this.onSortFilter.bind(this));
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
   }
 
   get length() {
     return this.columns.length;
   }
 
-  onSortFilter(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
+  sortByFilterIcon(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
     const col = this.columnsHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     col[0].sortCriteria = sortData.sortMethod;
     this.updateSortHierarchy(this.columnsHierarchy);
@@ -84,7 +82,7 @@ export default class ColumnManager extends EventHandler {
     await col.update((this.rangeNow));
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.on(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.updatePrimarySortByCol.bind(this));
+    col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
 
     this.columns.push(col);
@@ -121,7 +119,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.updatePrimarySortByCol.bind(this));
+    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
@@ -156,7 +154,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   updatePrimarySortByCol(evt: any, sortData) {
-    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData);
+    this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   }
 
 

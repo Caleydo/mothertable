@@ -18,7 +18,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   protected multiform: MultiForm;
   dataView: DATATYPE;
   filterRange;
-  static readonly EVENT_PRIMARY_SORT_COLUMN = 'sortByMe';
+  static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
 
 
   constructor(data: DATATYPE, orientation: EOrientation) {
@@ -74,11 +74,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       if (b.classed('fa-sort-amount-asc')) {
        // const sortMethod = SORT.desc;
         this.sortCriteria = SORT.desc;
-        this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this);
+        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
         b.attr('class', 'fa sort fa-sort-amount-desc');
       } else {
          this.sortCriteria = SORT.asc;
-        this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN,this);
+        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER,this);
 
         b.attr('class', 'fa sort fa-sort-amount-asc');
       }
