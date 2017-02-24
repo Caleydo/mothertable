@@ -41,8 +41,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       const vislist = <HTMLElement>toolbar.querySelector('div.vislist');
       this.multiform.addIconVisChooser(vislist);
     }
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
-    const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-asc"></button>`);
+    const sortButton = toolbar.querySelector('button.fa-sort-amount-asc');
 
     this.getSortMethod(sortButton);
     super.buildToolbar(toolbar);
@@ -71,15 +71,15 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
     sortButton.addEventListener('click', () => {
       const b = d3.select(sortButton);
-      if (b.classed('fa-sort-amount-desc')) {
-        const sortMethod = SORT.asc;
-        this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, {'sortMethod': sortMethod, col: this.data});
-        b.attr('class', 'fa sort fa-sort-amount-asc');
-      } else {
+      if (b.classed('fa-sort-amount-asc')) {
         const sortMethod = SORT.desc;
         this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, {'sortMethod': sortMethod, col: this.data});
-
         b.attr('class', 'fa sort fa-sort-amount-desc');
+      } else {
+        const sortMethod = SORT.asc;
+        this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, {'sortMethod': sortMethod, col: this.data});
+
+        b.attr('class', 'fa sort fa-sort-amount-asc');
       }
     });
   }

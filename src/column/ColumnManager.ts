@@ -134,12 +134,8 @@ export default class ColumnManager extends EventHandler {
 
 
   updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
-    this.sortMethod = sortData.sortMethod;
-    if (this.primarySortCol === sortData.col) {
-      this.updateSort(null, this.sortMethod);
-    }
-    this.primarySortCol = sortData.col;
 
+    this.sortMethod = sortData.sortMethod;
     this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData);
   }
 

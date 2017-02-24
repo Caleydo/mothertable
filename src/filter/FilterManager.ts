@@ -91,6 +91,7 @@ export default class FilterManager extends EventHandler {
   move(col: AnyColumn, index: number) {
     const old = this.filterHierarchy.indexOf(col);
     if (old === index) {
+      this.triggerSort();
       return;
     }
 
