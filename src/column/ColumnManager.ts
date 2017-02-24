@@ -60,11 +60,9 @@ export default class ColumnManager extends EventHandler {
   }
 
   onSortFilter(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
-
-    console.log(sortData)
     const col = this.columnsHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     col[0].sortCriteria = sortData.sortMethod;
-    console.log(this.columnsHierarchy);
+    this.updateSortHierarchy(this.columnsHierarchy);
   }
 
   destroy() {
@@ -91,7 +89,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
-    this.updateSort(null, this.sortMethod);
+    this.updateSort(null);
     const managerWidth = this.node.clientWidth;
     const panel = this.currentWidth(this.columns);
 
@@ -157,17 +155,16 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
-
-    this.sortMethod = sortData.sortMethod;
+  updatePrimarySortByCol(evt: any, sortData) {
     this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData);
   }
 
 
-  async updateSort(evt: any, sortMethod: string) {
-    this.sortMethod = sortMethod;
+  async updateSort(evt: any) {
+    // console.log(sortMethod)
+    // this.sortMethod = sortMethod;
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
-    const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
+    const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r: any = s.sortByMe();
     if ((await r).length < 1) {
       return this.update(r);
@@ -196,7 +193,7 @@ export default class ColumnManager extends EventHandler {
       (<any>col).dataView = await (<any>col.data).idView(idRange);
 
     }
-    this.updateSort(null, this.sortMethod);
+    this.updateSort(null);
 
   }
 
@@ -214,7 +211,7 @@ export default class ColumnManager extends EventHandler {
       this.columnsHierarchy.push(this.columns[index]);
     });
 
-    this.updateSort(null, this.sortMethod);
+    this.updateSort(null);
   }
 
   onLockChange(event: any, lock: any) {
