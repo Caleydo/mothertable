@@ -33,7 +33,7 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
-  private sortColumn: SortEventHandler;
+  private primarySortCol: IAnyVector;
 
   private rangeNow: Range1D;
   private sortMethod: string = SORT.asc;
@@ -135,7 +135,12 @@ export default class ColumnManager extends EventHandler {
 
   updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
     this.sortMethod = sortData.sortMethod;
-    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData.col);
+    if (this.primarySortCol === sortData.col) {
+      this.updateSort(null, this.sortMethod);
+    }
+    this.primarySortCol = sortData.col;
+
+    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData);
   }
 
 
@@ -144,6 +149,7 @@ export default class ColumnManager extends EventHandler {
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
     const r: any = s.sortByMe();
+
     this.mergeRanges(r);
 
   }

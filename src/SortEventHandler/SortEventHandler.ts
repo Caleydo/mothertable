@@ -78,7 +78,6 @@ export default class SortEventHandler extends EventHandler {
 
 
   async sortByMe(): Promise<Range[]> {
-
     let range = [await (<any>this.columns[0]).dataView.ids()];
     //Iterate through all the columns
     for (const col of this.columns) {
