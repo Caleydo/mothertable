@@ -15,11 +15,14 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import SortColumn, {SORT} from '../sortColumn/SortColumn';
+import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on, fire} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
+import * as $ from 'jquery';
+import 'jquery-ui/ui/widgets/sortable';
+
 
 /**
  * Created by Samuel Gratzl on 19.01.2017.
@@ -35,6 +38,7 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
+  private primarySortCol: IAnyVector;
 
   private rangeNow: Range1D;
   private sortMethod: string = SORT.asc;
@@ -43,7 +47,12 @@ export default class ColumnManager extends EventHandler {
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
+
+    const colList = document.createElement('ol'); // Holder for column list
+    colList.classList.add('columnList');
+    node.appendChild(colList);
     this.node.classList.add('column-manager');
+    this.drag();
     on(AVectorFilter.EVENT_SORT_FILTER, this.onSortFilter.bind(this));
   }
 
@@ -83,7 +92,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
-
+    this.updateSort(null, this.sortMethod);
     const managerWidth = this.node.clientWidth;
     const panel = this.currentWidth(this.columns);
 
@@ -98,6 +107,7 @@ export default class ColumnManager extends EventHandler {
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     return this.relayout();
+
   }
 
   currentWidth(columns) {
@@ -142,18 +152,28 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
+  private drag() {
+
+    $('.columnList', this.node).sortable({handle: '.columnHeader', axis: 'x'});
+
+  }
 
   updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
+
     this.sortMethod = sortData.sortMethod;
-    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData.col);
+    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData);
   }
 
 
   async updateSort(evt: any, sortMethod: string) {
     this.sortMethod = sortMethod;
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
-    const s = new SortColumn(cols, this.sortMethod);
+    const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
     const r: any = s.sortByMe();
+    if ((await r).length < 1) {
+      return this.update(r);
+
+    }
     this.mergeRanges(r);
 
   }
