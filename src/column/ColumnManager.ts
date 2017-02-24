@@ -149,7 +149,10 @@ export default class ColumnManager extends EventHandler {
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
     const r: any = s.sortByMe();
+    if ((await r).length < 1) {
+      return this.update(r);
 
+    }
     this.mergeRanges(r);
 
   }
