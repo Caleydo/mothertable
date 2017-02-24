@@ -73,7 +73,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
-
+    this.updateSort(null, this.sortMethod);
     const managerWidth = this.node.clientWidth;
     const panel = this.currentWidth(this.columns);
 
