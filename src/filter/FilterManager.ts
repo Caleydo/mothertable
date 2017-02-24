@@ -62,7 +62,7 @@ export default class FilterManager extends EventHandler {
 
 
   primarySortColumn(sortColdata) {
-    const dataid = sortColdata.desc.id;
+    const dataid = sortColdata.col.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
   }
@@ -91,6 +91,7 @@ export default class FilterManager extends EventHandler {
   move(col: AnyColumn, index: number) {
     const old = this.filterHierarchy.indexOf(col);
     if (old === index) {
+      this.triggerSort();
       return;
     }
 
