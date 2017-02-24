@@ -15,7 +15,7 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import SortColumn, {SORT} from '../sortColumn/SortColumn';
+import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
@@ -35,6 +35,7 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
+  private primarySortCol: IAnyVector;
 
   private rangeNow: Range1D;
   private sortMethod: string = SORT.asc;
@@ -79,7 +80,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
-
+    this.updateSort(null, this.sortMethod);
     const managerWidth = this.node.clientWidth;
     const panel = this.currentWidth(this.columns);
 
@@ -146,16 +147,21 @@ export default class ColumnManager extends EventHandler {
   }
 
   updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
+
     this.sortMethod = sortData.sortMethod;
-    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData.col);
+    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData);
   }
 
 
   async updateSort(evt: any, sortMethod: string) {
     this.sortMethod = sortMethod;
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
-    const s = new SortColumn(cols, this.sortMethod);
+    const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
     const r: any = s.sortByMe();
+    if ((await r).length < 1) {
+      return this.update(r);
+
+    }
     this.mergeRanges(r);
 
   }
