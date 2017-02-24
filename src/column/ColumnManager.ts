@@ -17,6 +17,8 @@ import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
+import * as $ from 'jquery';
+import 'jquery-ui/ui/widgets/sortable';
 
 
 /**
@@ -42,7 +44,12 @@ export default class ColumnManager extends EventHandler {
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
+
+    const colList = document.createElement('ol'); // Holder for column list
+    colList.classList.add('columnList');
+    node.appendChild(colList);
     this.node.classList.add('column-manager');
+    this.drag();
   }
 
   get length() {
@@ -88,6 +95,7 @@ export default class ColumnManager extends EventHandler {
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     return this.relayout();
+
   }
 
   currentWidth(columns) {
@@ -132,6 +140,11 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
+  private drag() {
+
+    $('.columnList', this.node).sortable({handle: '.columnHeader', axis: 'x'});
+
+  }
 
   updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
 
