@@ -1,6 +1,4 @@
-
 @import "styles/base";
-
 
 html, body {
   height: 100%;
@@ -13,11 +11,9 @@ body {
   flex-direction: column;
 }
 
-
 @import "styles/app2";
 
-
-.toolbar  {
+.toolbar {
   display: none;
   position: absolute;
   right: 5;
@@ -27,7 +23,6 @@ body {
   background: #fff;
   border-radius: 3px;
   border: 1px #999 solid;
-
 
 }
 
@@ -44,14 +39,12 @@ body {
 }
 
 .sort_indicator {
-    position: absolute;
-    display: none;
-    left: 1px;
-    top: 1px;
-    font-size: 8pt;
+  position: absolute;
+  display: none;
+  left: 1px;
+  top: 1px;
+  font-size: 8pt;
 }
-
-
 
 /** OLD STYLES
 @import "styles/base";
