@@ -17,7 +17,9 @@ import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortColumn, {SORT} from '../sortColumn/SortColumn';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
-
+import AVectorFilter from '../filter/AVectorFilter';
+import {on, fire} from 'phovea_core/src/event';
+import AFilter from '../filter/AFilter';
 
 /**
  * Created by Samuel Gratzl on 19.01.2017.
@@ -42,10 +44,17 @@ export default class ColumnManager extends EventHandler {
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
     this.node.classList.add('column-manager');
+    on(AVectorFilter.EVENT_SORT_FILTER, this.onSortFilter.bind(this));
   }
 
   get length() {
     return this.columns.length;
+  }
+
+  onSortFilter(evt: any, data: AFilter<string,IMotherTableType>) {
+    const col = this.columnsHierarchy.filter((d) => d.data.desc.id === data.data.desc.id);
+    col[0].sortCriteria ='fff';
+    console.log(this.columnsHierarchy);
   }
 
   destroy() {
