@@ -6,12 +6,12 @@ import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc} from 'phovea_core/src/datatype';
 import {SORT} from '../sortColumn/SortColumn';
 import * as d3 from 'd3';
-import {on,fire} from 'phovea_core/src/event';
+import {on, fire} from 'phovea_core/src/event';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 
 export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends AFilter<T, DATATYPE> {
-static EVENT_SORT_FILTER = 'sortFilter';
+  static EVENT_SORT_FILTER = 'sortFilter';
 
   protected build(parent: HTMLElement) {
 
@@ -34,12 +34,14 @@ static EVENT_SORT_FILTER = 'sortFilter';
       const b = sortIconNode.attr('class');
       if (b === 'fa sort fa-sort-amount-asc') {
         const sortMethod = SORT.desc;
-        fire(AVectorFilter.EVENT_SORT_FILTER,this);
+        const sortData = {'sortMethod': sortMethod, col: this};
+        fire(AVectorFilter.EVENT_SORT_FILTER, sortData);
 
         sortIconNode.attr('class', 'fa sort fa-sort-amount-desc');
       } else {
         const sortMethod = SORT.asc;
-        fire(AVectorFilter.EVENT_SORT_FILTER,this);
+        const sortData = {'sortMethod': sortMethod, col: this};
+        fire(AVectorFilter.EVENT_SORT_FILTER, sortData);
         sortIconNode.attr('class', 'fa sort fa-sort-amount-asc');
       }
     });

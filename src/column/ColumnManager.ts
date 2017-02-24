@@ -51,9 +51,11 @@ export default class ColumnManager extends EventHandler {
     return this.columns.length;
   }
 
-  onSortFilter(evt: any, data: AFilter<string,IMotherTableType>) {
-    const col = this.columnsHierarchy.filter((d) => d.data.desc.id === data.data.desc.id);
-    col[0].sortCriteria ='fff';
+  onSortFilter(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
+
+    console.log(sortData)
+    const col = this.columnsHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+    col[0].sortCriteria = sortData.sortMethod;
     console.log(this.columnsHierarchy);
   }
 
@@ -139,7 +141,6 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(index, 0, col);
     this.relayout();
   }
-
 
 
   updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
