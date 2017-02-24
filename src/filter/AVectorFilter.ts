@@ -4,7 +4,7 @@
 import AFilter from './AFilter';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc} from 'phovea_core/src/datatype';
-import {SORT} from '../sortColumn/SortColumn';
+import {SORT} from '../SortEventHandler/SortEventHandler';
 import * as d3 from 'd3';
 import {on, fire} from 'phovea_core/src/event';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
@@ -22,7 +22,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
     node = document.createElement('div');
     ol.appendChild(node);
     node.classList.add('filter');
-    this.addSortIcon(node)
+    this.addSortIcon(node);
     return node;
   }
 

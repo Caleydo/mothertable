@@ -38,7 +38,6 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
-  private primarySortCol: IAnyVector;
 
   private rangeNow: Range1D;
   private sortMethod: string = SORT.asc;
