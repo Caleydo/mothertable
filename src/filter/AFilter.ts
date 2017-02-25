@@ -26,8 +26,9 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   protected build(parent: HTMLElement) {
     let node;
     const idType = this.idtype.id;
-    const element = document.querySelector(`.${idType}.filter-manager`);
-    const ol = element.querySelector('.filterlist');
+    d3.select(parent).select(`.${idType}.filter-manager`);
+    // const element = parent.querySelector(`.${idType}.filter-manager`);
+    const ol = parent.querySelector('.filterlist');
     node = document.createElement('div');
     ol.appendChild(node);
     node.classList.add('filter');
