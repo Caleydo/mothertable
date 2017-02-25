@@ -32,7 +32,6 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     node = document.createElement('div');
     ol.appendChild(node);
     node.classList.add('filter');
-
     return node;
 
   }

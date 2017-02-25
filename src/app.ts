@@ -14,6 +14,7 @@ import MatrixColumn from './column/MatrixColumn';
 import FilterManager from './filter/FilterManager';
 import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
+import {randomId} from 'phovea_core/src/index';
 /**
  * The main class for the App app
  */
@@ -27,7 +28,6 @@ export default class App {
   private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range1D;
-  private colRange: Range1D;
   private dataSize;
 
   constructor(parent: HTMLElement) {
@@ -106,8 +106,8 @@ export default class App {
 
     const node = this.buildSupportView(idtype);
     //  this.node.querySelector('section.rightPanel').appendChild(node);
-
-    const supportView = new SupportView(idtype, <HTMLElement>node);
+    const id = randomId();
+    const supportView = new SupportView(idtype, <HTMLElement>node, id);
 
     this.supportView.push(supportView);
 
@@ -139,7 +139,7 @@ export default class App {
       this.rowRange = filter;
       this.triggerMatrix();
       this.dataSize.filtered = filter.size();
-      this.previewData(this.dataSize, idtype.id,node);
+      this.previewData(this.dataSize, idtype.id, node);
 
     });
 
@@ -185,28 +185,31 @@ export default class App {
     // this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
 
     const node = this.buildSupportView(otherIdtype);
-
-
-    const matrixSupportView = new SupportView(otherIdtype, <HTMLElement>(node));
+    const id = randomId();
+    const matrixSupportView = new SupportView(otherIdtype, <HTMLElement>(node), id);
     this.supportView.push(matrixSupportView);
+
     const m = this.supportView[0].matrixData;
     //  const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
     new MatrixFilter(m.t, <HTMLElement>node);
 
-    this.previewData(this.dataSize, otherIdtype.id,node);
+    this.previewData(this.dataSize, otherIdtype.id, node);
     matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
-      this.colRange = filter;
-      this.triggerMatrix();
+      this.triggerMatrix(filter, matrixSupportView.id);
 
       this.dataSize.filtered = filter.size();
-      this.previewData(this.dataSize, otherIdtype.id,node);
+      this.previewData(this.dataSize, otherIdtype.id, node);
     });
 
 
   }
 
-  private triggerMatrix() {
+  private triggerMatrix(colRange?, id?: string) {
     const matrixCol = this.manager.columns.filter((d) => d instanceof MatrixColumn);
+    const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
+    if (uniqueMatrix === -1) {
+      return;
+    }
     if (matrixCol.length === 0) {
       return;
     }
@@ -217,17 +220,20 @@ export default class App {
 
     }
 
-    if (this.colRange === undefined) {
-      this.colRange = (indices.dim(1));
+    if (colRange === undefined) {
+      colRange = (indices.dim(1));
 
     }
     // console.log(this.colRange)
 
-    matrixCol.forEach((col: MatrixColumn) => {
-      col.updateRows(this.rowRange);
-      col.updateCols(this.colRange);
-      col.updateMatrix(this.rowRange, this.colRange);
-    });
+    // matrixCol.forEach((col: MatrixColumn) => {
+    //   col.updateRows(this.rowRange);
+    // });
+
+    //  col.updateCols(colRange);
+    //   col.updateMatrix(this.rowRange, colRange);
+    matrixCol[uniqueMatrix - 1].updateMatrix(this.rowRange, colRange);
+
 
   }
 

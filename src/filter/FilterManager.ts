@@ -58,7 +58,7 @@ export default class FilterManager extends EventHandler {
     }
     // console.log(this.filterHierarchy, this.filters)
     //  console.log(this.filters)
-    console.log(this.filters)
+
   }
 
 
