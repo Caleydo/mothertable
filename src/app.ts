@@ -24,11 +24,10 @@ export default class App {
 
 
   private manager: ColumnManager;
-  private supportView: SupportView;
+  private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range1D;
   private colRange: Range1D;
-  private newSupportView: SupportView;
   private dataSize;
 
   constructor(parent: HTMLElement) {
@@ -73,7 +72,7 @@ export default class App {
   }
 
   private reset() {
-    this.supportView.destroy();
+    this.supportView[0].destroy();
     this.manager.destroy();
     this.removePreviewData();
     this.showSelection();
@@ -95,7 +94,7 @@ export default class App {
   }
 
   private primarySortCol(evt: any, sortColdata: IAnyVector) {
-    this.supportView.primarySortColumn(sortColdata);
+    this.supportView[0].primarySortColumn(sortColdata);
 
   }
 
@@ -123,13 +122,15 @@ export default class App {
     d3.select(previewDataNode).append('div').classed('filteredData', true);
 
 
-    this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
+    const supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
 
-    this.supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+    this.supportView.push(supportView);
+
+    this.supportView[0].on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
       this.manager.updateSortHierarchy(data);
     });
     // add to the columns if we add a dataset
-    this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
+    this.supportView[0].on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       if (this.dataSize === undefined) {
         this.dataSize = {total: (<any>data).indices.size(), filtered: (<any>data).indices.size()};
         this.previewData(this.dataSize, idtype.id);
@@ -137,7 +138,7 @@ export default class App {
 
       this.manager.push(data);
       const checkMatrixType = data.desc.type;
-      if (checkMatrixType === 'matrix' && this.newSupportView === undefined || this.newSupportView === null) {
+      if (checkMatrixType === 'matrix') {
         const otherIdtype: IDType = this.findType(data, idtype.id);
         this.triggerMatrix();
         this.newSupportManger(otherIdtype);
@@ -146,7 +147,7 @@ export default class App {
     });
 
 
-    this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+    this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       this.manager.filterData(filter);
       // this.manager.update(filter);
 
@@ -161,13 +162,15 @@ export default class App {
       const cols = this.manager.columns;
       const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
       if (countSame < 1) {
-        this.supportView.remove(data);
+        this.supportView[0].remove(data);
       }
 
       if (this.manager.length === 0) {
         this.reset();
       }
     });
+
+
   }
 
 
@@ -189,13 +192,14 @@ export default class App {
     d3.select(previewDataNode).style('display', 'flex').append('div').classed('totalData', true);
     d3.select(previewDataNode).append('div').classed('filteredData', true);
 
-    this.newSupportView = new SupportView(otherIdtype, <HTMLElement>document.querySelector(`.support-view-${otherIdtype.id}`));
-    const m = this.supportView.matrixData;
+    const matrixSupportView = new SupportView(otherIdtype, <HTMLElement>document.querySelector(`.support-view-${otherIdtype.id}`));
+    this.supportView.push(matrixSupportView);
+    const m = this.supportView[0].matrixData;
     const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
     new MatrixFilter(m.t, <HTMLElement>node.node());
 
     this.previewData(this.dataSize, otherIdtype.id);
-    this.newSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+    matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       this.colRange = filter;
       this.triggerMatrix();
 
