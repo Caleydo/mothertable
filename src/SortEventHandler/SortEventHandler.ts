@@ -179,11 +179,11 @@ export default class SortEventHandler extends EventHandler {
 
 function filterCat(aVal, bval) {
 
-  if (aVal === bval) {
+  //if (aVal === bval) {
 
-    return bval;
+    return aVal===bval; //Also include undefined empty strings and null values.
 
-  }
+ // }
 
 
 }
