@@ -4,6 +4,7 @@
 
 import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
+import Range from 'phovea_core/src/range/Range';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
 export enum EOrientation {
@@ -17,6 +18,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   minimumWidth: number = 10;
   preferredWidth: number = 100;
+  dataView: IDataType;
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
@@ -30,7 +32,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract layout(width: number, height: number);
 
-  abstract async update(idRange: Range1D): Promise<any>;
+  abstract async update(idRange: Range): Promise<any>;
 
 
   getVerticalMargin() {

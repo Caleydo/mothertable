@@ -37,7 +37,7 @@ export default class ColumnManager extends EventHandler {
   private columnsHierarchy: AnyColumn[] = [];
   private primarySortCol: IAnyVector;
 
-  private rangeNow: Range1D;
+  private rangeNow: Range;
   private sortMethod: string = SORT.asc;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -67,9 +67,10 @@ export default class ColumnManager extends EventHandler {
       throw new Error('invalid idtype');
     }
     const col = createColumn(data, this.orientation, this.node);
-    const r = (<any>data).indices;
+
     if (this.rangeNow === undefined) {
-      this.rangeNow = r.intersect(Range1D.all());
+
+      this.rangeNow = await data.ids();
 
     }
     await col.update((this.rangeNow));
@@ -180,9 +181,9 @@ export default class ColumnManager extends EventHandler {
     this.update(mergedRange);
   }
 
-  async filterData(idRange: Range1D) {
+  async filterData(idRange: Range) {
     for (const col of this.columns) {
-      (<any>col).dataView = await (<any>col.data).idView(idRange);
+      col.dataView = await col.data.idView(idRange);
 
     }
     this.updateSort(null, this.sortMethod);
@@ -211,7 +212,7 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  async update(idRange: Range1D) {
+  async update(idRange: Range) {
     this.rangeNow = idRange;
     await Promise.all(this.columns.map((col) => {
       if (col instanceof MatrixColumn) {

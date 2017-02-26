@@ -3,6 +3,8 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
+import Range from 'phovea_core/src/range/Range';
+import {list as rlist} from '../../../phovea_core/src/range';
 import {scaleTo} from './utils';
 import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
@@ -21,9 +23,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   preferredWidth: number = 300;
 
   private multiform: MultiForm;
-  private rowRange: Range1D;
+  private rowRange: Range;
   private colRange: Range1D;
-  private dataView: INumericalMatrix;
+  dataView: IDataType;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -98,11 +100,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   // }
 
 
-  calculateDefaultRange() {
-
-    const indices = (<any>this.data).indices;
+  async calculateDefaultRange() {
+    const indices = await this.data.ids();
     if (this.rowRange === undefined) {
-      this.rowRange = (indices.dim(0));
+
+      this.rowRange = rlist(indices.dim(0));
     }
 
     if (this.colRange === undefined) {
@@ -111,7 +113,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return ([this.rowRange, this.colRange]);
   }
 
-  updateRows(idRange: Range1D) {
+  updateRows(idRange: Range) {
     this.rowRange = idRange;
     this.updateMatrix(this.rowRange, this.colRange);
   }
@@ -124,10 +126,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMatrix(rowRange, colRange) {
-    let rowView = await (<any>this.data).idView(rowRange);
-    rowView = rowView.t;
+    console.log(rowRange, colRange)
+    let rowView = await this.data.idView(rowRange);
+    rowView = (<INumericalMatrix>rowView).t;
     let colView = await rowView.idView(colRange);
-    colView = colView.t;
+    colView = (<INumericalMatrix>colView).t;
     this.dataView = colView;
     this.multiform.destroy();
     this.multiform = this.replaceMultiForm(colView, this.body);
@@ -135,7 +138,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
 
-  async update(idRange: Range1D) {
+  async update(idRange: Range) {
     // this.multiform.destroy();
     // const view = await (<any>this.data).idView(idRange);
     //this.multiform = this.replaceMultiForm(view, this.body);
@@ -183,7 +186,5 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.relayout();
   }
 
-  updateColumns(idRange: Range1D) {
-    this.columns.forEach((col) => col.update(idRange));
-  }
+
 }

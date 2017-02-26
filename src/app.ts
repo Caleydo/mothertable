@@ -14,6 +14,7 @@ import MatrixColumn from './column/MatrixColumn';
 import FilterManager from './filter/FilterManager';
 import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
+import Range from 'phovea_core/src/range/Range';
 /**
  * The main class for the App app
  */
@@ -26,7 +27,7 @@ export default class App {
   private manager: ColumnManager;
   private supportView: SupportView;
   private idtypes: IDType[];
-  private rowRange: Range1D;
+  private rowRange: Range;
   private colRange: Range1D;
   private newSupportView: SupportView;
   private dataSize;
@@ -146,7 +147,7 @@ export default class App {
     });
 
 
-    this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+    this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
       this.manager.filterData(filter);
       // this.manager.update(filter);
 
