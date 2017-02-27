@@ -8,7 +8,8 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
-import AnyColumn from '../column/ColumnManager';
+import Range from 'phovea_core/src/range/Range';
+import {AnyColumn} from '../column/ColumnManager';
 
 export const SORT = {
   asc: 'asc',

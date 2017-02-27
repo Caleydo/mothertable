@@ -156,20 +156,20 @@ export default class ColumnManager extends EventHandler {
 
   async updateSort(evt: any, sortMethod: string) {
     this.sortMethod = sortMethod;
-    const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
+    const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
-    const r: any = s.sortByMe();
-    if ((await r).length < 1) {
-      return this.update(r);
-
-    }
+    const r = s.sortByMe();
+    // if ((await r).length < 1) {
+    //   return this.update(r);
+    //
+    // }
     this.mergeRanges(r);
 
   }
 
-  async mergeRanges(r: Range[]) {
+  async mergeRanges(r: Promise<Range[]>) {
     const ranges = await r;
-    const mergedRange: any = ranges.reduce((currentVal, nextValue) => {
+    const mergedRange = ranges.reduce((currentVal, nextValue) => {
       const r = new Range();
       r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
       return r;
