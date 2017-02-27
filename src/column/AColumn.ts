@@ -7,6 +7,8 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import Range from 'phovea_core/src/range/Range';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
+import {SORT} from '../SortEventHandler/SortEventHandler';
+import AVectorFilter from '../filter/AVectorFilter';
 export enum EOrientation {
   Horizontal,
   Vertical
@@ -19,9 +21,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   minimumWidth: number = 10;
   preferredWidth: number = 100;
   dataView: IDataType;
+  sortCriteria: string = SORT.asc;
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
+
   }
 
   get idtype() {

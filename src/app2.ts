@@ -14,8 +14,6 @@ import MatrixColumn from './column/MatrixColumn';
 import FilterManager from './filter/FilterManager';
 import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
-import Range from 'phovea_core/src/range/Range';
-
 /**
  * The main class for the App app
  */
@@ -28,10 +26,10 @@ export default class App {
   private manager: ColumnManager;
   private supportView: SupportView;
   private idtypes: IDType[];
-  private rowRange: Range;
+  private rowRange: Range1D;
   private colRange: Range1D;
   private newSupportView: SupportView;
-  private dataSize: {total: number, filtered: number};
+  private dataSize;
 
   constructor(parent: HTMLElement) {
     this.node = parent;
@@ -133,7 +131,7 @@ export default class App {
     // add to the columns if we add a dataset
     this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
       if (this.dataSize === undefined) {
-        this.dataSize = {total: data.length, filtered: data.length};
+        this.dataSize = {total: (<any>data).indices.size(), filtered: (<any>data).indices.size()};
         this.previewData(this.dataSize, idtype.id);
       }
 
@@ -148,12 +146,13 @@ export default class App {
     });
 
 
-    this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+    this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       this.manager.filterData(filter);
       // this.manager.update(filter);
+
       this.rowRange = filter;
       this.triggerMatrix();
-      this.dataSize.filtered = filter.size()[0];
+      this.dataSize.filtered = filter.size();
       this.previewData(this.dataSize, idtype.id);
 
     });
@@ -192,7 +191,7 @@ export default class App {
 
     this.newSupportView = new SupportView(otherIdtype, <HTMLElement>document.querySelector(`.support-view-${otherIdtype.id}`));
     const m = this.supportView.matrixData;
-    const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
+    const node = d3.select(`.${otherIdtype.id}.filter-manager`);
     new MatrixFilter(m.t, <HTMLElement>node.node());
 
     this.previewData(this.dataSize, otherIdtype.id);
@@ -200,7 +199,7 @@ export default class App {
       this.colRange = filter;
       this.triggerMatrix();
 
-      this.dataSize.filtered = filter.size()[0];
+      this.dataSize.filtered = filter.size();
       this.previewData(this.dataSize, otherIdtype.id);
     });
 
@@ -235,8 +234,8 @@ export default class App {
 
   private previewData(dataSize, idtype) {
     const availableWidth = parseFloat(d3.select(`.dataPreview-${idtype}`).style('width'));
-    const total = (dataSize.total);
-    const filtered = (dataSize.filtered) || 0;
+    const total = (dataSize.total)[0];
+    const filtered = (dataSize.filtered)[0] || 0;
     const totalWidth = availableWidth / total * filtered;
     const d = d3.select(`.dataPreview-${idtype}`);
     d.style('height', '10px');

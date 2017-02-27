@@ -24,15 +24,16 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build(parent: HTMLElement) {
-    let node;
-    const idType = this.idtype.id;
-    const element = document.querySelector(`.${idType}.filter-manager`);
-    const ol = element.querySelector('.filterlist');
-    node = document.createElement('div');
-    ol.appendChild(node);
-    node.classList.add('filter');
-
-    return node;
+    // let node;
+    // const idType = this.idtype.id;
+    // const element = document.querySelector(`.${idType}.filter-manager`);
+    // const ol = element.querySelector('.filterlist');
+    // node = document.createElement('div');
+    // ol.appendChild(node);
+    // node.classList.add('filter');
+    //
+    // return node;
+    return parent;
 
   }
 

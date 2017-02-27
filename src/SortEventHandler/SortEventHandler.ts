@@ -24,10 +24,10 @@ export default class SortEventHandler extends EventHandler {
   private sortCriteria: string;
   private columns: AnyColumn[];
 
-  constructor(cols: AnyColumn[], sortCriteria: string) {
+  constructor(cols: AnyColumn[]) {
     super();
     this.columns = cols;
-    this.sortCriteria = sortCriteria;
+    //this.sortCriteria = sortCriteria;
     //this.sortMe();
 
 
@@ -39,29 +39,28 @@ export default class SortEventHandler extends EventHandler {
    * @returns {Promise<Range>}
    */
 
-  async chooseType(newView: IAnyVector) {
+  async chooseType(newView: IAnyVector, sortCriteria) {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
       case VALUE_TYPE_CATEGORICAL:
-        return (await this.collectRangeList(newView, 'sc'));
+        return (await this.collectRangeList(newView, sortCriteria, 'sc'));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return (await this.collectRangeList(newView, 'ir'));
+        return (await this.collectRangeList(newView, sortCriteria, 'ir'));
     }
   }
 
 
-  async collectRangeList(col: IAnyVector, type: string): Promise<Range[]> {
-
+  async collectRangeList(col: IAnyVector, sortCriteria, type: string): Promise<Range[]> {
     const uniqValues = await this.uniqueValues(col);
     let sortedValue;
     if (type === 'sc') {
 
-      sortedValue = uniqValues.sort(stringSort.bind(this, this.sortCriteria));
+      sortedValue = uniqValues.sort(stringSort.bind(this, sortCriteria));
     } else if (type === 'ir') {
 
-      sortedValue = uniqValues.sort(numSort.bind(this, this.sortCriteria));
+      sortedValue = uniqValues.sort(numSort.bind(this, sortCriteria));
     } else {
 
       return;
@@ -83,6 +82,7 @@ export default class SortEventHandler extends EventHandler {
     //Iterate through all the columns
     for (const col of this.columns) {
       const nextColumnData = (<any>col).dataView;
+      const sortCriteria = (<any>col).sortCriteria;
       const rangeOfView = [];
 
       /**
@@ -94,7 +94,8 @@ export default class SortEventHandler extends EventHandler {
 
         //Create VectorView  of from each array element of range.
         const newView = await nextColumnData.idView(n);
-        rangeOfView.push(await this.chooseType(newView));
+        rangeOfView.push(await this.chooseType(newView, sortCriteria));
+
       }
       range = await this.concatRanges(rangeOfView);
 
@@ -137,8 +138,8 @@ export default class SortEventHandler extends EventHandler {
     return sortArr;
   }
 
-  async sortNumber(data: IAnyVector) {
-    const sortedView = await data.sort(numSort.bind(this, this.sortCriteria));
+  async sortNumber(data: IAnyVector, sortCriteria) {
+    const sortedView = await data.sort(numSort.bind(this, sortCriteria));
     const sortedRange = await  sortedView.ids();
     return sortedRange;
   }
@@ -179,11 +180,11 @@ export default class SortEventHandler extends EventHandler {
 
 function filterCat(aVal, bval) {
 
-  if (aVal === bval) {
+  //if (aVal === bval) {
 
-    return bval;
+    return aVal===bval; //Also include undefined empty strings and null values.
 
-  }
+ // }
 
 
 }
