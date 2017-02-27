@@ -93,12 +93,12 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const brushVal = range;
     const svg = this.makeSVG(node);
     const bins = await this.makeBins(svg);
-
-    const rectLeft = this.makeBrushRect(svg, brushRectPosX - 5, brushRectPosY);
-    const rectRight = this.makeBrushRect(svg, brushRectPosX, brushRectPosY);
-
-    const lineLeft = this.makeBrushLine(svg, brushRectPosX);
-    const lineRight = this.makeBrushLine(svg, brushRectPosY);
+    const brush = this.makeBrush(svg, brushRectPosY + 5, range);
+    // const rectLeft = this.makeBrushRect(svg, brushRectPosX - 5, brushRectPosY);
+    // const rectRight = this.makeBrushRect(svg, brushRectPosX, brushRectPosY);
+    //
+    // const lineLeft = this.makeBrushLine(svg, brushRectPosX);
+    // const lineRight = this.makeBrushLine(svg, brushRectPosY);
 
     const textleft = this.makeText(svg, 0, svgHeight);
     const textRight = this.makeText(svg, brushRectPosY, svgHeight);
@@ -109,27 +109,27 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     this._position = {left: brushRectPosX, right: brushRectPosY};
 
-    const dragLeft = d3.behavior.drag()
-      .on('drag', function (d, i) {
-        that.updateDragging(this, drag.left);
-      });
-
-    const dragRight = d3.behavior.drag()
-      .on('drag', function (d, i) {
-        that.updateDragging(this, drag.right);
-
-      });
+    // const dragLeft = d3.behavior.drag()
+    //   .on('drag', function (d, i) {
+    //     that.updateDragging(this, drag.left);
+    //   });
+    //
+    // const dragRight = d3.behavior.drag()
+    //   .on('drag', function (d, i) {
+    //     that.updateDragging(this, drag.right);
+    //
+    //   });
 
 
     const triangleLeft = this.makeTriangleIcon(svg, brushRectPosX, triangleYPos, 'left');
     const triangleRight = this.makeTriangleIcon(svg, brushRectPosY, triangleYPos, 'right');
-    triangleLeft.call(dragLeft);
-    triangleRight.call(dragRight);
+    //triangleLeft.call(dragLeft);
+    //triangleRight.call(dragRight);
 
-    this._rect = {'left': rectLeft, 'right': rectRight};
-    this._line = {'left': lineLeft, 'right': lineRight};
-    this._triangleIcon = {'left': triangleLeft, 'right': triangleRight};
-    this._textVal = {'left': textleft, 'right': textRight};
+//    this._rect = {'left': rectLeft, 'right': rectRight};
+    //  this._line = {'left': lineLeft, 'right': lineRight};
+    //this._triangleIcon = {'left': triangleLeft, 'right': triangleRight};
+    //  this._textVal = {'left': textleft, 'right': textRight};
 
   }
 
@@ -178,6 +178,35 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       });
 
     return binsRect;
+
+  }
+
+  private makeBrush(svg, width, range) {
+    const scale = d3.scale.linear()
+      .domain(range)
+      .range([0, width])
+
+    const brush = d3.svg.brush()
+    brush.x(scale)
+    brush.extent([22, 28])
+
+    brush.on('brushend', function () {
+      console.log(brush.extent())
+    })
+
+    const g = svg.append('g')
+
+    brush(g)
+
+    g.attr('transform', 'translate(-5,0)')
+    g.selectAll('rect').attr('height', this.filterDim.height)
+    g.selectAll('.background')
+      .style({fill: 'grey', visibility: 'visible'})
+    g.selectAll('.extent')
+      .style({fill: 'lightgrey', visibility: 'visible'})
+    g.selectAll('.resize rect')
+      .style({fill: 'lightgrey', visibility: 'visible'})
+    return svg;
 
   }
 
@@ -300,6 +329,9 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     }
   }
 
+  private updateDrag() {
+
+  }
 
   private computeCoordinates() {
 
