@@ -1,13 +1,12 @@
 import AColumn, {EOrientation} from './AColumn';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
-import Range1D from 'phovea_core/src/range/Range1D';
+import Range from 'phovea_core/src/range/Range';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
-import {list as rlist} from 'phovea_core/src/range';
-import SortColumn from '../SortEventHandler/SortEventHandler';
 import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
+
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -16,7 +15,7 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
   protected multiform: MultiForm;
-  dataView: DATATYPE;
+  dataView: IDataType;
   filterRange;
   static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
 
@@ -42,7 +41,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       this.multiform.addIconVisChooser(vislist);
     }
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-asc"></button>`);
-    const sortButton = toolbar.querySelector('button.fa-sort-amount-asc');
+    const sortButton = <HTMLElement>toolbar.querySelector('button.fa-sort-amount-asc');
 
     this.getSortMethod(sortButton);
     super.buildToolbar(toolbar);
@@ -67,18 +66,18 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   //   });
   // }
 
-  protected getSortMethod(sortButton) {
+  protected getSortMethod(sortButton: HTMLElement) {
 
     sortButton.addEventListener('click', () => {
       const b = d3.select(sortButton);
       if (b.classed('fa-sort-amount-asc')) {
-       // const sortMethod = SORT.desc;
+        // const sortMethod = SORT.desc;
         this.sortCriteria = SORT.desc;
         this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
         b.attr('class', 'fa sort fa-sort-amount-desc');
       } else {
-         this.sortCriteria = SORT.asc;
-        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER,this);
+        this.sortCriteria = SORT.asc;
+        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
 
         b.attr('class', 'fa sort fa-sort-amount-asc');
       }
@@ -86,9 +85,9 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
 
-  async update(idRange: Range1D) {
+  async update(idRange: Range) {
     this.multiform.destroy();
-    const view = await (<any>this.data).idView(idRange);
+    const view = await this.data.idView(idRange);
     this.dataView = view;
     this.multiform = this.replaceMultiForm(view, this.body);
   }

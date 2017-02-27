@@ -30,8 +30,6 @@ export default class FilterManager extends EventHandler {
   readonly filters: AnyColumn[] = [];
   private filterHierarchy = [];
   private onFilterChanged = () => this.refilter();
-  private activeFilters;
-  private rangeNow: Range1D = Range1D.all();
 
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
@@ -161,7 +159,6 @@ export default class FilterManager extends EventHandler {
     let filtered = Range1D.all();
     for (const f of this.filters) {
       filtered = await f.filter(filtered);
-
     }
     return filtered;
   }

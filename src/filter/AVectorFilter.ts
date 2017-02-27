@@ -15,11 +15,8 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
 
   protected build(parent: HTMLElement) {
 
-    let node;
-    const idType = this.idtype.id;
-    const element = document.querySelector(`.${idType}.filter-manager`);
-    const ol = element.querySelector('.filterlist');
-    node = document.createElement('div');
+    const ol = parent.querySelector('.filterlist');
+    const node = document.createElement('div');
     ol.appendChild(node);
     node.classList.add('filter');
     this.addSortIcon(node);
@@ -27,7 +24,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
   }
 
 
-  private addSortIcon(node) {
+  private addSortIcon(node: HTMLElement) {
     // this.sortCriteria = SORT.asc;
     const sortIconNode = d3.select(node).append('div').classed('fa sort fa-sort-amount-asc', true);
     sortIconNode.on('click', () => {

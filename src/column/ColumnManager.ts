@@ -37,7 +37,7 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
-  private rangeNow: Range1D;
+  private rangeNow: Range;
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -74,9 +74,10 @@ export default class ColumnManager extends EventHandler {
       throw new Error('invalid idtype');
     }
     const col = createColumn(data, this.orientation, this.node);
-    const r = (<any>data).indices;
+
     if (this.rangeNow === undefined) {
-      this.rangeNow = r.intersect(Range1D.all());
+
+      this.rangeNow = await data.ids();
 
     }
     await col.update((this.rangeNow));
@@ -161,20 +162,20 @@ export default class ColumnManager extends EventHandler {
   async updateSort(evt: any) {
     // console.log(sortMethod)
     // this.sortMethod = sortMethod;
-    const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
+    const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
-    const r: any = s.sortByMe();
-    if ((await r).length < 1) {
-      return this.update(r);
-
-    }
+    const r = s.sortByMe();
+    // if ((await r).length < 1) {
+    //   return this.update(r);
+    //
+    // }
     this.mergeRanges(r);
 
   }
 
-  async mergeRanges(r: Range[]) {
+  async mergeRanges(r: Promise<Range[]>) {
     const ranges = await r;
-    const mergedRange: any = ranges.reduce((currentVal, nextValue) => {
+    const mergedRange = ranges.reduce((currentVal, nextValue) => {
       const r = new Range();
       r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
       return r;
@@ -186,9 +187,9 @@ export default class ColumnManager extends EventHandler {
     this.update(mergedRange);
   }
 
-  async filterData(idRange: Range1D) {
+  async filterData(idRange: Range) {
     for (const col of this.columns) {
-      (<any>col).dataView = await (<any>col.data).idView(idRange);
+      col.dataView = await col.data.idView(idRange);
 
     }
     this.updateSort(null);
@@ -217,7 +218,7 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  async update(idRange: Range1D) {
+  async update(idRange: Range) {
     this.rangeNow = idRange;
     await Promise.all(this.columns.map((col) => {
       if (col instanceof MatrixColumn) {
