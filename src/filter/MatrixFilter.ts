@@ -20,24 +20,25 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   constructor(data: INumericalMatrix, parent: HTMLElement) {
     super(data);
-    const ol = parent.querySelector('.filterlist');
+
     this.node = this.build(parent);
-    if (ol !== null) {
-      parent.insertBefore(this.node, ol.nextSibling);
-    }
+    // if (ol !== null) {
+    //   parent.insertBefore(this.node, ol.nextSibling);
+    // }
 
     this.activeFilter = false;
   }
 
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
+    const f = document.createElement('div');
+    f.classList.add('filter');
+    node.appendChild(f);
+    const n = d3.select(f).selectAll('.matrix');
 
-    const n = d3.select(node.parentElement).selectAll('.matrix');
-    if (n.node() === null) {
-
-      this.generateLabel(node, this.data.desc.name);
-      this.generateRect(node);
-    }
+    this.generateLabel(f, this.data.desc.name);
+    this.generateRect(f);
+    //   }
     // this.generateMatrixHeatmap(node, this.data.rowtype.id)
 
     // this.generateMatrixHeatmap(node, this.data.rowtype.id);
