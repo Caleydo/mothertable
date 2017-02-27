@@ -26,6 +26,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private rowRange: Range;
   private colRange: Range1D;
   dataView: IDataType;
+  private matrixID: number;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -134,6 +135,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.dataView = colView;
     this.multiform.destroy();
     this.multiform = this.replaceMultiForm(colView, this.body);
+
     this.relayout();
   }
 
@@ -153,6 +155,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
     this.fire(MatrixColumn.EVENT_COLUMN_ADDED, col);
+    console.log(this.columns)
     this.relayout();
   }
 

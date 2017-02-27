@@ -14,6 +14,7 @@ import MatrixColumn from './column/MatrixColumn';
 import FilterManager from './filter/FilterManager';
 import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
+import {randomId} from 'phovea_core/src/index';
 import Range from 'phovea_core/src/range/Range';
 
 /**
@@ -26,7 +27,7 @@ export default class App {
 
 
   private manager: ColumnManager;
-  private supportView: SupportView;
+  private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range;
   private colRange: Range1D;
@@ -75,7 +76,7 @@ export default class App {
   }
 
   private reset() {
-    this.supportView.destroy();
+    this.supportView[0].destroy();
     this.manager.destroy();
     this.removePreviewData();
     this.showSelection();
@@ -97,7 +98,7 @@ export default class App {
   }
 
   private primarySortCol(evt: any, sortColdata: IAnyVector) {
-    this.supportView.primarySortColumn(sortColdata);
+    this.supportView[0].primarySortColumn(sortColdata);
 
   }
 
@@ -106,6 +107,64 @@ export default class App {
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
     this.manager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+
+    const node = this.buildSupportView(idtype);
+    //  this.node.querySelector('section.rightPanel').appendChild(node);
+    const id = randomId();
+    const supportView = new SupportView(idtype, <HTMLElement>node, id);
+
+    this.supportView.push(supportView);
+
+    this.supportView[0].on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+      this.manager.updateSortHierarchy(data);
+    });
+    // add to the columns if we add a dataset
+    this.supportView[0].on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
+      if (this.dataSize === undefined) {
+        this.dataSize = {total: data.length, filtered: data.length};
+        this.previewData(this.dataSize, idtype.id, node);
+        this.dataSize = {total: data.length, filtered: data.length};
+           }
+
+      this.manager.push(data);
+      const checkMatrixType = data.desc.type;
+      if (checkMatrixType === 'matrix') {
+        const otherIdtype: IDType = this.findType(data, idtype.id);
+        this.triggerMatrix();
+        this.newSupportManger(otherIdtype);
+      }
+
+    });
+
+
+    this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+       this.manager.filterData(filter);
+      // this.manager.update(filter);
+      this.rowRange = filter;
+      this.triggerMatrix();
+        this.dataSize.filtered = filter.size()[0];
+      this.previewData(this.dataSize, idtype.id, node);
+
+
+    });
+
+    this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
+      const cols = this.manager.columns;
+      const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
+      if (countSame < 1) {
+        this.supportView[0].remove(data);
+      }
+
+      if (this.manager.length === 0) {
+        this.reset();
+      }
+    });
+
+
+  }
+
+
+  private buildSupportView(idtype) {
 
 
     const newdiv = document.createElement('div');
@@ -117,58 +176,12 @@ export default class App {
     const previewDataNode = document.createElement('div');
     previewDataNode.classList.add(`dataPreview-${idtype.id}`);
     newdiv.appendChild(previewDataNode);
-
-
-    this.node.querySelector('section.rightPanel').appendChild(newdiv);
-
     d3.select(previewDataNode).style('display', 'flex').append('div').classed('totalData', true);
     d3.select(previewDataNode).append('div').classed('filteredData', true);
+    const parent = this.node.querySelector('section.rightPanel').appendChild(newdiv);
+    return parent;
 
 
-    this.supportView = new SupportView(idtype, <HTMLElement>this.node.querySelector(`.support-view-${idtype.id}`));
-
-    this.supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
-      this.manager.updateSortHierarchy(data);
-    });
-    // add to the columns if we add a dataset
-    this.supportView.on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
-      if (this.dataSize === undefined) {
-        this.dataSize = {total: data.length, filtered: data.length};
-        this.previewData(this.dataSize, idtype.id);
-      }
-
-      this.manager.push(data);
-      const checkMatrixType = data.desc.type;
-      if (checkMatrixType === 'matrix' && this.newSupportView === undefined || this.newSupportView === null) {
-        const otherIdtype: IDType = this.findType(data, idtype.id);
-        this.triggerMatrix();
-        this.newSupportManger(otherIdtype);
-      }
-
-    });
-
-
-    this.supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
-      this.manager.filterData(filter);
-      // this.manager.update(filter);
-      this.rowRange = filter;
-      this.triggerMatrix();
-      this.dataSize.filtered = filter.size()[0];
-      this.previewData(this.dataSize, idtype.id);
-
-    });
-
-    this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
-      const cols = this.manager.columns;
-      const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
-      if (countSame < 1) {
-        this.supportView.remove(data);
-      }
-
-      if (this.manager.length === 0) {
-        this.reset();
-      }
-    });
   }
 
 
@@ -176,39 +189,32 @@ export default class App {
 
     // this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
 
-    const newdiv = document.createElement('div');
-    newdiv.classList.add(`support-view-${otherIdtype.id}`);
-    const idName = document.createElement('div');
-    idName.classList.add('idType');
-    idName.innerHTML = (otherIdtype.id.toUpperCase());
-    newdiv.appendChild(idName);
-    const previewDataNode = document.createElement('div');
-    previewDataNode.classList.add(`dataPreview-${otherIdtype.id}`);
-    newdiv.appendChild(previewDataNode);
-    this.node.querySelector('section.rightPanel').appendChild(newdiv);
+    const node = this.buildSupportView(otherIdtype);
+    const id = randomId();
+    const matrixSupportView = new SupportView(otherIdtype, <HTMLElement>(node), id);
+    this.supportView.push(matrixSupportView);
 
-    d3.select(previewDataNode).style('display', 'flex').append('div').classed('totalData', true);
-    d3.select(previewDataNode).append('div').classed('filteredData', true);
+    const m = this.supportView[0].matrixData;
+    //  const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
+    new MatrixFilter(m.t, <HTMLElement>node);
 
-    this.newSupportView = new SupportView(otherIdtype, <HTMLElement>document.querySelector(`.support-view-${otherIdtype.id}`));
-    const m = this.supportView.matrixData;
-    const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
-    new MatrixFilter(m.t, <HTMLElement>node.node());
-
-    this.previewData(this.dataSize, otherIdtype.id);
-    this.newSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
-      this.colRange = filter;
-      this.triggerMatrix();
+    this.previewData(this.dataSize, otherIdtype.id, node);
+    matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+      this.triggerMatrix(filter, matrixSupportView.id);
 
       this.dataSize.filtered = filter.size()[0];
-      this.previewData(this.dataSize, otherIdtype.id);
+      this.previewData(this.dataSize, otherIdtype.id, node);
     });
 
 
   }
 
-  private triggerMatrix() {
+  private triggerMatrix(colRange?, id?: string) {
     const matrixCol = this.manager.columns.filter((d) => d instanceof MatrixColumn);
+    const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
+    if (uniqueMatrix === -1) {
+      return;
+    }
     if (matrixCol.length === 0) {
       return;
     }
@@ -219,30 +225,32 @@ export default class App {
 
     }
 
-    if (this.colRange === undefined) {
-      this.colRange = (indices.dim(1));
+    if (colRange === undefined) {
+      colRange = (indices.dim(1));
 
     }
     // console.log(this.colRange)
 
-    matrixCol.forEach((col: MatrixColumn) => {
-      col.updateRows(this.rowRange);
-      col.updateCols(this.colRange);
-      col.updateMatrix(this.rowRange, this.colRange);
-    });
+    // matrixCol.forEach((col: MatrixColumn) => {
+    //   col.updateRows(this.rowRange);
+    // });
+
+    //  col.updateCols(colRange);
+    //   col.updateMatrix(this.rowRange, colRange);
+    matrixCol[uniqueMatrix - 1].updateMatrix(this.rowRange, colRange);
+
 
   }
 
-  private previewData(dataSize, idtype) {
-    const availableWidth = parseFloat(d3.select(`.dataPreview-${idtype}`).style('width'));
+  private previewData(dataSize, idtype, node) {
+    const availableWidth = parseFloat(d3.select(node).select(`.dataPreview-${idtype}`).style('width'));
     const total = (dataSize.total);
-    const filtered = (dataSize.filtered) || 0;
+    const filtered = (dataSize.filtered)|| 0;
     const totalWidth = availableWidth / total * filtered;
-    const d = d3.select(`.dataPreview-${idtype}`);
+    const d = d3.select(node).select(`.dataPreview-${idtype}`);
     d.style('height', '10px');
-    d3.select(`.dataPreview-${idtype}`).select('.totalData').style('width', `${totalWidth}px`);
-    d3.select(`.dataPreview-${idtype}`).select('.filteredData').style('width', `${availableWidth - totalWidth}px`);
-
+    d3.select(node).select(`.dataPreview-${idtype}`).select('.totalData').style('width', `${totalWidth}px`);
+    d3.select(node).select(`.dataPreview-${idtype}`).select('.filteredData').style('width', `${availableWidth - totalWidth}px`);
 
   }
 

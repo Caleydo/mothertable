@@ -26,12 +26,13 @@ export default class SupportView extends EventHandler {
   readonly node: HTMLElement;
   private _matrixData;
 
-  constructor(public readonly idType: IDType, parent: HTMLElement) {
+  constructor(public readonly idType: IDType, parent: HTMLElement,readonly id?:string) {
     super();
     this.node = parent.ownerDocument.createElement('div');
     parent.appendChild(this.node);
     this.node.classList.add(idType.id);
     this.buildSelectionBox(this.node);
+    this.id = id;
     this.filter = new FilterManager(idType, this.node);
 
     this.filter.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
