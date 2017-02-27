@@ -7,19 +7,6 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 
 
-export const drag = {left: 'dragLeft', right: 'dragRight'};
-
-
-interface IPosition {
-  'left': number;
-  'right': number;
-}
-
-interface ISVGObject {
-  'left': d3.Selection<SVGElement>; right: d3.Selection<SVGElement>;
-}
-
-
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
 
 
@@ -28,17 +15,11 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   private _numericalFilterRange: number[];
   private _toolTip: d3.Selection<SVGElement>;
   private _SVG: d3.Selection<SVGElement>;
-  private _rect: ISVGObject;
-  private _line: ISVGObject;
-  private _textVal: ISVGObject;
-  private _triangleIcon: ISVGObject;
-  private _position: IPosition;
 
   constructor(data: INumericalVector, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
     this._numericalFilterRange = this.data.desc.value.range;
-
 
   }
 
@@ -81,55 +62,22 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   }
 
   private async generateDensityPlot(node: HTMLElement) {
+    const c = this.computeCoordinates();
+    const svgHeight = c.svg.height;
+    const triangleYPos = c.triangle.yPos;
 
-    const range = this.data.desc.value.range;
-    const that = this;
-    const coordinates = this.computeCoordinates();
-    const svgHeight = coordinates.svg.height;
-    const triangleYPos = coordinates.triangle.yPos;
-
-    const brushRectPosX = coordinates.brushRect.left;
-    const brushRectPosY = coordinates.brushRect.right;
-    const brushVal = range;
+    const brushRectPosX = c.brushRect.left;
+    const brushRectPosY = c.brushRect.right;
     const svg = this.makeSVG(node);
-    const bins = await this.makeBins(svg);
-    const brush = this.makeBrush(svg, brushRectPosY + 5, range);
-    // const rectLeft = this.makeBrushRect(svg, brushRectPosX - 5, brushRectPosY);
-    // const rectRight = this.makeBrushRect(svg, brushRectPosX, brushRectPosY);
-    //
-    // const lineLeft = this.makeBrushLine(svg, brushRectPosX);
-    // const lineRight = this.makeBrushLine(svg, brushRectPosY);
+    await this.makeBins(svg);
+    this.makeBrush(svg, brushRectPosY - 10, c.range);
 
-    const textleft = this.makeText(svg, 0, svgHeight);
-    const textRight = this.makeText(svg, brushRectPosY, svgHeight);
+    this.makeText(svg, 0, svgHeight, 'leftText').text(`${Math.floor(c.range[0])}`);
+    this.makeText(svg, brushRectPosY - 10, svgHeight, 'rightText').text(`${Math.floor(c.range[1])}`);
 
-    textleft.text(`${(<any>Math).floor(brushVal[0])}`);
-    textRight.text(`${(<any>Math).floor(brushVal[1])}`);
+    this.makeTriangleIcon(svg, brushRectPosX, triangleYPos, 'left');
+    this.makeTriangleIcon(svg, brushRectPosY, triangleYPos, 'right');
 
-
-    this._position = {left: brushRectPosX, right: brushRectPosY};
-
-    // const dragLeft = d3.behavior.drag()
-    //   .on('drag', function (d, i) {
-    //     that.updateDragging(this, drag.left);
-    //   });
-    //
-    // const dragRight = d3.behavior.drag()
-    //   .on('drag', function (d, i) {
-    //     that.updateDragging(this, drag.right);
-    //
-    //   });
-
-
-    const triangleLeft = this.makeTriangleIcon(svg, brushRectPosX, triangleYPos, 'left');
-    const triangleRight = this.makeTriangleIcon(svg, brushRectPosY, triangleYPos, 'right');
-    //triangleLeft.call(dragLeft);
-    //triangleRight.call(dragRight);
-
-//    this._rect = {'left': rectLeft, 'right': rectRight};
-    //  this._line = {'left': lineLeft, 'right': lineRight};
-    //this._triangleIcon = {'left': triangleLeft, 'right': triangleRight};
-    //  this._textVal = {'left': textleft, 'right': textRight};
 
   }
 
@@ -154,11 +102,11 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const cellDimension = cellWidth / histData.length;
     const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(histData)]).range(['white', 'darkgrey']);
 
-    const binsRect = svg.append('g').classed('binsEntries', true)
+    const binsRect = svg.append('g').classed('binsEntries', true).attr('transform', 'translate(5,0)')
       .selectAll('g.bins').data(histData).enter();
 
     binsRect.append('rect').classed('bins', true)
-      .attr('x', (d, i) => (i * cellDimension) + 5)
+      .attr('x', (d, i) => (i * cellDimension))
       .attr('width', cellDimension)
       .attr('height', cellHeight)
       .style('opacity', 1)
@@ -182,65 +130,40 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   }
 
   private makeBrush(svg, width, range) {
+    const that = this;
+    const c = this.computeCoordinates();
     const scale = d3.scale.linear()
       .domain(range)
-      .range([0, width])
+      .range([0, width]);
 
-    const brush = d3.svg.brush()
-    brush.x(scale)
-    brush.extent([22, 28])
+    const brush = d3.svg.brush();
+    brush.x(scale);
+    brush.extent(c.range);
 
     brush.on('brushend', function () {
-      console.log(brush.extent())
-    })
+      const v: any = brush.extent();
+      that.updateDragValues(v);
+      that._numericalFilterRange = v;
+      that.triggerFilterChanged();
+    });
 
-    const g = svg.append('g')
-
-    brush(g)
-
-    g.attr('transform', 'translate(-5,0)')
-    g.selectAll('rect').attr('height', this.filterDim.height)
+    const g = svg.append('g');
+    brush(g);
+    g.attr('transform', 'translate(5,0)');
+    g.selectAll('rect').attr('height', this.filterDim.height);
     g.selectAll('.background')
-      .style({fill: 'grey', visibility: 'visible'})
+      .style({fill: 'grey', visibility: 'visible'});
     g.selectAll('.extent')
-      .style({fill: 'lightgrey', visibility: 'visible'})
+      .style({fill: 'lightgrey', visibility: 'visible'});
     g.selectAll('.resize rect')
-      .style({fill: 'lightgrey', visibility: 'visible'})
+      .style({fill: 'lightgrey', visibility: 'visible'});
     return svg;
 
   }
 
-  private makeBrushLine(svg, posX: number) {
+  private makeText(svg, posX: number, posY: number, className) {
 
-    const coordinates = this.computeCoordinates();
-    const lineYPos = coordinates.line.yPos;
-    const line = svg.append('path')
-      .classed('brushline', true)
-      .attr('d', `M${posX} 0,L${posX} ${lineYPos}`)
-      .attr('stroke', 'black');
-    return line;
-
-
-  }
-
-  private makeBrushRect(svg, posX: number, width: number) {
-
-    const cellHeight = this.filterDim.height;
-    const rect = svg.append('rect')
-      .attr('x', posX)
-      .attr('width', width)
-      .attr('height', cellHeight)
-      .attr('visibility', 'hidden')
-      .attr('opacity', 1)
-      .attr('fill', '#666');
-
-    return rect;
-
-  }
-
-  private makeText(svg, posX: number, posY: number) {
-
-    const text = svg.append('text').classed('textVal', true)
+    const text = svg.append('text').classed(`${className}`, true)
       .attr('x', posX)
       .attr('y', posY)
       .attr('font-family', 'sans-serif')
@@ -252,7 +175,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   }
 
   private  makeTriangleIcon(svg, posX: number, posY: number, classname) {
-    const triangleSymbol = d3.svg.symbol().type('triangle-up').size(100);
+    const triangleSymbol = d3.svg.symbol().type('triangle-up').size(50);
     const triangle = svg.append('path')
       .classed(classname, true)
       .attr('d', triangleSymbol)
@@ -261,90 +184,40 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private  updateDragging(dragMe, myName: string) {
 
-    const rectLeft = this._rect.left;
-    const rectRight = this._rect.right;
-    const textLeft = this._textVal.left;
-    const textRight = this._textVal.right;
-    const lineLeft = this._line.left;
-    const lineRight = this._line.right;
-    const coordinates = this.computeCoordinates();
-    let brushVal = this.data.desc.value.range;
+  private updateDragValues(range: number[]) {
+    const c = this.computeCoordinates();
+    const brushScaledVal = [c.axisScale(range[0]), c.axisScale(range[1])];
+    const windowScaledVal = [c.rangeScale(brushScaledVal[0]), c.rangeScale(brushScaledVal[1])];
 
-    const triangleYPos = coordinates.triangle.yPos;
-    const lineYPos = coordinates.line.yPos;
-    const brushRectLeft = coordinates.brushRect.left;
-    const brushRectRight = coordinates.brushRect.right;
-    const gapBetweenTriangle = coordinates.gap;
-    const axisScale = coordinates.axisScale;
+    d3.select(this.node).select('.left')
+      .attr('transform', `translate(${brushScaledVal[0]},${c.triangle.yPos})`);
 
-    const x = (<any>d3).event.x;
+    d3.select(this.node).select('.right')
+      .attr('transform', `translate(${brushScaledVal[1]},${c.triangle.yPos})`);
 
-    // let xpos =  Math.max(5, Math.min(this._position.right - radius, d3.event.x)))
+    d3.select(this.node).select('.leftText')
+      .attr('x', brushScaledVal[0])
+      .text(`${Math.floor(windowScaledVal[0])}`);
 
-
-    if (x >= brushRectLeft && x <= brushRectRight) {
-      if ((this._position.right - this._position.left) < gapBetweenTriangle) {
-        if (myName === drag.right && this._position.left >= brushRectLeft + 2) {
-          this._position.left = this._position.left - 2;
-          d3.select(dragMe.parentNode).select('.left').attr('transform', `translate(${this._position.left},${triangleYPos})`);
-        } else if (myName === drag.left && this._position.right <= brushRectRight - 2) {
-          this._position.right = this._position.right + 2;
-          d3.select(dragMe.parentNode).select('.right').attr('transform', `translate(${this._position.right},${triangleYPos})`);
-        }
-      }
-
-      if (myName === drag.left) {
-        this._position.left = x;
-      } else if (myName === drag.right) {
-
-        this._position.right = x;
-      }
-
-      brushVal = [axisScale(this._position.left), axisScale(this._position.right)];
-      textLeft.attr('x', this._position.left)
-        .text(`${Math.floor(brushVal[0])}`);
-      textRight.attr('x', this._position.right - 15).text(`${Math.floor(brushVal[1])}`);
-
-      rectLeft.attr('x', brushRectLeft)
-        .attr('width', this._position.left - brushRectLeft)
-        .attr('visibility', 'visible')
-        .attr('opacity', 0.8);
-
-      rectRight.attr('x', this._position.right)
-        .attr('width', brushRectRight - this._position.right)
-        .attr('visibility', 'visible')
-        .attr('opacity', 0.8);
-
-      lineLeft.attr('d', `M${this._position.left} 0,L${this._position.left} ${lineYPos}`);
-      lineRight.attr('d', `M${this._position.right} 0,L${this._position.right} ${lineYPos}`);
-      this._numericalFilterRange = brushVal;
-      this.triggerFilterChanged();
-
-      //  this._position.right = this._position.right + 5;
-      d3.select(dragMe.parentNode).select('.left').attr('transform', `translate(${this._position.left},${triangleYPos})`);
-      d3.select(dragMe.parentNode).select('.right').attr('transform', `translate(${this._position.right},${triangleYPos})`);
-      return dragMe;
-    }
-  }
-
-  private updateDrag() {
+    d3.select(this.node).select('.rightText')
+      .attr('x', brushScaledVal[1] - 10)
+      .text(`${Math.floor(windowScaledVal[1])}`);
 
   }
 
   private computeCoordinates() {
-
     const range = this.data.desc.value.range;
     const cellWidth = this.filterDim.width;
     const cellHeight = this.filterDim.height;
-
+    const windowSize = [0, this.filterDim.width];
     const svg = {height: cellHeight + 25};
     const triangle = {yPos: svg.height - 15};
     const line = {yPos: cellHeight + 5};
-    const brushRect = {'left': 5, 'right': cellWidth - 5};
+    const brushRect = {'left': 5, 'right': cellWidth};
     const gapBetweenTriangle = 20;
-    const axisScale = d3.scale.linear().domain([brushRect.left, brushRect.right]).range(range);
+    const axisScale = d3.scale.linear().domain(range).range([brushRect.left, brushRect.right]);
+    const rangeScale = d3.scale.linear().domain([brushRect.left, brushRect.right]).range(range);
 
     const coordinate = {
       'svg': svg,
@@ -352,7 +225,10 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       'triangle': triangle,
       'brushRect': brushRect,
       'gap': gapBetweenTriangle,
-      'axisScale': axisScale
+      'axisScale': axisScale,
+      'range': range,
+      'windowSize': windowSize,
+      'rangeScale': rangeScale
     };
     return coordinate;
 
