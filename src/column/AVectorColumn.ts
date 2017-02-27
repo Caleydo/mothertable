@@ -1,11 +1,8 @@
 import AColumn, {EOrientation} from './AColumn';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
-import Range1D from 'phovea_core/src/range/Range1D';
 import Range from 'phovea_core/src/range/Range';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
-import {list as rlist} from 'phovea_core/src/range';
-import SortColumn from '../SortEventHandler/SortEventHandler';
 import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
@@ -74,13 +71,13 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     sortButton.addEventListener('click', () => {
       const b = d3.select(sortButton);
       if (b.classed('fa-sort-amount-asc')) {
-       // const sortMethod = SORT.desc;
+        // const sortMethod = SORT.desc;
         this.sortCriteria = SORT.desc;
         this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
         b.attr('class', 'fa sort fa-sort-amount-desc');
       } else {
-         this.sortCriteria = SORT.asc;
-        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER,this);
+        this.sortCriteria = SORT.asc;
+        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
 
         b.attr('class', 'fa sort fa-sort-amount-asc');
       }

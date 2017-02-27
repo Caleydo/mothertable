@@ -21,6 +21,11 @@ import Range from 'phovea_core/src/range/Range';
  * The main class for the App app
  */
 
+interface IdataSize {
+  total: number;
+  filtered: number;
+}
+
 export default class App {
 
   private readonly node: HTMLElement;
@@ -30,9 +35,7 @@ export default class App {
   private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range;
-  private colRange: Range1D;
-  private newSupportView: SupportView;
-  private dataSize: {total: number, filtered: number};
+  private dataSize: IdataSize;
 
   constructor(parent: HTMLElement) {
     this.node = parent;
@@ -108,7 +111,7 @@ export default class App {
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
     this.manager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
-    const node = this.buildSupportView(idtype);
+    const node = <HTMLElement>this.buildSupportView(idtype);
     //  this.node.querySelector('section.rightPanel').appendChild(node);
     const id = randomId();
     const supportView = new SupportView(idtype, <HTMLElement>node, id);
@@ -124,7 +127,7 @@ export default class App {
         this.dataSize = {total: data.length, filtered: data.length};
         this.previewData(this.dataSize, idtype.id, node);
         this.dataSize = {total: data.length, filtered: data.length};
-           }
+      }
 
       this.manager.push(data);
       const checkMatrixType = data.desc.type;
@@ -138,11 +141,11 @@ export default class App {
 
 
     this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
-       this.manager.filterData(filter);
+      this.manager.filterData(filter);
       // this.manager.update(filter);
       this.rowRange = filter;
       this.triggerMatrix();
-        this.dataSize.filtered = filter.size()[0];
+      this.dataSize.filtered = filter.size()[0];
       this.previewData(this.dataSize, idtype.id, node);
 
 
@@ -164,8 +167,7 @@ export default class App {
   }
 
 
-  private buildSupportView(idtype) {
-
+  private buildSupportView(idtype: IDType) {
 
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${idtype.id}`);
@@ -189,14 +191,14 @@ export default class App {
 
     // this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
 
-    const node = this.buildSupportView(otherIdtype);
-    const id = randomId();
-    const matrixSupportView = new SupportView(otherIdtype, <HTMLElement>(node), id);
+    const node = <HTMLElement>this.buildSupportView(otherIdtype);
+    const id: string = randomId();
+    const matrixSupportView = new SupportView(otherIdtype, node, id);
     this.supportView.push(matrixSupportView);
 
     const m = this.supportView[0].matrixData;
     //  const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
-    new MatrixFilter(m.t, <HTMLElement>node);
+    new MatrixFilter(m.t, node);
 
     this.previewData(this.dataSize, otherIdtype.id, node);
     matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
@@ -242,10 +244,10 @@ export default class App {
 
   }
 
-  private previewData(dataSize, idtype, node) {
+  private previewData(dataSize: IdataSize, idtype: string, node: HTMLElement) {
     const availableWidth = parseFloat(d3.select(node).select(`.dataPreview-${idtype}`).style('width'));
     const total = (dataSize.total);
-    const filtered = (dataSize.filtered)|| 0;
+    const filtered = (dataSize.filtered) || 0;
     const totalWidth = availableWidth / total * filtered;
     const d = d3.select(node).select(`.dataPreview-${idtype}`);
     d.style('height', '10px');

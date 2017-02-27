@@ -37,9 +37,7 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
-  private primarySortCol: IAnyVector;
   private rangeNow: Range;
-  private sortMethod: string = SORT.asc;
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -166,7 +164,7 @@ export default class ColumnManager extends EventHandler {
     // this.sortMethod = sortMethod;
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
-    const r  = s.sortByMe();
+    const r = s.sortByMe();
     // if ((await r).length < 1) {
     //   return this.update(r);
     //

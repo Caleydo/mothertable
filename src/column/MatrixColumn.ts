@@ -127,7 +127,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMatrix(rowRange, colRange) {
-    console.log(rowRange, colRange)
     let rowView = await this.data.idView(rowRange);
     rowView = (<INumericalMatrix>rowView).t;
     let colView = await rowView.idView(colRange);
