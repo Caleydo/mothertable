@@ -16,7 +16,9 @@ import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
-import {IAnyVector} from 'phovea_core/src/vector/IVector';
+import AVectorFilter from '../filter/AVectorFilter';
+import {on} from 'phovea_core/src/event';
+import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 
@@ -35,10 +37,8 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
-  private primarySortCol: IAnyVector;
-
   private rangeNow: Range1D;
-  private sortMethod: string = SORT.asc;
+
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -50,10 +50,17 @@ export default class ColumnManager extends EventHandler {
     node.appendChild(colList);
     this.node.classList.add('column-manager');
     this.drag();
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
   }
 
   get length() {
     return this.columns.length;
+  }
+
+  sortByFilterIcon(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
+    const col = this.columnsHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+    col[0].sortCriteria = sortData.sortMethod;
+    this.updateSortHierarchy(this.columnsHierarchy);
   }
 
   destroy() {
@@ -75,12 +82,12 @@ export default class ColumnManager extends EventHandler {
     await col.update((this.rangeNow));
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.on(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.updatePrimarySortByCol.bind(this));
+    col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
 
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
-    this.updateSort(null, this.sortMethod);
+    this.updateSort(null);
     const managerWidth = this.node.clientWidth;
     const panel = this.currentWidth(this.columns);
 
@@ -112,7 +119,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, this.updatePrimarySortByCol.bind(this));
+    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
@@ -146,17 +153,16 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  updatePrimarySortByCol(evt: any, sortData: {sortMethod: string, col: IAnyVector}) {
-
-    this.sortMethod = sortData.sortMethod;
-    this.fire(AVectorColumn.EVENT_PRIMARY_SORT_COLUMN, sortData);
+  updatePrimarySortByCol(evt: any, sortData) {
+    this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   }
 
 
-  async updateSort(evt: any, sortMethod: string) {
-    this.sortMethod = sortMethod;
+  async updateSort(evt: any) {
+    // console.log(sortMethod)
+    // this.sortMethod = sortMethod;
     const cols: any = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
-    const s = new SortEventHandler(cols, this.sortMethod);  // The sort object is created on the fly and destroyed after it exits this method
+    const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r: any = s.sortByMe();
     if ((await r).length < 1) {
       return this.update(r);
@@ -185,7 +191,7 @@ export default class ColumnManager extends EventHandler {
       (<any>col).dataView = await (<any>col.data).idView(idRange);
 
     }
-    this.updateSort(null, this.sortMethod);
+    this.updateSort(null);
 
   }
 
@@ -203,7 +209,7 @@ export default class ColumnManager extends EventHandler {
       this.columnsHierarchy.push(this.columns[index]);
     });
 
-    this.updateSort(null, this.sortMethod);
+    this.updateSort(null);
   }
 
   onLockChange(event: any, lock: any) {

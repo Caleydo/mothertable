@@ -191,7 +191,7 @@ export default class App {
 
     this.newSupportView = new SupportView(otherIdtype, <HTMLElement>document.querySelector(`.support-view-${otherIdtype.id}`));
     const m = this.supportView.matrixData;
-    const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
+    const node = d3.select(`.${otherIdtype.id}.filter-manager`);
     new MatrixFilter(m.t, <HTMLElement>node.node());
 
     this.previewData(this.dataSize, otherIdtype.id);
