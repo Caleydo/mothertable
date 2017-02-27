@@ -24,6 +24,7 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build(parent: HTMLElement) {
+
     // let node;
     // const idType = this.idtype.id;
     // const element = document.querySelector(`.${idType}.filter-manager`);
@@ -34,7 +35,6 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     //
     // return node;
     return parent;
-
   }
 
 
