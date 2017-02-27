@@ -4,7 +4,7 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
-import {list as rlist} from '../../../phovea_core/src/range';
+import {list as rlist} from 'phovea_core/src/range';
 import {scaleTo} from './utils';
 import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
