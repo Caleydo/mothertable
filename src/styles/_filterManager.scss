@@ -28,6 +28,7 @@
       text-overflow: ellipsis;
       width: 200px;
       cursor: move;
+      text-transform: capitalize;
     }
 
     a {
@@ -68,6 +69,7 @@
   white-space: nowrap;
   overflow: hidden !important;
   text-overflow: ellipsis;
+  text-transform: capitalize;
 }
 
 .categories.active {
