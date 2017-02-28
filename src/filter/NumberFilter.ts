@@ -138,8 +138,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const brush = d3.svg.brush();
     brush.x(scale);
-    brush.extent(c.range);
-
     brush.on('brushend', function () {
       const v: any = brush.extent();
       that.updateDragValues(v);
@@ -152,11 +150,11 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     g.attr('transform', 'translate(5,0)');
     g.selectAll('rect').attr('height', this.filterDim.height);
     g.selectAll('.background')
-      .style({fill: 'grey', visibility: 'visible'});
+      .style({visibility: 'visible'});
     g.selectAll('.extent')
-      .style({fill: 'lightgrey', visibility: 'visible'});
+      .style({visibility: 'visible'});
     g.selectAll('.resize rect')
-      .style({fill: 'lightgrey', visibility: 'visible'});
+      .style({visibility: 'hidden'});
     return svg;
 
   }
@@ -264,3 +262,4 @@ function numericalFilter(numRange, value, index) {
   }
 
 }
+
