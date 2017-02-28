@@ -171,7 +171,7 @@ export default class App {
 
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${idtype.id}`);
-    const idName = document.createElement('div');
+    const idName = document.createElement('h1');
     idName.classList.add('idType');
     idName.innerHTML = (idtype.id.toUpperCase());
     newdiv.appendChild(idName);

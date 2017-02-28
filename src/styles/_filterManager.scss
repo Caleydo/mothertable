@@ -1,22 +1,58 @@
 .filter {
   margin-bottom: 10px;
-  display: flex;
-  margin-right: 5px;
-  .filterlabel {
-    margin-right: 5px;
-    margin-top: 15px;
-    cursor: move
+  counter-increment: filterSection;
+
+  header {
+    display: flex;
+    align-content: space-between;
+    background: #eee;
+    padding: .5em;
+    position: relative;
+
+    &:before {
+      color: #999;
+      content: counter(filterSection);
+      font-size: 1.4em;
+      position: absolute;
+      top: 0.05em;
+      cursor: move;
+    }
+
+    h2 {
+      order: 1;
+      font-size: 1em;
+      margin: 0 1em 0 0;
+      padding: 0 0 0 20px;
+      white-space: nowrap;
+      overflow: hidden !important;
+      text-overflow: ellipsis;
+      width: 200px;
+      cursor: move;
+      text-transform: capitalize;
+    }
+
+    a {
+      order: 2;
+      text-decoration: none;
+      cursor: pointer;
+    }
   }
+
+  main {
+    padding: .5em;
+  }
+
   .tooltip {
     position: absolute;
     text-align: center;
-    width: 20px;
-    height: 28px;
-    padding: 2px;
+    display: block;
+    padding: 5px;
     font: 12px sans-serif;
-    background: white;
-    border: 0px;
+    background: #fff;
+    border-radius: 3px;
+    border: 1px #999 solid;
     pointer-events: none;
+    user-select: none;
   }
 }
 
@@ -30,6 +66,10 @@
   flex-grow: 1;
   width: 100%;
   opacity: 1;
+  white-space: nowrap;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
 }
 
 .categories.active {
@@ -41,7 +81,8 @@
 }
 
 .idType {
-
+  font-size: 1.5em;
+  margin: 0.3em;
   text-align: center;
 }
 
@@ -61,9 +102,10 @@
 }
 
 li {
-  list-style-type: none
+  list-style-type: none;
 }
 
 .filterlist {
-  padding-left: 0px
+  padding-left: 0;
+  counter-reset: filterSection;
 }
