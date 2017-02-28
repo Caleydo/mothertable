@@ -118,7 +118,7 @@ export default class FilterManager extends EventHandler {
     let posBefore;
     let posAfter;
     //Same as using query selector)
-    $('ol.filterlist', this.node).sortable({handle: '.filterlabel', axis: 'y', items: '> :not(.filter.nodrag)'});
+    $('ol.filterlist', this.node).sortable({handle: 'header', axis: 'y', items: '> :not(.filter.nodrag)'});
     // {axis: 'y'});
     $('ol.filterlist', this.node).on('sortstart', function (event, ui) {
       //  console.log('start: ' + ui.item.index())

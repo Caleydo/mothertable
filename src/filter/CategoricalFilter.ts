@@ -29,7 +29,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
     this.generateLabel(node, this.data.desc.name);
     const dispHistogram: boolean = true;
-    this.generateCategories(node, dispHistogram);
+    this.generateCategories(<HTMLElement>node.querySelector('main'), dispHistogram);
 
     return node;
   }

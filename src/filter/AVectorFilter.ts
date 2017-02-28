@@ -13,20 +13,26 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends AFilter<T, DATATYPE> {
   static EVENT_SORTBY_FILTER_ICON = 'sortFilter';
 
-  protected build(parent: HTMLElement) {
+  protected build(parent: HTMLElement):HTMLElement {
 
     const ol = parent.querySelector('.filterlist');
-    const node = document.createElement('div');
-    ol.appendChild(node);
-    node.classList.add('filter');
-    this.addSortIcon(node);
-    return node;
+    const li = <HTMLElement>document.createElement('li');
+    ol.appendChild(li);
+    li.classList.add('filter');
+
+    const header = document.createElement('header');
+    li.appendChild(header);
+    const main = document.createElement('main');
+    li.appendChild(main);
+
+    this.addSortIcon(header);
+    return li;
   }
 
 
   private addSortIcon(node: HTMLElement) {
     // this.sortCriteria = SORT.asc;
-    const sortIconNode = d3.select(node).append('div').classed('fa sort fa-sort-amount-asc', true);
+    const sortIconNode = d3.select(node).append('a').classed('fa sort fa-sort-amount-asc', true);
     sortIconNode.on('click', () => {
       const b = sortIconNode.attr('class');
       if (b === 'fa sort fa-sort-amount-asc') {

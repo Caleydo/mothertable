@@ -48,7 +48,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     this.generateLabel(node, this.data.desc.name);
     this._toolTip = this.generateTooltip(node);
-    this.generateDensityPlot(node);
+    this.generateDensityPlot(<HTMLElement>node.querySelector('main'));
 
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
