@@ -45,13 +45,12 @@
     position: absolute;
     text-align: center;
     display: block;
-    width: 20px;
-    height: 28px;
-    padding: 2px;
+    padding: 5px;
     font: 12px sans-serif;
     background: white;
-    border: 0px;
+    border: 1px solid #444;
     pointer-events: none;
+    user-select: none;
   }
 }
 
