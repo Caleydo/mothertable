@@ -47,8 +47,9 @@
     display: block;
     padding: 5px;
     font: 12px sans-serif;
-    background: white;
-    border: 1px solid #444;
+    background: #fff;
+    border-radius: 3px;
+    border: 1px #999 solid;
     pointer-events: none;
     user-select: none;
   }
