@@ -67,15 +67,15 @@
           "categories": [
             {
               "name": "female",
-              "color": "red"
+              "color": "#8dd3c7"
             },
             {
               "name": "group",
-              "color": "#ff00ff"
+              "color": "#ffffb3"
             },
             {
               "name": "male",
-              "color": "blue"
+              "color": "#bebada"
             }
           ]
         }
