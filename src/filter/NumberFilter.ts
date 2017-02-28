@@ -72,11 +72,11 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     await this.makeBins(svg);
     this.makeBrush(svg, brushRectPosY - 10, c.range);
 
-    this.makeText(svg, 0, svgHeight, 'leftText').text(`${Math.floor(c.range[0])}`);
-    this.makeText(svg, brushRectPosY - 10, svgHeight, 'rightText').text(`${Math.floor(c.range[1])}`);
+    this.makeText(svg, 0, triangleYPos, 'leftText').text(`${Math.floor(c.range[0])}`);
+    this.makeText(svg, brushRectPosY - 10, triangleYPos, 'rightText').text(`${Math.floor(c.range[1])}`);
 
-    this.makeTriangleIcon(svg, brushRectPosX, triangleYPos, 'left');
-    this.makeTriangleIcon(svg, brushRectPosY, triangleYPos, 'right');
+    //  this.makeTriangleIcon(svg, brushRectPosX, triangleYPos, 'left');
+    // this.makeTriangleIcon(svg, brushRectPosY, triangleYPos, 'right');
 
 
   }
