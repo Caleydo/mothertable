@@ -91,7 +91,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
     const catListDiv = catEntries
       .selectAll('div.categories')
-      .data(sortedCatData).enter();
+      .data(sortedCatData);
 
     catListDiv.enter().append('div')
       .attr('class', 'categories')
