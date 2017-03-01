@@ -43,9 +43,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       return;
     }
 
-    console.log(sortData)
     this._sortCriteria = sortData.sortMethod;
-
     d3.select(this.node).select('main').remove();
     d3.select(this.node).append('main');
     this.generateCategories(<HTMLElement>this.node.querySelector('main'), true);
@@ -66,7 +64,6 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const cellHeight = this.filterDim.height;
     const allCatNames = await(<any>this.data).data();
     const categories = (<any>this.data).desc.value.categories;
-
 
     const c20 = d3.scale.category20();
     const toolTip = (this.generateTooltip(node));
@@ -92,11 +89,11 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
 
     that._activeCategories = catData;
-    const s = catData.slice().sort(catObjectsort.bind(this, this._sortCriteria));
+    const sortedCatData = catData.slice().sort(catObjectsort.bind(this, this._sortCriteria));
 
     const catListDiv = catEntries
       .selectAll('div.categories')
-      .data(s).enter();
+      .data(sortedCatData).enter();
 
     catListDiv.append('div')
       .attr('class', 'categories')
@@ -195,7 +192,5 @@ function catObjectsort(sortCriteria, a, b) {
 
     return (bVal.localeCompare(aVal));
   }
-
-  // return (aVal < bVal) ? -1 : (aVal > bVal) ? 1 : 0;
 }
 
