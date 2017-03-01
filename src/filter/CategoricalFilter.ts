@@ -81,10 +81,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
-    const catEntries = d3.select(node).append('div').classed('catentries', true)
-      .style('display', 'flex')
-      .style('align-items', 'flex-end')
-      .style('flex-grow', 1);
+    const catEntries = d3.select(node).append('div').classed('catentries', true);
+
     const binScale = d3.scale.linear()
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
 
@@ -95,14 +93,14 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .selectAll('div.categories')
       .data(sortedCatData).enter();
 
-    catListDiv.append('div')
+    catListDiv.enter().append('div')
       .attr('class', 'categories')
       //.style('flex-grow', 1)
       .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
       .style('width', cellDimension + 'px')
       //.style('height', (d, i) => binScale(d.count) + 'px')
       .style('background-color', (d) => d.color)
-      .text((d: any) => d.name)
+
       .on('mouseover', function (d, i) {
         toolTip.transition()
           .duration(200)
@@ -141,10 +139,18 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
         }
       });
 
-    //this.triggerFilterChanged();
+    catListDiv.exit().remove();
 
+    const catlabels = d3.select(node).append('div').classed('catlabels', true);
 
-    //  console.log(d3.select(node).selectAll('div.categories').node());
+    const catNames = catlabels
+      .selectAll('div.catNames')
+      .data(catData);
+    catNames.enter().append('div')
+      .attr('class', 'catNames')
+      .text((d, i) => d.name);
+    catNames.exit().remove();
+
   }
 
   async filter(current: Range1D) {
