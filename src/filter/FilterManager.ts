@@ -50,6 +50,7 @@ export default class FilterManager extends EventHandler {
     const col = FilterManager.createFilter(data, this.node);
     //console.log(col.data.desc.id)
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
+
     this.filters.push(col);
     if (data.desc.type === 'vector') {
       this.filterHierarchy.push(col);
