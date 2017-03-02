@@ -26,7 +26,7 @@ export default class SupportView extends EventHandler {
   readonly node: HTMLElement;
   private _matrixData;
 
-  constructor(public readonly idType: IDType, parent: HTMLElement,readonly id?:string) {
+  constructor(public readonly idType: IDType, parent: HTMLElement, readonly id?: string) {
     super();
     this.node = parent.ownerDocument.createElement('div');
     parent.appendChild(this.node);
@@ -113,7 +113,7 @@ export default class SupportView extends EventHandler {
   }
 
   private async addColor() {
-    const color = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5'];
+    const color = ['#8dd3c7', '#1d9ee8', '#d97979', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5'];
     const datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
 
@@ -128,6 +128,7 @@ export default class SupportView extends EventHandler {
             tableVector.desc.value.categories[i] = {name: v.name, color: color[i]};
           }
         });
+
       }
     });
 

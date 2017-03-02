@@ -66,9 +66,9 @@
     "tslib": "1.5.0"
   },
   "dependencies": {
-    "phovea_core": "github:phovea/phovea_core#develop",
-    "phovea_vis": "github:phovea/phovea_vis#develop",
-    "phovea_ui": "github:phovea/phovea_ui#develop",
+    "phovea_core": "github:phovea/phovea_core#mothertable",
+    "phovea_vis": "github:phovea/phovea_vis#mothertable",
+    "phovea_ui": "github:phovea/phovea_ui#mothertable",
     "@types/d3": "3.5.36",
     "d3": "3.5.17",
     "jquery-ui": "1.12.1"

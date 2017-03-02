@@ -25,12 +25,17 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  protected multiFormParams(): IMultiFormOptions {
-    return {};
+  protected multiFormParams(body: HTMLElement): IMultiFormOptions {
+    return {
+      all: {
+        width: body.clientWidth,
+        heightTo: body.clientHeight,
+      }
+  };
   }
 
   protected buildBody(body: HTMLElement) {
-    this.multiform = new MultiForm(this.data, body, this.multiFormParams());
+    this.multiform = new MultiForm(this.data, body, this.multiFormParams(body));
   }
 
   protected buildToolbar(toolbar: HTMLElement) {
@@ -46,8 +51,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
-
-    const m = new MultiForm(data, body, this.multiFormParams());
+    const m = new MultiForm(data, body, this.multiFormParams(body));
     const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
     vislist.innerHTML = ''; // clear old
     m.addIconVisChooser(vislist);
