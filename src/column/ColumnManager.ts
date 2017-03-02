@@ -183,7 +183,7 @@ export default class ColumnManager extends EventHandler {
 
 
     //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-    console.log(mergedRange.dim(0).asList());
+  //  console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
 
