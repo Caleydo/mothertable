@@ -20,7 +20,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
 
 
     this.generateLabel(node, this.data.desc.name);
-    this.generateSearchInput(node);
+    this.generateSearchInput(<HTMLElement>node.querySelector('main'));
 
 
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;

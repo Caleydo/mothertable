@@ -24,16 +24,9 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build(parent: HTMLElement) {
-
-    let node;
-    const idType = this.idtype.id;
-    const element = document.querySelector(`.${idType}.filter-manager`);
-    node = document.createElement('div');
-    element.appendChild(node);
-    node.classList.add('filter');
-    return node;
-
+    return parent;
   }
+
 
   async filter(current: Range1D) {
     return current;
@@ -48,27 +41,10 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected generateLabel(node: HTMLElement, labelname) {
-    const labelNode = d3.select(node).append('div').classed('filterlabel', true);
-    let name = labelname;
-    if (name.length > 6) {
-      name = name.slice(0, 6) + '..';
-    }
-    const toolTip = (this.generateTooltip(node));
-    const fullName = labelname;
-    labelNode.text(`${name.substring(0, 1).toUpperCase() + name.substring(1)}`)
-      .on('mouseover', function (d, i) {
-        toolTip.transition()
-          .duration(200)
-          .style('opacity', 1);
-        toolTip.html(`${fullName}`)
-          .style('left', ((<any>d3).event.pageX) + 'px')
-          .style('top', ((<any>d3).event.pageY - 10) + 'px');
-      })
-      .on('mouseout', function (d) {
-        toolTip.transition()
-          .duration(500)
-          .style('opacity', 0);
-      });
+    d3.select(node).select('header')
+      .append('h2')
+      .classed('filterlabel', true)
+      .text(labelname);
   }
 
   protected triggerFilterChanged() {
@@ -77,13 +53,7 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected checkFilterApplied(fullRange: number, vectorViewRange: number) {
-
-    if (fullRange === vectorViewRange) {
-
-      return false;
-    }
-    return true;
-
+    return (fullRange !== vectorViewRange);
   }
 
 

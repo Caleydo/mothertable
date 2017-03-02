@@ -11,6 +11,13 @@ body {
   flex-direction: column;
 }
 
+.itemFixedWidth {
+}
+
+.itemWidth {
+  flex: 1 1 auto;
+}
+
 #app {
   display: flex;
   flex-direction: row;
@@ -19,9 +26,10 @@ body {
 
   > .rightPanel {
     display: flex;
-    overflow: hidden;
     flex-direction: column;
     border-left: $border-ui;
+
+    flex: 0 1 $rightPanelWidth;
 
     > .filter-view {
       width: 20vw;

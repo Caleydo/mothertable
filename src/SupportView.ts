@@ -14,6 +14,8 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
+import {AnyColumn} from './column/ColumnManager';
+
 
 export default class SupportView extends EventHandler {
 
@@ -24,13 +26,18 @@ export default class SupportView extends EventHandler {
   readonly node: HTMLElement;
   private _matrixData;
 
-  constructor(public readonly idType: IDType, parent: HTMLElement) {
+  constructor(public readonly idType: IDType, parent: HTMLElement, readonly id?: string) {
     super();
     this.node = parent.ownerDocument.createElement('div');
     parent.appendChild(this.node);
     this.node.classList.add(idType.id);
     this.buildSelectionBox(this.node);
+    this.id = id;
     this.filter = new FilterManager(idType, this.node);
+
+    this.filter.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+      this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
+    });
 
     this.propagate(this.filter, FilterManager.EVENT_FILTER_CHANGED);
   }
@@ -43,10 +50,18 @@ export default class SupportView extends EventHandler {
     if (isFilterAble(data) && !this.filter.contains(<IFilterAbleType>data)) {
 
       this.filter.push(<IFilterAbleType>data);
+
+
     }
 
     this._matrixData = data;
+
     this.fire(SupportView.EVENT_DATASET_ADDED, data);
+  }
+
+  primarySortColumn(sortColdata) {
+    this.filter.primarySortColumn(sortColdata);
+
   }
 
   get matrixData() {
@@ -55,7 +70,7 @@ export default class SupportView extends EventHandler {
 
 
   public remove(data: IDataType) {
-     if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
+    if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
       this.filter.removeData(<IFilterAbleType>data);
     }
   }
@@ -69,10 +84,13 @@ export default class SupportView extends EventHandler {
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
 
+    const datasets = await this.addColor();
+    // console.log(datasets);
+
     // list all data, filter to the matching ones, and prepare them
-    const datasets = convertTableToVectors(await listData())
-      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
-      .map((d) => transposeMatrixIfNeeded(this.idType, d));
+    // const datasets = convertTableToVectors(await listData())
+    //   .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
+    // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
 
     datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
@@ -93,6 +111,33 @@ export default class SupportView extends EventHandler {
       return false;
     });
   }
+
+  private async addColor() {
+    const color = ['#8dd3c7', '#1d9ee8', '#d97979', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5'];
+    const datasets = convertTableToVectors(await listData())
+      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+
+    datasets.forEach((tableVector) => {
+      if (tableVector.desc.value.type === 'categorical') {
+        const categories = tableVector.desc.value.categories;
+        categories.forEach((v, i) => {
+          if (v.color === undefined) {
+            tableVector.desc.value.categories[i] = {name: v, color: color[i]};
+          }
+          if (v.label !== undefined) {
+            tableVector.desc.value.categories[i] = {name: v.name, color: color[i]};
+          }
+        });
+
+      }
+    });
+
+
+    return datasets;
+
+  }
+
+
 }
 
 function isFilterAble(data: IDataType) {
@@ -101,6 +146,7 @@ function isFilterAble(data: IDataType) {
   return true;
   //return data.desc.type !== 'matrix';
 }
+
 
 export function isPossibleDataset(data: IDataType) {
   switch (data.desc.type) {

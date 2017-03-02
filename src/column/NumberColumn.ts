@@ -10,6 +10,9 @@ import {mixin} from 'phovea_core/src/index';
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   readonly node: HTMLElement;
 
+  minimumWidth: number = 30;
+  preferredWidth: number = 200;
+
   constructor(data: INumericalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);
     this.node = this.build(parent);

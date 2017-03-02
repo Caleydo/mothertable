@@ -4,9 +4,11 @@
 
 import {IDataType} from 'phovea_core/src/datatype';
 import Range1D from 'phovea_core/src/range/Range1D';
+import Range from 'phovea_core/src/range/Range';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
-
+import {SORT} from '../SortEventHandler/SortEventHandler';
+import AVectorFilter from '../filter/AVectorFilter';
 export enum EOrientation {
   Horizontal,
   Vertical
@@ -14,9 +16,16 @@ export enum EOrientation {
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
+  static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
+
+  minimumWidth: number = 10;
+  preferredWidth: number = 100;
+  dataView: IDataType;
+  sortCriteria: string = SORT.asc;
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
+
   }
 
   get idtype() {
@@ -27,7 +36,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract layout(width: number, height: number);
 
-  abstract async update(idRange: Range1D): Promise<any>;
+  abstract async update(idRange: Range): Promise<any>;
 
 
   getVerticalMargin() {
@@ -43,9 +52,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
   }
 
-  updateMatrix(range1,range2) {
+  // async updateMatrix(rowRange, colRange) {
+  //
+  //   return rowRange;
+  // }
 
-    return range1;
+ async updateMatrixCol(colRange) {
+
+    return colRange;
   }
 
 
@@ -54,9 +68,16 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build(parent: HTMLElement) {
-    const node = parent.ownerDocument.createElement('div');
+
+    const ol = parent.querySelector('.columnList'); // Column list holder for dragging
+    const node = document.createElement('div');
+    ol.appendChild(node);
+    //  const node = parent.ownerDocument.createElement('div');
     node.classList.add('column');
     node.classList.add('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'));
+    //assign column with a proper width
+    node.style.minWidth = String(this.minimumWidth + 'px');
+    node.style.width = String(this.preferredWidth + 'px');
     let name = this.data.desc.name;
     if (name.length > 6) {
       name = name.slice(0, 6) + '..';
@@ -64,13 +85,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     node.innerHTML = `
         <header class="columnHeader">
-            <i class="sort_indicator fa fa-sort-desc"></i>
-            <div class="toolbar"></div>
+               <div class="toolbar"></div>
             <span>${name}</span>
         </header>
         <main></main>`;
 
-    parent.appendChild(node);
+    //  parent.appendChild(node);
 
     const header = d3.selectAll('header')
       .on('mouseover', function () {
@@ -82,6 +102,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
           .style('display', 'none');
       });
 
+
     this.buildBody(<HTMLElement>node.querySelector('main'));
     this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));
     return node;
@@ -90,28 +111,46 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected abstract buildBody(body: HTMLElement);
 
   protected buildToolbar(toolbar: HTMLElement) {
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-desc"></button>`);
-    if (this.data.desc.type == 'vector') {
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa statistics fa-star"></button>`);
-    }
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-unlock"></button>`);
+    const lockButton = toolbar.querySelector('button.fa-unlock');
+    this.lockColumnWidth(lockButton);
 
+    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
     toolbar.querySelector('button.fa-close').addEventListener('click', () => {
       this.fire(AColumn.EVENT_REMOVE_ME);
       return false;
     });
+  }
 
-    const sortButton = toolbar.querySelector('button.fa-sort-amount-desc');
+  protected lockColumnWidth(lockButton) {
+    lockButton.addEventListener('click', () => {
+      const b = d3.select(lockButton);
+      if (b.classed('fa-lock')) {
+        // UNLOCKING
+        b.attr('class', 'fa fa-unlock');
+        this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'unlocked');
 
-    sortButton.addEventListener('click', () => {
-      const b = d3.select(sortButton);
-      //TODO sort items
-      if (b.classed('fa-sort-amount-desc')) {
-        //want ascending order
-        b.attr('class', 'fa sort fa-sort-amount-asc');
+        this.node.classList.add('itemWidth');
+        this.node.classList.remove('itemFixedWidth');
+        this.node.style.flex = '1 1 ' + String(this.node.clientWidth + 'px');
+        //this.node.style.width = String(this.node.clientWidth + 'px');
+        this.node.style.minWidth = String(this.minimumWidth + 'px');
+        this.node.style.maxWidth = String(this.preferredWidth + 'px');
+
       } else {
-        //want descending order
-        b.attr('class', 'fa sort fa-sort-amount-desc');
+        // LOCKING
+        b.attr('class', 'fa fa-lock');
+        this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
+
+        this.node.classList.add('itemFixedWidth');
+        this.node.classList.remove('itemWidth');
+        this.node.style.flex = '0 0 ' + String(this.node.clientWidth + 'px');
+        /*const currentWidth = String(this.node.clientWidth + 'px');
+         this.node.style.minWidth = currentWidth;
+         this.node.style.maxWidth = currentWidth;
+         this.node.style.minWidth = null;
+         this.node.style.width = null; */
+
       }
     });
   }

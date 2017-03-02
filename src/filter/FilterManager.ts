@@ -16,6 +16,9 @@ import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
+import * as $ from 'jquery';
+import 'jquery-ui/ui/widgets/sortable';
+
 
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -23,14 +26,18 @@ export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumerica
 export default class FilterManager extends EventHandler {
 
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
+  static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
   readonly filters: AnyColumn[] = [];
+  private filterHierarchy = [];
   private onFilterChanged = () => this.refilter();
-  private activeFilters;
-  private rangeNow: Range1D = Range1D.all();
 
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
     this.node.classList.add('filter-manager');
+    const ol = document.createElement('ol');
+    ol.classList.add('filterlist');
+    node.appendChild(ol);
+    this.drag();
 
   }
 
@@ -40,15 +47,25 @@ export default class FilterManager extends EventHandler {
       throw new Error('invalid idtype');
     }
 
-
     const col = FilterManager.createFilter(data, this.node);
     //console.log(col.data.desc.id)
-
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
-
     this.filters.push(col);
+    if (data.desc.type === 'vector') {
+      this.filterHierarchy.push(col);
+    }
+    // console.log(this.filterHierarchy, this.filters)
+    //  console.log(this.filters)
 
   }
+
+
+  primarySortColumn(sortColdata) {
+    const dataid = sortColdata.data.desc.id;
+    const col = this.filters.filter((d) => d.data.desc.id === dataid);
+    this.move(col[0], 0);
+  }
+
 
   contains(data: IFilterAbleType) {
     return this.filters.some((d) => d.data === data);
@@ -71,19 +88,68 @@ export default class FilterManager extends EventHandler {
    * @param index
    */
   move(col: AnyColumn, index: number) {
-    const old = this.filters.indexOf(col);
+    const old = this.filterHierarchy.indexOf(col);
     if (old === index) {
+      this.triggerSort();
       return;
     }
-    //move the dom element, too
-    this.node.insertBefore(col.node, this.node.childNodes[index]);
 
-    this.filters.splice(old, 1);
+    //move the dom element, too
+    const filterListNode = this.node.querySelector('.filterlist');
+    // this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
+    filterListNode.insertBefore(col.node, filterListNode.childNodes[index]);
+
+    this.filterHierarchy.splice(old, 1);
     if (old < index) {
       index -= 1; //shifted because of deletion
     }
-    this.filters.splice(index, 0, col);
+    this.filterHierarchy.splice(index, 0, col);
+    this.triggerSort();
+
   }
+
+  /**
+   *
+   * Filter Dragging  Event Listener
+   */
+
+  drag() {
+    const that = this;
+    let posBefore;
+    let posAfter;
+    //Same as using query selector)
+    $('ol.filterlist', this.node).sortable({handle: 'header', axis: 'y', items: '> :not(.filter.nodrag)'});
+    // {axis: 'y'});
+    $('ol.filterlist', this.node).on('sortstart', function (event, ui) {
+      //  console.log('start: ' + ui.item.index())
+      posBefore = ui.item.index();
+    });
+
+    $('ol.filterlist', this.node).on('sortupdate', function (event, ui) {
+      //  console.log('update: ' + ui.item.index())
+      posAfter = ui.item.index();
+      that.updateFilterOrder(posBefore, posAfter);
+    });
+
+
+  }
+
+  /**
+   * Update the order of filter Array also after dragging event finish
+   * @param posBefore position of element before dragging
+   * @param posAfter  position of element after dragging
+   */
+  updateFilterOrder(posBefore: number, posAfter: number) {
+    const temp = this.filterHierarchy[posBefore];
+    this.filterHierarchy.splice(posBefore, 1);
+    this.filterHierarchy.splice(posAfter, 0, temp);
+    this.triggerSort();
+  }
+
+  private triggerSort() {
+    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.filterHierarchy);
+  }
+
 
   /**
    * returns the current filter
@@ -93,7 +159,6 @@ export default class FilterManager extends EventHandler {
     let filtered = Range1D.all();
     for (const f of this.filters) {
       filtered = await f.filter(filtered);
-
     }
     return filtered;
   }

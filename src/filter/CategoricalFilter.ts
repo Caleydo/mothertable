@@ -29,7 +29,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
     this.generateLabel(node, this.data.desc.name);
     const dispHistogram: boolean = true;
-    this.generateCategories(node, dispHistogram);
+    this.generateCategories(<HTMLElement>node.querySelector('main'), dispHistogram);
 
     return node;
   }
@@ -53,43 +53,37 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const c20 = d3.scale.category20();
     const toolTip = (this.generateTooltip(node));
     const cellDimension = this.filterDim.width / categories.length;
-
     const catData = [];
     const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
     uniqueCategories.forEach(((val, i) => {
       const count = allCatNames.filter(isSame.bind(this, val));
-      let colcat;
+      let colcat = [];
       if (typeof categories !== 'undefined') {
-        colcat = categories.filter((d, i) => d.name === val);
-
+        colcat = categories.filter((d, i) => {
+          return d.name === val;
+        });
       }
       const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
+    const catEntries = d3.select(node).append('div').classed('catentries', true);
 
-    const catEntries = d3.select(node).append('div').classed('catentries', true)
-      .style('display', 'flex')
-      .style('align-items', 'flex-end')
-      .style('flex-grow', 1);
     const binScale = d3.scale.linear()
       .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
 
     that._activeCategories = catData;
     const catListDiv = catEntries
       .selectAll('div.categories')
-      .data(catData).enter();
+      .data(catData);
 
-
-    catListDiv.append('div')
+    catListDiv.enter().append('div')
       .attr('class', 'categories')
       //.style('flex-grow', 1)
       .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
       .style('width', cellDimension + 'px')
       //.style('height', (d, i) => binScale(d.count) + 'px')
       .style('background-color', (d) => d.color)
-      .text((d: any) => {
-        return d.name;
-      })
+
       .on('mouseover', function (d, i) {
         toolTip.transition()
           .duration(200)
@@ -128,10 +122,18 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
         }
       });
 
-    //this.triggerFilterChanged();
+    catListDiv.exit().remove();
 
+    const catlabels = d3.select(node).append('div').classed('catlabels', true);
 
-    //  console.log(d3.select(node).selectAll('div.categories').node());
+    const catNames = catlabels
+      .selectAll('div.catNames')
+      .data(catData);
+    catNames.enter().append('div')
+      .attr('class', 'catNames')
+      .text((d, i) => d.name);
+    catNames.exit().remove();
+
   }
 
   async filter(current: Range1D) {
@@ -159,6 +161,7 @@ function isSame(value, compareWith) {
 
 
 function findCatName(catName: any[], value, index,) {
+
   for (const x in catName) {
     if (catName[x].name === value) {
       return value;

@@ -1,5 +1,5 @@
 
-$rightPanelWidth: 300px;
+$rightPanelWidth: 250px;
 $select-color: orange;
 $hover-color: #ffc46b;
 $border-ui: 1px solid #bbb;
@@ -27,10 +27,9 @@ $border-ui: 1px solid #bbb;
 
   > .rightPanel {
     display: flex;
-    overflow: hidden;
     flex-direction: column;
     border-left: $border-ui;
-    width: $rightPanelWidth;
+    flex: 0 1 $rightPanelWidth;
 
     > .appToolBar {
       height: 40px;
