@@ -16,7 +16,6 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
   protected multiform: MultiForm;
   dataView: IDataType;
-  filterRange;
   static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
 
 
@@ -42,16 +41,17 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     }
     toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-asc"></button>`);
     const sortButton = <HTMLElement>toolbar.querySelector('button.fa-sort-amount-asc');
-
     this.getSortMethod(sortButton);
     super.buildToolbar(toolbar);
   }
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
+
     const m = new MultiForm(data, body, this.multiFormParams());
     const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
     vislist.innerHTML = ''; // clear old
     m.addIconVisChooser(vislist);
+    this.updateSortIcon();
     return m;
   }
 
@@ -66,8 +66,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   //   });
   // }
 
-  protected getSortMethod(sortButton: HTMLElement) {
-
+  protected getSortMethod(sortButton:HTMLElement) {
     sortButton.addEventListener('click', () => {
       const b = d3.select(sortButton);
       if (b.classed('fa-sort-amount-asc')) {
@@ -82,6 +81,18 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         b.attr('class', 'fa sort fa-sort-amount-asc');
       }
     });
+
+  }
+
+  updateSortIcon() {
+    if (this.sortCriteria === SORT.desc) {
+      const s = d3.select(this.node).select('.fa.sort.fa-sort-amount-asc');
+      s.attr('class', 'fa sort fa-sort-amount-desc');
+    }
+    if (this.sortCriteria === SORT.asc) {
+      const s = d3.select(this.node).select('.fa.sort.fa-sort-amount-desc');
+      s.attr('class', 'fa sort fa-sort-amount-asc');
+    }
   }
 
 
