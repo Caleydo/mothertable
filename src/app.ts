@@ -141,6 +141,7 @@ export default class App {
 
 
     this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+
       this.manager.filterData(filter);
       // this.manager.update(filter);
       this.rowRange = filter;
@@ -171,7 +172,7 @@ export default class App {
 
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${idtype.id}`);
-    const idName = document.createElement('div');
+    const idName = document.createElement('h1');
     idName.classList.add('idType');
     idName.innerHTML = (idtype.id.toUpperCase());
     newdiv.appendChild(idName);
@@ -202,6 +203,7 @@ export default class App {
 
     this.previewData(this.dataSize, otherIdtype.id, node);
     matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+      // this.manager.filterData(this.rowRange);
       this.triggerMatrix(filter, matrixSupportView.id);
 
       this.dataSize.filtered = filter.size()[0];
@@ -235,11 +237,11 @@ export default class App {
 
     // matrixCol.forEach((col: MatrixColumn) => {
     //   col.updateRows(this.rowRange);
+    //   col.updateCols(this.colRange);
+    //   col.updateMatrix(this.rowRange, this.colRange);
     // });
 
-    //  col.updateCols(colRange);
-    //   col.updateMatrix(this.rowRange, colRange);
-    matrixCol[uniqueMatrix - 1].updateMatrix(this.rowRange, colRange);
+    matrixCol[uniqueMatrix - 1].updateMatrixCol(colRange);
 
 
   }

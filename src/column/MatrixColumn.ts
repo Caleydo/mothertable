@@ -24,7 +24,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   private multiform: MultiForm;
   private rowRange: Range;
-  private colRange: Range1D;
+  private colRange: Range;
   dataView: IDataType;
   private matrixID: number;
 
@@ -109,7 +109,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     }
 
     if (this.colRange === undefined) {
-      this.colRange = (indices.dim(1));
+      this.colRange = rlist(indices.dim(1));
     }
     return ([this.rowRange, this.colRange]);
   }
@@ -119,7 +119,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.updateMatrix(this.rowRange, this.colRange);
   }
 
-  updateCols(idRange: Range1D) {
+  async updateMatrixCol(idRange: Range) {
     this.colRange = idRange;
     this.updateMatrix(this.rowRange, this.colRange);
 
@@ -127,6 +127,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMatrix(rowRange, colRange) {
+    if (colRange === undefined) {
+      colRange = (await this.calculateDefaultRange())[1];
+    }
     let rowView = await this.data.idView(rowRange);
     rowView = (<INumericalMatrix>rowView).t;
     let colView = await rowView.idView(colRange);

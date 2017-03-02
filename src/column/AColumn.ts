@@ -52,9 +52,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return <HTMLElement>this.node.querySelector('header.columnHeader');
   }
 
-  async updateMatrix(rowRange, colRange) {
+  // async updateMatrix(rowRange, colRange) {
+  //
+  //   return rowRange;
+  // }
 
-    return rowRange;
+ async updateMatrixCol(colRange) {
+
+    return colRange;
   }
 
 

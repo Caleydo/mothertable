@@ -165,10 +165,10 @@ export default class ColumnManager extends EventHandler {
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r = s.sortByMe();
-    // if ((await r).length < 1) {
-    //   return this.update(r);
-    //
-    // }
+    if ((await r).length < 1) {
+      return this.update(r[0]);
+
+    }
     this.mergeRanges(r);
 
   }
@@ -183,7 +183,7 @@ export default class ColumnManager extends EventHandler {
 
 
     //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-    console.log(mergedRange.dim(0).asList());
+  //  console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
 
