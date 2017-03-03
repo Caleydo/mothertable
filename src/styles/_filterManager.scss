@@ -128,12 +128,12 @@ li {
 }
 
 .extent {
-  fill: lightgrey;
-  opacity: 0.6;
+  fill: transparent;
+  stroke-width: 1;
+  stroke: black;
 
 }
 
 .background {
-  fill: grey;
-  opacity: 0.7;
+  fill: transparent;
 }
