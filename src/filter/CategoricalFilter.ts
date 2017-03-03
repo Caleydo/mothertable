@@ -66,23 +66,46 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
-    const catEntries = d3.select(node).append('div').classed('catentries', true);
+
 
     const binScale = d3.scale.linear()
-      .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
+      .domain([0, d3.max(catData, (d) => d.count)]).range([0, this._filterDim.height]);
 
     that._activeCategories = catData;
+
+    // const catColor = d3.select(node).append('div').classed('colorDiv', true);
+    // const catt = catColor
+    //   .selectAll('div.colorCategories')
+    //   .data(catData);
+    // catt.enter().append('div')
+    //   .attr('class', 'colorCategories')
+    //   .style('width', cellDimension + 'px')
+    //   .style('height', cellHeight + 'px')
+    //   .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
+    //   //.style('height', (d, i) => binScale(d.count) + 'px')
+    //   .style('background-color', (d) => d.color);
+
+    const catEntries = d3.select(node).append('div').classed('catentries', true);
     const catListDiv = catEntries
       .selectAll('div.categories')
       .data(catData);
 
     catListDiv.enter().append('div')
-      .attr('class', 'categories')
+      .attr('class', 'categories1')
       //.style('flex-grow', 1)
+
       .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
       .style('width', cellDimension + 'px')
       //.style('height', (d, i) => binScale(d.count) + 'px')
       .style('background-color', (d) => d.color)
+      //.style('flex-grow', 1)
+
+      .append('div')
+      .attr('class', 'categories')
+      .style('height', cellHeight + 'px')
+      .style('width', cellDimension + 'px')
+      //.style('height', (d, i) => binScale(d.count) + 'px')
+      .style('background-color', 'transparent')
 
       .on('mouseover', function (d, i) {
         toolTip.transition()
@@ -98,7 +121,10 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
           .style('opacity', 0);
       })
       .on('click', function (d, i) {
+        console.log(d)
         d3.select(this).classed('active', !d3.select(this).classed('active'));
+         d3.select(this.parentElement).classed('active', !d3.select(this).classed('active'));
+        //    d3.select(that.node).select('colorCategories').classed('active', !d3.select(this).classed('active'));
         if (d3.select(this).classed('active') === false) {
           const cat = that._activeCategories;
           cat.push(d);
@@ -122,7 +148,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
         }
       });
 
+
     catListDiv.exit().remove();
+
 
     const catlabels = d3.select(node).append('div').classed('catlabels', true);
 

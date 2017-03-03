@@ -66,6 +66,20 @@
   flex-grow: 1;
   .categories {
     stroke: black;
+
+    flex-grow: 1;
+    width: 100%;
+    opacity: 1;
+
+  }
+}
+
+.colorDiv {
+  display: flex;
+  align-items: flex-end;
+  flex-grow: 1;
+  .colorCategories {
+    stroke: black;
     margin: 1px;
     flex-grow: 1;
     width: 100%;
@@ -74,8 +88,24 @@
   }
 }
 
+.categories1 {
+  stroke: black;
+  flex-grow: 1;
+  width: 100%;
+  opacity: 1;
+
+}
+
+.colorCategories.active {
+  opacity: 0.5;
+}
+
 .categories.active {
   opacity: 0.5;
+}
+
+.categories1.active {
+  opacity: 1;
 }
 
 .catlabels {
