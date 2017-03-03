@@ -73,40 +73,14 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
     that._activeCategories = catData;
 
-    // const catColor = d3.select(node).append('div').classed('colorDiv', true);
-    // const catt = catColor
-    //   .selectAll('div.colorCategories')
-    //   .data(catData);
-    // catt.enter().append('div')
-    //   .attr('class', 'colorCategories')
-    //   .style('width', cellDimension + 'px')
-    //   .style('height', cellHeight + 'px')
-    //   .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
-    //   //.style('height', (d, i) => binScale(d.count) + 'px')
-    //   .style('background-color', (d) => d.color);
-
     const catEntries = d3.select(node).append('div').classed('catentries', true);
     const catListDiv = catEntries
       .selectAll('div.categories')
       .data(catData);
 
     catListDiv.enter().append('div')
-      .attr('class', 'categories1')
-      //.style('flex-grow', 1)
-
-      .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
-      .style('width', cellDimension + 'px')
-      //.style('height', (d, i) => binScale(d.count) + 'px')
-      .style('background-color', (d) => d.color)
-      //.style('flex-grow', 1)
-
-      .append('div')
-      .attr('class', 'categories')
+      .attr('class', 'categoriesTransparent')
       .style('height', cellHeight + 'px')
-      .style('width', cellDimension + 'px')
-      //.style('height', (d, i) => binScale(d.count) + 'px')
-      .style('background-color', 'transparent')
-
       .on('mouseover', function (d, i) {
         toolTip.transition()
           .duration(200)
@@ -121,19 +95,23 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
           .style('opacity', 0);
       })
       .on('click', function (d, i) {
-        console.log(d)
-        d3.select(this).classed('active', !d3.select(this).classed('active'));
-         d3.select(this.parentElement).classed('active', !d3.select(this).classed('active'));
-        //    d3.select(that.node).select('colorCategories').classed('active', !d3.select(this).classed('active'));
-        if (d3.select(this).classed('active') === false) {
+        const $this = d3.select(this);
+        $this.classed('active', !d3.select(this).classed('active'));
+        if ($this.classed('active') === false) {
+          $this.select('.categoriesColor').style('background-color', (d) => d.color);
+          const l = d3.select(node).selectAll('.catNames');
+          const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
+          d3.select(v[0]).style('color', 'black');
           const cat = that._activeCategories;
           cat.push(d);
           that._activeCategories = cat;
-
-          //  that.onClick(cat);
           that.triggerFilterChanged();
 
-        } else if (d3.select(this).classed('active') === true) {
+        } else if ($this.classed('active') === true) {
+          $this.select('.categoriesColor').style('background-color', null);
+          const l = d3.select(node).selectAll('.catNames');
+          const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
+          d3.select(v[0]).style('color', null);
           let ind = -1;
           const cat = that._activeCategories;
           for (let i = 0; i < cat.length; ++i) {
@@ -144,21 +122,21 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
           cat.splice(ind, 1);
           that._activeCategories = cat;
           that.triggerFilterChanged();
-
         }
-      });
-
+      })
+      .append('div')
+      .attr('class', 'categoriesColor')
+      .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
+      .style('background-color', (d) => d.color);
 
     catListDiv.exit().remove();
-
-
     const catlabels = d3.select(node).append('div').classed('catlabels', true);
-
     const catNames = catlabels
       .selectAll('div.catNames')
       .data(catData);
     catNames.enter().append('div')
       .attr('class', 'catNames')
+      .style('color', 'black')
       .text((d, i) => d.name);
     catNames.exit().remove();
 
