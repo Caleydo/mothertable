@@ -113,22 +113,26 @@ export default class SupportView extends EventHandler {
   }
 
   private async addColor() {
-    const color = ['#8dd3c7', '#1d9ee8', '#d97979', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5'];
+    const color = [['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f'],
+      ['#1b9e77', '#1d9ee8', '#d97979', '#e7298a', '#66a61e', '#e6ab02'],
+      ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c'],
+      ['#e41a1c', '#377eb8', '#984ea3', '#ff7f00', '#ffff33'],
+      ['#8dd3c7', '#fdb462', '#bebada', '#fb8072', '#80b1d3', '#fdb462'],
+      ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']];
     const datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
 
-    datasets.forEach((tableVector) => {
+    datasets.forEach((tableVector, j) => {
       if (tableVector.desc.value.type === 'categorical') {
         const categories = tableVector.desc.value.categories;
         categories.forEach((v, i) => {
           if (v.color === undefined) {
-            tableVector.desc.value.categories[i] = {name: v, color: color[i]};
+            tableVector.desc.value.categories[i] = {name: v, color: color[j - 4][i]};
           }
           if (v.label !== undefined) {
-            tableVector.desc.value.categories[i] = {name: v.name, color: color[i]};
+            tableVector.desc.value.categories[i] = {name: v.name, color: color[j - 4][i]};
           }
         });
-
       }
     });
 
