@@ -22,6 +22,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   preferredWidth: number = 100;
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
+  rangeView:Range;
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();

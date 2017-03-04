@@ -23,16 +23,17 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
+    this.rangeView = (<any>data).indices;
 
   }
 
-  protected multiFormParams(body: HTMLElement): IMultiFormOptions {
+  protected multiFormParams(body: HTMLElement, dataSize?): IMultiFormOptions {
     return {
       all: {
         width: body.clientWidth,
         heightTo: body.clientHeight,
       }
-  };
+    };
   }
 
   protected buildBody(body: HTMLElement) {
@@ -53,7 +54,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
-    const m = new MultiForm(data, body, this.multiFormParams(body));
+    const m = new MultiForm(data, body, this.multiFormParams(body, (<any>data).length));
     const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
     vislist.innerHTML = ''; // clear old
     m.addIconVisChooser(vislist);
@@ -91,6 +92,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
 
   async update(idRange: Range) {
+    d3.select(this.node).select('main').remove();
+    d3.select(this.node).append('main');
     this.multiform.destroy();
     const view = await this.data.idView(idRange);
     this.dataView = view;

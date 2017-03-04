@@ -18,6 +18,7 @@ import {listAll, IDType} from 'phovea_core/src/idtype';
 import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
+import List from 'phovea_vis/src/list';
 import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
@@ -51,6 +52,8 @@ export default class ColumnManager extends EventHandler {
     this.node.classList.add('column-manager');
     this.drag();
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
+    on(List.EVENT_STRING_DRAG, this.stringDrag.bind(this));
+
   }
 
   get length() {
@@ -61,6 +64,11 @@ export default class ColumnManager extends EventHandler {
     const col = this.columnsHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     col[0].sortCriteria = sortData.sortMethod;
     this.updateSortHierarchy(this.columnsHierarchy);
+  }
+
+  stringDrag(evt: any, list) {
+
+    console.log(list)
   }
 
   destroy() {
@@ -91,16 +99,6 @@ export default class ColumnManager extends EventHandler {
     this.updateSort(null);
     const managerWidth = this.node.clientWidth;
     const panel = this.currentWidth(this.columns);
-
-    //if (managerWidth - panel < 0) {
-    //console.log("Need relayout");
-    //} else {
-    //console.log("Enough space");
-    //}
-
-    //console.log("col manager width: " + managerWidth);
-    //console.log("panel width: " + panel);
-
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     return this.relayout();
 
@@ -164,28 +162,34 @@ export default class ColumnManager extends EventHandler {
     // this.sortMethod = sortMethod;
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
-    const r = s.sortByMe();
-    if ((await r).length < 1) {
-      return this.update(r[0]);
-
-    }
-    this.mergeRanges(r);
+    const r = await s.sortByMe();
+    // if ((await r).length < 1) {
+    //   return this.update(r[0]);
+    //
+    // }
+    console.log(r)
+    r.map((d) => this.update(d));
 
   }
 
-  async mergeRanges(r: Promise<Range[]>) {
-    const ranges = await r;
-    const mergedRange = ranges.reduce((currentVal, nextValue) => {
-      const r = new Range();
-      r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-      return r;
-    });
+  // async mergeRanges(r: Promise<Range[]>) {
+  //   const ranges = await r;
+  //
+  //   ranges.map((d) => this.update(d));
+  //
+  //
+  //   // const mergedRange = ranges.reduce((currentVal, nextValue) => {
+  //   //   const r = new Range();
+  //   //   r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
+  //   //   return r;
+  //   // });
+  //
+  //
+  //   //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
+  //   //  console.log(mergedRange.dim(0).asList());
+  //   //   this.update(mergedRange);
+  // }
 
-
-    //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-  //  console.log(mergedRange.dim(0).asList());
-    this.update(mergedRange);
-  }
 
   async filterData(idRange: Range) {
     for (const col of this.columns) {

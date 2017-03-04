@@ -43,11 +43,12 @@ export default class SortEventHandler extends EventHandler {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
+        return (await this.sortString(newView, sortCriteria));
       case VALUE_TYPE_CATEGORICAL:
         return (await this.collectRangeList(newView, sortCriteria, 'sc'));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return (await this.collectRangeList(newView, sortCriteria, 'ir'));
+        return (await this.sortNumber(newView, sortCriteria));
     }
   }
 
@@ -78,10 +79,11 @@ export default class SortEventHandler extends EventHandler {
 
 
   async sortByMe(): Promise<Range[]> {
-    let range = [await (<any>this.columns[0]).dataView.ids()];
+    const d = await this.columns[0].data.idView(this.columns[0].rangeView);
+    let range: any = [await d.ids()];
     //Iterate through all the columns
     for (const col of this.columns) {
-      const nextColumnData = (<any>col).dataView;
+      const nextColumnData = (<any>col).data;
       const sortCriteria = (<any>col).sortCriteria;
       const rangeOfView = [];
 
@@ -144,6 +146,14 @@ export default class SortEventHandler extends EventHandler {
     return sortedRange;
   }
 
+  async sortString(data, sortCriteria) {
+    const sortedView = await data.sort(stringSort.bind(this, sortCriteria));
+    const sortedRange = await  sortedView.ids();
+    return sortedRange;
+
+  }
+
+
 // Unused at the moment because we are sorting categories by alphabetical order;
   /*
    async sortCategorical() {
@@ -182,9 +192,9 @@ function filterCat(aVal, bval) {
 
   //if (aVal === bval) {
 
-    return aVal===bval; //Also include undefined empty strings and null values.
+  return aVal === bval; //Also include undefined empty strings and null values.
 
- // }
+  // }
 
 
 }

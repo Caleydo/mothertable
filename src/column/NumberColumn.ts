@@ -18,9 +18,9 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.node = this.build(parent);
   }
 
-  protected multiFormParams(body: HTMLElement): IMultiFormOptions {
+  protected multiFormParams(body: HTMLElement, dataSize?: number): IMultiFormOptions {
     return mixin(super.multiFormParams(body), {
-      initialVis: 'phovea-vis-heatmap1d'
+      initialVis: dataSize > 4 ? 'phovea-vis-box' : 'phovea-vis-heatmap1d'
     });
   }
 }

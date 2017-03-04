@@ -1,5 +1,8 @@
 import {AVectorColumn, IStringVector} from './AVectorColumn';
 import {EOrientation} from './AColumn';
+import {mixin} from 'phovea_core/src/index';
+import {IMultiFormOptions} from 'phovea_core/src/multiform';
+
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
@@ -14,5 +17,12 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
     super(data, orientation);
     this.node = this.build(parent);
   }
+
+  protected multiFormParams(body: HTMLElement): IMultiFormOptions {
+    return mixin(super.multiFormParams(body), {
+      initialVis: 'list'
+    });
+  }
+
 
 }
