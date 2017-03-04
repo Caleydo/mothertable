@@ -15,11 +15,12 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
+import SortEventHandler, {filterCat} from '../SortEventHandler/SortEventHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import List from 'phovea_vis/src/list';
 import AFilter from '../filter/AFilter';
+
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 
@@ -39,6 +40,7 @@ export default class ColumnManager extends EventHandler {
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
   private rangeNow: Range;
+  private rangeList = [];
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -66,10 +68,62 @@ export default class ColumnManager extends EventHandler {
     this.updateSortHierarchy(this.columnsHierarchy);
   }
 
-  stringDrag(evt: any, list) {
-
-    console.log(list)
+  stringDrag(evt: any, dragData) {
+    const stringList = dragData.stringList;
+    console.log(stringList);
+    this.filterRangeByName(dragData.col, stringList);
   }
+
+  async filterRangeByName(col, sortedByName: any[]): Promise<Range[]> {
+
+    const draggedArray = [];
+    const coldata = col;
+    const fullranges = await coldata.ids();
+    const fullRangeasList = fullranges.dim(0).asList();
+    for (const f of sortedByName) {
+      const u: any = await coldata.filter(filterCat.bind(this, f));
+      const id = await u.ids();
+      if (id.size()[0] >= 1) {
+        const asList = id.dim(0).asList()[0];
+        draggedArray.push(asList);
+        console.log(f, await coldata.data(), id.dim(0).asList());
+
+      }
+
+
+    }
+
+    console.log(draggedArray, fullRangeasList)
+    const r = rearrangeArray(draggedArray, fullRangeasList)
+    console.log(r)
+
+    const a = r.map((d) => this.makeRangeFromList(d))
+    a.map((d) => this.dispName(coldata, d));
+
+    // const r1 = new Range();
+    // r1.dim(0).pushList(r[0]);
+    // console.log(r1)
+    // const t = await coldata.idView(r1);
+    // console.log(r1.dim(0).asList())
+    // console.log(await t.data())
+
+    return draggedArray;
+  }
+
+
+  async dispName(coldata, range) {
+
+    const t = await coldata.idView(range);
+    console.log(range.dim(0).asList())
+    console.log(await t.data())
+  }
+
+  makeRangeFromList(list: number[]) {
+    const r = new Range();
+    r.dim(0).pushList(list);
+    return r;
+  }
+
 
   destroy() {
     // delete all columns, can't remove myself, since I'm using the parent
@@ -168,7 +222,9 @@ export default class ColumnManager extends EventHandler {
     //
     // }
     console.log(r)
+    this.rangeList = r;
     r.map((d) => this.update(d));
+    r.map((d) => console.log(d.dim(0).asList()));
 
   }
 
@@ -193,6 +249,7 @@ export default class ColumnManager extends EventHandler {
 
   async filterData(idRange: Range) {
     for (const col of this.columns) {
+      col.rangeView = await idRange;
       col.dataView = await col.data.idView(idRange);
 
     }
@@ -228,6 +285,10 @@ export default class ColumnManager extends EventHandler {
       if (col instanceof MatrixColumn) {
         col.updateRows(idRange);
       }
+
+      // if (col instanceof NumberColumn) {
+      //   col.update(idRange);
+      // }
 
       col.update(idRange);
     }));
@@ -281,4 +342,15 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
     default:
       throw new Error('invalid data type');
   }
+}
+
+function rearrangeArray(draggedArray, fullRangeasList) {
+
+  const startindex = fullRangeasList.indexOf(draggedArray[0]);
+  const endindex = fullRangeasList.indexOf(draggedArray[draggedArray.length - 1]);
+  const startArr = fullRangeasList.slice(0, startindex)
+  const endArr = fullRangeasList.slice(endindex + 1, fullRangeasList.length)
+  // console.log(this.rangeList, startindex, endindex, startArr, endArr)
+
+  return [startArr, draggedArray, endArr];
 }

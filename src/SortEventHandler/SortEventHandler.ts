@@ -114,7 +114,6 @@ export default class SortEventHandler extends EventHandler {
       return rangeOfViewData;
     }
 
-
   }
 
   /**
@@ -132,7 +131,7 @@ export default class SortEventHandler extends EventHandler {
       const id = await u.ids();
       if (id.size()[0] >= 1) {
         sortArr.push(id);
-        //  console.log(f, await coldata.data(), id.dim(0).asList());
+        // console.log(f, await coldata.data(), id.dim(0).asList());
 
       }
     }
@@ -188,7 +187,7 @@ export default class SortEventHandler extends EventHandler {
 
 }
 
-function filterCat(aVal, bval) {
+export function filterCat(aVal, bval) {
 
   //if (aVal === bval) {
 
