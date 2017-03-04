@@ -41,11 +41,11 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     li.appendChild(main);
 
     const n = d3.select(main).selectAll('.matrix');
-    console.log(this.data.desc.name, node, main)
     this.generateLabel(li, this.data.desc.name);
+    this.generateMatrixHeatmap(main, this.data.rowtype.id);
     // this.generateRect(main);
     //   }
-    this.generateMatrixHeatmap(main, this.data.rowtype.id);
+
 
     // this.generateMatrixHeatmap(node, this.data.rowtype.id);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
@@ -93,25 +93,21 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     }
     const toolTip = this.generateTooltip(node);
     const cellWidth = this.filterDim.width;
-    const cellHeight = this.filterDim.height;
     const histData = await this.getHistData();
-    const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(histData)]).range(['white', 'darkgrey']);
-
-    const entries = d3.select(node).append('div').classed('entries', true)
-      .style('display', 'flex')
-      .style('align-items', 'flex-end')
-      .style('flex-grow', 1);
+    const cellDimension = cellWidth / histData.length;
+    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(['#fff5f0', '#67000d']);
+    const binScale = d3.scale.linear()
+      .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
+    const entries = d3.select(node).append('div').classed('matrixEntries', true);
 
     const list = entries
-      .selectAll('div.matlist')
+      .selectAll('div.matrixBins')
       .data(histData).enter();
 
     list.append('div')
-      .attr('class', 'list')
-      .style('flex-grow', 1)
-      .style('height', cellHeight + 'px')
-      .style('width', '100%')
-      .style('background-color', (d) => colorScale(d))
+      .attr('class', 'matrixBins')
+      .style('height', (d, i) => binScale(d) + 'px')
+      .style('background-color', (d, i) => colorScale(cellDimension * i))
       .on('mouseover', function (d, i) {
         toolTip.transition()
           .duration(200)
