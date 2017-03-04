@@ -180,6 +180,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
         copyBrush(d3.select(this).select('.extent'));
       })
       .on('brush', function () {
+        const v: any = brush.extent();
+        that.updateDragValues(v);
         copyBrush(d3.select(this).select('.extent'));
       })
       .on('brushend', function () {
