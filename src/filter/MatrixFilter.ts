@@ -31,15 +31,21 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   protected build(parent: HTMLElement) {
     const node = super.build(parent);
-    const f = document.createElement('div');
-    f.classList.add('filter');
-    node.appendChild(f);
-    const n = d3.select(f).selectAll('.matrix');
+    const li = <HTMLElement>document.createElement('li');
+    node.appendChild(li);
+    li.classList.add('filter');
 
-    this.generateLabel(f, this.data.desc.name);
-    this.generateRect(f);
+    const header = document.createElement('header');
+    li.appendChild(header);
+    const main = document.createElement('main');
+    li.appendChild(main);
+
+    const n = d3.select(main).selectAll('.matrix');
+    console.log(this.data.desc.name, node, main)
+    this.generateLabel(li, this.data.desc.name);
+    // this.generateRect(main);
     //   }
-    // this.generateMatrixHeatmap(node, this.data.rowtype.id)
+    this.generateMatrixHeatmap(main, this.data.rowtype.id);
 
     // this.generateMatrixHeatmap(node, this.data.rowtype.id);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
@@ -77,10 +83,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   private async generateMatrixHeatmap(node, idtype) {
 
     const a = await this.data.data();
-
-    console.log(a, 'no transpose')
     const t = await this.data.t.data();
-    console.log(t, 'trsnpose')
     const rowOrCol = idtype;
     let transpose = false;
     if (rowOrCol === this.data.rowtype.id) {
@@ -88,13 +91,11 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     } else if (rowOrCol === this.data.coltype.id) {
       transpose = true;
     }
-
+    const toolTip = this.generateTooltip(node);
+    const cellWidth = this.filterDim.width;
     const cellHeight = this.filterDim.height;
-    const avgdata = await this.calculateAvg(transpose);
-    const domain = d3.extent(avgdata);
-    const colorRange = ['lightgrey', 'grey'];
-    const colorScale = d3.scale.linear<string,number>();
-    colorScale.domain(domain).range(colorRange);
+    const histData = await this.getHistData();
+    const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(histData)]).range(['white', 'darkgrey']);
 
     const entries = d3.select(node).append('div').classed('entries', true)
       .style('display', 'flex')
@@ -103,16 +104,40 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const list = entries
       .selectAll('div.matlist')
-      .data(avgdata).enter();
+      .data(histData).enter();
 
     list.append('div')
       .attr('class', 'list')
       .style('flex-grow', 1)
       .style('height', cellHeight + 'px')
       .style('width', '100%')
-      .style('background-color', (d) => colorScale(d));
+      .style('background-color', (d) => colorScale(d))
+      .on('mouseover', function (d, i) {
+        toolTip.transition()
+          .duration(200)
+          .style('opacity', 1);
+        toolTip.html(`Bin:${i + 1}, Entries: ${d}`)
+          .style('left', ((<any>d3).event.pageX) + 'px')
+          .style('top', ((<any>d3).event.pageY - 10) + 'px');
+      })
+      .on('mouseout', function (d) {
+        toolTip.transition()
+          .duration(500)
+          .style('opacity', 0);
+      });
+
 
   }
+
+  private async getHistData() {
+
+    const histData = await (<any>this.data).hist();
+    const bins = [];
+    histData.forEach((d, i) => bins.push(d));
+    return bins;
+
+  }
+
 
   private async calculateAvg(transpose) {
 
