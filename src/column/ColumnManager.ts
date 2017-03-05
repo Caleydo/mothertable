@@ -69,9 +69,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   async stringColumnOnDrag(evt: any, dragData) {
-    const stringList = dragData.stringList;
-    console.log(stringList, this.rangeList.map((d) => d.dim(0).asList()));
-    const indices = await this.getDraggingIndices(dragData.col, stringList);
+    const indices = await this.getDraggingIndices(dragData);
     this.updateRangeList(indices);
   }
 
@@ -82,11 +80,9 @@ export default class ColumnManager extends EventHandler {
     const rangeElements = reorderRangeIndices.map((d) => this.makeRangeFromList(d));
     const listElements = this.rangeList.map((d) => this.makeListfromRange(d));
     const indexInRangeList = this.dragIndexInRangeList(listElements, reorderRangeIndices);
-
     const rangeArr = this.rangeList;
     rangeArr.splice(indexInRangeList, 1);
     insertArrayAt(rangeArr, indexInRangeList, rangeElements);
-    rangeArr.map((d) => console.log(d.dim(0).asList()));
     rangeArr.map((d) => this.update(d));
     this.rangeList = rangeArr;
 
@@ -120,7 +116,9 @@ export default class ColumnManager extends EventHandler {
    */
 
   // To get the indexes of the string dragging selection in that area
-  async getDraggingIndices(col, stringList: any[]) {
+  async getDraggingIndices(dragData) {
+    const col = dragData.col;
+    const stringList = dragData.stringList;
     const draggedStringIndices = [];
     const columnData = col;
     const allRangeElement = await columnData.ids();
