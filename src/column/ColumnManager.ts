@@ -20,7 +20,7 @@ import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import List from 'phovea_vis/src/list';
 import AFilter from '../filter/AFilter';
-
+import {insertArrayAt, reArrangeRangeList} from './utils';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 
@@ -54,7 +54,7 @@ export default class ColumnManager extends EventHandler {
     this.node.classList.add('column-manager');
     this.drag();
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
-    on(List.EVENT_STRING_DRAG, this.stringDrag.bind(this));
+    on(List.EVENT_STRING_DRAG, this.stringColumnOnDrag.bind(this));
 
   }
 
@@ -68,68 +68,31 @@ export default class ColumnManager extends EventHandler {
     this.updateSortHierarchy(this.columnsHierarchy);
   }
 
-  stringDrag(evt: any, dragData) {
+  async stringColumnOnDrag(evt: any, dragData) {
     const stringList = dragData.stringList;
-    console.log(stringList);
-    this.filterRangeByName(dragData.col, stringList);
+    console.log(stringList, this.rangeList.map((d) => d.dim(0).asList()));
+    const indices = await this.getDraggingIndices(dragData.col, stringList);
+    this.updateRangeList(indices);
   }
 
-  async filterRangeByName(col, sortedByName: any[]): Promise<Range[]> {
+  async updateRangeList(reorderRange: number[]) {
+    const draggedStringIndices = reorderRange[0];
+    const allRangesIndices = reorderRange[1];
+    const reorderRangeIndices = reArrangeRangeList(draggedStringIndices, allRangesIndices);
+    const rangeElements = reorderRangeIndices.map((d) => this.makeRangeFromList(d));
+    const listElements = this.rangeList.map((d) => this.makeListfromRange(d));
+    const indexInRangeList = this.dragIndexInRangeList(listElements, reorderRangeIndices);
 
-    const draggedArray = [];
-    const coldata = col;
-    const fullranges = await coldata.ids();
-    const fullRangeasList = fullranges.dim(0).asList();
-    for (const f of sortedByName) {
-      const u: any = await coldata.filter(filterCat.bind(this, f));
-      const id = await u.ids();
-      if (id.size()[0] >= 1) {
-        const asList = id.dim(0).asList()[0];
-        draggedArray.push(asList);
-        console.log(f, await coldata.data(), id.dim(0).asList());
+    const rangeArr = this.rangeList;
+    rangeArr.splice(indexInRangeList, 1);
+    insertArrayAt(rangeArr, indexInRangeList, rangeElements);
+    rangeArr.map((d) => console.log(d.dim(0).asList()));
+    rangeArr.map((d) => this.update(d));
+    this.rangeList = rangeArr;
 
-      }
-
-
-    }
-
-    console.log(draggedArray, fullRangeasList)
-    const r = rearrangeArray(draggedArray, fullRangeasList)
-    console.log(r)
-
-    const a = r.map((d) => this.makeRangeFromList(d))
-    a.map((d) => this.dispName(coldata, d));
-    console.log(a)
-    const rangeIndexes = this.rangeList.map((d) => this.makeAsListfromRange(d));
-    console.log(rangeIndexes);
-
-    const temp = rangeIndexes.map((d, i) => d.indexOf(r[1][0]));
-    const indexofDragged = temp.indexOf(temp.filter((d) => d !== -1)[0]);
-    console.log(indexofDragged, temp)
-
-    this.rangeList.splice(indexofDragged, 1);
-    insertArrayAt(this.rangeList, indexofDragged, a);
-    //const newR = this.rangeList.splice(indexofDragged,1)
-    console.log(this.rangeList)
-    this.rangeList.map((d) => console.log(d.dim(0).asList()))
-    this.rangeList.map((d) => this.update(d));
-    // const r1 = new Range();
-    // r1.dim(0).pushList(r[0]);
-    // console.log(r1)
-    // const t = await coldata.idView(r1);
-    // console.log(r1.dim(0).asList())
-    // console.log(await t.data())
-
-    return draggedArray;
   }
 
-
-  async dispName(coldata, range) {
-
-    const t = await coldata.idView(range);
-    //  console.log(range.dim(0).asList())
-    // console.log(await t.data())
-  }
+// Create the range object from list of indexes
 
   makeRangeFromList(list: number[]) {
     const r = new Range();
@@ -137,10 +100,71 @@ export default class ColumnManager extends EventHandler {
     return r;
   }
 
-  makeAsListfromRange(range) {
+  // Give me the range in the form of list
+  makeListfromRange(range: Range) {
 
     return (range.dim(0).asList());
 
+  }
+
+  /**
+   *
+   * @param col this is the column where dragging is performed
+   * @param stringList array of strings which are being dragged
+   * @returns {Promise<[Array,T[]|Array|number[]|any]>}
+   * const arr = ['a','b','c',d','e','f']
+   * const rangeIndices = [3,4,6,8,10,11] => Actual indices in data
+   * const string = ['b','c','d'] => Array of string being dragged
+   * Now it will return [[1,2,3],rangeIndices]
+   *
+   */
+
+  // To get the indexes of the string dragging selection in that area
+  async getDraggingIndices(col, stringList: any[]) {
+    const draggedStringIndices = [];
+    const columnData = col;
+    const allRangeElement = await columnData.ids();
+    const allRangesList = allRangeElement.dim(0).asList();
+
+    for (const f of stringList) {
+      const u: any = await columnData.filter(filterCat.bind(this, f));
+      const id = await u.ids();
+      if (id.size()[0] >= 1) {
+        const asList = id.dim(0).asList()[0];
+        draggedStringIndices.push(asList);
+        //   console.log(f, await coldata.data(), id.dim(0).asList());
+
+      }
+
+      console.log(draggedStringIndices);
+    }
+
+
+    return [draggedStringIndices, allRangesList];
+  }
+
+  /**
+   * To find out the index of dragging range object in list of range
+   * @param rangeList this is the complete list of all range object in the form of asList()
+   * @param firsElement This is the first element of dragging array
+   * @returns {any} Index of the string dragging in whole range list
+   * const rangeList = [[1,2,3,4],[6,7,8],[9]]
+   * const draggingIndexes = [7,8]
+   * const checkExist = [-1,1,-1] => Filter only real value which is the index of dragging
+   * so it will return 1 since 7 exist in second array.
+   *
+   */
+  dragIndexInRangeList(rangeList, firsElement) {
+    let findMyIndex;
+    if (firsElement.length < 2) {
+      findMyIndex = rangeList.map((d, i) => d.indexOf(firsElement[0][0]));
+    } else {
+      findMyIndex = rangeList.map((d, i) => d.indexOf(firsElement[1][0]));
+    }
+    const filterRealValue = findMyIndex.filter((d) => d !== -1);
+    const index = findMyIndex.indexOf(filterRealValue[0]);
+
+    return index;
   }
 
 
@@ -231,38 +255,31 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateSort(evt: any) {
-    // console.log(sortMethod)
-    // this.sortMethod = sortMethod;
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r = await s.sortByMe();
-    // if ((await r).length < 1) {
-    //   return this.update(r[0]);
-    //
-    // }
-    this.rangeList = r;
-    console.log(this.rangeList)
-    r.map((d) => this.update(d));
-    r.map((d) => console.log(d.dim(0).asList()));
+    if ((await r).length < 1) {
+      return this.update(r[0]);
 
+    }
+    this.rangeList = r;
+    r.map((d) => this.update(d));
   }
 
   // async mergeRanges(r: Promise<Range[]>) {
   //   const ranges = await r;
   //
   //   ranges.map((d) => this.update(d));
-  //
-  //
-  //   // const mergedRange = ranges.reduce((currentVal, nextValue) => {
-  //   //   const r = new Range();
-  //   //   r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-  //   //   return r;
-  //   // });
-  //
-  //
-  //   //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-  //   //  console.log(mergedRange.dim(0).asList());
-  //   //   this.update(mergedRange);
+  //   const mergedRange = ranges.reduce((currentVal, nextValue) => {
+  //     const r = new Range();
+  //     r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
+  //     return r;
+  //   });
+  //   //
+  //   //
+  //   //   //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
+  //   console.log(mergedRange.dim(0).asList());
+  //   //   //   this.update(mergedRange);
   // }
 
 
@@ -304,10 +321,6 @@ export default class ColumnManager extends EventHandler {
       if (col instanceof MatrixColumn) {
         col.updateRows(idRange);
       }
-
-      // if (col instanceof NumberColumn) {
-      //   col.update(idRange);
-      // }
 
       col.update(idRange);
     }));
@@ -361,19 +374,4 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
     default:
       throw new Error('invalid data type');
   }
-}
-
-function rearrangeArray(draggedArray, fullRangeasList) {
-
-  const startindex = fullRangeasList.indexOf(draggedArray[0]);
-  const endindex = fullRangeasList.indexOf(draggedArray[draggedArray.length - 1]);
-  const startArr = fullRangeasList.slice(0, startindex)
-  const endArr = fullRangeasList.slice(endindex + 1, fullRangeasList.length)
-  // console.log(this.rangeList, startindex, endindex, startArr, endArr)
-
-  return [startArr, draggedArray, endArr];
-}
-
-function insertArrayAt(array, index, arrayToInsert) {
-  Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
 }
