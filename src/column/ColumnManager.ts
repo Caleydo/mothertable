@@ -99,7 +99,20 @@ export default class ColumnManager extends EventHandler {
 
     const a = r.map((d) => this.makeRangeFromList(d))
     a.map((d) => this.dispName(coldata, d));
+    console.log(a)
+    const rangeIndexes = this.rangeList.map((d) => this.makeAsListfromRange(d));
+    console.log(rangeIndexes);
 
+    const temp = rangeIndexes.map((d, i) => d.indexOf(r[1][0]));
+    const indexofDragged = temp.indexOf(temp.filter((d) => d !== -1)[0]);
+    console.log(indexofDragged, temp)
+
+    this.rangeList.splice(indexofDragged, 1);
+    insertArrayAt(this.rangeList, indexofDragged, a);
+    //const newR = this.rangeList.splice(indexofDragged,1)
+    console.log(this.rangeList)
+    this.rangeList.map((d) => console.log(d.dim(0).asList()))
+    this.rangeList.map((d) => this.update(d));
     // const r1 = new Range();
     // r1.dim(0).pushList(r[0]);
     // console.log(r1)
@@ -114,14 +127,20 @@ export default class ColumnManager extends EventHandler {
   async dispName(coldata, range) {
 
     const t = await coldata.idView(range);
-    console.log(range.dim(0).asList())
-    console.log(await t.data())
+    //  console.log(range.dim(0).asList())
+    // console.log(await t.data())
   }
 
   makeRangeFromList(list: number[]) {
     const r = new Range();
     r.dim(0).pushList(list);
     return r;
+  }
+
+  makeAsListfromRange(range) {
+
+    return (range.dim(0).asList());
+
   }
 
 
@@ -221,8 +240,8 @@ export default class ColumnManager extends EventHandler {
     //   return this.update(r[0]);
     //
     // }
-    console.log(r)
     this.rangeList = r;
+    console.log(this.rangeList)
     r.map((d) => this.update(d));
     r.map((d) => console.log(d.dim(0).asList()));
 
@@ -353,4 +372,8 @@ function rearrangeArray(draggedArray, fullRangeasList) {
   // console.log(this.rangeList, startindex, endindex, startArr, endArr)
 
   return [startArr, draggedArray, endArr];
+}
+
+function insertArrayAt(array, index, arrayToInsert) {
+  Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
 }

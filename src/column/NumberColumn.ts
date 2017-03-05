@@ -20,7 +20,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams(body: HTMLElement, dataSize?: number): IMultiFormOptions {
     return mixin(super.multiFormParams(body), {
-      initialVis: dataSize > 4 ? 'phovea-vis-box' : 'phovea-vis-heatmap1d'
+      initialVis: dataSize > 1 ? 'phovea-vis-box' : 'phovea-vis-heatmap1d'
     });
   }
 }
