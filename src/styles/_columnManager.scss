@@ -27,18 +27,21 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    border-right: solid 1px #ddd;
 
     .columnHeader {
+      display: flex;
+      align-items: center;
       cursor: move;
-      height: 20px;
+      height: 25px;
       position: relative;
       background: $header-bg-color;
-      border: solid 1px $header-border-color;
-      border-top: 0;
+      border-bottom: solid 1px $header-border-color;
       min-width: 10px;
 
       span {
         display: block;
+        width: 100%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -51,7 +54,7 @@
       flex: 1 1 auto;
       display: flex;
       flex-direction: row;
-      align-items: center;
+      //align-items: center;
     }
   }
 }
