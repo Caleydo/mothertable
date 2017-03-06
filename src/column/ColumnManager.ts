@@ -69,8 +69,8 @@ export default class ColumnManager extends EventHandler {
     this.updateSortHierarchy(this.columnsHierarchy);
   }
 
-  async stringColumnOnDrag(evt: any, dragData) {
-    const indices = await this.getDraggingIndices(dragData);
+  async stringColumnOnDrag(evt: any, stringList, multiformData) {
+    const indices = await this.getDraggingIndices(stringList, multiformData);
 
 
     this.updateRangeList(indices);
@@ -122,16 +122,13 @@ export default class ColumnManager extends EventHandler {
    */
 
   // To get the indexes of the string dragging selection in that area
-  async getDraggingIndices(dragData) {
-    const col = dragData.col;
-    const stringList = dragData.stringList;
+  async getDraggingIndices(stringList, multiformData) {
     const draggedStringIndices = [];
-    const columnData = col;
-    const allRangeElement = await columnData.ids();
+    const allRangeElement = await multiformData.ids();
     const allRangesList = allRangeElement.dim(0).asList();
 
     for (const f of stringList) {
-      const u: any = await columnData.filter(filterCat.bind(this, f));
+      const u: any = await multiformData.filter(filterCat.bind(this, f));
       const id = await u.ids();
       if (id.size()[0] >= 1) {
         const asList = id.dim(0).asList()[0];
