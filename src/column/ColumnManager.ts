@@ -1,10 +1,13 @@
+/**
+ * Created by Samuel Gratzl on 19.01.2017.
+ */
+
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ICategoricalVector, INumericalVector} from 'phovea_core/src/vector';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
-import Range1D from 'phovea_core/src/range/Range1D';
 import Range from 'phovea_core/src/range/Range';
 import {IStringVector, AVectorColumn} from './AVectorColumn';
 import AColumn, {EOrientation} from './AColumn';
@@ -14,18 +17,13 @@ import NumberColumn from './NumberColumn';
 import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
-import {listAll, IDType} from 'phovea_core/src/idtype';
-import SortEventHandler, {SORT} from '../SortEventHandler/SortEventHandler';
+import IDType from 'phovea_core/src/idtype/IDType';
+import SortEventHandler from '../SortEventHandler/SortEventHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
-
-
-/**
- * Created by Samuel Gratzl on 19.01.2017.
- */
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;

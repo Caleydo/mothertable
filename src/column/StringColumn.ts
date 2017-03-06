@@ -1,8 +1,9 @@
-import {AVectorColumn, IStringVector} from './AVectorColumn';
-import {EOrientation} from './AColumn';
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
+
+import {AVectorColumn, IStringVector} from './AVectorColumn';
+import {EOrientation} from './AColumn';
 
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
   minimumWidth: number = 80;

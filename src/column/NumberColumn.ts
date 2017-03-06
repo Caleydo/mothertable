@@ -1,6 +1,7 @@
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
+
 import {AVectorColumn} from './AVectorColumn';
 import {INumericalVector} from 'phovea_core/src/vector';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';

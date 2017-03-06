@@ -1,5 +1,8 @@
+/**
+ * Created by Samuel Gratzl on 19.01.2017.
+ */
+
 import AColumn, {EOrientation} from './AColumn';
-import Range1D from 'phovea_core/src/range/Range1D';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
@@ -8,9 +11,6 @@ import {list as rlist} from 'phovea_core/src/range';
 import {scaleTo} from './utils';
 import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
-/**
- * Created by Samuel Gratzl on 19.01.2017.
- */
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   static readonly EVENT_COLUMN_REMOVED = 'removed';

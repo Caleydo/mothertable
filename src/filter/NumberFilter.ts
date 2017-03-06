@@ -1,6 +1,7 @@
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
+
 import {AVectorFilter} from './AVectorFilter';
 import {INumericalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';

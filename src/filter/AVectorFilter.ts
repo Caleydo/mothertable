@@ -1,12 +1,14 @@
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
+
 import AFilter from './AFilter';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc} from 'phovea_core/src/datatype';
 import {SORT} from '../SortEventHandler/SortEventHandler';
 import * as d3 from 'd3';
 import {on, fire} from 'phovea_core/src/event';
+
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 

@@ -1,3 +1,7 @@
+/**
+ * Created by Samuel Gratzl on 19.01.2017.
+ */
+
 import AColumn, {EOrientation} from './AColumn';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
@@ -7,10 +11,6 @@ import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-
-/**
- * Created by Samuel Gratzl on 19.01.2017.
- */
 
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
