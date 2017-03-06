@@ -4,6 +4,7 @@
 
 import {ZoomLogic} from 'phovea_core/src/behavior';
 import {EOrientation} from './AColumn';
+import MultiForm from 'phovea_core/src/multiform/MultiForm';
 
 
 export function scaleTo(multiform: MultiForm, width: number, height: number, orientation: EOrientation) {
