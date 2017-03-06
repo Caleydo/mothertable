@@ -12,9 +12,9 @@
     top: 0;
     z-index: 1000;
     padding: 5px;
-    background: #fff;
+    background: $toolbar-bg-color;
     border-radius: 3px;
-    border: 1px #999 solid;
+    border: 1px $header-border-color solid;
   }
 
   .columnList {
@@ -30,16 +30,20 @@
 
     .columnHeader {
       cursor: move;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-transform: capitalize;
-      text-align: center;
       height: 20px;
       position: relative;
-      background: #e6e5e5;
-      border: solid 1px #999;
+      background: $header-bg-color;
+      //border: solid 1px $header-border-color;
       min-width: 10px;
+
+      span {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-transform: capitalize;
+        text-align: center;
+      }
     }
 
     main {
