@@ -41,6 +41,7 @@ export default class ColumnManager extends EventHandler {
   private columnsHierarchy: AnyColumn[] = [];
   private rangeNow: Range;
   private rangeList = [];
+  private draggedIndices;
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -70,11 +71,15 @@ export default class ColumnManager extends EventHandler {
 
   async stringColumnOnDrag(evt: any, dragData) {
     const indices = await this.getDraggingIndices(dragData);
+
+
     this.updateRangeList(indices);
   }
 
   async updateRangeList(reorderRange: number[]) {
     const draggedStringIndices = reorderRange[0];
+    this.draggedIndices = draggedStringIndices;
+    console.log(this.draggedIndices)
     const allRangesIndices = reorderRange[1];
     const reorderRangeIndices = reArrangeRangeList(draggedStringIndices, allRangesIndices);
     const rangeElements = reorderRangeIndices.map((d) => this.makeRangeFromList(d));
@@ -83,6 +88,7 @@ export default class ColumnManager extends EventHandler {
     const rangeArr = this.rangeList;
     rangeArr.splice(indexInRangeList, 1);
     insertArrayAt(rangeArr, indexInRangeList, rangeElements);
+    rangeArr.map((d) => console.log(d.dim(0).asList()));
     rangeArr.map((d) => this.update(d));
     this.rangeList = rangeArr;
 
@@ -134,7 +140,6 @@ export default class ColumnManager extends EventHandler {
 
       }
 
-      console.log(draggedStringIndices);
     }
 
 
