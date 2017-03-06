@@ -181,10 +181,8 @@ export default class App {
     newdiv.appendChild(previewDataNode);
     d3.select(previewDataNode).style('display', 'flex').append('div').classed('totalData', true);
     d3.select(previewDataNode).append('div').classed('filteredData', true);
-    const parent = this.node.querySelector('section.rightPanel').appendChild(newdiv);
+    const parent = this.node.querySelector('.rightPanel').appendChild(newdiv);
     return parent;
-
-
   }
 
 

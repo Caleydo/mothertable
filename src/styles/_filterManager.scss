@@ -1,3 +1,16 @@
+
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid $header-border-color;
+
+  flex: 0 1 $rightPanelWidth;
+
+  &:empty {
+    display: none;
+  }
+}
+
 .filter {
   margin-bottom: 10px;
   counter-increment: filterSection;
@@ -5,7 +18,7 @@
   header {
     display: flex;
     align-content: space-between;
-    background: #eee;
+    background: $header-bg-color;
     padding: .5em;
     position: relative;
 
@@ -35,6 +48,7 @@
       order: 2;
       text-decoration: none;
       cursor: pointer;
+      color: inherit;
     }
   }
 
