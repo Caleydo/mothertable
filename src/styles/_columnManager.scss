@@ -33,7 +33,8 @@
       height: 20px;
       position: relative;
       background: $header-bg-color;
-      //border: solid 1px $header-border-color;
+      border: solid 1px $header-border-color;
+      border-top: 0;
       min-width: 10px;
 
       span {

@@ -2,30 +2,12 @@
 .rightPanel {
   display: flex;
   flex-direction: column;
-  border-left: $border-ui;
+  border-left: 2px solid $header-border-color;
 
   flex: 0 1 $rightPanelWidth;
 
   &:empty {
     display: none;
-  }
-
-  > .filter-view {
-    width: 20vw;
-    flex: 1 1 auto;
-    overflow: scroll;
-    padding: 4px;
-    border-top: $border-ui;
-
-    &.block-select-selected {
-      border: 1px solid red;
-      background: none;
-    }
-
-    &.block-select-hovered {
-      border: 1px solid red;
-      background: none;
-    }
   }
 }
 
@@ -36,7 +18,7 @@
   header {
     display: flex;
     align-content: space-between;
-    background: #eee;
+    background: $header-bg-color;
     padding: .5em;
     position: relative;
 
