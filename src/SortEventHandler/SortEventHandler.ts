@@ -201,12 +201,14 @@ export function filterCat(aVal, bval) {
 
 export function stringSort(sortCriteria, aVal, bVal) {
 
+
   if (sortCriteria === SORT.asc) {
 
 
     return (aVal.localeCompare(bVal));
   }
   if (sortCriteria === SORT.desc) {
+
 
     return (bVal.localeCompare(aVal));
   }
