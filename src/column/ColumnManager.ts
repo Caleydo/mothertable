@@ -20,7 +20,7 @@ import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import List from 'phovea_vis/src/list';
 import AFilter from '../filter/AFilter';
-import {insertArrayAt, reArrangeRangeList} from './utils';
+import {insertArrayAt, reArrangeRangeList, reArrangeRangeListAfter} from './utils';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 
@@ -78,8 +78,8 @@ export default class ColumnManager extends EventHandler {
 
   async updateRangeList(reorderRange: number[]) {
     const draggedStringIndices = reorderRange[0];
+    this.draggedIndices = [];
     this.draggedIndices = draggedStringIndices;
-    console.log(this.draggedIndices)
     const allRangesIndices = reorderRange[1];
     const reorderRangeIndices = reArrangeRangeList(draggedStringIndices, allRangesIndices);
     const rangeElements = reorderRangeIndices.map((d) => this.makeRangeFromList(d));
@@ -88,7 +88,7 @@ export default class ColumnManager extends EventHandler {
     const rangeArr = this.rangeList;
     rangeArr.splice(indexInRangeList, 1);
     insertArrayAt(rangeArr, indexInRangeList, rangeElements);
-    rangeArr.map((d) => console.log(d.dim(0).asList()));
+    // rangeArr.map((d) => console.log(d.dim(0).asList()));
     rangeArr.map((d) => this.update(d));
     this.rangeList = rangeArr;
 
@@ -141,7 +141,6 @@ export default class ColumnManager extends EventHandler {
       }
 
     }
-
 
     return [draggedStringIndices, allRangesList];
   }
@@ -266,7 +265,20 @@ export default class ColumnManager extends EventHandler {
 
     }
     this.rangeList = r;
-    r.map((d) => this.update(d));
+    const rlist = this.rangeList.map((d) => this.makeListfromRange(d));
+    this.rangeList.map((d) => console.log(this.makeListfromRange(d)));
+    if (this.draggedIndices !== undefined) {
+      const v = reArrangeRangeListAfter(this.draggedIndices, rlist);
+      const rangeElements = v.map((d) => this.makeRangeFromList(d));
+      this.rangeList = rangeElements;
+      rangeElements.map((d) => this.update(d));
+
+    } else {
+      r.map((d) => this.update(d));
+
+    }
+
+
   }
 
   // async mergeRanges(r: Promise<Range[]>) {

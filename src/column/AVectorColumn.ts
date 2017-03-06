@@ -55,7 +55,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   private replaceMultiForm(data: IDataType, body: HTMLElement) {
     const m = new MultiForm(data, body, this.multiFormParams(body, (<any>data).length));
-    console.log(m)
     const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
     vislist.innerHTML = ''; // clear old
     m.addIconVisChooser(vislist);
