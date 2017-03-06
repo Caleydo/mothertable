@@ -4,12 +4,23 @@
   align-items: stretch;
   flex: 1 1 auto;
   overflow: auto;
-  padding: 10px 5px 10px 20px;
+
+  .toolbar {
+    display: none;
+    position: absolute;
+    right: 5px;
+    top: 0;
+    z-index: 1000;
+    padding: 5px;
+    background: #fff;
+    border-radius: 3px;
+    border: 1px #999 solid;
+  }
 
   .columnList {
     display: flex;
     align-items: stretch;
-    padding-left: 0;
+    padding: 0;
   }
 
   .column {
@@ -24,6 +35,11 @@
       text-overflow: ellipsis;
       text-transform: capitalize;
       text-align: center;
+      height: 20px;
+      position: relative;
+      background: #e6e5e5;
+      border: solid 1px #999;
+      min-width: 10px;
     }
 
     main {
