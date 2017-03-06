@@ -9,6 +9,7 @@ import * as d3 from 'd3';
 
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
 
+  static readonly COLORS = ['#fff5f0', '#67000d'];
 
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
@@ -100,17 +101,41 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const toolTip = (this._toolTip);
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
-    const colorScale = d3.scale.linear<string,number>().domain([0, d3.max(histData)]).range(['white', 'darkgrey']);
+    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(NumberFilter.COLORS);
+    const binScale = d3.scale.linear()
+      .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
 
-    const binsRect = svg.append('g').classed('binsEntries', true).attr('transform', 'translate(5,0)')
+
+    const binsBackgroundRect = svg.append('g')
+      .classed('binsEntries', true)
+      .attr('transform', 'translate(5,0)')
       .selectAll('g.bins').data(histData).enter();
 
-    binsRect.append('rect').classed('bins', true)
+    binsBackgroundRect.append('rect').classed('bins', true)
       .attr('x', (d, i) => (i * cellDimension))
+      .attr('y', (d, i) => cellHeight - binScale(d))
       .attr('width', cellDimension)
-      .attr('height', cellHeight)
+      .attr('height', (d, i) => binScale(d))
       .style('opacity', 1)
-      .attr('fill', (d: any) => colorScale(d))
+      .attr('stroke', 'grey')
+      .attr('stroke-width', 0.5)
+      .attr('fill', 'lightgrey');
+
+    const binsForegroundRect = svg.append('g')
+      .classed('binsEntries', true)
+      .attr('transform', 'translate(5,0)')
+      .attr('clip-path', 'url(#brushClipping)')
+      .selectAll('g.bins').data(histData).enter();
+
+    binsForegroundRect.append('rect').classed('bins', true)
+      .attr('x', (d, i) => (i * cellDimension))
+      .attr('y', (d, i) => cellHeight - binScale(d))
+      .attr('width', cellDimension)
+      .attr('height', (d, i) => binScale(d))
+      .style('opacity', 1)
+      .attr('stroke', 'grey')
+      .attr('stroke-width', 0.5)
+      .attr('fill', (d, i) => colorScale(cellDimension * i))
       .on('mouseover', function (d, i) {
         toolTip.transition()
           .duration(200)
@@ -125,7 +150,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
           .style('opacity', 0);
       });
 
-    return binsRect;
+    return binsForegroundRect;
 
   }
 
@@ -136,25 +161,44 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .domain(range)
       .range([0, width]);
 
-    const brush = d3.svg.brush();
-    brush.x(scale);
-    brush.on('brushend', function () {
-      const v: any = brush.extent();
-      that.updateDragValues(v);
-      that._numericalFilterRange = v;
-      that.triggerFilterChanged();
-    });
+    const clipPathRect = svg
+      .append('clipPath')
+      .attr('id', 'brushClipping')
+      .append('rect');
+
+    const copyBrush = function (extent) {
+      clipPathRect.attr({
+        x: extent.attr('x'),
+        width: extent.attr('width'),
+        height: extent.attr('height')
+      });
+    };
+
+    const brush = d3.svg.brush()
+      .x(scale)
+      .extent(range)
+      .on('brushstart', function () {
+        copyBrush(d3.select(this).select('.extent'));
+      })
+      .on('brush', function () {
+        const v: any = brush.extent();
+        that.updateDragValues(v);
+        copyBrush(d3.select(this).select('.extent'));
+      })
+      .on('brushend', function () {
+        copyBrush(d3.select(this).select('.extent'));
+        const v: any = brush.extent();
+        that.updateDragValues(v);
+        that._numericalFilterRange = v;
+        that.triggerFilterChanged();
+      });
 
     const g = svg.append('g');
     brush(g);
     g.attr('transform', 'translate(5,0)');
     g.selectAll('rect').attr('height', this.filterDim.height);
-    g.selectAll('.background')
-      .style({visibility: 'visible'});
-    g.selectAll('.extent')
-      .style({visibility: 'visible'});
-    g.selectAll('.resize rect')
-      .style({visibility: 'hidden'});
+    copyBrush(g.select('.extent'));
+
     return svg;
 
   }
