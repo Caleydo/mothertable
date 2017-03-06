@@ -66,24 +66,21 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
-    const catEntries = d3.select(node).append('div').classed('catentries', true);
+
 
     const binScale = d3.scale.linear()
-      .domain(d3.extent(catData, (d) => d.count)).range([this._filterDim.height / 2, this._filterDim.height]);
+      .domain([0, d3.max(catData, (d) => d.count)]).range([0, this._filterDim.height]);
 
     that._activeCategories = catData;
+
+    const catEntries = d3.select(node).append('div').classed('catentries', true);
     const catListDiv = catEntries
       .selectAll('div.categories')
       .data(catData);
 
     catListDiv.enter().append('div')
-      .attr('class', 'categories')
-      //.style('flex-grow', 1)
-      .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
-      .style('width', cellDimension + 'px')
-      //.style('height', (d, i) => binScale(d.count) + 'px')
-      .style('background-color', (d) => d.color)
-
+      .attr('class', 'categoriesTransparent')
+      .style('height', cellHeight + 'px')
       .on('mouseover', function (d, i) {
         toolTip.transition()
           .duration(200)
@@ -98,16 +95,23 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
           .style('opacity', 0);
       })
       .on('click', function (d, i) {
-        d3.select(this).classed('active', !d3.select(this).classed('active'));
-        if (d3.select(this).classed('active') === false) {
+        const $this = d3.select(this);
+        $this.classed('active', !d3.select(this).classed('active'));
+        if ($this.classed('active') === false) {
+          $this.select('.categoriesColor').style('background-color', (d) => d.color);
+          const l = d3.select(node).selectAll('.catNames');
+          const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
+          d3.select(v[0]).style('color', 'black');
           const cat = that._activeCategories;
           cat.push(d);
           that._activeCategories = cat;
-
-          //  that.onClick(cat);
           that.triggerFilterChanged();
 
-        } else if (d3.select(this).classed('active') === true) {
+        } else if ($this.classed('active') === true) {
+          $this.select('.categoriesColor').style('background-color', null);
+          const l = d3.select(node).selectAll('.catNames');
+          const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
+          d3.select(v[0]).style('color', null);
           let ind = -1;
           const cat = that._activeCategories;
           for (let i = 0; i < cat.length; ++i) {
@@ -118,19 +122,21 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
           cat.splice(ind, 1);
           that._activeCategories = cat;
           that.triggerFilterChanged();
-
         }
-      });
+      })
+      .append('div')
+      .attr('class', 'categoriesColor')
+      .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
+      .style('background-color', (d) => d.color);
 
     catListDiv.exit().remove();
-
     const catlabels = d3.select(node).append('div').classed('catlabels', true);
-
     const catNames = catlabels
       .selectAll('div.catNames')
       .data(catData);
     catNames.enter().append('div')
       .attr('class', 'catNames')
+      .style('color', 'black')
       .text((d, i) => d.name);
     catNames.exit().remove();
 
