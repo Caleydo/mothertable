@@ -147,7 +147,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const catlabels = d3.select(node).append('div').classed('catlabels', true);
     const catNames = catlabels
       .selectAll('div.catNames')
-      .data(catData);
+      .data(sortedCatData);
     catNames.enter().append('div')
       .attr('class', 'catNames')
       .style('color', 'black')
