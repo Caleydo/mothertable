@@ -5,14 +5,12 @@ import {EOrientation} from './AColumn';
  */
 
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
-  readonly node: HTMLElement;
-
   minimumWidth: number = 80;
   preferredWidth: number = 300;
 
   constructor(data: IStringVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);
-    this.node = this.build(parent);
+    this.$node = this.build(parent);
   }
 
 }

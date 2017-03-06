@@ -106,11 +106,11 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  currentWidth(columns) {
+  currentWidth(columns:AnyColumn[]) {
     let currentPanelWidth: number = 0;
     columns.forEach((col, index) => {
       //console.log("column no."+ index + "width: " + col.node.clientWidth);
-      currentPanelWidth = col.node.clientWidth + currentPanelWidth;
+      currentPanelWidth = col.$node.property('clientWidth') + currentPanelWidth;
     });
     return currentPanelWidth;
   }
@@ -118,7 +118,7 @@ export default class ColumnManager extends EventHandler {
 
   remove(col: AnyColumn) {
     this.columns.splice(this.columns.indexOf(col), 1);
-    col.node.remove();
+    col.$node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
@@ -138,7 +138,7 @@ export default class ColumnManager extends EventHandler {
       return;
     }
     //move the dom element, too
-    this.node.insertBefore(col.node, this.node.childNodes[index]);
+    this.node.insertBefore(col.$node.node(), this.node.childNodes[index]);
 
     this.columns.splice(old, 1);
     if (old < index) {
@@ -235,7 +235,7 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
 
-    const height = Math.min(...this.columns.map((c) => c.node.clientHeight - (<HTMLElement>c.node.querySelector('header')).clientHeight));
+    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
     // compute margin
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -245,9 +245,10 @@ export default class ColumnManager extends EventHandler {
     this.columns.forEach((col) => {
       const margin = col.getVerticalMargin();
       //console.log(margin,verticalMargin)
-      col.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
-      col.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
-      col.layout(col.body.clientWidth, height);
+      col.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
+      col.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
+
+      col.layout(col.body.property('clientWidth'), height);
     });
   }
 }

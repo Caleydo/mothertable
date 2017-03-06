@@ -17,8 +17,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   static readonly EVENT_DATA_REMOVED = 'removedData';
   static readonly EVENT_COLUMN_ADDED = 'added';
 
-  readonly node: HTMLElement;
-
   minimumWidth: number = 150;
   preferredWidth: number = 300;
 
@@ -26,7 +24,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private rowRange: Range;
   private colRange: Range;
   dataView: IDataType;
-  private matrixID: number;
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -35,7 +32,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     super(data, orientation);
     this.dataView = data;
     this.calculateDefaultRange();
-    this.node = this.build(columnParent);
+    this.$node = this.build(columnParent);
 
   }
 
@@ -45,25 +42,26 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
-  protected buildBody(body: HTMLElement) {
-    this.multiform = new MultiForm(this.dataView, body, this.multiFormParams());
+  protected buildBody($body: d3.Selection<any>) {
+    this.multiform = new MultiForm(this.dataView, <HTMLElement>$body.node(), this.multiFormParams());
   }
 
-  protected buildToolbar(toolbar: HTMLElement) {
-    toolbar.insertAdjacentHTML('afterbegin', `<div class="vislist"></div>`);
+  protected buildToolbar($toolbar: d3.Selection<any>) {
     if (this.multiform) {
-      const vislist = <HTMLElement>toolbar.querySelector('div.vislist');
-      this.multiform.addIconVisChooser(vislist);
+      const $visList = $toolbar.append('div').classed('vislist', true);
+      this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
     }
-    super.buildToolbar(toolbar);
+
+    super.buildToolbar($toolbar);
   }
 
+  private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
+    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams());
 
-  private replaceMultiForm(data: IDataType, body: HTMLElement) {
-    const m = new MultiForm(data, body, this.multiFormParams());
-    const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
-    vislist.innerHTML = ''; // clear old
-    this.multiform.addIconVisChooser(vislist);
+    const $visList = this.toolbar.select('div.vislist');
+    $visList.html(''); // clear old
+    m.addIconVisChooser(<HTMLElement>$visList.node());
+
     return m;
   }
 
@@ -79,13 +77,15 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   async relayout() {
     //  await resolveIn(10);
 
-    const height = Math.min(this.node.clientHeight - (<HTMLElement>this.node.querySelector('header')).clientHeight);
+    const height = Math.min(this.$node.property('clientHeight') - this.$node.select('header').property('clientHeight'));
     // compute margin
     const verticalMargin = this.getVerticalMargin();
     const margin = this.getVerticalMargin();
-    this.node.style.marginTop = (verticalMargin.top - margin.top) + 'px';
-    this.node.style.marginBottom = (verticalMargin.bottom - margin.bottom) + 'px';
-    this.layout(this.body.clientWidth, height);
+
+    this.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
+    this.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
+
+    this.layout(this.body.property('clientWidth'), height);
   }
 
   getVerticalMargin() {
@@ -153,17 +153,16 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       throw new Error('invalid idtype');
     }
 
-    const col = createColumn(data, this.orientation, this.node);
+    const col = createColumn(data, this.orientation, <HTMLElement>this.$node.node());
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
     this.fire(MatrixColumn.EVENT_COLUMN_ADDED, col);
-    console.log(this.columns)
     this.relayout();
   }
 
   remove(col: AnyColumn) {
     this.columns.splice(this.columns.indexOf(col), 1);
-    col.node.remove();
+    col.$node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.fire(MatrixColumn.EVENT_COLUMN_REMOVED, col);
     this.fire(MatrixColumn.EVENT_DATA_REMOVED, col.data);
@@ -180,8 +179,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     if (old === index) {
       return;
     }
-    //move the dom element, too
-    this.node.insertBefore(col.node, this.node.childNodes[index]);
+
+    // move the dom element, too
+    this.$node.node().insertBefore(col.$node.node(), this.$node.node().childNodes[index]);
 
     this.columns.splice(old, 1);
     if (old < index) {
