@@ -198,8 +198,9 @@ export default class App {
     this.supportView.push(matrixSupportView);
 
     const m = this.supportView[0].matrixData;
-    //  const node = d3.select(`.${otherIdtype.id}.filter-manager`).append('div').classed('filter', true);
-    new MatrixFilter(m.t, node);
+    const matrixnode = <HTMLElement>node.querySelector(`.${otherIdtype.id}.filter-manager`);
+    // d3.select(node).select(`.${otherIdtype.id}.filter-manager`);
+    new MatrixFilter(m.t, matrixnode);
 
     this.previewData(this.dataSize, otherIdtype.id, node);
     matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
