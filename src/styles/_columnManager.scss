@@ -2,15 +2,21 @@
 .column-manager {
   display: flex;
   align-items: stretch;
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 10px 5px 10px 20px;
+
   .columnList {
     display: flex;
     align-items: stretch;
-    padding-left: 0px;
+    padding-left: 0;
   }
+
   .column {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+
     .columnHeader {
       cursor: move;
       white-space: nowrap;
@@ -19,6 +25,7 @@
       text-transform: capitalize;
       text-align: center;
     }
+
     main {
       flex: 1 1 auto;
       display: flex;
@@ -26,6 +33,10 @@
       align-items: center;
     }
   }
+}
+
+.itemWidth {
+  flex: 1 1 auto;
 }
 
 

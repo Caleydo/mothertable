@@ -1,3 +1,34 @@
+
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  border-left: $border-ui;
+
+  flex: 0 1 $rightPanelWidth;
+
+  &:empty {
+    display: none;
+  }
+
+  > .filter-view {
+    width: 20vw;
+    flex: 1 1 auto;
+    overflow: scroll;
+    padding: 4px;
+    border-top: $border-ui;
+
+    &.block-select-selected {
+      border: 1px solid red;
+      background: none;
+    }
+
+    &.block-select-hovered {
+      border: 1px solid red;
+      background: none;
+    }
+  }
+}
+
 .filter {
   margin-bottom: 10px;
   counter-increment: filterSection;
