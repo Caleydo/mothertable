@@ -18,6 +18,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
 
+  $node:d3.Selection<any>;
+
   minimumWidth: number = 10;
   preferredWidth: number = 100;
   dataView: IDataType;
@@ -25,14 +27,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
-
   }
 
   get idtype() {
     return this.data.idtypes[0];
   }
-
-  abstract readonly node: HTMLElement;
 
   abstract layout(width: number, height: number);
 
@@ -44,111 +43,98 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   get body() {
-    return <HTMLElement>this.node.querySelector('main');
+    return this.$node.select('main');
   }
 
-
   get header() {
-    return <HTMLElement>this.node.querySelector('header.columnHeader');
+    return this.$node.select('header.columnHeader');
+  }
+
+  protected get toolbar() {
+    return this.$node.select('div.toolbar');
   }
 
   // async updateMatrix(rowRange, colRange) {
-  //
   //   return rowRange;
   // }
 
   async updateMatrixCol(colRange) {
-
     return colRange;
   }
 
-
-  protected get toolbar() {
-    return <HTMLElement>this.node.querySelector('div.toolbar');
-  }
-
   protected build(parent: HTMLElement) {
-
-    const ol = parent.querySelector('.columnList'); // Column list holder for dragging
-    const node = document.createElement('li');
-    ol.appendChild(node);
-    //  const node = parent.ownerDocument.createElement('div');
-    node.classList.add('column');
-    node.classList.add('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'));
-    //assign column with a proper width
-    node.style.minWidth = String(this.minimumWidth + 'px');
-    node.style.width = String(this.preferredWidth + 'px');
-    const name = this.data.desc.name;
-    node.innerHTML = `
+    this.$node = d3.select(parent).select('.columnList')
+      .append('li')
+      .classed('column', true)
+      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .style('min-width', this.minimumWidth + 'px')
+      .style('width', this.preferredWidth + 'px')
+      .html(`
         <header class="columnHeader">
-               <div class="toolbar"></div>
-            <span>${name}</span>
+          <div class="toolbar"></div>
+          <span>${this.data.desc.name}</span>
         </header>
-        <main></main>`;
+        <main></main>`);
 
-    //  parent.appendChild(node);
-
-    const header = d3.selectAll('header')
+    const header = this.$node.selectAll('header')
       .on('mouseover', function () {
-        d3.select(this).select('.toolbar')
-          .style('display', 'block');
+        d3.select(this).select('.toolbar').style('display', 'block');
       })
       .on('mouseleave', function () {
-        d3.select(this).select('.toolbar')
-          .style('display', 'none');
+        d3.select(this).select('.toolbar').style('display', 'none');
       });
 
+    this.buildBody(this.body);
+    this.buildToolbar(this.toolbar);
 
-    this.buildBody(<HTMLElement>node.querySelector('main'));
-    this.buildToolbar(<HTMLElement>node.querySelector('div.toolbar'));
-    return node;
+    return this.$node;
   }
 
-  protected abstract buildBody(body: HTMLElement);
+  protected abstract buildBody($body:d3.Selection<any>);
 
-  protected buildToolbar(toolbar: HTMLElement) {
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-unlock"></button>`);
-    const lockButton = toolbar.querySelector('button.fa-unlock');
-    this.lockColumnWidth(lockButton);
+  protected buildToolbar($toolbar:d3.Selection<any>) {
+    const $lockButton = $toolbar.append('button')
+      .classed('fa fa-unlock', true)
+      .on('click', () => {
+        this.lockColumnWidth($lockButton);
+      });
 
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa fa-close"></button>`);
-    toolbar.querySelector('button.fa-close').addEventListener('click', () => {
-      this.fire(AColumn.EVENT_REMOVE_ME);
-      return false;
-    });
+    $toolbar.append('button')
+      .classed('fa fa-close', true)
+      .on('click', () => {
+        this.fire(AColumn.EVENT_REMOVE_ME);
+        return false;
+      });
   }
 
-  protected lockColumnWidth(lockButton) {
-    lockButton.addEventListener('click', () => {
-      const b = d3.select(lockButton);
-      if (b.classed('fa-lock')) {
-        // UNLOCKING
-        b.attr('class', 'fa fa-unlock');
-        this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'unlocked');
+  protected lockColumnWidth($lockButton) {
+    if ($lockButton.classed('fa-lock')) {
+      // UNLOCKING
+      $lockButton.attr('class', 'fa fa-unlock');
+      this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'unlocked');
 
-        this.node.classList.add('itemWidth');
-        this.node.classList.remove('itemFixedWidth');
-        this.node.style.flex = '1 1 ' + String(this.node.clientWidth + 'px');
-        //this.node.style.width = String(this.node.clientWidth + 'px');
-        this.node.style.minWidth = String(this.minimumWidth + 'px');
-        this.node.style.maxWidth = String(this.preferredWidth + 'px');
+      this.$node
+        .classed('itemWidth', true)
+        .classed('itemFixedWidth', false)
+        .style('flex', `1 1 ${this.$node.property('clientWidth')}px`)
+        //.style('width', `${this.$node.property('clientWidth')}px`)
+        .style('min-width', `${this.minimumWidth}px`)
+        .style('max-width', `${this.preferredWidth}px`);
 
-      } else {
-        // LOCKING
-        b.attr('class', 'fa fa-lock');
-        this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
+    } else {
+      // LOCKING
+      $lockButton.attr('class', 'fa fa-lock');
+      this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
 
-        this.node.classList.add('itemFixedWidth');
-        this.node.classList.remove('itemWidth');
-        this.node.style.flex = '0 0 ' + String(this.node.clientWidth + 'px');
-        /*const currentWidth = String(this.node.clientWidth + 'px');
-         this.node.style.minWidth = currentWidth;
-         this.node.style.maxWidth = currentWidth;
-         this.node.style.minWidth = null;
-         this.node.style.width = null; */
-
-      }
-    });
+      this.$node
+        .classed('itemFixedWidth', true)
+        .classed('itemWidth', false)
+        .style('flex', `0 0 ${this.$node.property('clientWidth')}px`);
+        //.style('width', null)
+        //.style('min-width', `${this.currentWidth}px`)
+        //.style('min-width', null)
+        //.style('max-width', `${this.currentWidth}px`);
+    }
   }
 
 
