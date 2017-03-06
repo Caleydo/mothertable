@@ -20,7 +20,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: 'phovea-vis-heatmap1d',
+      initialVis: 'barplot',
       'phovea-vis-heatmap1d': {
         color: NumberFilter.COLORS
       }
