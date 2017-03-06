@@ -94,6 +94,7 @@
 .catlabels {
   display: flex;
   flex-grow: 1;
+
   .catNames {
     height: 15px;
     width: 100%;
@@ -104,6 +105,8 @@
     text-transform: capitalize;
     text-align: center;
     color: lightgray;
+    user-select: none;
+    cursor: pointer;
   }
 }
 
