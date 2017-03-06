@@ -82,7 +82,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
 
-
+    const catEntries = d3.select(node).append('div').classed('catentries', true);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(catData, (d) => d.count)]).range([0, this._filterDim.height]);
 
