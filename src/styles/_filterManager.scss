@@ -103,9 +103,13 @@
   text-align: center;
 }
 
-.matrix {
-  flex-grow: 1;
-  background-color: lightgray;
+.matrixEntries {
+  display: flex;
+  align-items: flex-end;
+  .matrixBins {
+    width: 100%;
+
+  }
 }
 
 .totalData {
