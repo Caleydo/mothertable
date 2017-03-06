@@ -70,7 +70,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     m.addIconVisChooser(<HTMLElement>$visList.node());
 
     this.updateSortIcon();
-
     return m;
   }
 
