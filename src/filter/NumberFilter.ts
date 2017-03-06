@@ -9,6 +9,7 @@ import * as d3 from 'd3';
 
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
 
+  static readonly COLORS = ['#fff5f0', '#67000d'];
 
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
@@ -100,7 +101,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const toolTip = (this._toolTip);
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
-    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(['#fff5f0', '#67000d']);
+    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(NumberFilter.COLORS);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
 
