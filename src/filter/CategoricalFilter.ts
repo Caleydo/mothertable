@@ -5,16 +5,20 @@ import AVectorFilter from './AVectorFilter';
 import {ICategoricalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
+import SortEventHandler, {SORT, stringSort} from '../SortEventHandler/SortEventHandler';
+import {on} from 'phovea_core/src/event';
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
+  private _sortCriteria: string = SORT.asc;
 
 
   constructor(data: ICategoricalVector, parent: HTMLElement) {
     super(data);
     this.node = this.build(parent);
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
 
   }
 
@@ -34,6 +38,16 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     return node;
   }
 
+  sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
+    if (sortData.col !== this) {
+      return;
+    }
+
+    this._sortCriteria = sortData.sortMethod;
+    d3.select(this.node).select('main').remove();
+    d3.select(this.node).append('main');
+    this.generateCategories(<HTMLElement>this.node.querySelector('main'), true);
+  }
 
   get filterDim(): {width: number; height: number} {
     this._filterDim = {width: 205, height: 35};
@@ -50,6 +64,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const cellHeight = this.filterDim.height;
     const allCatNames = await(<any>this.data).data();
     const categories = (<any>this.data).desc.value.categories;
+
     const c20 = d3.scale.category20();
     const toolTip = (this.generateTooltip(node));
     const cellDimension = this.filterDim.width / categories.length;
@@ -67,16 +82,15 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
 
-
+    const catEntries = d3.select(node).append('div').classed('catentries', true);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(catData, (d) => d.count)]).range([0, this._filterDim.height]);
 
     that._activeCategories = catData;
-
-    const catEntries = d3.select(node).append('div').classed('catentries', true);
+    const sortedCatData = catData.slice().sort(catObjectsort.bind(this, this._sortCriteria));
     const catListDiv = catEntries
       .selectAll('div.categories')
-      .data(catData);
+      .data(sortedCatData);
 
     catListDiv.enter().append('div')
       .attr('class', 'categoriesTransparent')
@@ -157,9 +171,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     return rangeIntersected;
   }
 
-
 }
-
 
 function isSame(value, compareWith) {
   return value === compareWith;
@@ -174,5 +186,20 @@ function findCatName(catName: any[], value, index,) {
     }
   }
   return;
+}
+
+function catObjectsort(sortCriteria, a, b) {
+  const aVal = a.name.toUpperCase();
+  const bVal = b.name.toUpperCase();
+
+  if (sortCriteria === SORT.asc) {
+
+    return (aVal.localeCompare(bVal));
+  }
+  if (sortCriteria === SORT.desc) {
+
+
+    return (bVal.localeCompare(aVal));
+  }
 }
 

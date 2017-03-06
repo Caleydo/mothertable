@@ -13,7 +13,7 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends AFilter<T, DATATYPE> {
   static EVENT_SORTBY_FILTER_ICON = 'sortFilter';
 
-  protected build(parent: HTMLElement):HTMLElement {
+  protected build(parent: HTMLElement): HTMLElement {
 
     const ol = parent.querySelector('.filterlist');
     const li = <HTMLElement>document.createElement('li');
@@ -39,6 +39,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
         const sortMethod = SORT.desc;
         const sortData = {'sortMethod': sortMethod, col: this};
         fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+
 
         sortIconNode.attr('class', 'fa sort fa-sort-amount-desc');
       } else {
