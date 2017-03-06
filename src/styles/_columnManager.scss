@@ -13,6 +13,11 @@
     align-items: stretch;
     .columnHeader {
       cursor: move;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: capitalize;
+      text-align: center;
     }
     main {
       flex: 1 1 auto;

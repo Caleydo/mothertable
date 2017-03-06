@@ -57,7 +57,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   //   return rowRange;
   // }
 
- async updateMatrixCol(colRange) {
+  async updateMatrixCol(colRange) {
 
     return colRange;
   }
@@ -78,11 +78,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     //assign column with a proper width
     node.style.minWidth = String(this.minimumWidth + 'px');
     node.style.width = String(this.preferredWidth + 'px');
-    let name = this.data.desc.name;
-    if (name.length > 6) {
-      name = name.slice(0, 6) + '..';
-    }
-
+    const name = this.data.desc.name;
     node.innerHTML = `
         <header class="columnHeader">
                <div class="toolbar"></div>

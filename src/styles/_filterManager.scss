@@ -62,20 +62,19 @@
 
 .catentries {
   display: flex;
-  align-items: flex-end;
-  flex-grow: 1;
-  .categories {
-    stroke: black;
-    margin: 1px;
-    flex-grow: 1;
+  .categoriesTransparent {
+    background-color: transparent;
+    display: flex;
+    align-items: flex-end;
     width: 100%;
-    opacity: 1;
+    .categoriesColor {
+      display: flex;
+      flex-grow: 1;
+      width: 100%;
+      background-color: lightgray;
+    }
 
   }
-}
-
-.categories.active {
-  opacity: 0.5;
 }
 
 .catlabels {
@@ -86,10 +85,11 @@
     width: 100%;
     background-color: white;
     white-space: nowrap;
-    overflow: hidden !important;
+    overflow: hidden;
     text-overflow: ellipsis;
     text-transform: capitalize;
     text-align: center;
+    color: lightgray;
   }
 }
 
