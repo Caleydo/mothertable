@@ -97,8 +97,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   async update(idRange: Range) {
-    d3.select(this.node).select('main').remove();
-    d3.select(this.node).append('main');
+    this.$node.select('main').remove();
+    this.$node.append('main');
     this.multiform.destroy();
     const view = await this.data.idView(idRange);
     this.dataView = view;
