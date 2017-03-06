@@ -70,7 +70,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected build(parent: HTMLElement) {
 
     const ol = parent.querySelector('.columnList'); // Column list holder for dragging
-    const node = document.createElement('div');
+    const node = document.createElement('li');
     ol.appendChild(node);
     //  const node = parent.ownerDocument.createElement('div');
     node.classList.add('column');
