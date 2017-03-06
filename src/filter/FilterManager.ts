@@ -1,6 +1,7 @@
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
+
 import IDType from 'phovea_core/src/idtype/IDType';
 import {ICategoricalVector, INumericalVector} from 'phovea_core/src/vector';
 import {INumericalMatrix} from 'phovea_core/src/matrix';

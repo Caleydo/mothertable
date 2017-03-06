@@ -1,6 +1,7 @@
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
+
 import AVectorFilter from './AVectorFilter';
 import {ICategoricalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';
@@ -147,7 +148,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const catlabels = d3.select(node).append('div').classed('catlabels', true);
     const catNames = catlabels
       .selectAll('div.catNames')
-      .data(catData);
+      .data(sortedCatData);
     catNames.enter().append('div')
       .attr('class', 'catNames')
       .style('color', 'black')

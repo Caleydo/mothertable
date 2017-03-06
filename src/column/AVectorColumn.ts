@@ -1,15 +1,16 @@
+/**
+ * Created by Samuel Gratzl on 19.01.2017.
+ */
+
 import AColumn, {EOrientation} from './AColumn';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
-import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
+import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
-
-/**
- * Created by Samuel Gratzl on 19.01.2017.
- */
+import MultiForm from 'phovea_core/src/multiform/MultiForm';
 
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
@@ -18,7 +19,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   dataView: IDataType;
   static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
 
-
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
@@ -26,36 +26,50 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  protected multiFormParams(body: HTMLElement, dataSize?): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>, dataSize?): IMultiFormOptions {
     return {
       all: {
-        width: body.clientWidth,
-        heightTo: body.clientHeight,
+        width: $body.property('clientWidth'),
+        heightTo: $body.property('clientHeight'),
       }
     };
   }
 
-  protected buildBody(body: HTMLElement) {
-    this.multiform = new MultiForm(this.data, body, this.multiFormParams(body));
+  protected buildBody($body: d3.Selection<any>) {
+    this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
   }
 
-  protected buildToolbar(toolbar: HTMLElement) {
-    toolbar.insertAdjacentHTML('afterbegin', `<div class="vislist"></div>`);
+  protected buildToolbar($toolbar: d3.Selection<any>) {
     if (this.multiform) {
-      const vislist = <HTMLElement>toolbar.querySelector('div.vislist');
-      this.multiform.addIconVisChooser(vislist);
+      const $visList = $toolbar.append('div').classed('vislist', true);
+      this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
     }
-    toolbar.insertAdjacentHTML('beforeend', `<button class="fa sort fa-sort-amount-asc"></button>`);
-    const sortButton = <HTMLElement>toolbar.querySelector('button.fa-sort-amount-asc');
-    this.getSortMethod(sortButton);
-    super.buildToolbar(toolbar);
+
+    const $sortButton = $toolbar.append('button')
+      .attr('class', 'fa sort fa-sort-amount-asc')
+      .on('click', () => {
+        if ($sortButton.classed('fa-sort-amount-asc')) {
+          // const sortMethod = SORT.desc;
+          this.sortCriteria = SORT.desc;
+          this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
+          $sortButton.attr('class', 'fa sort fa-sort-amount-desc');
+        } else {
+          this.sortCriteria = SORT.asc;
+          this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
+          $sortButton.attr('class', 'fa sort fa-sort-amount-asc');
+        }
+      });
+
+    super.buildToolbar($toolbar);
   }
 
-  private replaceMultiForm(data: IDataType, body: HTMLElement) {
-    const m = new MultiForm(data, body, this.multiFormParams(body, (<any>data).length));
-    const vislist = <HTMLElement>this.toolbar.querySelector('div.vislist');
-    vislist.innerHTML = ''; // clear old
-    m.addIconVisChooser(vislist);
+  private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
+    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, (<any>data).length));
+
+    const $visList = this.toolbar.select('div.vislist');
+    $visList.html(''); // clear old
+    m.addIconVisChooser(<HTMLElement>$visList.node());
+
     this.updateSortIcon();
     return m;
   }
@@ -71,35 +85,16 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   //   });
   // }
 
-  protected getSortMethod(sortButton:HTMLElement) {
-    sortButton.addEventListener('click', () => {
-      const b = d3.select(sortButton);
-      if (b.classed('fa-sort-amount-asc')) {
-        // const sortMethod = SORT.desc;
-        this.sortCriteria = SORT.desc;
-        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-        b.attr('class', 'fa sort fa-sort-amount-desc');
-      } else {
-        this.sortCriteria = SORT.asc;
-        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-
-        b.attr('class', 'fa sort fa-sort-amount-asc');
-      }
-    });
-
-  }
-
   updateSortIcon() {
     if (this.sortCriteria === SORT.desc) {
-      const s = d3.select(this.node).select('.fa.sort.fa-sort-amount-asc');
+      const s = this.$node.select('.fa.sort.fa-sort-amount-asc');
       s.attr('class', 'fa sort fa-sort-amount-desc');
     }
     if (this.sortCriteria === SORT.asc) {
-      const s = d3.select(this.node).select('.fa.sort.fa-sort-amount-desc');
+      const s = this.$node.select('.fa.sort.fa-sort-amount-desc');
       s.attr('class', 'fa sort fa-sort-amount-asc');
     }
   }
-
 
   async update(idRange: Range) {
     d3.select(this.node).select('main').remove();

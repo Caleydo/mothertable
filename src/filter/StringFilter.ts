@@ -1,6 +1,7 @@
 /**
  * Created by Samuel Gratzl on 19.01.2017.
  */
+
 import {AVectorFilter, IStringVector} from './AVectorFilter';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
