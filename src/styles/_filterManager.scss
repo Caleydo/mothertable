@@ -150,11 +150,33 @@ li {
 
 .extent {
   fill: transparent;
-  stroke-width: 1;
-  stroke: black;
+  //stroke-width: 1;
+  //stroke: black;
 
 }
 
 .background {
   fill: transparent;
+}
+
+.leftLine {
+  stroke: black;
+  stroke-width: 1;
+}
+
+.rightLine {
+  stroke: black;
+  stroke-width: 1;
+}
+
+.bottomLine {
+  stroke: lightgrey;
+  stroke-width: 1;
+}
+
+.leftText, .rightText {
+  font-family: sans-serif;
+  font-size: 12px;
+  fill: black
+
 }

@@ -65,22 +65,25 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   private async generateDensityPlot(node: HTMLElement) {
     const c = this.computeCoordinates();
-    const svgHeight = c.svg.height;
     const triangleYPos = c.triangle.yPos;
-
-    const brushRectPosX = c.brushRect.left;
+    const lineYPos = c.line.yPos;
     const brushRectPosY = c.brushRect.right;
+    const margin = 5;
     const svg = this.makeSVG(node);
     await this.makeBins(svg);
-    this.makeBrush(svg, brushRectPosY - 10, c.range);
+    this.makeBrush(svg, brushRectPosY - margin * 2, c.range);
 
-    this.makeText(svg, 0, triangleYPos, 'leftText').text(`${Math.floor(c.range[0])}`);
-    this.makeText(svg, brushRectPosY - 10, triangleYPos, 'rightText').text(`${Math.floor(c.range[1])}`);
+    this.makeText(svg, 0, triangleYPos + margin * 2, 'leftText').text(`${Math.floor(c.range[0])}`);
+    this.makeText(svg, brushRectPosY - margin * 2, triangleYPos + margin * 2, 'rightText').text(`${Math.floor(c.range[1])}`);
 
-    //  this.makeTriangleIcon(svg, brushRectPosX, triangleYPos, 'left');
-    // this.makeTriangleIcon(svg, brushRectPosY, triangleYPos, 'right');
+    this.makeTriangleIcon(svg, margin, triangleYPos - margin, 'leftTriangle');
+    this.makeTriangleIcon(svg, brushRectPosY - 5, triangleYPos - margin, 'rightTriangle');
 
-
+    this.makeBrushLine(svg, margin, lineYPos, 'leftLine');
+    this.makeBrushLine(svg, brushRectPosY - margin, lineYPos, 'rightLine');
+    const bottomLine = this.makeBrushLine(svg, margin, lineYPos - margin, 'bottomLine');
+    d3.select(this.node).select('.bottomLine')
+      .attr('d', `M${margin} ${lineYPos - margin},L${brushRectPosY - margin} ${lineYPos - margin}`);
   }
 
   private makeSVG(node: HTMLElement) {
@@ -208,17 +211,13 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const text = svg.append('text').classed(`${className}`, true)
       .attr('x', posX)
-      .attr('y', posY)
-      .attr('font-family', 'sans-serif')
-      .attr('font-size', '12px')
-      .attr('fill', 'black');
-
+      .attr('y', posY);
     return text;
 
   }
 
   private  makeTriangleIcon(svg, posX: number, posY: number, classname) {
-    const triangleSymbol = d3.svg.symbol().type('triangle-up').size(50);
+    const triangleSymbol = d3.svg.symbol().type('triangle-up').size(25);
     const triangle = svg.append('path')
       .classed(classname, true)
       .attr('d', triangleSymbol)
@@ -227,24 +226,40 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
+  private makeBrushLine(svg, posX: number, lineYPos, classname) {
+    const line = svg.append('path')
+      .classed(classname, true)
+      .attr('d', `M${posX} 0,L${posX} ${lineYPos}`);
+    return line;
+
+
+  }
 
   private updateDragValues(range: number[]) {
     const c = this.computeCoordinates();
     const brushScaledVal = [c.axisScale(range[0]), c.axisScale(range[1])];
     const windowScaledVal = [c.rangeScale(brushScaledVal[0]), c.rangeScale(brushScaledVal[1])];
+    const margin = 5;
+    const $node = d3.select(this.node);
+    $node.select('.leftTriangle')
+      .attr('transform', `translate(${brushScaledVal[0]},${c.triangle.yPos - 5})`);
 
-    d3.select(this.node).select('.left')
-      .attr('transform', `translate(${brushScaledVal[0]},${c.triangle.yPos})`);
+    $node.select('.rightTriangle')
+      .attr('transform', `translate(${brushScaledVal[1] - margin},${c.triangle.yPos - margin})`);
+    $node.select('.leftLine')
+      .attr('d', `M${brushScaledVal[0]} 0,L${brushScaledVal[0]} ${c.triangle.yPos - margin}`);
 
-    d3.select(this.node).select('.right')
-      .attr('transform', `translate(${brushScaledVal[1]},${c.triangle.yPos})`);
+    $node.select('.rightLine')
+      .attr('d', `M${brushScaledVal[1] - margin} 0,L${brushScaledVal[1] - margin} ${c.triangle.yPos - margin}`);
+    $node.select('.bottomLine')
+      .attr('d', `M${brushScaledVal[0]} ${c.triangle.yPos - margin * 2},L${brushScaledVal[1] - margin} ${c.triangle.yPos - margin * 2}`)
 
-    d3.select(this.node).select('.leftText')
+    $node.select('.leftText')
       .attr('x', brushScaledVal[0])
       .text(`${Math.floor(windowScaledVal[0])}`);
 
-    d3.select(this.node).select('.rightText')
-      .attr('x', brushScaledVal[1] - 10)
+    $node.select('.rightText')
+      .attr('x', brushScaledVal[1] - margin * 2)
       .text(`${Math.floor(windowScaledVal[1])}`);
 
   }
