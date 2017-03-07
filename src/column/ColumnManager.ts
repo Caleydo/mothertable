@@ -250,17 +250,14 @@ export default class ColumnManager extends EventHandler {
     // try to distribute the container width equally between all columns
     const avgWidth = totalAvailableWidth / (this.columns.length - lockedWidthCols.length - minWidthCols.length);
 
-    //console.group('width');
     // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
     const colWidths = this.columns.map((col) => {
       if(col.lockedWidth > 0) {
         return  col.lockedWidth;
       }
-      //console.log('width', Math.max(col.minimumWidth, Math.min(col.preferredWidth, avgWidth)), 'avgWidth', avgWidth, 'minWidth', col.minimumWidth, 'prefWidth', col.preferredWidth);
       // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
       return Math.max(col.minimumWidth, Math.min(col.preferredWidth, avgWidth));
     });
-    //console.groupEnd();
 
     return colWidths;
   }
