@@ -8,8 +8,8 @@ import {mixin} from 'phovea_core/src/index';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
-  minimumWidth: number = 80;
-  preferredWidth: number = 300;
+  minWidth: number = 80;
+  maxWidth: number = 300;
 
   constructor(data: IStringVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);

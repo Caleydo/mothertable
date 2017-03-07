@@ -20,8 +20,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   $node:d3.Selection<any>;
 
-  minimumWidth: number = 10;
-  preferredWidth: number = 100;
+  minWidth: number = 10;
+  maxWidth: number = 100;
   lockedWidth: number = -1;
 
   dataView: IDataType;
@@ -69,8 +69,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .append('li')
       .classed('column', true)
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
-      .style('min-width', this.minimumWidth + 'px')
-      .style('width', this.preferredWidth + 'px')
+      .style('min-width', this.minWidth + 'px')
+      .style('width', this.maxWidth + 'px')
       .html(`
         <header class="columnHeader">
           <div class="toolbar"></div>

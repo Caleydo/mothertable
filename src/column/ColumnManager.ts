@@ -241,8 +241,8 @@ export default class ColumnManager extends EventHandler {
 
     // sum the width of all columns that have already the minWidth
     const minWidthCols = this.columns
-      .filter((d) => d.$node.property('clientWidth') === d.minimumWidth)
-      .map((d) => d.minimumWidth);
+      .filter((d) => d.$node.property('clientWidth') === d.minWidth)
+      .map((d) => d.minWidth);
     const sumMinWidth = minWidthCols.reduce((acc, val) => acc + val, 0);
 
     const totalAvailableWidth = this.node.clientWidth - sumLockedWidth - sumMinWidth;
@@ -256,7 +256,7 @@ export default class ColumnManager extends EventHandler {
         return  col.lockedWidth;
       }
       // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
-      return Math.max(col.minimumWidth, Math.min(col.preferredWidth, avgWidth));
+      return Math.max(col.minWidth, Math.min(col.maxWidth, avgWidth));
     });
 
     return colWidths;

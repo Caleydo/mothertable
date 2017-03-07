@@ -17,8 +17,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   static readonly EVENT_DATA_REMOVED = 'removedData';
   static readonly EVENT_COLUMN_ADDED = 'added';
 
-  minimumWidth: number = 150;
-  preferredWidth: number = 300;
+  minWidth: number = 150;
+  maxWidth: number = 300;
 
   private multiform: MultiForm;
   private rowRange: Range;
