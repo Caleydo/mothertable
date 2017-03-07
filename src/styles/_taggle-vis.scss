@@ -9,6 +9,14 @@
 /* overrides phovea-list */
 .taggle-vis-list {
   div {
-    margin-left: 0.5em;
+    padding: 1px 1px 1px 11px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+
+    &.phovea-select-selected {
+      border: 1px solid $select-color;
+      padding: 0 0 0 10px;
+    }
   }
 }
