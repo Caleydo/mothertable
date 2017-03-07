@@ -26,7 +26,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
         color: NUMERICAL_COLOR_MAP
       },
       'barplot': {
-        cssClass: 'taggle-barplot'
+        cssClass: 'taggle-vis-barplot'
       }
     });
   }

@@ -20,7 +20,7 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
     return mixin(super.multiFormParams($body), {
       initialVis: 'list',
       'list': {
-        cssClass: 'taggle-list'
+        cssClass: 'taggle-vis-list'
       }
     });
   }
