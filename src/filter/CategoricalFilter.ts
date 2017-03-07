@@ -83,9 +83,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       catData.push({name: val, count: count.length, 'color': colorVal});
     }));
 
-    const onClick = function (d, i) {
-      const $this = d3.select(this);
-      $this.classed('active', !d3.select(this).classed('active'));
+    const onClick = function (d, $this) {
+      $this.classed('active', !$this.classed('active'));
       if ($this.classed('active') === false) {
         $this.select('.categoriesColor').style('background-color', (d) => d.color);
         const l = d3.select(node).selectAll('.catNames');
@@ -140,7 +139,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
           .duration(500)
           .style('opacity', 0);
       })
-      .on('click', onClick)
+      .on('click', function(d) {
+        onClick(d, d3.select(this));
+      })
       .append('div')
       .attr('class', 'categoriesColor')
       .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
@@ -155,7 +156,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .attr('class', 'catNames')
       .style('color', 'black')
       .text((d, i) => d.name)
-      .on('click', onClick);
+      .on('click', function(d, i) {
+        onClick(d, d3.select(catListDiv[0][i]));
+      });
     catNames.exit().remove();
 
   }
