@@ -139,7 +139,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
           .duration(500)
           .style('opacity', 0);
       })
-      .on('click', function(d) {
+      .on('click', function (d) {
         onClick(d, d3.select(this));
       })
       .append('div')
@@ -155,8 +155,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     catNames.enter().append('div')
       .attr('class', 'catNames')
       .style('color', 'black')
+      .append('span')
       .text((d, i) => d.name)
-      .on('click', function(d, i) {
+      .on('click', function (d, i) {
         onClick(d, d3.select(catListDiv[0][i]));
       });
     catNames.exit().remove();
