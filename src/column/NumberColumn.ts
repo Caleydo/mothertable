@@ -12,6 +12,8 @@ import NumberFilter from '../filter/NumberFilter';
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   minimumWidth: number = 30;
   preferredWidth: number = 200;
+  minimumHeight: number = 2;
+  preferredHeight: number = 10;
 
   constructor(data: INumericalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);

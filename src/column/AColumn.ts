@@ -18,13 +18,16 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
 
-  $node:d3.Selection<any>;
+  $node: d3.Selection<any>;
 
   minimumWidth: number = 10;
   preferredWidth: number = 100;
+  minimumHeight: number = 2;
+  preferredHeight:number = 10;
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
-  rangeView:Range;
+  rangeView: Range;
+  countMultiform: number;
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
@@ -91,9 +94,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return this.$node;
   }
 
-  protected abstract buildBody($body:d3.Selection<any>);
+  protected abstract buildBody($body: d3.Selection<any>);
 
-  protected buildToolbar($toolbar:d3.Selection<any>) {
+  protected buildToolbar($toolbar: d3.Selection<any>) {
     const $lockButton = $toolbar.append('button')
       .classed('fa fa-unlock', true)
       .on('click', () => {
@@ -131,10 +134,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         .classed('itemFixedWidth', true)
         .classed('itemWidth', false)
         .style('flex', `0 0 ${this.$node.property('clientWidth')}px`);
-        //.style('width', null)
-        //.style('min-width', `${this.currentWidth}px`)
-        //.style('min-width', null)
-        //.style('max-width', `${this.currentWidth}px`);
+      //.style('width', null)
+      //.style('min-width', `${this.currentWidth}px`)
+      //.style('min-width', null)
+      //.style('max-width', `${this.currentWidth}px`);
     }
   }
 

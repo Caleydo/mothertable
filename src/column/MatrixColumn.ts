@@ -19,6 +19,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   minimumWidth: number = 150;
   preferredWidth: number = 300;
+  minimumHeight: number = 2;
+  preferredHeight: number = 10;
 
   private multiform: MultiForm;
   private rowRange: Range;

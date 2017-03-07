@@ -10,6 +10,8 @@ import {IMultiFormOptions} from 'phovea_core/src/multiform';
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
   minimumWidth: number = 80;
   preferredWidth: number = 300;
+  minimumHeight: number = 8;
+  preferredHeight:number = 15;
 
   constructor(data: IStringVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);
