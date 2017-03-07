@@ -205,19 +205,14 @@ export default class ColumnManager extends EventHandler {
       col.update(idRange);
     }));
 
-    return this.relayout();
+    this.relayout();
   }
 
   async relayout() {
     await resolveIn(10);
 
-    // try to distribute the container width equally between all columns
-    const avgWidth = this.node.clientWidth / this.columns.length;
-
-    // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
-    const colWidths = this.columns.map((col) => Math.max(col.minimumWidth, Math.min(col.preferredWidth, avgWidth)));
-
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
+    const colWidths = this.calcColWidths();
 
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
@@ -227,15 +222,49 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col, i) => {
       const margin = col.getVerticalMargin();
-      col.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
-      col.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
 
-      // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
-      col.$node.style('width', colWidths[i] + 'px');
+      col.$node
+        .style('margin-top', (verticalMargin.top - margin.top) + 'px')
+        .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
+        .style('width', colWidths[i] + 'px');
 
       col.layout(colWidths[i], height);
     });
   }
+
+  private calcColWidths() {
+    // sum all columns that are locked and thus cannot be changed
+    const lockedWidthCols = this.columns
+      .filter((d) => d.lockedWidth > 0)
+      .map((d) => d.lockedWidth);
+    const sumLockedWidth = lockedWidthCols.reduce((acc, val) => acc + val, 0);
+
+    // sum the width of all columns that have already the minWidth
+    const minWidthCols = this.columns
+      .filter((d) => d.$node.property('clientWidth') === d.minimumWidth)
+      .map((d) => d.minimumWidth);
+    const sumMinWidth = minWidthCols.reduce((acc, val) => acc + val, 0);
+
+    const totalAvailableWidth = this.node.clientWidth - sumLockedWidth - sumMinWidth;
+
+    // try to distribute the container width equally between all columns
+    const avgWidth = totalAvailableWidth / (this.columns.length - lockedWidthCols.length - minWidthCols.length);
+
+    //console.group('width');
+    // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
+    const colWidths = this.columns.map((col) => {
+      if(col.lockedWidth > 0) {
+        return  col.lockedWidth;
+      }
+      //console.log('width', Math.max(col.minimumWidth, Math.min(col.preferredWidth, avgWidth)), 'avgWidth', avgWidth, 'minWidth', col.minimumWidth, 'prefWidth', col.preferredWidth);
+      // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
+      return Math.max(col.minimumWidth, Math.min(col.preferredWidth, avgWidth));
+    });
+    //console.groupEnd();
+
+    return colWidths;
+  }
+
 }
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
