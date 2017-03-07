@@ -22,3 +22,6 @@ export function scaleTo(multiform: MultiForm, width: number, height: number, ori
 
   // TODO orientation
 }
+
+
+export const NUMERICAL_COLOR_MAP:string[] = ['#fff5f0', '#67000d'];

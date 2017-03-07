@@ -8,7 +8,7 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
 import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 
@@ -38,7 +38,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: 'phovea-vis-heatmap'
+      initialVis: 'phovea-vis-heatmap',
+      'phovea-vis-heatmap': {
+        color: NUMERICAL_COLOR_MAP
+      }
     };
   }
 

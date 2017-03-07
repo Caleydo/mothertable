@@ -6,11 +6,10 @@ import {AVectorFilter} from './AVectorFilter';
 import {INumericalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
+import {NUMERICAL_COLOR_MAP} from '../column/utils';
 
 
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
-
-  static readonly COLORS = ['#fff5f0', '#67000d'];
 
   readonly node: HTMLElement;
   private _filterDim: {width: number, height: number};
@@ -105,7 +104,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const toolTip = (this._toolTip);
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
-    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(NumberFilter.COLORS);
+    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(NUMERICAL_COLOR_MAP);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
 

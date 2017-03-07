@@ -8,6 +8,7 @@ import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import NumberFilter from '../filter/NumberFilter';
+import {NUMERICAL_COLOR_MAP} from './utils';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   minimumWidth: number = 30;
@@ -22,7 +23,10 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     return mixin(super.multiFormParams($body), {
       initialVis: 'barplot',
       'phovea-vis-heatmap1d': {
-        color: NumberFilter.COLORS
+        color: NUMERICAL_COLOR_MAP
+      },
+      'barplot': {
+        cssClass: 'taggle-barplot'
       }
     });
   }
