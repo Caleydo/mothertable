@@ -4,7 +4,7 @@
   flex-direction: column;
   border-left: 2px solid $header-border-color;
   flex: 0 1 auto;
-  max-width: 250px;
+  max-width: $rightPanelWidth;
 
   &:empty {
     display: none;
