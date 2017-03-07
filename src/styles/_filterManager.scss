@@ -11,6 +11,21 @@
   }
 }
 
+.fuelBar {
+  height: 5px;
+  display: flex;
+
+  .totalData {
+    background-color: #737373;
+    height: 100%;
+  }
+
+  .filteredData {
+    background-color: $header-bg-color;
+    height: 100%;
+  }
+}
+
 .filter {
   margin-bottom: 10px;
   counter-increment: filterSection;
@@ -110,13 +125,17 @@
   }
 }
 
+.support-view:not(:first-child) {
+  border-top: 2px solid $header-border-color;
+}
+
 .textSearch {
   width: 100%;
 }
 
 .idType {
   font-size: 1.5em;
-  margin: 0.3em;
+  margin: 0.3em 0.3em 0;
   text-align: center;
 }
 
@@ -127,16 +146,6 @@
     width: 100%;
 
   }
-}
-
-.totalData {
-  background-color: #737373;
-  height: 100%;
-}
-
-.filteredData {
-  background-color: #b3b3b3;
-  height: 100%;
 }
 
 li {
