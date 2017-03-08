@@ -25,7 +25,9 @@ import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
-
+import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
+import * as d3 from 'd3';
+import min = d3.min;
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -38,6 +40,7 @@ export default class ColumnManager extends EventHandler {
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
   private rangeNow: Range;
+  private rangeList: Range[] = [];
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -91,7 +94,7 @@ export default class ColumnManager extends EventHandler {
     this.updateSort(null);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    //this.relayout();
+    this.relayout();
   }
 
 
@@ -162,7 +165,7 @@ export default class ColumnManager extends EventHandler {
 
 
     //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-  //  console.log(mergedRange.dim(0).asList());
+    //  console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
 
@@ -199,9 +202,13 @@ export default class ColumnManager extends EventHandler {
 
   async update(idRange: Range) {
     this.rangeNow = idRange;
+    this.rangeList = [];
+    this.rangeList.push(idRange);
     await Promise.all(this.columns.map((col) => {
       if (col instanceof MatrixColumn) {
         col.updateRows(idRange);
+        this.relayout();
+
       }
 
       col.update(idRange);
@@ -214,10 +221,8 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
-     let rowHeight = this.calColHeight(height);
-    console.log(rowHeight)
+    const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
-
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -235,36 +240,38 @@ export default class ColumnManager extends EventHandler {
     });
   }
 
-   private calColHeight(height) {
-    const matrixCol = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
-    const matrixMaxHeight = matrixCol.map((m) => m.maxHeight * (<IAnyMatrix>m.dataView).nrow);
-    const matrixMinHeight = matrixCol.map((m) => m.minHeight * (<IAnyMatrix>m.dataView).nrow);
+  private async calColHeight(height) {
+
+
     const vectorColumns = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.vector);
+    const dataPoints = [];
+    for (const r of this.rangeList) {
+      const view = await vectorColumns[0].data.idView(r);
+      dataPoints.push(await (<IAnyVector>view).length);
+    }
+    const cols = [];
+    for (const col of vectorColumns) {
+      for (const d of dataPoints) {
+        cols.push({minHeight: col.minHeight * d, maxHeight: col.maxHeight * d});
+      }
+    }
+    const minHeight = d3.max(cols, (d, i) => d.minHeight);
+    const maxHeight = d3.min(cols, (d, i) => d.maxHeight);
+    const checkStringCol = vectorColumns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
 
-    const maxHeightList = vectorColumns.map((col) => col.maxHeight * (<any>col.dataView).length);
-    const minHeightList = vectorColumns.map((col) => col.minHeight * (<any>col.dataView).length);
-    const requiredHeight = Math.max(...matrixMaxHeight, Math.max(...maxHeightList));
-    const requiredMinHeight = Math.max(...matrixMinHeight, Math.max(...minHeightList));
-
-    const checkStringCol = vectorColumns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING)
-    console.log(checkStringCol)
-
-    console.log(requiredMinHeight, requiredHeight, minHeightList, height)
-    console.log(height, requiredMinHeight)
-    if (height < 120) {
-
-      return requiredMinHeight;
-    } else if (requiredHeight < height) {
-      return requiredHeight;
+    if (checkStringCol.length > 0 && minHeight > height) {
+      return minHeight;
+    } else if (checkStringCol.length > 0 && maxHeight < minHeight) {
+      return minHeight;
+    } else if (maxHeight < height) {
+      return maxHeight;
     } else {
       return height;
     }
 
-}
+  }
 }
 
-
-}
 
 /**
  * Distributes a list of columns for the containerWidth.
@@ -278,7 +285,7 @@ export default class ColumnManager extends EventHandler {
  * @param containerWidth
  * @returns {number[]}
  */
-export function distributeColWidths(columns:{lockedWidth:number, minWidth:number, maxWidth:number}[], containerWidth:number):number[] {
+export function distributeColWidths(columns: {lockedWidth: number, minWidth: number, maxWidth: number}[], containerWidth: number): number[] {
   // set minimum width or locked width for all columns
   const cols = columns.map((d) => {
     const newWidth = (d.lockedWidth > 0) ? d.lockedWidth : d.minWidth;
@@ -317,7 +324,6 @@ export function distributeColWidths(columns:{lockedWidth:number, minWidth:number
   }
   return cols.map((d) => d.newWidth);
 }
-
 
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
