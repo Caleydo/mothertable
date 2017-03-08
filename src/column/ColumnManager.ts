@@ -162,7 +162,7 @@ export default class ColumnManager extends EventHandler {
 
 
     //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-    //  console.log(mergedRange.dim(0).asList());
+  //  console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
 
@@ -214,9 +214,10 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
-    const colWidths = this.calcColWidths();
-    let rowHeight = this.calColHeight(height);
+     let rowHeight = this.calColHeight(height);
     console.log(rowHeight)
+    const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
+
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -225,6 +226,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col, i) => {
       const margin = col.getVerticalMargin();
+
       col.$node
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
@@ -233,37 +235,7 @@ export default class ColumnManager extends EventHandler {
     });
   }
 
-  private calcColWidths() {
-    // sum all columns that are locked and thus cannot be changed
-    const lockedWidthCols = this.columns
-      .filter((d) => d.lockedWidth > 0)
-      .map((d) => d.lockedWidth);
-    const sumLockedWidth = lockedWidthCols.reduce((acc, val) => acc + val, 0);
-
-    // sum the width of all columns that have already the minWidth
-    const minWidthCols = this.columns
-      .filter((d) => d.$node.property('clientWidth') === d.minWidth)
-      .map((d) => d.minWidth);
-    const sumMinWidth = minWidthCols.reduce((acc, val) => acc + val, 0);
-
-    const totalAvailableWidth = this.node.clientWidth - sumLockedWidth - sumMinWidth;
-
-    // try to distribute the container width equally between all columns
-    const avgWidth = totalAvailableWidth / (this.columns.length - lockedWidthCols.length - minWidthCols.length);
-
-    // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
-    const colWidths = this.columns.map((col) => {
-      if (col.lockedWidth > 0) {
-        return col.lockedWidth;
-      }
-      // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
-      return Math.max(col.minWidth, Math.min(col.maxWidth, avgWidth));
-    });
-
-    return colWidths;
-  }
-
-  private calColHeight(height) {
+   private calColHeight(height) {
     const matrixCol = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
     const matrixMaxHeight = matrixCol.map((m) => m.maxHeight * (<IAnyMatrix>m.dataView).nrow);
     const matrixMinHeight = matrixCol.map((m) => m.minHeight * (<IAnyMatrix>m.dataView).nrow);
@@ -288,9 +260,65 @@ export default class ColumnManager extends EventHandler {
       return height;
     }
 
-
-  }
 }
+}
+
+
+}
+
+/**
+ * Distributes a list of columns for the containerWidth.
+ * Note about the implementation:
+ * - Columns that have `lockedWidth > -1` do not scale
+ * - Columns cannot be smaller than the given `minWidth`
+ * - Columns cannot be larger than the given `maxWidth`
+ * - Columns get wider unequally (until reaching their `maxWidth`), based on the defined `minWidth`
+ *
+ * @param columns
+ * @param containerWidth
+ * @returns {number[]}
+ */
+export function distributeColWidths(columns:{lockedWidth:number, minWidth:number, maxWidth:number}[], containerWidth:number):number[] {
+  // set minimum width or locked width for all columns
+  const cols = columns.map((d) => {
+    const newWidth = (d.lockedWidth > 0) ? d.lockedWidth : d.minWidth;
+    return {
+      col: d,
+      newWidth,
+      isLocked: (d.lockedWidth > 0),
+      hasMaxWidth: (newWidth >= d.maxWidth),
+    };
+  });
+
+  let spaceLeft = containerWidth - cols.map((d) => d.newWidth).reduce((acc, val) => acc + val, 0);
+  let openResizes = 0;
+
+  // if there is still space left try to expand columns until every column reaches their maximum width
+  while (spaceLeft > 0) {
+    // candidates that could be resized
+    const resizeCandidates = cols.filter((d) => d.isLocked === false && d.hasMaxWidth === false);
+
+    resizeCandidates.map((d, i, arr) => {
+      // new width is the equally divided space left
+      const newWidth = d.newWidth + (spaceLeft / arr.length);
+      // do not exceed the maximum width
+      d.newWidth = Math.min(d.col.maxWidth, newWidth);
+      d.hasMaxWidth = (newWidth >= d.col.maxWidth);
+    });
+
+    // refresh space left
+    spaceLeft = containerWidth - cols.map((d) => d.newWidth).reduce((acc, val) => acc + val, 0);
+
+    // cancel loop if there is any column available for resizing
+    if (resizeCandidates.length === openResizes) {
+      break;
+    }
+    openResizes = resizeCandidates.length;
+  }
+  return cols.map((d) => d.newWidth);
+}
+
+
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
   switch (data.desc.type) {
