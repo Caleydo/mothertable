@@ -214,17 +214,9 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
-    console.log(height)
     const colWidths = this.calcColWidths();
     let rowHeight = this.calColHeight(height);
-    if (rowHeight < height) {
-      rowHeight = height;
-    } else if (rowHeight > height) {
-      rowHeight = height
-    }
-    console.log(height)
-    // rowHeight = rowHeight > height ? height : rowHeight;
-    // console.log(rowHeight)
+    console.log(rowHeight)
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -276,17 +268,26 @@ export default class ColumnManager extends EventHandler {
     const matrixMaxHeight = matrixCol.map((m) => m.maxHeight * (<IAnyMatrix>m.dataView).nrow);
     const matrixMinHeight = matrixCol.map((m) => m.minHeight * (<IAnyMatrix>m.dataView).nrow);
     const vectorColumns = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.vector);
+
     const maxHeightList = vectorColumns.map((col) => col.maxHeight * (<any>col.dataView).length);
     const minHeightList = vectorColumns.map((col) => col.minHeight * (<any>col.dataView).length);
     const requiredHeight = Math.max(...matrixMaxHeight, Math.max(...maxHeightList));
-    const requiredMinHeight = Math.min(...matrixMinHeight, Math.min(...minHeightList));
+    const requiredMinHeight = Math.max(...matrixMinHeight, Math.max(...minHeightList));
 
-    console.log(maxHeightList, minHeightList, requiredMinHeight, requiredHeight, matrixMaxHeight)
-    if (requiredHeight < height) {
+    const checkStringCol = vectorColumns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING)
+    console.log(checkStringCol)
+
+    console.log(requiredMinHeight, requiredHeight, minHeightList, height)
+    console.log(height, requiredMinHeight)
+    if (height < 120) {
+
+      return requiredMinHeight;
+    } else if (requiredHeight < height) {
       return requiredHeight;
     } else {
-      return requiredMinHeight;
+      return height;
     }
+
 
   }
 }
