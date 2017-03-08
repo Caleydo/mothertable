@@ -182,7 +182,7 @@ export default class ColumnManager extends EventHandler {
       this.rangeNow = await data.ids();
 
     }
-    await col.update((this.rangeNow));
+    // await col.update((this.rangeNow));
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
@@ -266,32 +266,17 @@ export default class ColumnManager extends EventHandler {
       const v = reArrangeRangeListAfter(this.draggedIndices, rlist);
       const rangeElements = v.map((d) => this.makeRangeFromList(d));
       this.rangeList = rangeElements;
-      rangeElements.map((d) => this.update(d));
+      //rangeElements.map((d) => this.update(d));
+      this.columns.map((d) => d.updateList(rangeElements))
 
     } else {
-      r.map((d) => this.update(d));
+      this.columns.map((d) => d.updateList(r))
+      //  r.map((d) => this.update(d));
 
     }
 
 
   }
-
-  // async mergeRanges(r: Promise<Range[]>) {
-  //   const ranges = await r;
-  //
-  //   ranges.map((d) => this.update(d));
-  //   const mergedRange = ranges.reduce((currentVal, nextValue) => {
-  //     const r = new Range();
-  //     r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-  //     return r;
-  //   });
-  //   //
-  //   //
-  //   //   //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-  //   console.log(mergedRange.dim(0).asList());
-  //   //   //   this.update(mergedRange);
-  // }
-
 
   async filterData(idRange: Range) {
     for (const col of this.columns) {
@@ -328,7 +313,6 @@ export default class ColumnManager extends EventHandler {
   async update(idRange: Range) {
     this.rangeNow = idRange;
     await Promise.all(this.columns.map((col) => {
-      col.calculateHeight(this.rangeList);
 
       if (col instanceof MatrixColumn) {
         col.updateRows(idRange);
@@ -342,7 +326,6 @@ export default class ColumnManager extends EventHandler {
 
   async relayout() {
     await resolveIn(10);
-
     const height = Math.min(...this.columns.map((c) => {
       return c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')
     }));
@@ -353,11 +336,11 @@ export default class ColumnManager extends EventHandler {
     }, {top: 0, bottom: 0});
 
     this.columns.forEach((col) => {
-      col.countMultiform = this.rangeList.length;
-      const margin = col.getVerticalMargin();
+           const margin = col.getVerticalMargin();
       //console.log(margin,verticalMargin)
       col.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
       col.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
+      col.multiformList.map((d) => scaleTo(d, col.body.property('clientWidth'), 50, this.orientation))
       col.layout(col.body.property('clientWidth'), height);
     });
   }

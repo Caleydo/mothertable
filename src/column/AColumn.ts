@@ -25,11 +25,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   minimumHeight: number = 2;
   preferredHeight: number = 30;
 
-
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
-  countMultiform: number;
+  multiformList = [];
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
@@ -64,9 +63,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   //   return rowRange;
   // }
 
-  calculateHeight(rangeList) {
-    return rangeList;
-  }
 
   async updateMatrixCol(colRange) {
     return colRange;
@@ -94,7 +90,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         d3.select(this).select('.toolbar').style('display', 'none');
       });
 
-    this.buildBody(this.body);
+    // this.buildBody(this.body);
     this.buildToolbar(this.toolbar);
 
     return this.$node;
@@ -115,6 +111,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         this.fire(AColumn.EVENT_REMOVE_ME);
         return false;
       });
+  }
+
+  async updateList(idRange: Range[]) {
+
+
   }
 
   protected lockColumnWidth($lockButton) {

@@ -146,6 +146,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.relayout();
   }
 
+  async updateList(idRange: Range[]) {
+
+
+  }
 
   async update(idRange: Range) {
     // this.multiform.destroy();

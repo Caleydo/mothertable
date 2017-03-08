@@ -15,9 +15,10 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
-  protected multiform: MultiForm;
+  multiform: MultiForm;
   dataView: IDataType;
   static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
+  multiformList = [];
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
@@ -36,17 +37,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected buildBody($body: d3.Selection<any>) {
-
-
-    this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
+    //  this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    if (this.multiform) {
-      const $visList = $toolbar.append('div').classed('vislist', true);
-      this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
-    }
-
+    // if (this.multiform) {
+    //const $visList = $toolbar.append('div').classed('vislist', true);
+    // this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
+    // }
     const $sortButton = $toolbar.append('button')
       .attr('class', 'fa sort fa-sort-amount-asc')
       .on('click', () => {
@@ -66,15 +64,20 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
+    //const dom = $body.append('div');
     const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, (<any>data).length));
+    //  const d = dom.append('div');
+    // m.addIconVisChooser(<HTMLElement>d.node());
 
 
+    // const $visList = $toolbar.append('div').classed('vislist', true);
+    //this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
     // m.on('changed', (evt, d) => console.log(d))
     this.calculateMultiformDimension(m, $body)
 
-    const $visList = this.toolbar.select('div.vislist');
-    $visList.html(''); // clear old
-    m.addIconVisChooser(<HTMLElement>$visList.node());
+    // const $visList = this.toolbar.select('div.vislist');
+    // $visList.html(''); // clear old
+    // m.addIconVisChooser(<HTMLElement>$visList.node());
 
     this.updateSortIcon();
     return m;
@@ -98,25 +101,16 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const height = $body.property('clientHeight');
     const dataElements = m.data.length;
     const minHeight = dataElements * this.minimumHeight;
-    this.countMultiform = 2;
     const requiredHeight = dataElements * this.preferredHeight;
-    const requiredColHeight = requiredHeight * this.countMultiform;
-    console.log(requiredHeight, requiredColHeight)
+    //const requiredColHeight = requiredHeight * this.countMultiform;
+
     if (requiredHeight < height) {
-      console.log(requiredHeight)
 
       scaleTo(m, width, requiredHeight, this.orientation);
     } else {
-      console.log(requiredHeight)
+
       scaleTo(m, width, minHeight, this.orientation);
     }
-
-
-  }
-
-  calculateHeight(rangeList) {
-
-    console.log(rangeList)
 
   }
 
@@ -134,12 +128,28 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   async update(idRange: Range) {
     this.$node.select('main').remove();
     this.$node.append('main');
-    this.multiform.destroy();
+    //  this.multiform.destroy();
     const view = await this.data.idView(idRange);
     this.dataView = view;
-    this.multiform = this.replaceMultiForm(view, this.body);
+    this.replaceMultiForm(view, this.body);
 
   }
+
+
+  async updateList(idRanges: Range[]) {
+    this.body.selectAll('.multiformList').remove();
+    for (const r of idRanges) {
+      const li = this.body.append('li').classed('multiformList', true);
+      const $header = li.append('header');
+      const view = await this.data.idView(r);
+      const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, (<any>view).length));
+      m.addIconVisChooser(<HTMLElement>$header.node());
+      this.multiformList.push(m);
+    }
+
+
+  }
+
 
 }
 
