@@ -78,7 +78,7 @@ export default class ColumnManager extends EventHandler {
       this.rangeNow = await data.ids();
 
     }
-    await col.update((this.rangeNow));
+    await col.update(this.rangeNow);
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
@@ -87,30 +87,9 @@ export default class ColumnManager extends EventHandler {
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
     this.updateSort(null);
-    const managerWidth = this.node.clientWidth;
-    const panel = this.currentWidth(this.columns);
-
-    //if (managerWidth - panel < 0) {
-    //console.log("Need relayout");
-    //} else {
-    //console.log("Enough space");
-    //}
-
-    //console.log("col manager width: " + managerWidth);
-    //console.log("panel width: " + panel);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    return this.relayout();
-
-  }
-
-  currentWidth(columns:AnyColumn[]) {
-    let currentPanelWidth: number = 0;
-    columns.forEach((col, index) => {
-      //console.log("column no."+ index + "width: " + col.node.clientWidth);
-      currentPanelWidth = col.$node.property('clientWidth') + currentPanelWidth;
-    });
-    return currentPanelWidth;
+    //this.relayout();
   }
 
 
@@ -226,29 +205,63 @@ export default class ColumnManager extends EventHandler {
       col.update(idRange);
     }));
 
-    return this.relayout();
+    this.relayout();
   }
 
   async relayout() {
     await resolveIn(10);
 
-
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
-    // compute margin
+    const colWidths = this.calcColWidths();
+
+    // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
       return {top: Math.max(prev.top, act.top), bottom: Math.max(prev.bottom, act.bottom)};
     }, {top: 0, bottom: 0});
 
-    this.columns.forEach((col) => {
+    this.columns.forEach((col, i) => {
       const margin = col.getVerticalMargin();
-      //console.log(margin,verticalMargin)
-      col.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
-      col.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
 
-      col.layout(col.body.property('clientWidth'), height);
+      col.$node
+        .style('margin-top', (verticalMargin.top - margin.top) + 'px')
+        .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
+        .style('width', colWidths[i] + 'px');
+
+      col.layout(colWidths[i], height);
     });
   }
+
+  private calcColWidths() {
+    // sum all columns that are locked and thus cannot be changed
+    const lockedWidthCols = this.columns
+      .filter((d) => d.lockedWidth > 0)
+      .map((d) => d.lockedWidth);
+    const sumLockedWidth = lockedWidthCols.reduce((acc, val) => acc + val, 0);
+
+    // sum the width of all columns that have already the minWidth
+    const minWidthCols = this.columns
+      .filter((d) => d.$node.property('clientWidth') === d.minWidth)
+      .map((d) => d.minWidth);
+    const sumMinWidth = minWidthCols.reduce((acc, val) => acc + val, 0);
+
+    const totalAvailableWidth = this.node.clientWidth - sumLockedWidth - sumMinWidth;
+
+    // try to distribute the container width equally between all columns
+    const avgWidth = totalAvailableWidth / (this.columns.length - lockedWidthCols.length - minWidthCols.length);
+
+    // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
+    const colWidths = this.columns.map((col) => {
+      if(col.lockedWidth > 0) {
+        return  col.lockedWidth;
+      }
+      // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
+      return Math.max(col.minWidth, Math.min(col.maxWidth, avgWidth));
+    });
+
+    return colWidths;
+  }
+
 }
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {

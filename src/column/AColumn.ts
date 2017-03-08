@@ -20,8 +20,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   $node:d3.Selection<any>;
 
-  minimumWidth: number = 10;
-  preferredWidth: number = 100;
+  minWidth: number = 10;
+  maxWidth: number = 100;
+  lockedWidth: number = -1;
+
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
 
@@ -67,8 +69,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .append('li')
       .classed('column', true)
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
-      .style('min-width', this.minimumWidth + 'px')
-      .style('width', this.preferredWidth + 'px')
+      .style('min-width', this.minWidth + 'px')
+      .style('width', this.maxWidth + 'px')
       .html(`
         <header class="columnHeader">
           <div class="toolbar"></div>
@@ -111,29 +113,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     if ($lockButton.classed('fa-lock')) {
       // UNLOCKING
       $lockButton.attr('class', 'fa fa-unlock');
+      this.lockedWidth = -1;
       this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'unlocked');
-
-      this.$node
-        .classed('itemWidth', true)
-        .classed('itemFixedWidth', false)
-        .style('flex', `1 1 ${this.$node.property('clientWidth')}px`)
-        //.style('width', `${this.$node.property('clientWidth')}px`)
-        .style('min-width', `${this.minimumWidth}px`)
-        .style('max-width', `${this.preferredWidth}px`);
 
     } else {
       // LOCKING
       $lockButton.attr('class', 'fa fa-lock');
+      this.lockedWidth = this.$node.property('clientWidth');
       this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
-
-      this.$node
-        .classed('itemFixedWidth', true)
-        .classed('itemWidth', false)
-        .style('flex', `0 0 ${this.$node.property('clientWidth')}px`);
-        //.style('width', null)
-        //.style('min-width', `${this.currentWidth}px`)
-        //.style('min-width', null)
-        //.style('max-width', `${this.currentWidth}px`);
     }
   }
 

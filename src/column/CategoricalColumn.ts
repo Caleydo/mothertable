@@ -10,8 +10,8 @@ import {mixin} from 'phovea_core/src/index';
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
 
-  minimumWidth: number = 30;
-  preferredWidth: number = 200; //80
+  minWidth: number = 30;
+  maxWidth: number = 200; //80
 
   constructor(data: ICategoricalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);
