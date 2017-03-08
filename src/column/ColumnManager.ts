@@ -26,7 +26,7 @@ import AFilter from '../filter/AFilter';
 import {insertArrayAt, reArrangeRangeList, reArrangeRangeListAfter} from './utils';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
-
+import {scaleTo} from './utils';
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
@@ -198,7 +198,7 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  currentWidth(columns:AnyColumn[]) {
+  currentWidth(columns: AnyColumn[]) {
     let currentPanelWidth: number = 0;
     columns.forEach((col, index) => {
       //console.log("column no."+ index + "width: " + col.node.clientWidth);
@@ -261,7 +261,7 @@ export default class ColumnManager extends EventHandler {
     }
     this.rangeList = r;
     const rlist = this.rangeList.map((d) => this.makeListfromRange(d));
-    this.rangeList.map((d) => console.log(this.makeListfromRange(d)));
+    // this.rangeList.map((d) => console.log(this.makeListfromRange(d)));
     if (this.draggedIndices !== undefined) {
       const v = reArrangeRangeListAfter(this.draggedIndices, rlist);
       const rangeElements = v.map((d) => this.makeRangeFromList(d));
@@ -328,11 +328,13 @@ export default class ColumnManager extends EventHandler {
   async update(idRange: Range) {
     this.rangeNow = idRange;
     await Promise.all(this.columns.map((col) => {
+      col.calculateHeight(this.rangeList);
+
       if (col instanceof MatrixColumn) {
         col.updateRows(idRange);
       }
-
       col.update(idRange);
+
     }));
 
     return this.relayout();
@@ -341,8 +343,9 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
 
-
-    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
+    const height = Math.min(...this.columns.map((c) => {
+      return c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')
+    }));
     // compute margin
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -350,11 +353,11 @@ export default class ColumnManager extends EventHandler {
     }, {top: 0, bottom: 0});
 
     this.columns.forEach((col) => {
+      col.countMultiform = this.rangeList.length;
       const margin = col.getVerticalMargin();
       //console.log(margin,verticalMargin)
       col.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
       col.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
-
       col.layout(col.body.property('clientWidth'), height);
     });
   }

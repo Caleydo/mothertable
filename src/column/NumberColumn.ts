@@ -13,7 +13,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   minimumWidth: number = 30;
   preferredWidth: number = 200;
   minimumHeight: number = 2;
-  preferredHeight: number = 10;
+  preferredHeight: number = 30;
 
   constructor(data: INumericalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);

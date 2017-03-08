@@ -13,7 +13,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   minimumWidth: number = 30;
   preferredWidth: number = 200; //80
   minimumHeight: number = 2;
-  preferredHeight: number = 10;
+  preferredHeight: number = 30;
 
   constructor(data: ICategoricalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);

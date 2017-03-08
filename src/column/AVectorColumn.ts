@@ -36,6 +36,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected buildBody($body: d3.Selection<any>) {
+
+
     this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
   }
 
@@ -66,6 +68,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
     const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, (<any>data).length));
 
+
+    // m.on('changed', (evt, d) => console.log(d))
+    this.calculateMultiformDimension(m, $body)
+
     const $visList = this.toolbar.select('div.vislist');
     $visList.html(''); // clear old
     m.addIconVisChooser(<HTMLElement>$visList.node());
@@ -75,7 +81,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   layout(width: number, height: number) {
-    scaleTo(this.multiform, width, height, this.orientation);
+    //scaleTo(this.multiform, width, 200, this.orientation);
   }
 
   // update(idRange: Range1D) {
@@ -84,6 +90,35 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   //     this.multiform = this.replaceMultiForm(view, this.body);
   //   });
   // }
+
+
+  calculateMultiformDimension(m, $body) {
+
+    const width = $body.property('clientWidth');
+    const height = $body.property('clientHeight');
+    const dataElements = m.data.length;
+    const minHeight = dataElements * this.minimumHeight;
+    this.countMultiform = 2;
+    const requiredHeight = dataElements * this.preferredHeight;
+    const requiredColHeight = requiredHeight * this.countMultiform;
+    console.log(requiredHeight, requiredColHeight)
+    if (requiredHeight < height) {
+      console.log(requiredHeight)
+
+      scaleTo(m, width, requiredHeight, this.orientation);
+    } else {
+      console.log(requiredHeight)
+      scaleTo(m, width, minHeight, this.orientation);
+    }
+
+
+  }
+
+  calculateHeight(rangeList) {
+
+    console.log(rangeList)
+
+  }
 
   updateSortIcon() {
     if (this.sortCriteria === SORT.desc) {
@@ -103,6 +138,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const view = await this.data.idView(idRange);
     this.dataView = view;
     this.multiform = this.replaceMultiForm(view, this.body);
+
   }
 
 }

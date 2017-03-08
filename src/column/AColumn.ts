@@ -23,7 +23,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   minimumWidth: number = 10;
   preferredWidth: number = 100;
   minimumHeight: number = 2;
-  preferredHeight:number = 10;
+  preferredHeight: number = 30;
+
+
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
@@ -39,7 +41,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract layout(width: number, height: number);
 
-  abstract async update(idRange: Range): Promise<any>;
+  abstract async update(idRange: Range, count?): Promise<any>;
 
 
   getVerticalMargin() {
@@ -61,6 +63,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   // async updateMatrix(rowRange, colRange) {
   //   return rowRange;
   // }
+
+  calculateHeight(rangeList) {
+    return rangeList;
+  }
 
   async updateMatrixCol(colRange) {
     return colRange;
