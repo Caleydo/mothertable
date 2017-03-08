@@ -43,7 +43,7 @@ export default class App {
 
   async build() {
     await this.buildStartSelection(select('#startSelection'));
-
+    this.attachListener();
   }
 
   private async buildStartSelection(elem: d3.Selection<any>) {
@@ -85,6 +85,24 @@ export default class App {
     this.showSelection();
   }
 
+  private attachListener() {
+    const debounce = (fn, delay) => {
+      let delayed;
+
+      return function(e) {
+        clearTimeout(delayed);
+        delayed = setTimeout(function() {
+          fn(e);
+        }, delay);
+      };
+    };
+
+    window.addEventListener('resize', debounce(() => {
+      if(this.manager) {
+        this.manager.relayout();
+      }
+    }, 300));
+  }
 
   private findType(data: IMotherTableType, currentIDType: string) {
     const coltype = data.desc.coltype;

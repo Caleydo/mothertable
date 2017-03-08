@@ -191,20 +191,9 @@ export default class ColumnManager extends EventHandler {
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
     this.updateSort(null);
-    const managerWidth = this.node.clientWidth;
-    const panel = this.currentWidth(this.columns);
+
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    return this.relayout();
-
-  }
-
-  currentWidth(columns: AnyColumn[]) {
-    let currentPanelWidth: number = 0;
-    columns.forEach((col, index) => {
-      //console.log("column no."+ index + "width: " + col.node.clientWidth);
-      currentPanelWidth = col.$node.property('clientWidth') + currentPanelWidth;
-    });
-    return currentPanelWidth;
+    //this.relayout();
   }
 
 
@@ -321,29 +310,63 @@ export default class ColumnManager extends EventHandler {
 
     }));
 
-    return this.relayout();
+    this.relayout();
   }
 
   async relayout() {
     await resolveIn(10);
-    const height = Math.min(...this.columns.map((c) => {
-      return c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')
-    }));
-    // compute margin
+
+    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
+    const colWidths = this.calcColWidths();
+
+    // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
       return {top: Math.max(prev.top, act.top), bottom: Math.max(prev.bottom, act.bottom)};
     }, {top: 0, bottom: 0});
 
-    this.columns.forEach((col) => {
-           const margin = col.getVerticalMargin();
-      //console.log(margin,verticalMargin)
-      col.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
-      col.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
-      col.multiformList.map((d) => scaleTo(d, col.body.property('clientWidth'), 50, this.orientation))
-      col.layout(col.body.property('clientWidth'), height);
+    this.columns.forEach((col, i) => {
+      const margin = col.getVerticalMargin();
+
+      col.$node
+        .style('margin-top', (verticalMargin.top - margin.top) + 'px')
+        .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
+        .style('width', colWidths[i] + 'px');
+col.multiformList.map((d) => scaleTo(d, col.body.property('clientWidth'), 50, this.orientation))
+    //  col.layout(colWidths[i], height);
     });
   }
+
+  private calcColWidths() {
+    // sum all columns that are locked and thus cannot be changed
+    const lockedWidthCols = this.columns
+      .filter((d) => d.lockedWidth > 0)
+      .map((d) => d.lockedWidth);
+    const sumLockedWidth = lockedWidthCols.reduce((acc, val) => acc + val, 0);
+
+    // sum the width of all columns that have already the minWidth
+    const minWidthCols = this.columns
+      .filter((d) => d.$node.property('clientWidth') === d.minWidth)
+      .map((d) => d.minWidth);
+    const sumMinWidth = minWidthCols.reduce((acc, val) => acc + val, 0);
+
+    const totalAvailableWidth = this.node.clientWidth - sumLockedWidth - sumMinWidth;
+
+    // try to distribute the container width equally between all columns
+    const avgWidth = totalAvailableWidth / (this.columns.length - lockedWidthCols.length - minWidthCols.length);
+
+    // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
+    const colWidths = this.columns.map((col) => {
+      if(col.lockedWidth > 0) {
+        return  col.lockedWidth;
+      }
+      // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
+      return Math.max(col.minWidth, Math.min(col.maxWidth, avgWidth));
+    });
+
+    return colWidths;
+  }
+
 }
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
