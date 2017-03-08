@@ -24,6 +24,8 @@ import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
+import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
+
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -160,7 +162,7 @@ export default class ColumnManager extends EventHandler {
 
 
     //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-  //  console.log(mergedRange.dim(0).asList());
+    //  console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
 
@@ -212,8 +214,17 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
+    console.log(height)
     const colWidths = this.calcColWidths();
-
+    let rowHeight = this.calColHeight(height);
+    if (rowHeight < height) {
+      rowHeight = height;
+    } else if (rowHeight > height) {
+      rowHeight = height
+    }
+    console.log(height)
+    // rowHeight = rowHeight > height ? height : rowHeight;
+    // console.log(rowHeight)
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -222,13 +233,11 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col, i) => {
       const margin = col.getVerticalMargin();
-
       col.$node
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-
-      col.layout(colWidths[i], height);
+      col.layout(colWidths[i], rowHeight);
     });
   }
 
@@ -252,8 +261,8 @@ export default class ColumnManager extends EventHandler {
 
     // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
     const colWidths = this.columns.map((col) => {
-      if(col.lockedWidth > 0) {
-        return  col.lockedWidth;
+      if (col.lockedWidth > 0) {
+        return col.lockedWidth;
       }
       // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
       return Math.max(col.minWidth, Math.min(col.maxWidth, avgWidth));
@@ -262,6 +271,24 @@ export default class ColumnManager extends EventHandler {
     return colWidths;
   }
 
+  private calColHeight(height) {
+    const matrixCol = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
+    const matrixMaxHeight = matrixCol.map((m) => m.maxHeight * (<IAnyMatrix>m.dataView).nrow);
+    const matrixMinHeight = matrixCol.map((m) => m.minHeight * (<IAnyMatrix>m.dataView).nrow);
+    const vectorColumns = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.vector);
+    const maxHeightList = vectorColumns.map((col) => col.maxHeight * (<any>col.dataView).length);
+    const minHeightList = vectorColumns.map((col) => col.minHeight * (<any>col.dataView).length);
+    const requiredHeight = Math.max(...matrixMaxHeight, Math.max(...maxHeightList));
+    const requiredMinHeight = Math.min(...matrixMinHeight, Math.min(...minHeightList));
+
+    console.log(maxHeightList, minHeightList, requiredMinHeight, requiredHeight, matrixMaxHeight)
+    if (requiredHeight < height) {
+      return requiredHeight;
+    } else {
+      return requiredMinHeight;
+    }
+
+  }
 }
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
