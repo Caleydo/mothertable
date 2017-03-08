@@ -25,7 +25,7 @@ import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
-import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
+import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import * as d3 from 'd3';
 import min = d3.min;
 
