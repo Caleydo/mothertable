@@ -3,15 +3,10 @@
  */
 
 import {INumericalMatrix} from 'phovea_core/src/matrix';
-import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import AFilter from './AFilter';
-import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
-import SupportView from '../SupportView';
-import {listAll, IDType} from 'phovea_core/src/idtype';
-import ColumnManager, {IMotherTableType} from '../column/ColumnManager';
-import {EOrientation} from '../column/AColumn';
-import {__awaiter} from "tslib";
+import {NUMERICAL_COLOR_MAP} from '../column/utils';
+import Range1D from 'phovea_core/src/range/Range1D';
 
 export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
@@ -22,10 +17,6 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     super(data);
 
     this.node = this.build(parent);
-    // if (ol !== null) {
-    //   parent.insertBefore(this.node, ol.nextSibling);
-    // }
-
     this.activeFilter = false;
   }
 
@@ -81,21 +72,10 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   }
 
   private async generateMatrixHeatmap(node, idtype) {
-
-    const a = await this.data.data();
-    const t = await this.data.t.data();
-    const rowOrCol = idtype;
-    let transpose = false;
-    if (rowOrCol === this.data.rowtype.id) {
-      transpose = false;
-    } else if (rowOrCol === this.data.coltype.id) {
-      transpose = true;
-    }
-    const toolTip = this.generateTooltip(node);
     const cellWidth = this.filterDim.width;
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
-    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(['#fff5f0', '#67000d']);
+    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(NUMERICAL_COLOR_MAP);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
     const entries = d3.select(node).append('div').classed('matrixEntries', true);
@@ -106,23 +86,9 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     list.append('div')
       .attr('class', 'matrixBins')
+      .attr('title', (d, i) => `${i + 1}: ${d}`)
       .style('height', (d, i) => binScale(d) + 'px')
-      .style('background-color', (d, i) => colorScale(cellDimension * i))
-      .on('mouseover', function (d, i) {
-        toolTip.transition()
-          .duration(200)
-          .style('opacity', 1);
-        toolTip.html(`Bin:${i + 1}, Entries: ${d}`)
-          .style('left', ((<any>d3).event.pageX) + 'px')
-          .style('top', ((<any>d3).event.pageY - 10) + 'px');
-      })
-      .on('mouseout', function (d) {
-        toolTip.transition()
-          .duration(500)
-          .style('opacity', 0);
-      });
-
-
+      .style('background-color', (d, i) => colorScale(cellDimension * i));
   }
 
   private async getHistData() {

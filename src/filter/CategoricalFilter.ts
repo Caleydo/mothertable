@@ -125,21 +125,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
     catListDiv.enter().append('div')
       .attr('class', 'categoriesTransparent')
+      .attr('title', (d) => `${d.name}: ${d.count}`)
       .style('height', cellHeight + 'px')
-      .on('mouseover', function (d, i) {
-        toolTip.transition()
-          .duration(200)
-          .style('opacity', 1);
-        toolTip.html(`${d.name}<br> Entries: ${d.count}`)
-          .style('left', ((<any>d3).event.pageX) + 'px')
-          .style('top', ((<any>d3).event.pageY - 10) + 'px');
-      })
-      .on('mouseout', function (d) {
-        toolTip.transition()
-          .duration(500)
-          .style('opacity', 0);
-      })
-      .on('click', function (d) {
+      .on('click', function(d) {
         onClick(d, d3.select(this));
       })
       .append('div')
@@ -155,9 +143,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     catNames.enter().append('div')
       .attr('class', 'catNames')
       .style('color', 'black')
-      .append('span')
+      .attr('title', (d) => `${d.name}: ${d.count}`)
       .text((d, i) => d.name)
-      .on('click', function (d, i) {
+      .on('click', function(d, i) {
         onClick(d, d3.select(catListDiv[0][i]));
       });
     catNames.exit().remove();

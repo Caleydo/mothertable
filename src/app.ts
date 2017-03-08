@@ -172,14 +172,16 @@ export default class App {
 
     const newdiv = document.createElement('div');
     newdiv.classList.add(`support-view-${idtype.id}`);
+    newdiv.classList.add(`support-view`);
     const idName = document.createElement('h1');
     idName.classList.add('idType');
     idName.innerHTML = (idtype.id.toUpperCase());
     newdiv.appendChild(idName);
     const previewDataNode = document.createElement('div');
     previewDataNode.classList.add(`dataPreview-${idtype.id}`);
+    previewDataNode.classList.add(`fuelBar`);
     newdiv.appendChild(previewDataNode);
-    d3.select(previewDataNode).style('display', 'flex').append('div').classed('totalData', true);
+    d3.select(previewDataNode).append('div').classed('totalData', true);
     d3.select(previewDataNode).append('div').classed('filteredData', true);
     const parent = this.node.querySelector('.rightPanel').appendChild(newdiv);
     return parent;
@@ -251,7 +253,6 @@ export default class App {
     const filtered = (dataSize.filtered) || 0;
     const totalWidth = availableWidth / total * filtered;
     const d = d3.select(node).select(`.dataPreview-${idtype}`);
-    d.style('height', '10px');
     d3.select(node).select(`.dataPreview-${idtype}`).select('.totalData').style('width', `${totalWidth}px`);
     d3.select(node).select(`.dataPreview-${idtype}`).select('.filteredData').style('width', `${availableWidth - totalWidth}px`);
 

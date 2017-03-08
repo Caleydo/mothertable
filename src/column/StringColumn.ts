@@ -20,9 +20,11 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: 'list'
+      initialVis: 'list',
+      'list': {
+        cssClass: 'taggle-vis-list'
+      }
     });
   }
-
 
 }
