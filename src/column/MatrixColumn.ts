@@ -62,7 +62,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
     const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams(this.activeVis));
-
     const $visList = this.toolbar.select('div.vislist');
     $visList.html(''); // clear old
     m.addIconVisChooser(<HTMLElement>$visList.node());
@@ -134,7 +133,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMatrix(rowRange, colRange) {
-    console.log(rowRange.colRange)
     if (colRange === undefined) {
       colRange = (await this.calculateDefaultRange())[1];
     }
