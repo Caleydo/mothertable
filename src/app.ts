@@ -16,6 +16,7 @@ import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {randomId} from 'phovea_core/src/index';
 import Range from 'phovea_core/src/range/Range';
+import {hash} from 'phovea_core/src/index';
 
 /**
  * The main class for the App app
@@ -30,7 +31,6 @@ export default class App {
 
   private readonly node: HTMLElement;
 
-
   private manager: ColumnManager;
   private supportView: SupportView[] = [];
   private idtypes: IDType[];
@@ -42,28 +42,40 @@ export default class App {
   }
 
   async build() {
-    await this.buildStartSelection(select('#startSelection'));
     this.attachListener();
+    await this.loadIdtypes();
+
+    if(hash.has('idtype')) {
+      const idtype = this.idtypes.filter((d) => d.id === hash.getProp('idtype'));
+      if(idtype.length > 0) {
+        this.setPrimaryIDType(idtype[0]);
+        return; // exit function -> do not build start selection
+      }
+    }
+
+    this.buildStartSelection(select('#startSelection'));
   }
 
-  private async buildStartSelection(elem: d3.Selection<any>) {
+  private async loadIdtypes() {
     // get all idtypes, filter to the valid ones and SORT by name
-    const data: IDType[] = (await listAll())
+    this.idtypes = (await listAll())
       .filter((d) => d instanceof IDType)
       .map((d) => <IDType>d)
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
 
-    this.idtypes = data;
+  private buildStartSelection(elem: d3.Selection<any>) {
     // d3 binding to the dialog
-    const elems = elem.select('div.btn-group[role="group"]').selectAll('div.btn-group').data(data);
+    const elems = elem.select('div.btn-group[role="group"]').selectAll('div.btn-group').data(this.idtypes);
     elems.enter().append('div')
       .classed('btn-group', true)
       .attr('role', 'group')
       .html(`<button type="button" class="btn btn-default btn-lg">Artists</button>`);
     elems.select('button')
       .text((d) => d.names)
-      .on('click', (d) => {
-        this.setPrimaryIDType(d);
+      .on('click', (idtype) => {
+        hash.setProp('idtype', idtype.id);
+        this.setPrimaryIDType(idtype);
       });
     elems.exit().remove();
   }
@@ -125,6 +137,7 @@ export default class App {
 
   private setPrimaryIDType(idtype: IDType) {
     this.hideSelection();
+
     // create a column manager
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
     this.manager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
@@ -181,8 +194,6 @@ export default class App {
         this.reset();
       }
     });
-
-
   }
 
 

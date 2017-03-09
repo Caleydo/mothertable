@@ -27,7 +27,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  protected multiFormParams($body: d3.Selection<any>, dataSize?): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return {
       all: {
         width: $body.property('clientWidth'),
@@ -66,7 +66,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
 
   updateSortIcon() {
-    console.log('hi')
     if (this.sortCriteria === SORT.desc) {
       const s = this.$node.select('.fa.sort.fa-sort-amount-asc');
       s.attr('class', 'fa sort fa-sort-amount-desc');

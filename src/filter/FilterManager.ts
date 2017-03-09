@@ -28,20 +28,23 @@ export default class FilterManager extends EventHandler {
 
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
+
   readonly filters: AnyColumn[] = [];
-  private filterHierarchy = [];
+
   private onFilterChanged = () => this.refilter();
 
   constructor(public readonly idType: IDType, readonly node: HTMLElement) {
     super();
+    this.build(node);
+    this.drag();
+  }
+
+  private build(node: HTMLElement) {
     this.node.classList.add('filter-manager');
     const ol = document.createElement('ol');
     ol.classList.add('filterlist');
     node.appendChild(ol);
-    this.drag();
-
   }
-
 
   push(data: IFilterAbleType) {
     if (data.idtypes[0] !== this.idType) {
@@ -53,12 +56,6 @@ export default class FilterManager extends EventHandler {
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
 
     this.filters.push(col);
-    if (data.desc.type === 'vector') {
-      this.filterHierarchy.push(col);
-    }
-    // console.log(this.filterHierarchy, this.filters)
-    //  console.log(this.filters)
-
   }
 
 
@@ -68,29 +65,32 @@ export default class FilterManager extends EventHandler {
     this.move(col[0], 0);
   }
 
-
   contains(data: IFilterAbleType) {
     return this.filters.some((d) => d.data === data);
   }
 
-  removeData(data: IFilterAbleType) {
-    const f = this.filters.find((d) => d.data === data);
-    const checkStatus = f.activeFilter;
-    return checkStatus ? null : this.remove(f);
-  }
+  /**
+   * Removes the column from the filters by the given data parameter,
+   * if the column has no filter applied.
+   *
+   * @param data
+   */
+  remove(data: IFilterAbleType) {
+    const col = this.filters.find((d) => d.data === data);
 
-  remove(col: AnyColumn) {
-    col.node.remove();
-    this.filters.splice(this.filters.indexOf(col), 1);
+    if(!col.activeFilter) {
+      col.node.remove();
+      this.filters.splice(this.filters.indexOf(col), 1);
+    }
   }
 
   /**
-   * move a column at the given index
+   * move a column node to the given index
    * @param col
    * @param index
    */
   move(col: AnyColumn, index: number) {
-    const old = this.filterHierarchy.indexOf(col);
+    const old = this.filters.indexOf(col);
     if (old === index) {
       this.triggerSort();
       return;
@@ -101,20 +101,17 @@ export default class FilterManager extends EventHandler {
     // this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
     filterListNode.insertBefore(col.node, filterListNode.childNodes[index]);
 
-    this.filterHierarchy.splice(old, 1);
+    this.filters.splice(old, 1);
     if (old < index) {
       index -= 1; //shifted because of deletion
     }
-    this.filterHierarchy.splice(index, 0, col);
+    this.filters.splice(index, 0, col);
     this.triggerSort();
-
   }
 
   /**
-   *
    * Filter Dragging  Event Listener
    */
-
   drag() {
     const that = this;
     let posBefore;
@@ -132,8 +129,6 @@ export default class FilterManager extends EventHandler {
       posAfter = ui.item.index();
       that.updateFilterOrder(posBefore, posAfter);
     });
-
-
   }
 
   /**
@@ -141,23 +136,23 @@ export default class FilterManager extends EventHandler {
    * @param posBefore position of element before dragging
    * @param posAfter  position of element after dragging
    */
-  updateFilterOrder(posBefore: number, posAfter: number) {
-    const temp = this.filterHierarchy[posBefore];
-    this.filterHierarchy.splice(posBefore, 1);
-    this.filterHierarchy.splice(posAfter, 0, temp);
+  private updateFilterOrder(posBefore: number, posAfter: number) {
+    const temp = this.filters[posBefore];
+    this.filters.splice(posBefore, 1);
+    this.filters.splice(posAfter, 0, temp);
     this.triggerSort();
   }
 
   private triggerSort() {
-    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.filterHierarchy);
+    const vectorColsOnly = this.filters.filter((col) => col.data.desc.type === 'vector');
+    this.fire(FilterManager.EVENT_SORT_DRAGGING, vectorColsOnly);
   }
-
 
   /**
    * returns the current filter
    * @return {Promise<Range1D>}
    */
-  async currentFilter() {
+  private async currentFilter() {
     let filtered = Range1D.all();
     for (const f of this.filters) {
       filtered = await f.filter(filtered);
@@ -168,10 +163,7 @@ export default class FilterManager extends EventHandler {
   private async refilter() {
     // compute the new filter
     const filter = await this.currentFilter();
-    // console.log((<any>filter).dim(0).asList());
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
-
-
   }
 
   private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {
@@ -190,12 +182,9 @@ export default class FilterManager extends EventHandler {
         }
         throw new Error('invalid vector type');
       case 'matrix':
-        const m = data;
-        return new MatrixFilter(<INumericalMatrix>m, parent);
+        return new MatrixFilter(<INumericalMatrix>data, parent);
       default:
         throw new Error('invalid data type');
-
-
     }
   }
 }

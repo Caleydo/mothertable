@@ -29,7 +29,10 @@
 
 .filter {
   margin-bottom: 10px;
-  counter-increment: filterSection;
+
+  &:not(.ui-sortable-placeholder) {
+    counter-increment: filterSection;
+  }
 
   header {
     display: flex;
