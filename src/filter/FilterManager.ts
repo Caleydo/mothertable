@@ -19,7 +19,7 @@ import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
-import {URLHash} from '../URLHash';
+import {hash} from 'phovea_core/src/';
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
@@ -39,7 +39,7 @@ export default class FilterManager extends EventHandler {
     this.build(node);
     this.drag();
 
-    if(URLHash.instance.has(idType.id)) {
+    if(hash.has(idType.id)) {
       // push new filters
       /*const idtype = this.idtypes.filter((d) => d.id === URLHash.instance.get('idtype'));
       if(idtype.length > 0) {
@@ -177,12 +177,11 @@ export default class FilterManager extends EventHandler {
   private async refilter() {
     // compute the new filter
     const filter = await this.currentFilter();
-    // console.log((<any>filter).dim(0).asList());
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
   }
 
   private updateURLHash() {
-    URLHash.instance.set(this.idType.id, this.filters.map((d) => d.data.desc.name).join(','));
+    hash.setProp(this.idType.id, this.filters.map((d) => d.data.desc.name).join(','));
   }
 
   private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {

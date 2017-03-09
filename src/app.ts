@@ -16,7 +16,7 @@ import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {randomId} from 'phovea_core/src/index';
 import Range from 'phovea_core/src/range/Range';
-import {URLHash} from './URLHash';
+import {hash} from 'phovea_core/src/';
 
 /**
  * The main class for the App app
@@ -45,8 +45,8 @@ export default class App {
     this.attachListener();
     await this.loadIdtypes();
 
-    if(URLHash.instance.has('idtype')) {
-      const idtype = this.idtypes.filter((d) => d.id === URLHash.instance.get('idtype'));
+    if(hash.has('idtype')) {
+      const idtype = this.idtypes.filter((d) => d.id === hash.getProp('idtype'));
       if(idtype.length > 0) {
         this.setPrimaryIDType(idtype[0]);
         return; // exit function -> do not build start selection
@@ -74,7 +74,7 @@ export default class App {
     elems.select('button')
       .text((d) => d.names)
       .on('click', (idtype) => {
-        URLHash.instance.set('idtype', idtype.id);
+        hash.setProp('idtype', idtype.id);
         this.setPrimaryIDType(idtype);
       });
     elems.exit().remove();
@@ -114,10 +114,6 @@ export default class App {
         this.manager.relayout();
       }
     }, 300));
-
-    URLHash.instance.on(URLHash.CHANGED, (props) => {
-      console.log(props);
-    });
   }
 
   private findType(data: IMotherTableType, currentIDType: string) {
