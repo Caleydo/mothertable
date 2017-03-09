@@ -13,6 +13,8 @@ import {NUMERICAL_COLOR_MAP} from './utils';
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   minWidth: number = 30;
   maxWidth: number = 200;
+  minHeight: number = 2;
+  maxHeight: number = 10;
 
   constructor(data: INumericalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);

@@ -19,6 +19,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   minWidth: number = 150;
   maxWidth: number = 300;
+  minHeight: number = 2;
+  maxHeight: number = 10;
 
   private multiform: MultiForm;
   private rowRange: Range;
@@ -130,6 +132,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMatrix(rowRange, colRange) {
+
     if (colRange === undefined) {
       colRange = (await this.calculateDefaultRange())[1];
     }
@@ -140,8 +143,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.dataView = colView;
     this.multiform.destroy();
     this.multiform = this.replaceMultiForm(colView, this.body);
-
-    this.relayout();
+    // this.relayout();
   }
 
 
