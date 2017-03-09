@@ -29,19 +29,28 @@ export default class SupportView extends EventHandler {
 
   private filterManager: FilterManager;
   private _matrixData;
+  private datasets: IDataType[];
 
   constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
     super();
     this.build(parent);
-    this.setupFilterManager();
-    this.addInitialFilters();
   }
 
-  private build(parent) {
+  private async build(parent) {
     this.node = parent.ownerDocument.createElement('div');
     parent.appendChild(this.node);
     this.node.classList.add(this.idType.id);
+
+    this.setupFilterManager();
+
+    await this.loadDatasets();
     this.buildSelectionBox(this.node);
+    this.addInitialFilters();
+  }
+
+  private async loadDatasets() {
+    this.datasets = convertTableToVectors(await listData())
+      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
   }
 
   private setupFilterManager() {
@@ -56,12 +65,22 @@ export default class SupportView extends EventHandler {
 
   private addInitialFilters() {
     if(hash.has(this.idType.id)) {
-      console.log(hash.getProp(this.idType.id).split(SupportView.HASH_FILTER_DELIMITER));
+      hash.getProp(this.idType.id)
+        .split(SupportView.HASH_FILTER_DELIMITER)
+        .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])
+        .filter((data) => data !== undefined)
+        .forEach((data) => {
+          this.addDataset(data);
+        });
     }
   }
 
   private updateURLHash() {
-    hash.setProp(this.idType.id, this.filterManager.filters.map((d) => d.data.desc.name).join(SupportView.HASH_FILTER_DELIMITER));
+    hash.setProp(this.idType.id,
+      this.filterManager.filters
+        .map((d) => d.data.desc.name)
+        .join(SupportView.HASH_FILTER_DELIMITER)
+    );
   }
 
   destroy() {
@@ -84,7 +103,7 @@ export default class SupportView extends EventHandler {
     }
   }
 
-  private async buildSelectionBox(parent: HTMLElement) {
+  private buildSelectionBox(parent: HTMLElement) {
 
     parent.insertAdjacentHTML('afterbegin', `<div class="selection">
        <select class="form-control">
@@ -93,16 +112,14 @@ export default class SupportView extends EventHandler {
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
 
-    const datasets = await this.getDatasets();
-    this.addExplicitColors(datasets);
-    // console.log(datasets);
+    this.addExplicitColors(this.datasets);
 
     // list all data, filter to the matching ones, and prepare them
     // const datasets = convertTableToVectors(await listData())
     //   .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
     // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
 
-    datasets.forEach((d) => {
+    this.datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
       option.text = d.desc.name;
       option.value = d.desc.id;
@@ -115,16 +132,12 @@ export default class SupportView extends EventHandler {
         return false;
       }
       // -1 because of empty option
-      this.addDataset(datasets[index - 1]);
+      this.addDataset(this.datasets[index - 1]);
+      this.updateURLHash();
       // reset selection
       select.selectedIndex = 0;
       return false;
     });
-  }
-
-  private async getDatasets() {
-    return convertTableToVectors(await listData())
-      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
   }
 
   /**
@@ -160,7 +173,6 @@ export default class SupportView extends EventHandler {
   private addDataset(data: IDataType) {
     if (isFilterAble(data) && !this.filterManager.contains(<IFilterAbleType>data)) {
       this.filterManager.push(<IFilterAbleType>data);
-      this.updateURLHash();
     }
 
     this._matrixData = data;
