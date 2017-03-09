@@ -198,8 +198,6 @@ export default class App {
         this.reset();
       }
     });
-
-
   }
 
 

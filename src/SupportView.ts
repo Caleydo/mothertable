@@ -64,7 +64,7 @@ export default class SupportView extends EventHandler {
 
   public remove(data: IDataType) {
     if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
-      this.filter.removeData(<IFilterAbleType>data);
+      this.filter.removeByData(<IFilterAbleType>data);
     }
   }
 
