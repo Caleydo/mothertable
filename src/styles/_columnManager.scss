@@ -6,6 +6,7 @@
   overflow: auto;
 
   .toolbar {
+    cursor: default;
     display: none;
     position: absolute;
     right: 5px;
@@ -15,6 +16,11 @@
     background: $toolbar-bg-color;
     border-radius: 3px;
     border: 1px $header-border-color solid;
+
+    button,
+    .vislist i {
+      cursor: pointer;
+    }
   }
 
   .columnList {
