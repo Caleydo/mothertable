@@ -22,19 +22,26 @@ export default class SupportView extends EventHandler {
   static EVENT_DATASET_ADDED = 'added';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
-  private readonly filter: FilterManager;
-  readonly node: HTMLElement;
+  node: HTMLElement;
+
+  private filter: FilterManager;
   private _matrixData;
 
-  constructor(public readonly idType: IDType, parent: HTMLElement, readonly id?: string) {
+  constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
     super();
+    this.build(parent);
+    this.setupFilterManager();
+  }
+
+  private build(parent) {
     this.node = parent.ownerDocument.createElement('div');
     parent.appendChild(this.node);
-    this.node.classList.add(idType.id);
+    this.node.classList.add(this.idType.id);
     this.buildSelectionBox(this.node);
-    this.id = id;
-    this.filter = new FilterManager(idType, this.node);
+  }
 
+  private setupFilterManager() {
+    this.filter = new FilterManager(this.idType, this.node);
     this.filter.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
@@ -43,31 +50,17 @@ export default class SupportView extends EventHandler {
   }
 
   destroy() {
+    this.filter.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.node.remove();
-  }
-
-  private addDataset(data: IDataType) {
-    if (isFilterAble(data) && !this.filter.contains(<IFilterAbleType>data)) {
-
-      this.filter.push(<IFilterAbleType>data);
-
-
-    }
-
-    this._matrixData = data;
-
-    this.fire(SupportView.EVENT_DATASET_ADDED, data);
   }
 
   primarySortColumn(sortColdata) {
     this.filter.primarySortColumn(sortColdata);
-
   }
 
   get matrixData() {
     return this._matrixData;
   }
-
 
   public remove(data: IDataType) {
     if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
@@ -84,7 +77,8 @@ export default class SupportView extends EventHandler {
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
 
-    const datasets = await this.addColor();
+    const datasets = await this.getDatasets();
+    this.addExplicitColors(datasets);
     // console.log(datasets);
 
     // list all data, filter to the matching ones, and prepare them
@@ -112,15 +106,25 @@ export default class SupportView extends EventHandler {
     });
   }
 
-  private async addColor() {
-    const color = [['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f'],
+  private async getDatasets() {
+    return convertTableToVectors(await listData())
+      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+  }
+
+  /**
+   * Special function to define colors for the TCGA dataset
+   * @param datasets
+   * @returns {Promise<void>}
+   */
+  private async addExplicitColors(datasets) {
+    const color = [
+      ['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f'],
       ['#1b9e77', '#1d9ee8', '#d97979', '#e7298a', '#66a61e', '#e6ab02'],
       ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c'],
       ['#e41a1c', '#377eb8', '#984ea3', '#ff7f00', '#ffff33'],
       ['#8dd3c7', '#fdb462', '#bebada', '#fb8072', '#80b1d3', '#fdb462'],
-      ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']];
-    const datasets = convertTableToVectors(await listData())
-      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+      ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']
+    ];
 
     datasets.forEach((tableVector, j) => {
       if (tableVector.desc.value.type === 'categorical') {
@@ -135,12 +139,17 @@ export default class SupportView extends EventHandler {
         });
       }
     });
-
-
-    return datasets;
-
   }
 
+  private addDataset(data: IDataType) {
+    if (isFilterAble(data) && !this.filter.contains(<IFilterAbleType>data)) {
+      this.filter.push(<IFilterAbleType>data);
+    }
+
+    this._matrixData = data;
+
+    this.fire(SupportView.EVENT_DATASET_ADDED, data);
+  }
 
 }
 
