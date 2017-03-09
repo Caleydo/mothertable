@@ -16,7 +16,7 @@ import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {randomId} from 'phovea_core/src/index';
 import Range from 'phovea_core/src/range/Range';
-import {hash} from 'phovea_core/src/';
+import {hash} from 'phovea_core/src/index';
 
 /**
  * The main class for the App app

@@ -15,6 +15,7 @@ import {IAnyVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
+import {hash} from 'phovea_core/src/index';
 
 
 export default class SupportView extends EventHandler {
@@ -22,15 +23,18 @@ export default class SupportView extends EventHandler {
   static EVENT_DATASET_ADDED = 'added';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
+  private static readonly HASH_FILTER_DELIMITER = ',';
+
   node: HTMLElement;
 
-  private filter: FilterManager;
+  private filterManager: FilterManager;
   private _matrixData;
 
   constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
     super();
     this.build(parent);
     this.setupFilterManager();
+    this.addInitialFilters();
   }
 
   private build(parent) {
@@ -41,21 +45,32 @@ export default class SupportView extends EventHandler {
   }
 
   private setupFilterManager() {
-    this.filter = new FilterManager(this.idType, this.node);
-    this.filter.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+    this.filterManager = new FilterManager(this.idType, this.node);
+    this.filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+      this.updateURLHash();
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
 
-    this.propagate(this.filter, FilterManager.EVENT_FILTER_CHANGED);
+    this.propagate(this.filterManager, FilterManager.EVENT_FILTER_CHANGED);
+  }
+
+  private addInitialFilters() {
+    if(hash.has(this.idType.id)) {
+      console.log(hash.getProp(this.idType.id).split(SupportView.HASH_FILTER_DELIMITER));
+    }
+  }
+
+  private updateURLHash() {
+    hash.setProp(this.idType.id, this.filterManager.filters.map((d) => d.data.desc.name).join(SupportView.HASH_FILTER_DELIMITER));
   }
 
   destroy() {
-    this.filter.off(FilterManager.EVENT_SORT_DRAGGING, null);
+    this.filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.node.remove();
   }
 
   primarySortColumn(sortColdata) {
-    this.filter.primarySortColumn(sortColdata);
+    this.filterManager.primarySortColumn(sortColdata);
   }
 
   get matrixData() {
@@ -63,8 +78,9 @@ export default class SupportView extends EventHandler {
   }
 
   public remove(data: IDataType) {
-    if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
-      this.filter.removeByData(<IFilterAbleType>data);
+    if (isFilterAble(data) && this.filterManager.contains(<IFilterAbleType>data)) {
+      this.filterManager.remove(<IFilterAbleType>data);
+      this.updateURLHash();
     }
   }
 
@@ -142,8 +158,9 @@ export default class SupportView extends EventHandler {
   }
 
   private addDataset(data: IDataType) {
-    if (isFilterAble(data) && !this.filter.contains(<IFilterAbleType>data)) {
-      this.filter.push(<IFilterAbleType>data);
+    if (isFilterAble(data) && !this.filterManager.contains(<IFilterAbleType>data)) {
+      this.filterManager.push(<IFilterAbleType>data);
+      this.updateURLHash();
     }
 
     this._matrixData = data;

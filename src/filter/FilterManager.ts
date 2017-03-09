@@ -19,7 +19,6 @@ import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
-import {hash} from 'phovea_core/src/';
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
@@ -38,15 +37,6 @@ export default class FilterManager extends EventHandler {
     super();
     this.build(node);
     this.drag();
-
-    if(hash.has(idType.id)) {
-      // push new filters
-      /*const idtype = this.idtypes.filter((d) => d.id === URLHash.instance.get('idtype'));
-      if(idtype.length > 0) {
-        this.setPrimaryIDType(idtype[0]);
-        return; // exit function -> do not build start selection
-      }*/
-    }
   }
 
   private build(node: HTMLElement) {
@@ -66,8 +56,6 @@ export default class FilterManager extends EventHandler {
     col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
 
     this.filters.push(col);
-
-    this.updateURLHash();
   }
 
 
@@ -87,13 +75,12 @@ export default class FilterManager extends EventHandler {
    *
    * @param data
    */
-  removeByData(data: IFilterAbleType) {
+  remove(data: IFilterAbleType) {
     const col = this.filters.find((d) => d.data === data);
 
     if(!col.activeFilter) {
       col.node.remove();
       this.filters.splice(this.filters.indexOf(col), 1);
-      this.updateURLHash();
     }
   }
 
@@ -157,7 +144,6 @@ export default class FilterManager extends EventHandler {
   }
 
   private triggerSort() {
-    this.updateURLHash();
     const vectorColsOnly = this.filters.filter((col) => col.data.desc.type === 'vector');
     this.fire(FilterManager.EVENT_SORT_DRAGGING, vectorColsOnly);
   }
@@ -178,10 +164,6 @@ export default class FilterManager extends EventHandler {
     // compute the new filter
     const filter = await this.currentFilter();
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
-  }
-
-  private updateURLHash() {
-    hash.setProp(this.idType.id, this.filters.map((d) => d.data.desc.name).join(','));
   }
 
   private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {
