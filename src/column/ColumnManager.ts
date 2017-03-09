@@ -249,14 +249,15 @@ export default class ColumnManager extends EventHandler {
       const view = await vectorColumns[0].data.idView(r);
       dataPoints.push(await (<IAnyVector>view).length);
     }
-    const cols = [];
-    for (const col of vectorColumns) {
-      for (const d of dataPoints) {
-        cols.push({minHeight: col.minHeight * d, maxHeight: col.maxHeight * d});
-      }
-    }
-    const minHeight = d3.max(cols, (d, i) => d.minHeight);
-    const maxHeight = d3.min(cols, (d, i) => d.maxHeight);
+    const cols = vectorColumns.map((col) => {
+      return dataPoints.map((d) => {
+        return {minHeight: col.minHeight * d, maxHeight: col.maxHeight * d};
+      });
+    });
+
+    const colsFlatten = cols.reduce((acc, val) => acc.concat(val));
+    const minHeight = Math.max(...colsFlatten.map((d) => d.minHeight));
+    const maxHeight = Math.min(...colsFlatten.map((d) => d.maxHeight));
     const checkStringCol = vectorColumns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
 
     if (checkStringCol.length > 0 && minHeight > height) {
