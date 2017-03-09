@@ -140,6 +140,9 @@ export default class ColumnManager extends EventHandler {
     // console.log(sortMethod)
     // this.sortMethod = sortMethod;
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
+    if (cols.length < 1) {
+      return this.update(this.rangeNow);
+    }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r = s.sortByMe();
     if ((await r).length < 1) {
@@ -160,7 +163,7 @@ export default class ColumnManager extends EventHandler {
 
 
     //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-  //  console.log(mergedRange.dim(0).asList());
+    //  console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
 
@@ -245,7 +248,7 @@ export default class ColumnManager extends EventHandler {
  * @param containerWidth
  * @returns {number[]}
  */
-export function distributeColWidths(columns:{lockedWidth:number, minWidth:number, maxWidth:number}[], containerWidth:number):number[] {
+export function distributeColWidths(columns: {lockedWidth: number, minWidth: number, maxWidth: number}[], containerWidth: number): number[] {
   // set minimum width or locked width for all columns
   const cols = columns.map((d) => {
     const newWidth = (d.lockedWidth > 0) ? d.lockedWidth : d.minWidth;
@@ -261,7 +264,7 @@ export function distributeColWidths(columns:{lockedWidth:number, minWidth:number
   let openResizes = 0;
 
   // if there is still space left try to expand columns until every column reaches their maximum width
-  while(spaceLeft > 0) {
+  while (spaceLeft > 0) {
     // candidates that could be resized
     const resizeCandidates = cols.filter((d) => d.isLocked === false && d.hasMaxWidth === false);
 
@@ -277,7 +280,7 @@ export function distributeColWidths(columns:{lockedWidth:number, minWidth:number
     spaceLeft = containerWidth - cols.map((d) => d.newWidth).reduce((acc, val) => acc + val, 0);
 
     // cancel loop if there is any column available for resizing
-    if(resizeCandidates.length === openResizes) {
+    if (resizeCandidates.length === openResizes) {
       break;
     }
     openResizes = resizeCandidates.length;
