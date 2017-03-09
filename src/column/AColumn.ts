@@ -117,9 +117,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       });
   }
 
-  async updateList(idRange: Range[]) {
-
-
+  async updateMultiForms(rowRanges: Range[]) {
   }
 
   protected lockColumnWidth($lockButton) {

@@ -41,10 +41,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    // if (this.multiform) {
-    //const $visList = $toolbar.append('div').classed('vislist', true);
-    // this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
-    // }
     const $sortButton = $toolbar.append('button')
       .attr('class', 'fa sort fa-sort-amount-asc')
       .on('click', () => {
@@ -59,63 +55,18 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           $sortButton.attr('class', 'fa sort fa-sort-amount-asc');
         }
       });
-
     super.buildToolbar($toolbar);
   }
 
-  private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
-    //const dom = $body.append('div');
-    // const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, (<any>data).length));
-    //  const d = dom.append('div');
-    // m.addIconVisChooser(<HTMLElement>d.node());
-
-
-    // const $visList = $toolbar.append('div').classed('vislist', true);
-    //this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
-    // m.on('changed', (evt, d) => console.log(d))
-    // this.calculateMultiformDimension(m, $body)
-
-    // const $visList = this.toolbar.select('div.vislist');
-    // $visList.html(''); // clear old
-    // m.addIconVisChooser(<HTMLElement>$visList.node());
-
-    this.updateSortIcon();
-    //return m;
-  }
 
   layout(width: number, height: number) {
 
     scaleTo(this.multiform, width, height, this.orientation);
   }
 
-  // update(idRange: Range1D) {
-  //   this.multiform.destroy();
-  //   this.data.idView(rlist(idRange)).then((view) => {
-  //     this.multiform = this.replaceMultiForm(view, this.body);
-  //   });
-  // }
-
-
-  calculateMultiformDimension(m, $body) {
-
-    const width = $body.property('clientWidth');
-    const height = $body.property('clientHeight');
-    const dataElements = m.data.length;
-    const minHeight = dataElements * this.minimumHeight;
-    const requiredHeight = dataElements * this.preferredHeight;
-    //const requiredColHeight = requiredHeight * this.countMultiform;
-
-    if (requiredHeight < height) {
-
-      scaleTo(m, width, requiredHeight, this.orientation);
-    } else {
-
-      scaleTo(m, width, minHeight, this.orientation);
-    }
-
-  }
 
   updateSortIcon() {
+    console.log('hi')
     if (this.sortCriteria === SORT.desc) {
       const s = this.$node.select('.fa.sort.fa-sort-amount-asc');
       s.attr('class', 'fa sort fa-sort-amount-desc');
@@ -137,7 +88,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
 
-  async updateList(idRanges: Range[]) {
+  async updateMultiForms(idRanges: Range[]) {
+    this.updateSortIcon();
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
     for (const r of idRanges) {

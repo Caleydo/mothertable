@@ -62,16 +62,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     super.buildToolbar($toolbar);
   }
 
-  private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
-    // const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams());
-    //
-    // const $visList = this.toolbar.select('div.vislist');
-    // $visList.html(''); // clear old
-    // m.addIconVisChooser(<HTMLElement>$visList.node());
-    //
-    // return m;
-  }
-
   layout(width: number, height: number) {
     scaleTo(this.multiform, width, height, this.orientation);
 
@@ -119,28 +109,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   async updateMatrixCol(idRange: Range) {
     this.colRange = idRange;
-    this.updateList(this.rowRange, this.colRange);
+    this.updateMultiForms(this.rowRange, this.colRange);
 
   }
 
 
-  // async updateMatrix(rowRange, colRange) {
-  //
-  //   if (colRange === undefined) {
-  //     colRange = (await this.calculateDefaultRange())[1];
-  //   }
-  //   let rowView = await this.data.idView(rowRange);
-  //   rowView = (<INumericalMatrix>rowView).t;
-  //   let colView = await rowView.idView(colRange);
-  //   colView = (<INumericalMatrix>colView).t;
-  //   this.dataView = colView;
-  //   //   this.multiform.destroy();
-  //   //  this.multiform = this.replaceMultiForm(colView, this.body);
-  //   // this.relayout();
-  // }
-
-
-  async updateList(idRanges: Range[], colRange?) {
+  async updateMultiForms(idRanges: Range[], colRange?) {
     this.rowRange = idRanges;
     console.log(colRange,)
     this.body.selectAll('.multiformList').remove();

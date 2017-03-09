@@ -59,7 +59,6 @@ export default class ColumnManager extends EventHandler {
     this.node.classList.add('column-manager');
     this.drag();
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
-    on(List.EVENT_STRING_DRAG, this.stringColumnOnDrag.bind(this));
 
   }
 
@@ -72,105 +71,6 @@ export default class ColumnManager extends EventHandler {
     col[0].sortCriteria = sortData.sortMethod;
     this.updateSortHierarchy(this.columnsHierarchy);
   }
-
-
-  async stringColumnOnDrag(evt: any, stringList, multiformData) {
-    //const indices = await this.getDraggingIndices(stringList, multiformData);
-
-
-    // this.updateRangeList(indices);
-  }
-
-  async updateRangeList(reorderRange: number[]) {
-    const draggedStringIndices = reorderRange[0];
-    this.draggedIndices = [];
-    this.draggedIndices = draggedStringIndices;
-    const allRangesIndices = reorderRange[1];
-    const reorderRangeIndices = reArrangeRangeList(draggedStringIndices, allRangesIndices);
-    const rangeElements = reorderRangeIndices.map((d) => this.makeRangeFromList(d));
-    const listElements = this.rangeList.map((d) => this.makeListfromRange(d));
-    const indexInRangeList = this.dragIndexInRangeList(listElements, reorderRangeIndices);
-    const rangeArr = this.rangeList;
-    rangeArr.splice(indexInRangeList, 1);
-    insertArrayAt(rangeArr, indexInRangeList, rangeElements);
-    // rangeArr.map((d) => console.log(d.dim(0).asList()));
-    this.updateColumns(rangeArr);
-    this.rangeList = rangeArr;
-
-  }
-
-// Create the range object from list of indexes
-
-  makeRangeFromList(list: number[]) {
-    const r = new Range();
-    r.dim(0).pushList(list);
-    return r;
-  }
-
-  // Give me the range in the form of list
-  makeListfromRange(range: Range) {
-
-    return (range.dim(0).asList());
-
-  }
-
-  /**
-   *
-   * @param col this is the column where dragging is performed
-   * @param stringList array of strings which are being dragged
-   * @returns {Promise<[Array,T[]|Array|number[]|any]>}
-   * const arr = ['a','b','c',d','e','f']
-   * const rangeIndices = [3,4,6,8,10,11] => Actual indices in data
-   * const string = ['b','c','d'] => Array of string being dragged
-   * Now it will return [[1,2,3],rangeIndices]
-   *
-   */
-
-  // To get the indexes of the string dragging selection in that area
-  async getDraggingIndices(stringList, multiformData) {
-    const draggedStringIndices = [];
-    const allRangeElement = await multiformData.ids();
-    const allRangesList = allRangeElement.dim(0).asList();
-
-    for (const f of stringList) {
-      const u: any = await multiformData.filter(filterCat.bind(this, f));
-      const id = await u.ids();
-      if (id.size()[0] >= 1) {
-        const asList = id.dim(0).asList()[0];
-        draggedStringIndices.push(asList);
-        //   console.log(f, await coldata.data(), id.dim(0).asList());
-
-      }
-
-    }
-
-    return [draggedStringIndices, allRangesList];
-  }
-
-  /**
-   * To find out the index of dragging range object in list of range
-   * @param rangeList this is the complete list of all range object in the form of asList()
-   * @param firsElement This is the first element of dragging array
-   * @returns {any} Index of the string dragging in whole range list
-   * const rangeList = [[1,2,3,4],[6,7,8],[9]]
-   * const draggingIndexes = [7,8]
-   * const checkExist = [-1,1,-1] => Filter only real value which is the index of dragging
-   * so it will return 1 since 7 exist in second array.
-   *
-   */
-  dragIndexInRangeList(rangeList, firsElement) {
-    let findMyIndex;
-    if (firsElement.length < 2) {
-      findMyIndex = rangeList.map((d, i) => d.indexOf(firsElement[0][0]));
-    } else {
-      findMyIndex = rangeList.map((d, i) => d.indexOf(firsElement[1][0]));
-    }
-    const filterRealValue = findMyIndex.filter((d) => d !== -1);
-    const index = findMyIndex.indexOf(filterRealValue[0]);
-
-    return index;
-  }
-
 
   destroy() {
     // delete all columns, can't remove myself, since I'm using the parent
@@ -254,30 +154,8 @@ export default class ColumnManager extends EventHandler {
     }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r = await s.sortByMe();
-    // console.log(r)
-    // if ((await r).length < 1) {
-    //   return this.update(r[0]);
-    //
-    // }
-
     this.rangeList = r;
-
-    const rlist = this.rangeList.map((d) => this.makeListfromRange(d));
-    if (this.draggedIndices !== undefined) {
-      const v = reArrangeRangeListAfter(this.draggedIndices, rlist);
-      const rangeElements = v.map((d) => this.makeRangeFromList(d));
-      this.rangeList = rangeElements;
-      this.updateColumns(this.rangeList);
-
-    } else {
-
-      this.updateColumns(this.rangeList);
-    }
-
-
-    //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-    //  console.log(mergedRange.dim(0).asList());
-    // this.update(mergedRange);
+    this.updateColumns(this.rangeList);
   }
 
   async filterData(idRange: Range) {
@@ -315,45 +193,10 @@ export default class ColumnManager extends EventHandler {
 
   async updateColumns(idRange: Range[]) {
 
-    // const vectorColsOnly = this.columns.filter((d) => d.data.desc.type === 'vector');
-    // vectorColsOnly.map((col) => col.updateList(idRange));
-    //
-    // const matrixColsOnly = this.columns.filter((d) => d.data.desc.type === 'matrix')
-
-    // matrixColsOnly.map((col) => col.updateList(idRange));
-    this.columns.map((col) => col.updateList(idRange));
+    this.columns.map((col) => col.updateMultiForms(idRange));
     this.relayout();
-    // this.rangeNow = idRange;
-    // this.rangeList.push(idRange);
-    // await Promise.all(this.columns.map((col) => {
-    //
-    //   if (col instanceof MatrixColumn) {
-    //     col.updateRows(idRange);
-    //     this.relayout();
-    //
-    //   }
-    //   col.update(idRange);
-    //
-    // }));
-    //
-    // this.relayout();
   }
 
-
-  // async update(idRange: Range) {
-  //   this.rangeNow = idRange;
-  //   await Promise.all(this.columns.map((col) => {
-  //     if (col instanceof MatrixColumn) {
-  //       col.updateRows(idRange);
-  //       this.relayout();
-  //
-  //     }
-  //     col.update(idRange);
-  //
-  //   }));
-  //
-  //   this.relayout();
-  // }
 
   async relayout() {
     await resolveIn(10);
@@ -380,7 +223,6 @@ export default class ColumnManager extends EventHandler {
 
   private async calColHeight(height) {
 
-
     const type = this.columns[0].data.desc.type;
     const dataPoints = [];
 
@@ -388,12 +230,6 @@ export default class ColumnManager extends EventHandler {
       const view = await this.columns[0].data.idView(r);
       (type === AColumn.DATATYPE.matrix) ? dataPoints.push(await (<IAnyMatrix>view).nrow) : dataPoints.push(await (<IAnyMatrix>view).length);
     }
-    console.log(dataPoints)
-    const cols = this.columns.map((col) => {
-      return dataPoints.map((d) => {
-        return {minHeight: col.minHeight * d, maxHeight: col.maxHeight * d};
-      });
-    });
 
     const columns = [];
     for (const col of this.columns) {
@@ -403,7 +239,7 @@ export default class ColumnManager extends EventHandler {
 
       }
 
-      columns.push(t)
+      columns.push(t);
 
     }
 
@@ -420,22 +256,14 @@ export default class ColumnManager extends EventHandler {
       const maxHeight = Math.min(...row.map((d) => d.maxHeight));
       minHeights.push(minHeight);
       maxHeights.push(maxHeight);
-      //  console.log(minHeight, maxHeight);
+
     });
 
-    //console.log(rows, 'rows', minHeights, maxHeights);
 
-    //console.log(minHeights, maxHeights)
-
-    const colsFlatten = cols.reduce((acc, val) => acc.concat(val));
-
-    const minHeight = Math.max(...colsFlatten.map((d) => d.minHeight));
-    const maxHeight = Math.min(...colsFlatten.map((d) => d.maxHeight));
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
 
     const minHeightSum = d3.sum(minHeights);
     const maxHeightSum = d3.sum(maxHeights);
-    console.log(minHeightSum, maxHeightSum)
 
     const heights = d3.scale.linear().domain([0, minHeightSum]).range([0, height]);
     const minH = minHeights.map((d) => heights(d));
