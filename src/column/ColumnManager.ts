@@ -24,6 +24,10 @@ import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
+import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
+import {IAnyVector} from 'phovea_core/src/vector/IVector';
+import * as d3 from 'd3';
+import min = d3.min;
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -36,6 +40,7 @@ export default class ColumnManager extends EventHandler {
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
   private rangeNow: Range;
+  private rangeList: Range[] = [];
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -89,7 +94,7 @@ export default class ColumnManager extends EventHandler {
     this.updateSort(null);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    //this.relayout();
+    this.relayout();
   }
 
 
@@ -140,6 +145,9 @@ export default class ColumnManager extends EventHandler {
     // console.log(sortMethod)
     // this.sortMethod = sortMethod;
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
+    if (cols.length < 1) {
+      return this.update(this.rangeNow);
+    }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r = s.sortByMe();
     if ((await r).length < 1) {
@@ -160,7 +168,7 @@ export default class ColumnManager extends EventHandler {
 
 
     //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-  //  console.log(mergedRange.dim(0).asList());
+    //  console.log(mergedRange.dim(0).asList());
     this.update(mergedRange);
   }
 
@@ -197,9 +205,13 @@ export default class ColumnManager extends EventHandler {
 
   async update(idRange: Range) {
     this.rangeNow = idRange;
+    this.rangeList = [];
+    this.rangeList.push(idRange);
     await Promise.all(this.columns.map((col) => {
       if (col instanceof MatrixColumn) {
         col.updateRows(idRange);
+        this.relayout();
+
       }
 
       col.update(idRange);
@@ -212,8 +224,8 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
+    const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
-
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -227,11 +239,43 @@ export default class ColumnManager extends EventHandler {
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-
-      col.layout(colWidths[i], height);
+      col.layout(colWidths[i], rowHeight);
     });
   }
+
+  private async calColHeight(height) {
+
+
+    const vectorColumns = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.vector);
+    const dataPoints = [];
+    for (const r of this.rangeList) {
+      const view = await vectorColumns[0].data.idView(r);
+      dataPoints.push(await (<IAnyVector>view).length);
+    }
+    const cols = vectorColumns.map((col) => {
+      return dataPoints.map((d) => {
+        return {minHeight: col.minHeight * d, maxHeight: col.maxHeight * d};
+      });
+    });
+
+    const colsFlatten = cols.reduce((acc, val) => acc.concat(val));
+    const minHeight = Math.max(...colsFlatten.map((d) => d.minHeight));
+    const maxHeight = Math.min(...colsFlatten.map((d) => d.maxHeight));
+    const checkStringCol = vectorColumns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+
+    if (checkStringCol.length > 0 && minHeight > height) {
+      return minHeight;
+    } else if (checkStringCol.length > 0 && maxHeight < minHeight) {
+      return minHeight;
+    } else if (maxHeight < height) {
+      return maxHeight;
+    } else {
+      return height;
+    }
+
+  }
 }
+
 
 /**
  * Distributes a list of columns for the containerWidth.
@@ -245,7 +289,7 @@ export default class ColumnManager extends EventHandler {
  * @param containerWidth
  * @returns {number[]}
  */
-export function distributeColWidths(columns:{lockedWidth:number, minWidth:number, maxWidth:number}[], containerWidth:number):number[] {
+export function distributeColWidths(columns: {lockedWidth: number, minWidth: number, maxWidth: number}[], containerWidth: number): number[] {
   // set minimum width or locked width for all columns
   const cols = columns.map((d) => {
     const newWidth = (d.lockedWidth > 0) ? d.lockedWidth : d.minWidth;
@@ -261,7 +305,7 @@ export function distributeColWidths(columns:{lockedWidth:number, minWidth:number
   let openResizes = 0;
 
   // if there is still space left try to expand columns until every column reaches their maximum width
-  while(spaceLeft > 0) {
+  while (spaceLeft > 0) {
     // candidates that could be resized
     const resizeCandidates = cols.filter((d) => d.isLocked === false && d.hasMaxWidth === false);
 
@@ -277,12 +321,11 @@ export function distributeColWidths(columns:{lockedWidth:number, minWidth:number
     spaceLeft = containerWidth - cols.map((d) => d.newWidth).reduce((acc, val) => acc + val, 0);
 
     // cancel loop if there is any column available for resizing
-    if(resizeCandidates.length === openResizes) {
+    if (resizeCandidates.length === openResizes) {
       break;
     }
     openResizes = resizeCandidates.length;
   }
-
   return cols.map((d) => d.newWidth);
 }
 
