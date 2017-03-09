@@ -65,7 +65,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
     //const dom = $body.append('div');
-    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, (<any>data).length));
+    // const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, (<any>data).length));
     //  const d = dom.append('div');
     // m.addIconVisChooser(<HTMLElement>d.node());
 
@@ -73,18 +73,19 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     // const $visList = $toolbar.append('div').classed('vislist', true);
     //this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
     // m.on('changed', (evt, d) => console.log(d))
-    this.calculateMultiformDimension(m, $body)
+    // this.calculateMultiformDimension(m, $body)
 
     // const $visList = this.toolbar.select('div.vislist');
     // $visList.html(''); // clear old
     // m.addIconVisChooser(<HTMLElement>$visList.node());
 
     this.updateSortIcon();
-    return m;
+    //return m;
   }
 
   layout(width: number, height: number) {
-    //scaleTo(this.multiform, width, 200, this.orientation);
+
+    scaleTo(this.multiform, width, height, this.orientation);
   }
 
   // update(idRange: Range1D) {
@@ -131,22 +132,20 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     //  this.multiform.destroy();
     const view = await this.data.idView(idRange);
     this.dataView = view;
-    this.replaceMultiForm(view, this.body);
+    //  this.replaceMultiForm(view, this.body);
 
   }
 
 
   async updateList(idRanges: Range[]) {
     this.body.selectAll('.multiformList').remove();
+    this.multiformList = [];
     for (const r of idRanges) {
       const li = this.body.append('li').classed('multiformList', true);
-      const $header = li.append('header');
       const view = await this.data.idView(r);
       const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, (<any>view).length));
-      m.addIconVisChooser(<HTMLElement>$header.node());
       this.multiformList.push(m);
     }
-
 
   }
 
