@@ -18,21 +18,17 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import IDType from 'phovea_core/src/idtype/IDType';
-import SortEventHandler, {filterCat} from '../SortEventHandler/SortEventHandler';
+import SortEventHandler from '../SortEventHandler/SortEventHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
-import List from 'phovea_vis/src/list';
 import AFilter from '../filter/AFilter';
-import {insertArrayAt, reArrangeRangeList, reArrangeRangeListAfter} from './utils';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
-import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import * as d3 from 'd3';
 import min = d3.min;
-
 import {scaleTo} from './utils';
-import {data} from "../../../phovea_core/src/wrapper";
+
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
@@ -45,8 +41,6 @@ export default class ColumnManager extends EventHandler {
   private columnsHierarchy: AnyColumn[] = [];
   private rangeNow: Range;
   private rangeList = [];
-  private draggedIndices;
-
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -89,7 +83,6 @@ export default class ColumnManager extends EventHandler {
       this.rangeNow = await data.ids();
 
     }
-    // await col.update((this.rangeNow));
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
