@@ -15,6 +15,7 @@ import {IAnyVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
+import {hash} from 'phovea_core/src/index';
 
 
 export default class SupportView extends EventHandler {
@@ -22,60 +23,87 @@ export default class SupportView extends EventHandler {
   static EVENT_DATASET_ADDED = 'added';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
-  private readonly filter: FilterManager;
-  readonly node: HTMLElement;
-  private _matrixData;
+  private static readonly HASH_FILTER_DELIMITER = ',';
 
-  constructor(public readonly idType: IDType, parent: HTMLElement, readonly id?: string) {
+  node: HTMLElement;
+
+  private filterManager: FilterManager;
+  private _matrixData;
+  private datasets: IDataType[];
+
+  constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
     super();
+    this.build(parent);
+  }
+
+  private async build(parent) {
     this.node = parent.ownerDocument.createElement('div');
     parent.appendChild(this.node);
-    this.node.classList.add(idType.id);
-    this.buildSelectionBox(this.node);
-    this.id = id;
-    this.filter = new FilterManager(idType, this.node);
+    this.node.classList.add(this.idType.id);
 
-    this.filter.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+    this.setupFilterManager();
+
+    await this.loadDatasets();
+    this.buildSelectionBox(this.node);
+    this.addInitialFilters();
+  }
+
+  private async loadDatasets() {
+    this.datasets = convertTableToVectors(await listData())
+      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+  }
+
+  private setupFilterManager() {
+    this.filterManager = new FilterManager(this.idType, this.node);
+    this.filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+      this.updateURLHash();
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
 
-    this.propagate(this.filter, FilterManager.EVENT_FILTER_CHANGED);
+    this.propagate(this.filterManager, FilterManager.EVENT_FILTER_CHANGED);
+  }
+
+  private addInitialFilters() {
+    if(hash.has(this.idType.id)) {
+      hash.getProp(this.idType.id)
+        .split(SupportView.HASH_FILTER_DELIMITER)
+        .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])
+        .filter((data) => data !== undefined)
+        .forEach((data) => {
+          this.addDataset(data);
+        });
+    }
+  }
+
+  private updateURLHash() {
+    hash.setProp(this.idType.id,
+      this.filterManager.filters
+        .map((d) => d.data.desc.name)
+        .join(SupportView.HASH_FILTER_DELIMITER)
+    );
   }
 
   destroy() {
+    this.filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.node.remove();
   }
 
-  private addDataset(data: IDataType) {
-    if (isFilterAble(data) && !this.filter.contains(<IFilterAbleType>data)) {
-
-      this.filter.push(<IFilterAbleType>data);
-
-
-    }
-
-    this._matrixData = data;
-
-    this.fire(SupportView.EVENT_DATASET_ADDED, data);
-  }
-
   primarySortColumn(sortColdata) {
-    this.filter.primarySortColumn(sortColdata);
-
+    this.filterManager.primarySortColumn(sortColdata);
   }
 
   get matrixData() {
     return this._matrixData;
   }
 
-
   public remove(data: IDataType) {
-    if (isFilterAble(data) && this.filter.contains(<IFilterAbleType>data)) {
-      this.filter.removeData(<IFilterAbleType>data);
+    if (isFilterAble(data) && this.filterManager.contains(<IFilterAbleType>data)) {
+      this.filterManager.remove(<IFilterAbleType>data);
+      this.updateURLHash();
     }
   }
 
-  private async buildSelectionBox(parent: HTMLElement) {
+  private buildSelectionBox(parent: HTMLElement) {
 
     parent.insertAdjacentHTML('afterbegin', `<div class="selection">
        <select class="form-control">
@@ -84,15 +112,14 @@ export default class SupportView extends EventHandler {
     </div>`);
     const select = <HTMLSelectElement>parent.querySelector('select');
 
-    const datasets = await this.addColor();
-    // console.log(datasets);
+    this.addExplicitColors(this.datasets);
 
     // list all data, filter to the matching ones, and prepare them
     // const datasets = convertTableToVectors(await listData())
     //   .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
     // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
 
-    datasets.forEach((d) => {
+    this.datasets.forEach((d) => {
       const option = parent.ownerDocument.createElement('option');
       option.text = d.desc.name;
       option.value = d.desc.id;
@@ -105,22 +132,28 @@ export default class SupportView extends EventHandler {
         return false;
       }
       // -1 because of empty option
-      this.addDataset(datasets[index - 1]);
+      this.addDataset(this.datasets[index - 1]);
+      this.updateURLHash();
       // reset selection
       select.selectedIndex = 0;
       return false;
     });
   }
 
-  private async addColor() {
-    const color = [['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f'],
+  /**
+   * Special function to define colors for the TCGA dataset
+   * @param datasets
+   * @returns {Promise<void>}
+   */
+  private async addExplicitColors(datasets) {
+    const color = [
+      ['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f'],
       ['#1b9e77', '#1d9ee8', '#d97979', '#e7298a', '#66a61e', '#e6ab02'],
       ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c'],
       ['#e41a1c', '#377eb8', '#984ea3', '#ff7f00', '#ffff33'],
       ['#8dd3c7', '#fdb462', '#bebada', '#fb8072', '#80b1d3', '#fdb462'],
-      ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']];
-    const datasets = convertTableToVectors(await listData())
-      .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+      ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']
+    ];
 
     datasets.forEach((tableVector, j) => {
       if (tableVector.desc.value.type === 'categorical') {
@@ -135,12 +168,17 @@ export default class SupportView extends EventHandler {
         });
       }
     });
-
-
-    return datasets;
-
   }
 
+  private addDataset(data: IDataType) {
+    if (isFilterAble(data) && !this.filterManager.contains(<IFilterAbleType>data)) {
+      this.filterManager.push(<IFilterAbleType>data);
+    }
+
+    this._matrixData = data;
+
+    this.fire(SupportView.EVENT_DATASET_ADDED, data);
+  }
 
 }
 

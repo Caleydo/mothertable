@@ -96,10 +96,9 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   async update(idRange: Range) {
+    this.dataView = await this.data.idView(idRange);
     this.multiform.destroy();
-    const view = await this.data.idView(idRange);
-    this.dataView = view;
-    this.multiform = this.replaceMultiForm(view, this.body);
+    this.multiform = this.replaceMultiForm(this.dataView, this.body);
   }
 
 }
