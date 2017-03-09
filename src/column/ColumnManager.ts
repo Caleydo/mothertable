@@ -28,6 +28,7 @@ import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import * as d3 from 'd3';
 import min = d3.min;
+import {type} from "os";
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -245,14 +246,13 @@ export default class ColumnManager extends EventHandler {
 
   private async calColHeight(height) {
 
-
-    const vectorColumns = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.vector);
+    const type = this.columns[0].data.desc.type;
     const dataPoints = [];
     for (const r of this.rangeList) {
-      const view = await vectorColumns[0].data.idView(r);
-      dataPoints.push(await (<IAnyVector>view).length);
+      const view = await this.columns[0].data.idView(r);
+      (type === AColumn.DATATYPE.matrix) ? dataPoints.push(await (<IAnyMatrix>view).nrow) : dataPoints.push(await (<IAnyMatrix>view).length);
     }
-    const cols = vectorColumns.map((col) => {
+    const cols = this.columns.map((col) => {
       return dataPoints.map((d) => {
         return {minHeight: col.minHeight * d, maxHeight: col.maxHeight * d};
       });
@@ -261,7 +261,7 @@ export default class ColumnManager extends EventHandler {
     const colsFlatten = cols.reduce((acc, val) => acc.concat(val));
     const minHeight = Math.max(...colsFlatten.map((d) => d.minHeight));
     const maxHeight = Math.min(...colsFlatten.map((d) => d.maxHeight));
-    const checkStringCol = vectorColumns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
 
     if (checkStringCol.length > 0 && minHeight > height) {
       return minHeight;
