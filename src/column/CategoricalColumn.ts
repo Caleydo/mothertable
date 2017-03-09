@@ -12,8 +12,8 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
 
   minWidth: number = 30;
   maxWidth: number = 200; //80
-  minimumHeight: number = 2;
-  preferredHeight: number = 30;
+  minHeight: number = 2;
+  maxHeight: number = 10;
 
   constructor(data: ICategoricalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);

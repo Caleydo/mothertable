@@ -14,14 +14,17 @@ export enum EOrientation {
   Vertical
 }
 
+
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
-
-  $node:d3.Selection<any>;
+  static readonly DATATYPE = {vector: 'vector', matrix: 'matrix'};
+  $node: d3.Selection<any>;
 
   minWidth: number = 10;
   maxWidth: number = 100;
+  minHeight: number = 2;
+  maxHeight: number = 10;
   lockedWidth: number = -1;
   minimumHeight: number = 2;
   preferredHeight: number = 30;

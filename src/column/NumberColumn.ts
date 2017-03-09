@@ -11,10 +11,10 @@ import NumberFilter from '../filter/NumberFilter';
 import {NUMERICAL_COLOR_MAP} from './utils';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
-  minimumWidth: number = 30;
-  preferredWidth: number = 200;
-  minimumHeight: number = 2;
-  preferredHeight: number = 30;
+  minWidth: number = 30;
+  maxWidth: number = 200;
+  minHeight: number = 2;
+  maxHeight: number = 10;
 
   constructor(data: INumericalVector, orientation: EOrientation, parent: HTMLElement) {
     super(data, orientation);

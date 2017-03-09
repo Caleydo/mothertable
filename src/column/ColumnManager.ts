@@ -26,6 +26,11 @@ import AFilter from '../filter/AFilter';
 import {insertArrayAt, reArrangeRangeList, reArrangeRangeListAfter} from './utils';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
+import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
+import {IAnyVector} from 'phovea_core/src/vector/IVector';
+import * as d3 from 'd3';
+import min = d3.min;
+
 import {scaleTo} from './utils';
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -193,7 +198,7 @@ export default class ColumnManager extends EventHandler {
     this.updateSort(null);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    //this.relayout();
+    this.relayout();
   }
 
 
@@ -242,6 +247,9 @@ export default class ColumnManager extends EventHandler {
 
   async updateSort(evt: any) {
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
+    if (cols.length < 1) {
+      return this.update(this.rangeNow);
+    }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r = await s.sortByMe();
     if ((await r).length < 1) {
@@ -265,6 +273,10 @@ export default class ColumnManager extends EventHandler {
     }
 
 
+
+    //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
+    //  console.log(mergedRange.dim(0).asList());
+    this.update(mergedRange);
   }
 
   async filterData(idRange: Range) {
@@ -301,10 +313,14 @@ export default class ColumnManager extends EventHandler {
 
   async update(idRange: Range) {
     this.rangeNow = idRange;
+    this.rangeList = [];
+    this.rangeList.push(idRange);
     await Promise.all(this.columns.map((col) => {
 
       if (col instanceof MatrixColumn) {
         col.updateRows(idRange);
+        this.relayout();
+
       }
       col.update(idRange);
 
@@ -317,8 +333,8 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
 
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
-    const colWidths = this.calcColWidths();
-
+    const rowHeight = await this.calColHeight(height);
+    const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -337,37 +353,92 @@ col.multiformList.map((d) => scaleTo(d, col.body.property('clientWidth'), 50, th
     });
   }
 
-  private calcColWidths() {
-    // sum all columns that are locked and thus cannot be changed
-    const lockedWidthCols = this.columns
-      .filter((d) => d.lockedWidth > 0)
-      .map((d) => d.lockedWidth);
-    const sumLockedWidth = lockedWidthCols.reduce((acc, val) => acc + val, 0);
+  private async calColHeight(height) {
 
-    // sum the width of all columns that have already the minWidth
-    const minWidthCols = this.columns
-      .filter((d) => d.$node.property('clientWidth') === d.minWidth)
-      .map((d) => d.minWidth);
-    const sumMinWidth = minWidthCols.reduce((acc, val) => acc + val, 0);
 
-    const totalAvailableWidth = this.node.clientWidth - sumLockedWidth - sumMinWidth;
-
-    // try to distribute the container width equally between all columns
-    const avgWidth = totalAvailableWidth / (this.columns.length - lockedWidthCols.length - minWidthCols.length);
-
-    // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
-    const colWidths = this.columns.map((col) => {
-      if(col.lockedWidth > 0) {
-        return  col.lockedWidth;
-      }
-      // use avgWidth if minimumWidth < avgWidth < preferredWidth otherwise use minimumWidth or preferredWidth
-      return Math.max(col.minWidth, Math.min(col.maxWidth, avgWidth));
+    const vectorColumns = this.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.vector);
+    const dataPoints = [];
+    for (const r of this.rangeList) {
+      const view = await vectorColumns[0].data.idView(r);
+      dataPoints.push(await (<IAnyVector>view).length);
+    }
+    const cols = vectorColumns.map((col) => {
+      return dataPoints.map((d) => {
+        return {minHeight: col.minHeight * d, maxHeight: col.maxHeight * d};
+      });
     });
 
-    return colWidths;
-  }
+    const colsFlatten = cols.reduce((acc, val) => acc.concat(val));
+    const minHeight = Math.max(...colsFlatten.map((d) => d.minHeight));
+    const maxHeight = Math.min(...colsFlatten.map((d) => d.maxHeight));
+    const checkStringCol = vectorColumns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
 
+    if (checkStringCol.length > 0 && minHeight > height) {
+      return minHeight;
+    } else if (checkStringCol.length > 0 && maxHeight < minHeight) {
+      return minHeight;
+    } else if (maxHeight < height) {
+      return maxHeight;
+    } else {
+      return height;
+    }
+
+  }
 }
+
+
+/**
+ * Distributes a list of columns for the containerWidth.
+ * Note about the implementation:
+ * - Columns that have `lockedWidth > -1` do not scale
+ * - Columns cannot be smaller than the given `minWidth`
+ * - Columns cannot be larger than the given `maxWidth`
+ * - Columns get wider unequally (until reaching their `maxWidth`), based on the defined `minWidth`
+ *
+ * @param columns
+ * @param containerWidth
+ * @returns {number[]}
+ */
+export function distributeColWidths(columns: {lockedWidth: number, minWidth: number, maxWidth: number}[], containerWidth: number): number[] {
+  // set minimum width or locked width for all columns
+  const cols = columns.map((d) => {
+    const newWidth = (d.lockedWidth > 0) ? d.lockedWidth : d.minWidth;
+    return {
+      col: d,
+      newWidth,
+      isLocked: (d.lockedWidth > 0),
+      hasMaxWidth: (newWidth >= d.maxWidth),
+    };
+  });
+
+  let spaceLeft = containerWidth - cols.map((d) => d.newWidth).reduce((acc, val) => acc + val, 0);
+  let openResizes = 0;
+
+  // if there is still space left try to expand columns until every column reaches their maximum width
+  while (spaceLeft > 0) {
+    // candidates that could be resized
+    const resizeCandidates = cols.filter((d) => d.isLocked === false && d.hasMaxWidth === false);
+
+    resizeCandidates.map((d, i, arr) => {
+      // new width is the equally divided space left
+      const newWidth = d.newWidth + (spaceLeft / arr.length);
+      // do not exceed the maximum width
+      d.newWidth = Math.min(d.col.maxWidth, newWidth);
+      d.hasMaxWidth = (newWidth >= d.col.maxWidth);
+    });
+
+    // refresh space left
+    spaceLeft = containerWidth - cols.map((d) => d.newWidth).reduce((acc, val) => acc + val, 0);
+
+    // cancel loop if there is any column available for resizing
+    if (resizeCandidates.length === openResizes) {
+      break;
+    }
+    openResizes = resizeCandidates.length;
+  }
+  return cols.map((d) => d.newWidth);
+}
+
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
   switch (data.desc.type) {
