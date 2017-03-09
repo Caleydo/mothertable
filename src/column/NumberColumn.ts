@@ -21,9 +21,9 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$node = this.build(parent);
   }
 
-  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
-    return mixin(super.multiFormParams($body), {
-      initialVis: 'barplot',
+  protected multiFormParams($body: d3.Selection<any>, actVis?): IMultiFormOptions {
+    return mixin(super.multiFormParams($body,actVis), {
+      initialVis: (actVis !== undefined) ? actVis : 'barplot',
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP
       },

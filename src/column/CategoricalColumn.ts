@@ -20,9 +20,9 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
     this.$node = this.build(parent);
   }
 
-  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
-    return mixin(super.multiFormParams($body), {
-      initialVis: 'phovea-vis-heatmap1d'
+  protected multiFormParams($body: d3.Selection<any>, actVis?): IMultiFormOptions {
+    return mixin(super.multiFormParams($body, actVis), {
+      initialVis: (actVis !== undefined) ? actVis : 'phovea-vis-heatmap1d'
     });
   }
 
