@@ -233,16 +233,14 @@ export default class ColumnManager extends EventHandler {
 
     const columns = [];
     for (const col of this.columns) {
-      const t = [];
+      const temp = [];
       for (const d of dataPoints) {
-        t.push({minHeight: col.minHeight * d, maxHeight: col.maxHeight * d});
-
+        temp.push({minHeight: col.minHeight * d, maxHeight: col.maxHeight * d});
       }
-
-      columns.push(t);
-
+      columns.push(temp);
     }
 
+    // Swap colulmns into rows
     const rows = [];
     columns[0].forEach((d, i) => {
       rows.push(columns.map((col) => col[i]));
@@ -250,33 +248,28 @@ export default class ColumnManager extends EventHandler {
 
     const maxHeights = [];
     const minHeights = [];
-
     rows.forEach((row) => {
-      const minHeight = Math.max(...row.map((d) => d.minHeight));
-      const maxHeight = Math.min(...row.map((d) => d.maxHeight));
-      minHeights.push(minHeight);
-      maxHeights.push(maxHeight);
-
+      const minH = Math.max(...row.map((d) => d.minHeight));
+      const maxH = Math.min(...row.map((d) => d.maxHeight));
+      minHeights.push(minH);
+      maxHeights.push(maxH);
     });
-
 
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
 
-    const minHeightSum = d3.sum(minHeights);
-    const maxHeightSum = d3.sum(maxHeights);
+    const totalMinHeightRequired = d3.sum(minHeights);
+    const totalMaxHeightRequired = d3.sum(maxHeights);
+    const nodeHeightScale = d3.scale.linear().domain([0, totalMinHeightRequired]).range([0, height]);
+    const flexHeights = minHeights.map((d) => nodeHeightScale(d));
 
-    const heights = d3.scale.linear().domain([0, minHeightSum]).range([0, height]);
-    const minH = minHeights.map((d) => heights(d));
-    console.log(minH)
-
-    if (checkStringCol.length > 0 && minHeightSum > height) {
+    if (checkStringCol.length > 0 && totalMinHeightRequired > height) {
       return minHeights;
-    } else if (checkStringCol.length > 0 && maxHeightSum < minHeightSum) {
+    } else if (checkStringCol.length > 0 && totalMaxHeightRequired < totalMinHeightRequired) {
       return minHeights;
-    } else if (maxHeightSum < height) {
+    } else if (totalMaxHeightRequired < height) {
       return maxHeights;
     } else {
-      return minH;
+      return flexHeights;
     }
 
   }
