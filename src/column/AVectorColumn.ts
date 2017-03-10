@@ -25,7 +25,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>, actVis?): IMultiFormOptions {
     return {
       all: {
         width: $body.property('clientWidth'),
@@ -63,12 +63,12 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
-    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body));
 
+    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, this.activeVis));
     const $visList = this.toolbar.select('div.vislist');
     $visList.html(''); // clear old
     m.addIconVisChooser(<HTMLElement>$visList.node());
-
+    m.on('changed', (evt, d) => this.activeVis = d.id);
     this.updateSortIcon();
     return m;
   }

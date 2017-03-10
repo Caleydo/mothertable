@@ -22,3 +22,15 @@
     }
   }
 }
+
+.phovea-mosaic {
+  .phovea-select-selected rect {
+    fill: $select-color;
+  }
+}
+
+.phovea-pie {
+  .phovea-select-selected path {
+    fill: $select-color;
+  }
+}

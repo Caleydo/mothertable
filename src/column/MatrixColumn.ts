@@ -38,9 +38,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   }
 
-  protected multiFormParams(): IMultiFormOptions {
+  protected multiFormParams(actVis?): IMultiFormOptions {
     return {
-      initialVis: 'phovea-vis-heatmap',
+      initialVis: (actVis !== undefined) ? actVis : 'phovea-vis-heatmap',
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }
@@ -61,11 +61,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
-    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams());
-
+    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams(this.activeVis));
     const $visList = this.toolbar.select('div.vislist');
     $visList.html(''); // clear old
     m.addIconVisChooser(<HTMLElement>$visList.node());
+    m.on('changed', (evt, d) => this.activeVis = d.id);
+
 
     return m;
   }
@@ -132,7 +133,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMatrix(rowRange, colRange) {
-
     if (colRange === undefined) {
       colRange = (await this.calculateDefaultRange())[1];
     }

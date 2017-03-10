@@ -26,7 +26,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   minHeight: number = 2;
   maxHeight: number = 10;
   lockedWidth: number = -1;
-
+  activeVis: string;
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
 
