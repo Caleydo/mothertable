@@ -11,7 +11,8 @@ import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-
+import {VALUE_TYPE_INT, VALUE_TYPE_REAL} from 'phovea_core/src/datatype';
+import NumberColumn from "./NumberColumn";
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -27,7 +28,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>, domain?): IMultiFormOptions {
     return {
       all: {
         width: $body.property('clientWidth'),
@@ -90,10 +91,12 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     this.updateSortIcon();
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
+    const v: any = await this.data.data();
+    const domain = d3.extent(v);
     for (const r of idRanges) {
       const li = this.body.append('li').classed('multiformList', true);
       const view = await this.data.idView(r);
-      const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li));
+      const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, domain));
       this.multiformList.push(m);
     }
 

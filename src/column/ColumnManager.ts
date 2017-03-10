@@ -185,7 +185,6 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateColumns(idRange: Range[]) {
-
     this.columns.map((col) => col.updateMultiForms(idRange));
     this.relayout();
   }

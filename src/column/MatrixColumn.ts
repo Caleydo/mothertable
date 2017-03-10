@@ -109,6 +109,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   async updateMatrixCol(idRange: Range) {
     this.colRange = idRange;
+    console.log(this.rowRange)
     this.updateMultiForms(this.rowRange, this.colRange);
 
   }
@@ -116,7 +117,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   async updateMultiForms(idRanges: Range[], colRange?) {
     this.rowRange = idRanges;
-    console.log(colRange,)
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 

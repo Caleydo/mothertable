@@ -43,12 +43,11 @@ export default class SortEventHandler extends EventHandler {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
-        return (await this.sortString(newView, sortCriteria));
       case VALUE_TYPE_CATEGORICAL:
         return (await this.collectRangeList(newView, sortCriteria, 'sc'));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return (await this.sortNumber(newView, sortCriteria));
+        return (await this.collectRangeList(newView, sortCriteria, 'ir'));
     }
   }
 
