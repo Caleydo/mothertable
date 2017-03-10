@@ -1,4 +1,13 @@
 
+.multiform {
+  .content {
+    // need to set line-height to 1px so
+    // that the .content will wrap the visualization without more spacing
+    // (e.g. without this: the .content is 20px, even if the svg is only 2px height)
+    line-height: 1px;
+  }
+}
+
 /* overrides phovea-barplot */
 .taggle-vis-barplot {
   background-color: #fff;
