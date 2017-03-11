@@ -136,6 +136,7 @@ export default class SortEventHandler extends EventHandler {
 
   }
 
+
   mergeRanges(r) {
     const ranges = r;
     const mergedRange = ranges.reduce((currentVal, nextValue) => {
@@ -256,9 +257,7 @@ export function stringSort(sortCriteria, aVal, bVal) {
 }
 
 
-function numSort(sortCriteria, aVal, bVal) {
-
-
+export function numSort(sortCriteria, aVal, bVal) {
   if (sortCriteria === SORT.asc) {
 
     return (aVal - bVal);
