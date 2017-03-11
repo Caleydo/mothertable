@@ -28,6 +28,7 @@ import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
 import {scaleTo} from './utils';
+import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -214,7 +215,13 @@ export default class ColumnManager extends EventHandler {
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-      col.multiformList.map((d, j) => scaleTo(d, colWidths[i], height / col.multiformList.length, col.orientation))
+      console.log(col.multiformList)
+      col.multiformList.forEach((multiform, index) => {
+        rowHeight[i].map((d, j) => console.log(rowHeight[i][index], multiform.data.length))
+        scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation)
+
+      })
+
       // col.layout(colWidths[i], height);
     });
   }
@@ -223,40 +230,57 @@ export default class ColumnManager extends EventHandler {
 
     const type = this.columns[0].data.desc.type;
     const dataPoints = [];
-
-    for (const r of this.rangeList) {
-      const view = await this.columns[0].data.idView(r);
-      (type === AColumn.DATATYPE.matrix) ? dataPoints.push(await (<IAnyMatrix>view).nrow) : dataPoints.push(await (<IAnyMatrix>view).length);
-    }
-
-    const columns = [];
-    for (const col of this.columns) {
-      const temp = [];
-      for (const d of dataPoints) {
-        temp.push({minHeight: col.minHeight * d, maxHeight: col.maxHeight * d});
-      }
-      columns.push(temp);
-    }
-
-    // Swap colulmns into rows
-    const rows = [];
-    columns[0].forEach((d, i) => {
-      rows.push(columns.map((col) => col[i]));
-    });
-
-    const maxHeights = [];
     const minHeights = [];
-    rows.forEach((row) => {
-      const minH = Math.max(...row.map((d) => d.minHeight));
-      const maxH = Math.min(...row.map((d) => d.maxHeight));
-      minHeights.push(minH);
-      maxHeights.push(maxH);
-    });
+    const maxHeights = [];
+    let index = 0;
+    for (const col of this.columns) {
+      const range = this.rangeList[index];
+      const temp = [];
+      for (const r of range) {
+        const view = await col.data.idView(r);
+        (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
+      }
+      const min = temp.map((d) => col.minHeight * d);
+      const max = temp.map((d) => col.maxHeight * d);
+      minHeights.push(min);
+      maxHeights.push(max);
+      index = index + 1;
+    }
 
+    // const columns = [];
+    // for (const col of this.columns) {
+    //   const temp = [];
+    //   for (const d of dataPoints) {
+    //     temp.push({minHeight: col.minHeight * d, maxHeight: col.maxHeight * d});
+    //   }
+    //   columns.push(temp);
+    // }
+    //
+    // //console.log(dataPoints, columns)
+    // // Swap colulmns into rows
+    // const rows = [];
+    // columns[0].forEach((d, i) => {
+    //   rows.push(columns.map((col) => col[i]));
+    // });
+    // const maxHeights = [];
+    // const minHeights = [];
+    // rows.forEach((row) => {
+    //   const minH = Math.max(...row.map((d) => d.minHeight));
+    //   const maxH = Math.min(...row.map((d) => d.maxHeight));
+    //   minHeights.push(minH);
+    //   maxHeights.push(maxH);
+    // });
+    //
+    //const totalMinHeightRequired = d3.sum(minHeights);
+    // const totalMaxHeightRequired = d3.sum(maxHeights);
+    //
+
+    console.log(minHeights, maxHeights)
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+    const totalMinHeightRequired = minHeights[0][0];
+    const totalMaxHeightRequired = maxHeights[0][0];
 
-    const totalMinHeightRequired = d3.sum(minHeights);
-    const totalMaxHeightRequired = d3.sum(maxHeights);
+
     const nodeHeightScale = d3.scale.linear().domain([0, totalMinHeightRequired]).range([0, height]);
     const flexHeights = minHeights.map((d) => nodeHeightScale(d));
 
