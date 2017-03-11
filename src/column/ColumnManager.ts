@@ -90,6 +90,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
+    console.log(this.columns);
     this.updateSort(null);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
@@ -143,12 +144,14 @@ export default class ColumnManager extends EventHandler {
   async updateSort(evt: any) {
     const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
     if (cols.length < 1) {
-      return this.updateColumns([this.rangeNow]);
+      return this.updateColumns([[this.rangeNow]]);
     }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     const r = await s.sortByMe();
     this.rangeList = r;
     this.updateColumns(this.rangeList);
+    console.log(r, this.rangeList)
+
   }
 
   async filterData(idRange: Range) {
@@ -184,8 +187,11 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  async updateColumns(idRange: Range[]) {
-    this.columns.map((col) => col.updateMultiForms(idRange));
+  async updateColumns(idRange: Range[][]) {
+    // this.rangeList.map((d) => console.log(d.dim(0).asList()))
+
+    idRange.map((range, index) => this.columns[index].updateMultiForms(range));
+
     this.relayout();
   }
 
@@ -208,8 +214,8 @@ export default class ColumnManager extends EventHandler {
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-      col.multiformList.map((d, j) => scaleTo(d, colWidths[i], rowHeight[j], col.orientation))
-      //  col.layout(colWidths[i], height);
+      col.multiformList.map((d, j) => scaleTo(d, colWidths[i], height / col.multiformList.length, col.orientation))
+      // col.layout(colWidths[i], height);
     });
   }
 

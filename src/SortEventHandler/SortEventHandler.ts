@@ -80,11 +80,22 @@ export default class SortEventHandler extends EventHandler {
   async sortByMe(): Promise<Range[]> {
     const d = await this.columns[0].data.idView(this.columns[0].rangeView);
     let range: any = [await d.ids()];
+
+    let c = NaN;
+    this.columns.some((val, index) => {
+      if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
+        c = index;
+      }
+      return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
+    });
+    const rangeForMultiform = [];
+    let count = 0;
     //Iterate through all the columns
     for (const col of this.columns) {
       const nextColumnData = (<any>col).data;
       const sortCriteria = (<any>col).sortCriteria;
       const rangeOfView = [];
+      const colType = col.data.desc.value.type;
 
       /**
        * Iterate through all the ranges available for that column.
@@ -92,19 +103,48 @@ export default class SortEventHandler extends EventHandler {
        */
 
       for (const n of range) {
-
         //Create VectorView  of from each array element of range.
         const newView = await nextColumnData.idView(n);
         rangeOfView.push(await this.chooseType(newView, sortCriteria));
-
       }
-      range = await this.concatRanges(rangeOfView);
+      if (count >= c) {
+
+        const t = rangeOfView.map(((d) => this.mergeRanges(d)))
+        //  console.log('after numerica', count, range, rangeOfView, t)
+        // t.map((d) => console.log(d.dim(0).asList()))
+        //console.log(await this.concatRanges(rangeOfView))
+        range = t;
+        rangeForMultiform.push(t);
+      } else {
+        if (count + 1 >= c) {
+          range = rangeOfView.map(((d) => this.mergeRanges(d)));
+        } else {
+          range = await this.concatRanges(rangeOfView);
+        }
+
+        //  console.log('before numerica', count)
+        //   range.map((d) => console.log(d.dim(0).asList()))
+        //   console.log(range, rangeOfView)
+        const mr = rangeOfView.map(((d) => this.mergeRanges(d)));
+        rangeForMultiform.push(mr);
+      }
+      count = count + 1;
 
     }
-    return range;
+    console.log(rangeForMultiform)
+    return rangeForMultiform;
 
   }
 
+  mergeRanges(r) {
+    const ranges = r;
+    const mergedRange = ranges.reduce((currentVal, nextValue) => {
+      const r = new Range();
+      r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
+      return r;
+    });
+    return mergedRange;
+  }
 
   async concatRanges(rangeOfViewData: Range[][]) {
     if (Array.isArray(rangeOfViewData[0]) === true) {

@@ -87,8 +87,9 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  async updateMultiForms(idRanges: Range[]) {
-    this.updateSortIcon();
+  async updateMultiForms(idRanges) {
+
+    // this.updateSortIcon();
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
     const v: any = await this.data.data();
@@ -99,6 +100,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, domain));
       this.multiformList.push(m);
     }
+
+    console.log(this, this.multiformList)
 
   }
 
