@@ -64,7 +64,7 @@ export default class SupportView extends EventHandler {
   }
 
   private addInitialFilters() {
-    if(hash.has(this.idType.id)) {
+    if (hash.has(this.idType.id)) {
       hash.getProp(this.idType.id)
         .split(SupportView.HASH_FILTER_DELIMITER)
         .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])

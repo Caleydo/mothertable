@@ -47,9 +47,9 @@ export default class FilterManager extends EventHandler {
   }
 
   push(data: IFilterAbleType) {
-    if (data.idtypes[0] !== this.idType) {
-      throw new Error('invalid idtype');
-    }
+    // if (data.idtypes[0] !== this.idType) {
+    //   throw new Error('invalid idtype');
+    // }
 
     const col = FilterManager.createFilter(data, this.node);
     //console.log(col.data.desc.id)
@@ -78,7 +78,7 @@ export default class FilterManager extends EventHandler {
   remove(data: IFilterAbleType) {
     const col = this.filters.find((d) => d.data === data);
 
-    if(!col.activeFilter) {
+    if (!col.activeFilter) {
       col.node.remove();
       this.filters.splice(this.filters.indexOf(col), 1);
     }
