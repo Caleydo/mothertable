@@ -91,7 +91,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
     this.columnsHierarchy = this.columns;
-    console.log(this.columns);
+    // console.log(this.columns);
     this.updateSort(null);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
@@ -215,31 +215,28 @@ export default class ColumnManager extends EventHandler {
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-      console.log(col.multiformList)
+      //   console.log(col.multiformList)
       col.multiformList.forEach((multiform, index) => {
-        console.log(rowHeight[i][index])
+        //   console.log(rowHeight[i][index])
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation)
 
-      })
+      });
 
       // col.layout(colWidths[i], height);
     });
   }
 
   private async calColHeight(height) {
-
-    const type = this.columns[0].data.desc.type;
-    const dataPoints = [];
     const minHeights = [];
     const maxHeights = [];
     let index = 0;
     for (const col of this.columns) {
+      const type = col.data.desc.type;
       const range = this.rangeList[index];
-
       const temp = [];
       for (const r of range) {
-        console.log(index, range, r, this.rangeList)
         const view = await col.data.idView(r);
+        //  console.log(index, range, r, this.rangeList, col.data, await (<IAnyMatrix>view));
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
       const min = temp.map((d) => col.minHeight * d);
@@ -277,7 +274,7 @@ export default class ColumnManager extends EventHandler {
     // const totalMaxHeightRequired = d3.sum(maxHeights);
     //
 
-    console.log(minHeights, maxHeights);
+    //   console.log(minHeights, maxHeights);
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     const totalMinHeightRequired = minHeights[0][0];
     const totalMaxHeightRequired = maxHeights[0][0];
@@ -286,10 +283,10 @@ export default class ColumnManager extends EventHandler {
     const t = minHeights.map((d, i) => {
       return d.map((e) => nodeHeightScale(e))
     })
-    console.log(t)
+    // console.log(t)
 
     const flexHeights = minHeights.map((d) => nodeHeightScale(d));
-    console.log(minHeights, flexHeights)
+    // console.log(minHeights, flexHeights)
     if (checkStringCol.length > 0 && totalMinHeightRequired > height) {
       return minHeights;
     } else if (checkStringCol.length > 0 && totalMaxHeightRequired < totalMinHeightRequired) {

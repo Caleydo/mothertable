@@ -11,6 +11,7 @@ import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
 import {AnyColumn} from '../column/ColumnManager';
 
+
 export const SORT = {
   asc: 'asc',
   desc: 'desc'
@@ -88,7 +89,9 @@ export default class SortEventHandler extends EventHandler {
       }
       return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
     });
+    //console.log(c)
     const rangeForMultiform = [];
+    let afterNum;
     let count = 0;
     //Iterate through all the columns
     for (const col of this.columns) {
@@ -96,45 +99,53 @@ export default class SortEventHandler extends EventHandler {
       const sortCriteria = (<any>col).sortCriteria;
       const rangeOfView = [];
       const colType = col.data.desc.value.type;
-
       /**
        * Iterate through all the ranges available for that column.
        * A column can be composed with array of ranges.
        */
-
       for (const n of range) {
         //Create VectorView  of from each array element of range.
         const newView = await nextColumnData.idView(n);
         rangeOfView.push(await this.chooseType(newView, sortCriteria));
-      }
-      if (count >= c) {
 
-        const t = rangeOfView.map(((d) => this.mergeRanges(d)))
-        //  console.log('after numerica', count, range, rangeOfView, t)
-        // t.map((d) => console.log(d.dim(0).asList()))
-        //console.log(await this.concatRanges(rangeOfView))
-        range = t;
-        rangeForMultiform.push(t);
+      }
+
+      range = await this.concatRanges(rangeOfView);
+
+      // console.log(range, c, count)
+      if (count === 0) {
+        const t = range.map((d) => (d.dim(0).length));
+        afterNum = t;
+        rangeForMultiform.push([12]);
+      } else if (count < c) {
+        rangeForMultiform.push(afterNum);
+        const t = range.map((d) => (d.dim(0).length));
+        afterNum = t;
       } else {
-        if (count + 1 >= c) {
-          range = rangeOfView.map(((d) => this.mergeRanges(d)));
-        } else {
-          range = await this.concatRanges(rangeOfView);
-        }
 
-        //  console.log('before numerica', count)
-        //   range.map((d) => console.log(d.dim(0).asList()))
-        //   console.log(range, rangeOfView)
-        const mr = rangeOfView.map(((d) => this.mergeRanges(d)));
-        rangeForMultiform.push(mr);
+        rangeForMultiform.push(afterNum);
+
       }
+
       count = count + 1;
 
+
     }
-    console.log(rangeForMultiform)
-    return rangeForMultiform;
+
+    const m = this.mergeRanges(range);
+    console.log(rangeForMultiform, m.dim(0).asList());
+    const temp = prepareRangeFromList(m.dim(0).asList(), rangeForMultiform);
+    console.log(temp)
+    const f = makeRangeFromList(temp);
+    return f;
 
   }
+
+
+  // countDataElements(col,range[]){
+  //
+  //
+  // }
 
 
   mergeRanges(r) {
@@ -291,3 +302,40 @@ function isSame(value, compareWith) {
   return value === compareWith;
 }
 
+
+function prepareRangeFromList(sortedRange, arr) {
+
+  const c = arr.map((d) => {
+    let f = 0;
+    return d.map((e, i) => {
+      if (i > 0) {
+        f = f + d[i - 1];
+      }
+
+      return sortedRange.slice(f, f + e);
+
+    })
+  })
+
+  return c;
+
+
+}
+
+
+function makeRangeFromList(arr) {
+
+  console.log(arr)
+  const r = arr.map((d) => {
+
+    return d.map((e) => {
+      const r = new Range();
+      r.dim(0).pushList(e);
+      return r;
+
+    })
+
+  })
+  return r;
+
+}

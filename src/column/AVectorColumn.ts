@@ -97,11 +97,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     for (const r of idRanges) {
       const li = this.body.append('li').classed('multiformList', true);
       const view = await this.data.idView(r);
-      const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, domain));
+       const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, domain));
       this.multiformList.push(m);
     }
 
-    console.log(this, this.multiformList)
 
   }
 
