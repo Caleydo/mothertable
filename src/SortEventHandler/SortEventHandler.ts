@@ -89,7 +89,7 @@ export default class SortEventHandler extends EventHandler {
       }
       return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
     });
-    //console.log(c)
+    console.log(c)
     const rangeForMultiform = [];
     let afterNum;
     let count = 0;
@@ -121,7 +121,7 @@ export default class SortEventHandler extends EventHandler {
         const t = range.map((d) => (d.dim(0).length));
         afterNum = t;
       } else {
-
+        //   console.log('bikram', afterNum)
         rangeForMultiform.push(afterNum);
 
       }
@@ -132,9 +132,9 @@ export default class SortEventHandler extends EventHandler {
     }
 
     const m = this.mergeRanges(range);
-    console.log(rangeForMultiform, m.dim(0).asList());
+    //  console.log(rangeForMultiform, m.dim(0).asList());
     const temp = prepareRangeFromList(m.dim(0).asList(), rangeForMultiform);
-    console.log(temp)
+    /// console.log(temp)
     const f = makeRangeFromList(temp);
     return f;
 
@@ -302,7 +302,7 @@ function isSame(value, compareWith) {
 }
 
 
-function prepareRangeFromList(sortedRange, arr) {
+export function prepareRangeFromList(sortedRange, arr) {
 
   const c = arr.map((d) => {
     let f = 0;
@@ -315,7 +315,7 @@ function prepareRangeFromList(sortedRange, arr) {
 
     })
   })
-
+  // console.log(c)
   return c;
 
 
@@ -323,18 +323,13 @@ function prepareRangeFromList(sortedRange, arr) {
 
 
 function makeRangeFromList(arr) {
-
-  console.log(arr)
   const r = arr.map((d) => {
-
     return d.map((e) => {
       const r = new Range();
       r.dim(0).pushList(e);
       return r;
-
-    })
-
-  })
+    });
+  });
   return r;
 
 }

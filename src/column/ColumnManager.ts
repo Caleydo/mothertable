@@ -190,8 +190,17 @@ export default class ColumnManager extends EventHandler {
 
   async updateColumns(idRange: Range[][]) {
     // this.rangeList.map((d) => console.log(d.dim(0).asList()))
-    console.log(idRange)
-    idRange.map((range, index) => this.columns[index].updateMultiForms(range));
+    //  console.log(idRange)
+    const vectorOnly = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+    vectorOnly.forEach((col, index) => {
+
+      col.updateMultiForms(idRange[index]);
+
+    })
+    // vectorOnly.map((col) => {
+    //   return idRange.map((r) => col.updateMultiForms(r))
+    // });
+    // idRange.map((range, index) => vectorOnly.updateMultiForms(range));
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
     this.relayout();
@@ -204,6 +213,7 @@ export default class ColumnManager extends EventHandler {
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
+    console.log(rowHeight)
     // compute margin for the column stratifications (from @mijar)
     const verticalMargin = this.columns.reduce((prev, c) => {
       const act = c.getVerticalMargin();
@@ -218,7 +228,6 @@ export default class ColumnManager extends EventHandler {
         .style('width', colWidths[i] + 'px');
       //   console.log(col.multiformList)
       col.multiformList.forEach((multiform, index) => {
-        //   console.log(rowHeight[i][index])
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation)
 
       });
@@ -228,13 +237,15 @@ export default class ColumnManager extends EventHandler {
   }
 
   private async calColHeight(height) {
-    const minHeights = [];
-    const maxHeights = [];
+    let minHeights = [];
+    let maxHeights = [];
     let index = 0;
+    let totalMin = 0;
+    let totalMax = 0;
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.rangeList[index];
-      // console.log(range, this.rangeList)
+      console.log(range, this.rangeList)
       const temp = [];
       if (range === undefined) {
 
@@ -242,8 +253,8 @@ export default class ColumnManager extends EventHandler {
       }
       for (const r of range) {
         const view = await col.data.idView(r);
-        console.log(r.dim(0).asList());
-        console.log(await (<IAnyVector>view).data());
+        //console.log(r.dim(0).asList());
+        // console.log(await (<IAnyVector>view).data());
         //  console.log(index, range, r, this.rangeList, col.data, await (<IAnyMatrix>view));
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
@@ -252,9 +263,11 @@ export default class ColumnManager extends EventHandler {
       const max = temp.map((d) => col.maxHeight * d);
       minHeights.push(min);
       maxHeights.push(max);
+      totalMax = d3.max([totalMax, d3.sum(max)]);
+      totalMin = d3.max([totalMin, d3.sum(min)]);
       index = index + 1;
     }
-    console.log(minHeights, maxHeights)
+    console.log(minHeights, maxHeights, totalMax, totalMin)
     // const columns = [];
     // for (const col of this.columns) {
     //   const temp = [];
@@ -285,22 +298,36 @@ export default class ColumnManager extends EventHandler {
 
     //   console.log(minHeights, maxHeights);
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+
     const totalMinHeightRequired = minHeights[0][0];
     const totalMaxHeightRequired = maxHeights[0][0];
 
-    const nodeHeightScale = d3.scale.linear().domain([0, totalMinHeightRequired]).range([0, height]);
+
+    minHeights = minHeights.map((d, i) => {
+      const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMin]);
+      return d.map((e) => minScale(e));
+    });
+
+    maxHeights = maxHeights.map((d, i) => {
+      const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
+      return d.map((e) => maxScale(e));
+    });
+
+    const nodeHeightScale = d3.scale.linear().domain([0, totalMax]).range([0, height]);
     const t = minHeights.map((d, i) => {
-      return d.map((e) => nodeHeightScale(e))
-    })
-    console.log(t, minHeights, totalMinHeightRequired)
+      return d.map((e) => nodeHeightScale(e));
+    });
+    // console.log(t, minHeights, totalMinHeightRequired)
 
     const flexHeights = minHeights.map((d) => nodeHeightScale(d));
     // console.log(minHeights, flexHeights)
-    if (checkStringCol.length > 0 && totalMinHeightRequired > height) {
+    if (checkStringCol.length > 0 && totalMax > height) {
+      console.log(minHeights)
       return minHeights;
-    } else if (checkStringCol.length > 0 && totalMaxHeightRequired < totalMinHeightRequired) {
+    } else if (checkStringCol.length > 0 && totalMax < totalMin) {
+      console.log(minHeights)
       return minHeights;
-    } else if (totalMaxHeightRequired < height) {
+    } else if (totalMax < height) {
       return maxHeights;
     } else {
       return t;
