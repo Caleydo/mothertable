@@ -89,7 +89,6 @@ export default class SortEventHandler extends EventHandler {
       }
       return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
     });
-    console.log(c)
     const rangeForMultiform = [];
     let afterNum;
     let count = 0;
@@ -111,8 +110,6 @@ export default class SortEventHandler extends EventHandler {
 
       range = await this.concatRanges(rangeOfView);
 
-    //  console.log(range, c, count)
-
 
       if (count === 0 && initialColType !== VALUE_TYPE_CATEGORICAL) {
         afterNum = [await (<any>col).data.length];
@@ -121,7 +118,6 @@ export default class SortEventHandler extends EventHandler {
 
         const t = range.map((d) => (d.dim(0).length));
         afterNum = t;
-        // }
         rangeForMultiform.push([await (<any>col).data.length]);
       } else if (count < c) {
         rangeForMultiform.push(afterNum);
@@ -131,7 +127,6 @@ export default class SortEventHandler extends EventHandler {
         rangeForMultiform.push(afterNum);
 
       }
-
       count = count + 1;
 
 
