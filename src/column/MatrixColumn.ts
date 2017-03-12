@@ -132,7 +132,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
       this.multiformList.push(m);
     }
-
+    console.log(this)
 
   }
 

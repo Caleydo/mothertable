@@ -98,7 +98,6 @@ export default class SortEventHandler extends EventHandler {
       const nextColumnData = (<any>col).data;
       const sortCriteria = (<any>col).sortCriteria;
       const rangeOfView = [];
-      const colType = col.data.desc.value.type;
       /**
        * Iterate through all the ranges available for that column.
        * A column can be composed with array of ranges.
@@ -116,7 +115,7 @@ export default class SortEventHandler extends EventHandler {
       if (count === 0) {
         const t = range.map((d) => (d.dim(0).length));
         afterNum = t;
-        rangeForMultiform.push([12]);
+        rangeForMultiform.push([await (<any>col).data.length]);
       } else if (count < c) {
         rangeForMultiform.push(afterNum);
         const t = range.map((d) => (d.dim(0).length));

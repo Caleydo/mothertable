@@ -190,9 +190,10 @@ export default class ColumnManager extends EventHandler {
 
   async updateColumns(idRange: Range[][]) {
     // this.rangeList.map((d) => console.log(d.dim(0).asList()))
-
+    console.log(idRange)
     idRange.map((range, index) => this.columns[index].updateMultiForms(range));
-
+    const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
+    matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
     this.relayout();
   }
 
@@ -232,20 +233,28 @@ export default class ColumnManager extends EventHandler {
     let index = 0;
     for (const col of this.columns) {
       const type = col.data.desc.type;
-      const range = this.rangeList[index];
+      let range = this.rangeList[index];
+      // console.log(range, this.rangeList)
       const temp = [];
+      if (range === undefined) {
+
+        range = this.rangeList[this.rangeList.length - 1];
+      }
       for (const r of range) {
         const view = await col.data.idView(r);
+        console.log(r.dim(0).asList());
+        console.log(await (<IAnyVector>view).data());
         //  console.log(index, range, r, this.rangeList, col.data, await (<IAnyMatrix>view));
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
+      // console.log(temp)
       const min = temp.map((d) => col.minHeight * d);
       const max = temp.map((d) => col.maxHeight * d);
       minHeights.push(min);
       maxHeights.push(max);
       index = index + 1;
     }
-
+    console.log(minHeights, maxHeights)
     // const columns = [];
     // for (const col of this.columns) {
     //   const temp = [];
@@ -283,7 +292,7 @@ export default class ColumnManager extends EventHandler {
     const t = minHeights.map((d, i) => {
       return d.map((e) => nodeHeightScale(e))
     })
-    // console.log(t)
+    console.log(t, minHeights, totalMinHeightRequired)
 
     const flexHeights = minHeights.map((d) => nodeHeightScale(d));
     // console.log(minHeights, flexHeights)
