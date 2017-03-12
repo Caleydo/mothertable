@@ -82,16 +82,17 @@ export default class SortEventHandler extends EventHandler {
     const d = await this.columns[0].data.idView(this.columns[0].rangeView);
     let range: any = [await d.ids()];
     const initialColType = this.columns[0].data.desc.value.type;
-    let c = NaN;
+    const rangeForMultiform = [];
+    let dataElementsPerCol = [await (<IAnyVector>this.columns[0].data).length];
+    let count = 0;
+    let columnIndexForTie = NaN;
     this.columns.some((val, index) => {
       if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
-        c = index;
+        columnIndexForTie = index;
       }
       return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
     });
-    const rangeForMultiform = [];
-    let dataElementsPerCol;
-    let count = 0;
+
     //Iterate through all the columns
     for (const col of this.columns) {
       const nextColumnData = (<any>col).data;
@@ -110,7 +111,6 @@ export default class SortEventHandler extends EventHandler {
 
       range = await this.concatRanges(rangeOfView);
 
-
       if (count === 0 && initialColType !== VALUE_TYPE_CATEGORICAL) {
         dataElementsPerCol = [await (<any>col).data.length];
         rangeForMultiform.push(dataElementsPerCol);
@@ -118,7 +118,7 @@ export default class SortEventHandler extends EventHandler {
         const temp = range.map((d) => d.dim(0).length);
         dataElementsPerCol = temp;
         rangeForMultiform.push([await (<any>col).data.length]);
-      } else if (count < c) {
+      } else if (count < columnIndexForTie) {
         rangeForMultiform.push(dataElementsPerCol);
         const temp = range.map((d) => (d.dim(0).length));
         dataElementsPerCol = temp;
@@ -196,7 +196,7 @@ export default class SortEventHandler extends EventHandler {
 
   }
 
-  
+
   /**
    * Method to find the unique items in the IVector data
    * @param coldata
