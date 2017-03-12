@@ -78,7 +78,7 @@ export default class SortEventHandler extends EventHandler {
    */
 
 
-  async sortByMe(): Promise<Range[]> {
+  async sortByMe(): Promise<Range[][]> {
     const d = await this.columns[0].data.idView(this.columns[0].rangeView);
     let range: any = [await d.ids()];
     const initialColType = this.columns[0].data.desc.value.type;
@@ -90,7 +90,7 @@ export default class SortEventHandler extends EventHandler {
       return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
     });
     const rangeForMultiform = [];
-    let afterNum;
+    let dataElementsPerCol;
     let count = 0;
     //Iterate through all the columns
     for (const col of this.columns) {
@@ -112,40 +112,29 @@ export default class SortEventHandler extends EventHandler {
 
 
       if (count === 0 && initialColType !== VALUE_TYPE_CATEGORICAL) {
-        afterNum = [await (<any>col).data.length];
-        rangeForMultiform.push(afterNum);
+        dataElementsPerCol = [await (<any>col).data.length];
+        rangeForMultiform.push(dataElementsPerCol);
       } else if (count === 0 && initialColType === VALUE_TYPE_CATEGORICAL) {
-
-        const t = range.map((d) => (d.dim(0).length));
-        afterNum = t;
+        const temp = range.map((d) => d.dim(0).length);
+        dataElementsPerCol = temp;
         rangeForMultiform.push([await (<any>col).data.length]);
       } else if (count < c) {
-        rangeForMultiform.push(afterNum);
-        const t = range.map((d) => (d.dim(0).length));
-        afterNum = t;
+        rangeForMultiform.push(dataElementsPerCol);
+        const temp = range.map((d) => (d.dim(0).length));
+        dataElementsPerCol = temp;
       } else {
-        rangeForMultiform.push(afterNum);
-
+        rangeForMultiform.push(dataElementsPerCol);
       }
       count = count + 1;
 
-
     }
 
-    const m = this.mergeRanges(range);
-    //  console.log(rangeForMultiform, m.dim(0).asList());
-    const temp = prepareRangeFromList(m.dim(0).asList(), rangeForMultiform);
-    /// console.log(temp)
-    const f = makeRangeFromList(temp);
-    return f;
+    const mergedRanges = this.mergeRanges(range);
+    const rangeListArr = prepareRangeFromList(mergedRanges.dim(0).asList(), rangeForMultiform);
+    const rangesPerColumn = makeRangeFromList(rangeListArr);
+    return rangesPerColumn;
 
   }
-
-
-  // countDataElements(col,range[]){
-  //
-  //
-  // }
 
 
   mergeRanges(r) {
@@ -190,12 +179,16 @@ export default class SortEventHandler extends EventHandler {
     return sortArr;
   }
 
+
+//See Test Folder for the use of this function
   async sortNumber(data: IAnyVector, sortCriteria) {
     const sortedView = await data.sort(numSort.bind(this, sortCriteria));
     const sortedRange = await  sortedView.ids();
     return sortedRange;
   }
 
+
+//See Test Folder for the use of this function
   async sortString(data, sortCriteria) {
     const sortedView = await data.sort(stringSort.bind(this, sortCriteria));
     const sortedRange = await  sortedView.ids();
@@ -203,32 +196,13 @@ export default class SortEventHandler extends EventHandler {
 
   }
 
-
-// Unused at the moment because we are sorting categories by alphabetical order;
-  /*
-   async sortCategorical() {
-   const allCatNames = await(<any>this.data).data();
-   const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-   const catCount = {};
-   uniqueCategories.forEach(((val, i) => {
-   const count = allCatNames.filter(isSame.bind(this, val));
-   catCount[val] = count.length;
-   }));
-
-   const sortedView = await (<IAnyVector>this.data).sort(categoricalSort.bind(this, catCount, this.sortCriteria));
-   const sortedRange = await  (sortedView).ids();
-   this.fire(AColumn.EVENT_SORT_CHANGED, sortedRange);
-
-   }
-
-   */
-
-
+  
   /**
    * Method to find the unique items in the IVector data
    * @param coldata
    * @returns {Promise<[values]>}
    */
+  //See Test Folder for the use of this function
   async uniqueValues(coldata: IAnyVector) {
     const allCatNames = await(coldata.data());
     const uniqvalues = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
@@ -238,6 +212,7 @@ export default class SortEventHandler extends EventHandler {
 
 }
 
+//See Test Folder for the use of this function
 export function filterCat(aVal, bval) {
 
   //if (aVal === bval) {
@@ -249,7 +224,7 @@ export function filterCat(aVal, bval) {
 
 }
 
-
+//See Test Folder for the use of this function
 export function stringSort(sortCriteria, aVal, bVal) {
 
 
@@ -267,7 +242,7 @@ export function stringSort(sortCriteria, aVal, bVal) {
 
 }
 
-
+//See Test Folder for the use of this function
 export function numSort(sortCriteria, aVal, bVal) {
   if (sortCriteria === SORT.asc) {
 
@@ -303,34 +278,32 @@ function isSame(value, compareWith) {
 }
 
 
-export function prepareRangeFromList(sortedRange, arr) {
-
-  const c = arr.map((d) => {
-    let f = 0;
+//See Test Folder for the use of this function
+export function prepareRangeFromList(sortedRange: number[], arr: number[][]) {
+  const rlist = arr.map((d) => {
+    let index = 0;
     return d.map((e, i) => {
       if (i > 0) {
-        f = f + d[i - 1];
+        index = index + d[i - 1];
       }
 
-      return sortedRange.slice(f, f + e);
+      return sortedRange.slice(index, index + e);
 
-    })
-  })
-  // console.log(c)
-  return c;
-
-
+    });
+  });
+  return rlist;
 }
 
 
-function makeRangeFromList(arr) {
-  const r = arr.map((d) => {
+//Returns the range object from list
+function makeRangeFromList(arr: number[][][]) {
+  const rangeObject = arr.map((d) => {
     return d.map((e) => {
       const r = new Range();
       r.dim(0).pushList(e);
       return r;
     });
   });
-  return r;
+  return rangeObject;
 
 }
