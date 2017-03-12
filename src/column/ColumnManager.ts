@@ -217,7 +217,7 @@ export default class ColumnManager extends EventHandler {
         .style('width', colWidths[i] + 'px');
       console.log(col.multiformList)
       col.multiformList.forEach((multiform, index) => {
-        rowHeight[i].map((d, j) => console.log(rowHeight[i][index], multiform.data.length))
+        console.log(rowHeight[i][index])
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation)
 
       })
@@ -235,8 +235,10 @@ export default class ColumnManager extends EventHandler {
     let index = 0;
     for (const col of this.columns) {
       const range = this.rangeList[index];
+
       const temp = [];
       for (const r of range) {
+        console.log(index, range, r, this.rangeList)
         const view = await col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
@@ -275,15 +277,19 @@ export default class ColumnManager extends EventHandler {
     // const totalMaxHeightRequired = d3.sum(maxHeights);
     //
 
-    console.log(minHeights, maxHeights)
+    console.log(minHeights, maxHeights);
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     const totalMinHeightRequired = minHeights[0][0];
     const totalMaxHeightRequired = maxHeights[0][0];
 
-
     const nodeHeightScale = d3.scale.linear().domain([0, totalMinHeightRequired]).range([0, height]);
-    const flexHeights = minHeights.map((d) => nodeHeightScale(d));
+    const t = minHeights.map((d, i) => {
+      return d.map((e) => nodeHeightScale(e))
+    })
+    console.log(t)
 
+    const flexHeights = minHeights.map((d) => nodeHeightScale(d));
+    console.log(minHeights, flexHeights)
     if (checkStringCol.length > 0 && totalMinHeightRequired > height) {
       return minHeights;
     } else if (checkStringCol.length > 0 && totalMaxHeightRequired < totalMinHeightRequired) {
@@ -291,7 +297,7 @@ export default class ColumnManager extends EventHandler {
     } else if (totalMaxHeightRequired < height) {
       return maxHeights;
     } else {
-      return flexHeights;
+      return t;
     }
 
   }
