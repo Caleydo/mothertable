@@ -245,7 +245,7 @@ export default class ColumnManager extends EventHandler {
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.rangeList[index];
-      console.log(range, this.rangeList)
+      // console.log(range, this.rangeList)
       const temp = [];
       if (range === undefined) {
 
@@ -267,7 +267,7 @@ export default class ColumnManager extends EventHandler {
       totalMin = d3.max([totalMin, d3.sum(min)]);
       index = index + 1;
     }
-    console.log(minHeights, maxHeights, totalMax, totalMin)
+    // console.log(minHeights, maxHeights, totalMax, totalMin)
     // const columns = [];
     // for (const col of this.columns) {
     //   const temp = [];
@@ -313,7 +313,8 @@ export default class ColumnManager extends EventHandler {
       return d.map((e) => maxScale(e));
     });
 
-    const nodeHeightScale = d3.scale.linear().domain([0, totalMax]).range([0, height]);
+    const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
+    console.log(totalMin,totalMax)
     const t = minHeights.map((d, i) => {
       return d.map((e) => nodeHeightScale(e));
     });
@@ -322,10 +323,10 @@ export default class ColumnManager extends EventHandler {
     const flexHeights = minHeights.map((d) => nodeHeightScale(d));
     // console.log(minHeights, flexHeights)
     if (checkStringCol.length > 0 && totalMax > height) {
-      console.log(minHeights)
+
       return minHeights;
     } else if (checkStringCol.length > 0 && totalMax < totalMin) {
-      console.log(minHeights)
+
       return minHeights;
     } else if (totalMax < height) {
       return maxHeights;

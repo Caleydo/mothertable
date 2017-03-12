@@ -81,7 +81,7 @@ export default class SortEventHandler extends EventHandler {
   async sortByMe(): Promise<Range[]> {
     const d = await this.columns[0].data.idView(this.columns[0].rangeView);
     let range: any = [await d.ids()];
-
+    const initialColType = this.columns[0].data.desc.value.type;
     let c = NaN;
     this.columns.some((val, index) => {
       if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
@@ -111,17 +111,23 @@ export default class SortEventHandler extends EventHandler {
 
       range = await this.concatRanges(rangeOfView);
 
-      // console.log(range, c, count)
-      if (count === 0) {
+    //  console.log(range, c, count)
+
+
+      if (count === 0 && initialColType !== VALUE_TYPE_CATEGORICAL) {
+        afterNum = [await (<any>col).data.length];
+        rangeForMultiform.push(afterNum);
+      } else if (count === 0 && initialColType === VALUE_TYPE_CATEGORICAL) {
+
         const t = range.map((d) => (d.dim(0).length));
         afterNum = t;
+        // }
         rangeForMultiform.push([await (<any>col).data.length]);
       } else if (count < c) {
         rangeForMultiform.push(afterNum);
         const t = range.map((d) => (d.dim(0).length));
         afterNum = t;
       } else {
-        //   console.log('bikram', afterNum)
         rangeForMultiform.push(afterNum);
 
       }
