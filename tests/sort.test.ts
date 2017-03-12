@@ -4,7 +4,7 @@
 /// <reference types="jasmine" />
 
 import Range from 'phovea_core/src/range/Range';
-import {SORT, numSort, stringSort, filterCat} from '../src/SortEventHandler/SortEventHandler';
+import {SORT, prepareRangeFromList, numSort, stringSort, filterCat} from '../src/SortEventHandler/SortEventHandler';
 
 
 function makeRangeFromList(arr) {
@@ -138,3 +138,28 @@ describe('Unique Values', () => {
   });
 
 });
+
+
+describe('Convert sorted range into multiforms per column', () => {
+  const rangeIndexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+//Number of data elements after sorting. The length of each array means the number of multiform
+  const numberOfDataElementsPerColumn = [
+    [12],
+    [7, 5],
+    [1, 1, 1, 2, 1, 1, 2, 1, 2],
+    [1, 1, 1, 2, 1, 1, 2, 1, 2]
+  ];
+
+  const expected = [[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]],
+    [[0, 1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11]],
+    [[0], [1], [2], [3, 4], [5], [6], [7, 8], [9], [10, 11]],
+    [[0], [1], [2], [3, 4], [5], [6], [7, 8], [9], [10, 11]]];
+
+  it('Splitting multiforms ', () => {
+    return expect(prepareRangeFromList(rangeIndexes, numberOfDataElementsPerColumn)).toEqual(expected);
+  });
+
+});
+
+
+
