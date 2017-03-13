@@ -29,6 +29,7 @@ import * as d3 from 'd3';
 import min = d3.min;
 import {scaleTo} from './utils';
 import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
+import VisManager from './VisManager';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -42,12 +43,13 @@ export default class ColumnManager extends EventHandler {
   private columnsHierarchy: AnyColumn[] = [];
   private rangeNow: Range;
   private rangeList = [];
+  private visManager: VisManager;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
-
+    this.visManager = new VisManager();
     const colList = document.createElement('ol'); // Holder for column list
     colList.classList.add('columnList');
     node.appendChild(colList);
@@ -218,8 +220,8 @@ export default class ColumnManager extends EventHandler {
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
       col.multiformList.forEach((multiform, index) => {
+        this.visManager.assignVis(multiform, colWidths[i], rowHeight[i][index]);
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
-
       });
     });
   }

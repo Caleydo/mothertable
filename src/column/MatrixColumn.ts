@@ -12,6 +12,7 @@ import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
 import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
+import VisManager from './VisManager';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
@@ -42,7 +43,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: 'phovea-vis-heatmap',
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }
