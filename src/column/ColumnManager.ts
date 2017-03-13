@@ -28,7 +28,7 @@ import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
 import {scaleTo} from './utils';
-import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
+import {IAnyVector} from 'phovea_core/src/vector/IVector';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
