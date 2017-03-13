@@ -96,8 +96,16 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const domain = d3.extent(v);
     for (const r of idRanges) {
       const li = this.body.append('li').classed('multiformList', true);
+      const $header = li.append('div').classed('vislist', true);
+      this.body.selectAll('.multiformList').on('mouseover', function () {
+        d3.select(this).select('.vislist').style('display', 'block');
+      })
+        .on('mouseleave', function () {
+          d3.select(this).select('.vislist').style('display', 'none');
+        });
       const view = await this.data.idView(r);
-       const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, domain));
+      const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, domain));
+      m.addIconVisChooser(<HTMLElement>$header.node())
       this.multiformList.push(m);
     }
 

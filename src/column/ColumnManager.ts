@@ -28,7 +28,7 @@ import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
 import {scaleTo} from './utils';
-import {IAnyVector} from "../../../phovea_core/src/vector/IVector";
+import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -150,8 +150,7 @@ export default class ColumnManager extends EventHandler {
       return this.updateColumns([[this.rangeNow]]);
     }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
-    const r = await s.sortByMe();
-    this.rangeList = r;
+    this.rangeList = await s.sortByMe();
     this.updateColumns(this.rangeList);
 
   }
@@ -190,10 +189,8 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateColumns(idRange: Range[][]) {
-    const vectorOnly = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    vectorOnly.forEach((col, index) => {
+    this.columnsHierarchy.forEach((col, index) => {
       col.updateMultiForms(idRange[index]);
-
     });
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
