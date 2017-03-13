@@ -144,16 +144,18 @@ describe('Convert sorted range into multiforms per column', () => {
   const rangeIndexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 //Number of data elements after sorting. The length of each array means the number of multiform
   const numberOfDataElementsPerColumn = [
-    [12],
-    [7, 5],
-    [1, 1, 1, 2, 1, 1, 2, 1, 2],
-    [1, 1, 1, 2, 1, 1, 2, 1, 2]
+    [12], // categorical
+    [7, 5], // categorical
+    [1, 1, 1, 2, 1, 1, 2, 1, 2], // numerical or string
+    [1, 1, 1, 2, 1, 1, 2, 1, 2] // numerical or string
   ];
 
-  const expected = [[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]],
+  const expected = [
+    [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]],
     [[0, 1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11]],
     [[0], [1], [2], [3, 4], [5], [6], [7, 8], [9], [10, 11]],
-    [[0], [1], [2], [3, 4], [5], [6], [7, 8], [9], [10, 11]]];
+    [[0], [1], [2], [3, 4], [5], [6], [7, 8], [9], [10, 11]]
+  ];
 
   it('Splitting multiforms ', () => {
     return expect(prepareRangeFromList(rangeIndexes, numberOfDataElementsPerColumn)).toEqual(expected);
