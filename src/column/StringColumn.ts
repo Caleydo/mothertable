@@ -18,9 +18,9 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
     this.$node = this.build(parent);
   }
 
-  protected multiFormParams($body: d3.Selection<any>, actVis?): IMultiFormOptions {
-    return mixin(super.multiFormParams($body, actVis), {
-      initialVis: (actVis !== undefined) ? actVis : 'list',
+  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
+    return mixin(super.multiFormParams($body), {
+      initialVis: 'list',
       'list': {
         cssClass: 'taggle-vis-list'
       }
