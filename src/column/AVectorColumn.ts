@@ -11,8 +11,6 @@ import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {VALUE_TYPE_INT, VALUE_TYPE_REAL} from 'phovea_core/src/datatype';
-import NumberColumn from "./NumberColumn";
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -89,15 +87,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   async updateMultiForms(idRanges) {
-
-    // this.updateSortIcon();
+    this.updateSortIcon();
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
     const v: any = await this.data.data();
     const domain = d3.extent(v);
     for (const r of idRanges) {
-      const li = this.body.append('li').classed('multiformList', true);
-      const $header = li.append('div').classed('vislist', true);
+      const multiformdivs = this.body.append('div').classed('multiformList', true);
+      const $header = multiformdivs.append('div').classed('vislist', true);
       this.body.selectAll('.multiformList').on('mouseover', function () {
         d3.select(this).select('.vislist').style('display', 'block');
       })
@@ -105,8 +102,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           d3.select(this).select('.vislist').style('display', 'none');
         });
       const view = await this.data.idView(r);
-      const m = new MultiForm(view, <HTMLElement>li.node(), this.multiFormParams(li, domain));
-      m.addIconVisChooser(<HTMLElement>$header.node())
+      const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
+      m.addIconVisChooser(<HTMLElement>$header.node());
       this.multiformList.push(m);
     }
 

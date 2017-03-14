@@ -41,9 +41,11 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
+  private filtersHierarchy = [];
   private rangeNow: Range;
   private rangeList = [];
   private visManager: VisManager;
+  private colsWithRange = new Map();
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -64,9 +66,9 @@ export default class ColumnManager extends EventHandler {
   }
 
   sortByFilterIcon(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
-    const col = this.columnsHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+    const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     col[0].sortCriteria = sortData.sortMethod;
-    this.updateSortHierarchy(this.columnsHierarchy);
+    this.updateSortHierarchy(this.filtersHierarchy);
   }
 
   destroy() {
@@ -76,9 +78,9 @@ export default class ColumnManager extends EventHandler {
   }
 
   async push(data: IMotherTableType) {
-    if (data.idtypes[0] !== this.idType) {
-      throw new Error('invalid idtype');
-    }
+    // if (data.idtypes[0] !== this.idType) {
+    //   throw new Error('invalid idtype');
+    // }
     const col = createColumn(data, this.orientation, this.node);
 
     if (this.rangeNow === undefined) {
@@ -92,10 +94,8 @@ export default class ColumnManager extends EventHandler {
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
 
     this.columns.push(col);
-    this.columnsHierarchy = this.columns;
-    // console.log(this.columns);
+    this.updateFiltersHierarchy(col);
     this.updateSort(null);
-
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     this.relayout();
   }
@@ -145,12 +145,15 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateSort(evt: any) {
-    const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
+
+    const cols = this.filtersHierarchy;
     if (cols.length < 1) {
       return this.updateColumns([[this.rangeNow]]);
     }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
     this.rangeList = await s.sortByMe();
+    cols.forEach((col, index) => this.colsWithRange.set(col.data.desc.id, this.rangeList[index]));
+    // console.log(cols, this.rangeList)
     this.updateColumns(this.rangeList);
 
   }
@@ -165,18 +168,27 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+
+  updateFiltersHierarchy(col) {
+    const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
+    if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length < 1) {
+      this.filtersHierarchy.push(col);
+    }
+  }
+
+
   /**
    * prepare column data same as sort hierarchy
    * @param filterList
    */
 
   updateSortHierarchy(filterList: AnyColumn[]) {
-    this.columnsHierarchy = [];
+    this.filtersHierarchy = [];
     filterList.forEach((d) => {
       const index = this.columns.map(function (e) {
         return e.data.desc.id;
       }).indexOf(d.data.desc.id);
-      this.columnsHierarchy.push(this.columns[index]);
+      this.filtersHierarchy.push(this.columns[index]);
     });
 
     this.updateSort(null);
@@ -189,18 +201,19 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateColumns(idRange: Range[][]) {
-    this.columnsHierarchy.forEach((col, index) => {
-      col.updateMultiForms(idRange[index]);
+    const vectorsOnly = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+    vectorsOnly.forEach((col) => {
+      const r = this.colsWithRange.get(col.data.desc.id);
+      col.updateMultiForms(r);
+
     });
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
     this.relayout();
   }
 
-
   async relayout() {
     await resolveIn(10);
-
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
@@ -216,7 +229,7 @@ export default class ColumnManager extends EventHandler {
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-      col.multiformList.forEach((multiform, index) => {
+      col.multiformList.map((multiform, index) => {
         this.visManager.assignVis(multiform, colWidths[i], rowHeight[i][index]);
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
@@ -231,7 +244,7 @@ export default class ColumnManager extends EventHandler {
     let totalMax = 0;
     for (const col of this.columns) {
       const type = col.data.desc.type;
-      let range = this.rangeList[index];
+      let range = this.colsWithRange.get(col.data.desc.id);
       const temp = [];
       if (range === undefined) {
         range = this.rangeList[this.rangeList.length - 1];
