@@ -25,3 +25,63 @@ export function scaleTo(multiform: MultiForm, width: number, height: number, ori
 
 
 export const NUMERICAL_COLOR_MAP:string[] = ['#fff5f0', '#67000d'];
+
+
+export function reArrangeRangeList(draggedArray, fullRangeasList) {
+
+  if (draggedArray.length < 2) {
+    let r = [fullRangeasList];
+    r = r.filter((d) => d.length !== 0);
+    return r;
+  } else {
+    const startindex = fullRangeasList.indexOf(draggedArray[0]);
+    const endindex = fullRangeasList.indexOf(draggedArray[draggedArray.length - 1]);
+    const startArr = fullRangeasList.slice(0, startindex);
+    const endArr = fullRangeasList.slice(endindex + 1, fullRangeasList.length);
+    let r = [startArr, draggedArray, endArr];
+    r = r.filter((d) => d.length !== 0);
+    return r;
+  }
+}
+
+export function insertArrayAt(array, index, arrayToInsert) {
+  Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
+}
+
+
+export function reArrangeRangeListAfter(draggedArray, fullRangeList) {
+  let indices = [];
+  fullRangeList.map((d, i) => {
+    const c = [];
+    draggedArray.forEach((e) => {
+      const m = d.indexOf(e);
+      if (m > -1) {
+        c.push(m);
+      }
+    });
+
+    if (c.length !== 0) {
+      indices.push(spliceArr(d, c));
+
+    } else {
+      indices.push([d]);
+    }
+  });
+  indices = indices.reduce((d, i) => d.concat(i));
+  indices = indices.filter((d) => d.length !== 0);
+  //console.log(indices)
+  return indices;
+}
+
+
+function spliceArr(rangeArr, dragIndices) {
+  const startIndex = dragIndices[0];
+  const endIndex = dragIndices[dragIndices.length - 1];
+  const draggedArea = rangeArr.slice(startIndex, endIndex + 1);
+  const startArr = rangeArr.slice(0, startIndex);
+  const endArr = rangeArr.slice(endIndex + 1, rangeArr.length);
+  let r = [startArr, draggedArea, endArr];
+  r = r.filter((d) => d !== 0);
+  return r;
+
+}

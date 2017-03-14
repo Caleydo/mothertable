@@ -101,16 +101,16 @@ export default class App {
     const debounce = (fn, delay) => {
       let delayed;
 
-      return function(e) {
+      return function (e) {
         clearTimeout(delayed);
-        delayed = setTimeout(function() {
+        delayed = setTimeout(function () {
           fn(e);
         }, delay);
       };
     };
 
     window.addEventListener('resize', debounce(() => {
-      if(this.manager) {
+      if (this.manager) {
         this.manager.relayout();
       }
     }, 300));
@@ -263,13 +263,6 @@ export default class App {
       colRange = (indices.dim(1));
 
     }
-    // console.log(this.colRange)
-
-    // matrixCol.forEach((col: MatrixColumn) => {
-    //   col.updateRows(this.rowRange);
-    //   col.updateCols(this.colRange);
-    //   col.updateMatrix(this.rowRange, this.colRange);
-    // });
 
     matrixCol[uniqueMatrix - 1].updateMatrixCol(colRange);
 

@@ -21,14 +21,16 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$node = this.build(parent);
   }
 
-  protected multiFormParams($body: d3.Selection<any>, actVis?): IMultiFormOptions {
-    return mixin(super.multiFormParams($body,actVis), {
-      initialVis: (actVis !== undefined) ? actVis : 'barplot',
+  protected multiFormParams($body: d3.Selection<any>, domain?: number[]): IMultiFormOptions {
+    return mixin(super.multiFormParams($body), {
+      initialVis: 'barplot',
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP
       },
       'barplot': {
-        cssClass: 'taggle-vis-barplot'
+        cssClass: 'taggle-vis-barplot',
+        min: domain[0],
+        max: domain[1]
       }
     });
   }

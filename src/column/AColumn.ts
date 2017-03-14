@@ -27,8 +27,13 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   maxHeight: number = 10;
   lockedWidth: number = -1;
   activeVis: string;
+  minimumHeight: number = 2;
+  preferredHeight: number = 30;
+
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
+  rangeView: Range;
+  multiformList = [];
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
@@ -40,7 +45,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   abstract layout(width: number, height: number);
 
-  abstract async update(idRange: Range): Promise<any>;
+  abstract async update(idRange: Range, count?): Promise<any>;
 
 
   getVerticalMargin() {
@@ -62,6 +67,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   // async updateMatrix(rowRange, colRange) {
   //   return rowRange;
   // }
+
 
   async updateMatrixCol(colRange) {
     return colRange;
@@ -89,7 +95,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         d3.select(this).select('.toolbar').style('display', 'none');
       });
 
-    this.buildBody(this.body);
+    // this.buildBody(this.body);
     this.buildToolbar(this.toolbar);
 
     return this.$node;
@@ -110,6 +116,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         this.fire(AColumn.EVENT_REMOVE_ME);
         return false;
       });
+  }
+
+  async updateMultiForms(rowRanges: Range[]) {
   }
 
   protected lockColumnWidth($lockButton) {

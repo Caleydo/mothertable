@@ -11,6 +11,7 @@ import {list as rlist} from 'phovea_core/src/range';
 import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
 import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
+import * as d3 from 'd3';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
@@ -23,9 +24,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   maxHeight: number = 10;
 
   private multiform: MultiForm;
-  private rowRange: Range;
+  private rowRange: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
+  multiformList = [];
 
   readonly columns: AnyColumn[] = [];
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -38,9 +40,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   }
 
-  protected multiFormParams(actVis?): IMultiFormOptions {
+  protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: (actVis !== undefined) ? actVis : 'phovea-vis-heatmap',
+      initialVis: 'phovea-vis-heatmap',
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }
@@ -48,27 +50,16 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   protected buildBody($body: d3.Selection<any>) {
-    this.multiform = new MultiForm(this.dataView, <HTMLElement>$body.node(), this.multiFormParams());
+    //   this.multiform = new MultiForm(this.dataView, <HTMLElement>$body.node(), this.multiFormParams());
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    if (this.multiform) {
-      const $visList = $toolbar.append('div').classed('vislist', true);
-      this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
-    }
+    // if (this.multiform) {
+    //   const $visList = $toolbar.append('div').classed('vislist', true);
+    //   this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
+    // }
 
     super.buildToolbar($toolbar);
-  }
-
-  private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
-    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams(this.activeVis));
-    const $visList = this.toolbar.select('div.vislist');
-    $visList.html(''); // clear old
-    m.addIconVisChooser(<HTMLElement>$visList.node());
-    m.on('changed', (evt, d) => this.activeVis = d.id);
-
-
-    return m;
   }
 
   layout(width: number, height: number) {
@@ -109,43 +100,40 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   async calculateDefaultRange() {
     const indices = await this.data.ids();
-    if (this.rowRange === undefined) {
-
-      this.rowRange = rlist(indices.dim(0));
-    }
-
     if (this.colRange === undefined) {
       this.colRange = rlist(indices.dim(1));
     }
-    return ([this.rowRange, this.colRange]);
+    return this.colRange;
   }
 
-  updateRows(idRange: Range) {
-    this.rowRange = idRange;
-    this.updateMatrix(this.rowRange, this.colRange);
-  }
 
   async updateMatrixCol(idRange: Range) {
     this.colRange = idRange;
-    this.updateMatrix(this.rowRange, this.colRange);
+    this.updateMultiForms(this.rowRange, this.colRange);
 
   }
 
 
-  async updateMatrix(rowRange, colRange) {
+  async updateMultiForms(idRanges: Range[], colRange?) {
+    this.rowRange = idRanges;
+    this.body.selectAll('.multiformList').remove();
+    this.multiformList = [];
+
     if (colRange === undefined) {
-      colRange = (await this.calculateDefaultRange())[1];
+      colRange = (await this.calculateDefaultRange());
     }
-    let rowView = await this.data.idView(rowRange);
-    rowView = (<INumericalMatrix>rowView).t;
-    let colView = await rowView.idView(colRange);
-    colView = (<INumericalMatrix>colView).t;
-    this.dataView = colView;
-    this.multiform.destroy();
-    this.multiform = this.replaceMultiForm(colView, this.body);
-    // this.relayout();
-  }
+    for (const r of idRanges) {
+      const multiformDivs = this.body.append('div').classed('multiformList', true);
+      let rowView = await this.data.idView(r);
+      rowView = (<INumericalMatrix>rowView).t;
+      let colView = await rowView.idView(colRange);
+      colView = (<INumericalMatrix>colView).t;
+      const m = new MultiForm(colView, <HTMLElement>multiformDivs.node(), this.multiFormParams());
 
+      this.multiformList.push(m);
+    }
+
+  }
 
   async update(idRange: Range) {
     // this.multiform.destroy();

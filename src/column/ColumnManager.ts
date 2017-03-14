@@ -25,9 +25,10 @@ import AFilter from '../filter/AFilter';
 import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
-import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import * as d3 from 'd3';
 import min = d3.min;
+import {scaleTo} from './utils';
+import {IAnyVector} from 'phovea_core/src/vector/IVector';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -39,9 +40,10 @@ export default class ColumnManager extends EventHandler {
 
   readonly columns: AnyColumn[] = [];
   private columnsHierarchy: AnyColumn[] = [];
+  private filtersHierarchy = [];
   private rangeNow: Range;
-  private rangeList: Range[] = [];
-
+  private rangeList = [];
+  private colsWithRange = new Map();
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
 
@@ -54,6 +56,7 @@ export default class ColumnManager extends EventHandler {
     this.node.classList.add('column-manager');
     this.drag();
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
+
   }
 
   get length() {
@@ -61,9 +64,9 @@ export default class ColumnManager extends EventHandler {
   }
 
   sortByFilterIcon(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
-    const col = this.columnsHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+    const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     col[0].sortCriteria = sortData.sortMethod;
-    this.updateSortHierarchy(this.columnsHierarchy);
+    this.updateSortHierarchy(this.filtersHierarchy);
   }
 
   destroy() {
@@ -83,16 +86,14 @@ export default class ColumnManager extends EventHandler {
       this.rangeNow = await data.ids();
 
     }
-    await col.update(this.rangeNow);
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
 
     this.columns.push(col);
-    this.columnsHierarchy = this.columns;
+    this.updateFiltersHierarchy(col);
     this.updateSort(null);
-
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     this.relayout();
   }
@@ -142,38 +143,22 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateSort(evt: any) {
-    // console.log(sortMethod)
-    // this.sortMethod = sortMethod;
-    const cols = this.columnsHierarchy.filter((d) => d.data.desc.type === 'vector');
+
+    const cols = this.filtersHierarchy;
     if (cols.length < 1) {
-      return this.update(this.rangeNow);
+      return this.updateColumns([[this.rangeNow]]);
     }
     const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
-    const r = s.sortByMe();
-    if ((await r).length < 1) {
-      return this.update(r[0]);
+    this.rangeList = await s.sortByMe();
+    cols.forEach((col, index) => this.colsWithRange.set(col.data.desc.id, this.rangeList[index]));
+    // console.log(cols, this.rangeList)
+    this.updateColumns(this.rangeList);
 
-    }
-    this.mergeRanges(r);
-
-  }
-
-  async mergeRanges(r: Promise<Range[]>) {
-    const ranges = await r;
-    const mergedRange = ranges.reduce((currentVal, nextValue) => {
-      const r = new Range();
-      r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-      return r;
-    });
-
-
-    //const mergedRange: any = ranges.reduce((a, b) => a.concat(b));
-    //  console.log(mergedRange.dim(0).asList());
-    this.update(mergedRange);
   }
 
   async filterData(idRange: Range) {
     for (const col of this.columns) {
+      col.rangeView = await idRange;
       col.dataView = await col.data.idView(idRange);
 
     }
@@ -181,18 +166,27 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+
+  updateFiltersHierarchy(col) {
+    const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
+    if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length < 1) {
+      this.filtersHierarchy.push(col);
+    }
+  }
+
+
   /**
    * prepare column data same as sort hierarchy
    * @param filterList
    */
 
   updateSortHierarchy(filterList: AnyColumn[]) {
-    this.columnsHierarchy = [];
+    this.filtersHierarchy = [];
     filterList.forEach((d) => {
       const index = this.columns.map(function (e) {
         return e.data.desc.id;
       }).indexOf(d.data.desc.id);
-      this.columnsHierarchy.push(this.columns[index]);
+      this.filtersHierarchy.push(this.columns[index]);
     });
 
     this.updateSort(null);
@@ -203,26 +197,21 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  async update(idRange: Range) {
-    this.rangeNow = idRange;
-    this.rangeList = [];
-    this.rangeList.push(idRange);
-    await Promise.all(this.columns.map((col) => {
-      if (col instanceof MatrixColumn) {
-        col.updateRows(idRange);
-        this.relayout();
 
-      }
+  async updateColumns(idRange: Range[][]) {
+    const vectorsOnly = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+    vectorsOnly.forEach((col) => {
+      const r = this.colsWithRange.get(col.data.desc.id);
+      col.updateMultiForms(r);
 
-      col.update(idRange);
-    }));
-
+    });
+    const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
+    matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
     this.relayout();
   }
 
   async relayout() {
     await resolveIn(10);
-
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
@@ -234,42 +223,69 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col, i) => {
       const margin = col.getVerticalMargin();
-
       col.$node
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-      col.layout(colWidths[i], rowHeight);
+      col.multiformList.map((multiform, index) => {
+        scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
+
+      });
     });
   }
 
   private async calColHeight(height) {
+    let minHeights = [];
+    let maxHeights = [];
+    let index = 0;
+    let totalMin = 0;
+    let totalMax = 0;
+    for (const col of this.columns) {
+      const type = col.data.desc.type;
+      let range = this.colsWithRange.get(col.data.desc.id);
+      const temp = [];
+      if (range === undefined) {
 
-    const type = this.columns[0].data.desc.type;
-    const dataPoints = [];
-    for (const r of this.rangeList) {
-      const view = await this.columns[0].data.idView(r);
-      (type === AColumn.DATATYPE.matrix) ? dataPoints.push(await (<IAnyMatrix>view).nrow) : dataPoints.push(await (<IAnyMatrix>view).length);
+        range = this.rangeList[this.rangeList.length - 1];
+      }
+      for (const r of range) {
+        const view = await col.data.idView(r);
+        (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
+      }
+      // console.log(temp)
+      const min = temp.map((d) => col.minHeight * d);
+      const max = temp.map((d) => col.maxHeight * d);
+      minHeights.push(min);
+      maxHeights.push(max);
+      totalMax = d3.max([totalMax, d3.sum(max)]);
+      totalMin = d3.max([totalMin, d3.sum(min)]);
+      index = index + 1;
     }
-    const cols = this.columns.map((col) => {
-      return dataPoints.map((d) => {
-        return {minHeight: col.minHeight * d, maxHeight: col.maxHeight * d};
-      });
+
+    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+    minHeights = minHeights.map((d, i) => {
+      const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMin]);
+      return d.map((e) => minScale(e));
     });
 
-    const colsFlatten = cols.reduce((acc, val) => acc.concat(val));
-    const minHeight = Math.max(...colsFlatten.map((d) => d.minHeight));
-    const maxHeight = Math.min(...colsFlatten.map((d) => d.maxHeight));
-    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+    maxHeights = maxHeights.map((d, i) => {
+      const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
+      return d.map((e) => maxScale(e));
+    });
+    const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
+    const flexHeights = minHeights.map((d, i) => {
+      return d.map((e) => nodeHeightScale(e));
+    });
 
-    if (checkStringCol.length > 0 && minHeight > height) {
-      return minHeight;
-    } else if (checkStringCol.length > 0 && maxHeight < minHeight) {
-      return minHeight;
-    } else if (maxHeight < height) {
-      return maxHeight;
+
+    if (checkStringCol.length > 0 && totalMax > height) {
+      return minHeights;
+    } else if (checkStringCol.length > 0 && totalMax < totalMin) {
+      return minHeights;
+    } else if (totalMax < height) {
+      return maxHeights;
     } else {
-      return height;
+      return flexHeights;
     }
 
   }

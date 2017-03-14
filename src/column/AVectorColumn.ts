@@ -11,21 +11,22 @@ import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
-  protected multiform: MultiForm;
+  multiform: MultiForm;
   dataView: IDataType;
   static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
+  multiformList = [];
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
+    this.rangeView = (<any>data).indices;
 
   }
 
-  protected multiFormParams($body: d3.Selection<any>, actVis?): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>, domain?): IMultiFormOptions {
     return {
       all: {
         width: $body.property('clientWidth'),
@@ -35,15 +36,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected buildBody($body: d3.Selection<any>) {
-    this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
+    //  this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    if (this.multiform) {
-      const $visList = $toolbar.append('div').classed('vislist', true);
-      this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
-    }
-
     const $sortButton = $toolbar.append('button')
       .attr('class', 'fa sort fa-sort-amount-asc')
       .on('click', () => {
@@ -58,31 +54,15 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           $sortButton.attr('class', 'fa sort fa-sort-amount-asc');
         }
       });
-
     super.buildToolbar($toolbar);
   }
 
-  private replaceMultiForm(data: IDataType, $body: d3.Selection<any>) {
-
-    const m = new MultiForm(data, <HTMLElement>$body.node(), this.multiFormParams($body, this.activeVis));
-    const $visList = this.toolbar.select('div.vislist');
-    $visList.html(''); // clear old
-    m.addIconVisChooser(<HTMLElement>$visList.node());
-    m.on('changed', (evt, d) => this.activeVis = d.id);
-    this.updateSortIcon();
-    return m;
-  }
 
   layout(width: number, height: number) {
+
     scaleTo(this.multiform, width, height, this.orientation);
   }
 
-  // update(idRange: Range1D) {
-  //   this.multiform.destroy();
-  //   this.data.idView(rlist(idRange)).then((view) => {
-  //     this.multiform = this.replaceMultiForm(view, this.body);
-  //   });
-  // }
 
   updateSortIcon() {
     if (this.sortCriteria === SORT.desc) {
@@ -96,10 +76,39 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   async update(idRange: Range) {
-    this.dataView = await this.data.idView(idRange);
-    this.multiform.destroy();
-    this.multiform = this.replaceMultiForm(this.dataView, this.body);
+    this.$node.select('main').remove();
+    this.$node.append('main');
+    //  this.multiform.destroy();
+    const view = await this.data.idView(idRange);
+    this.dataView = view;
+    //  this.replaceMultiForm(view, this.body);
+
   }
+
+  async updateMultiForms(idRanges) {
+    this.updateSortIcon();
+    this.body.selectAll('.multiformList').remove();
+    this.multiformList = [];
+    const v: any = await this.data.data();
+    const domain = d3.extent(v);
+    for (const r of idRanges) {
+      const multiformdivs = this.body.append('div').classed('multiformList', true);
+      const $header = multiformdivs.append('div').classed('vislist', true);
+      this.body.selectAll('.multiformList').on('mouseover', function () {
+        d3.select(this).select('.vislist').style('display', 'block');
+      })
+        .on('mouseleave', function () {
+          d3.select(this).select('.vislist').style('display', 'none');
+        });
+      const view = await this.data.idView(r);
+      const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
+      m.addIconVisChooser(<HTMLElement>$header.node());
+      this.multiformList.push(m);
+    }
+
+
+  }
+
 
 }
 

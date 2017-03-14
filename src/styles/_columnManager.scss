@@ -59,7 +59,8 @@
     main {
       flex: 1 1 auto;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
+      // height: 600px;
       //align-items: center;
     }
   }
@@ -69,4 +70,9 @@
   flex: 1 1 auto;
 }
 
-
+.vislist {
+  display: none;
+  position: absolute;
+  z-index: 1000;
+  background: #fff;
+}
