@@ -2,11 +2,9 @@
  * Created by Katarína Furmanová on 13.03.2017.
  */
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {IVisPluginDesc} from '../../../phovea_core/src/vis';
+import {IVisPluginDesc} from 'phovea_core/src/vis';
 import {IMotherTableType, AnyColumn} from './ColumnManager';
-import {IStringVector} from './AVectorColumn';
-import {INumericalVector, ICategoricalVector} from '../../../phovea_core/src/vector/IVector';
-import {INumericalMatrix} from '../../../phovea_core/src/matrix/IMatrix';
+
 import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   VALUE_TYPE_STRING
