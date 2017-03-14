@@ -134,7 +134,7 @@ export default class SortEventHandler extends EventHandler {
     const mergedRanges = this.mergeRanges(range);
     const rangeListArr = prepareRangeFromList(mergedRanges.dim(0).asList(), rangeForMultiform);
     const rangesPerColumn = makeRangeFromList(rangeListArr);
-
+    console.log(rangesPerColumn)
     return rangesPerColumn;
   }
 
