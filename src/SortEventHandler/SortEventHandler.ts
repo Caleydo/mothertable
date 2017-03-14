@@ -111,19 +111,19 @@ export default class SortEventHandler extends EventHandler {
         dataElementsPerCol = [await (<any>col).data.length];
         rangeForMultiform.push(dataElementsPerCol);
 
-      // first column is categorical -> the next column will be stratified by the number of categories
+        // first column is categorical -> the next column will be stratified by the number of categories
       } else if (count === 0 && initialColType === VALUE_TYPE_CATEGORICAL) {
         const temp = range.map((d) => d.dim(0).length);
         dataElementsPerCol = temp;
         rangeForMultiform.push([await (<any>col).data.length]);
 
-      // stratify other categorical columns until it reaches a tie (numerical or string column)
+        // stratify other categorical columns until it reaches a tie (numerical or string column)
       } else if (count < columnIndexForTie) {
         rangeForMultiform.push(dataElementsPerCol);
         const temp = range.map((d) => (d.dim(0).length));
         dataElementsPerCol = temp;
 
-      // after tie (numerical or string column) use the preceeding stratification
+        // after tie (numerical or string column) use the preceeding stratification
       } else {
         rangeForMultiform.push(dataElementsPerCol);
       }
@@ -134,7 +134,6 @@ export default class SortEventHandler extends EventHandler {
     const mergedRanges = this.mergeRanges(range);
     const rangeListArr = prepareRangeFromList(mergedRanges.dim(0).asList(), rangeForMultiform);
     const rangesPerColumn = makeRangeFromList(rangeListArr);
-    console.log(rangesPerColumn)
     return rangesPerColumn;
   }
 
@@ -278,7 +277,7 @@ function categoricalSort(categories, sortCriteria, aVal, bVal) {
  * @param stratifiedArr
  * @returns {number[][][]}
  */
-export function prepareRangeFromList(sortedRange: number[], stratifiedArr: number[][]):number[][][] {
+export function prepareRangeFromList(sortedRange: number[], stratifiedArr: number[][]): number[][][] {
   const rlist = stratifiedArr.map((d) => {
     let index = 0;
     return d.map((e, i) => {
