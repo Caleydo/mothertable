@@ -76,9 +76,9 @@ export default class ColumnManager extends EventHandler {
   }
 
   async push(data: IMotherTableType) {
-    if (data.idtypes[0] !== this.idType) {
-      throw new Error('invalid idtype');
-    }
+    // if (data.idtypes[0] !== this.idType) {
+    //   throw new Error('invalid idtype');
+    // }
     const col = createColumn(data, this.orientation, this.node);
 
     if (this.rangeNow === undefined) {
