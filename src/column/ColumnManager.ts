@@ -234,16 +234,21 @@ export default class ColumnManager extends EventHandler {
       let range = this.rangeList[index];
       const temp = [];
       if (range === undefined) {
-
         range = this.rangeList[this.rangeList.length - 1];
       }
+
+      let minSizes = this.visManager.computeMinHeight(col);
       for (const r of range) {
         const view = await col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
+      const minRange = Math.min(...temp);
+      const minSize = Math.min(...minSizes);
+      const scale = minSize / minRange;
+
       // console.log(temp)
-      const min = temp.map((d) => col.minHeight * d);
-      const max = temp.map((d) => col.maxHeight * d);
+      const min = temp.map((d) => scale * d);
+      const max = temp.map((d) => col.maxHeight * d);//TODO this is not true if we have e.g. just 1 - 5 items in multiform
       minHeights.push(min);
       maxHeights.push(max);
       totalMax = d3.max([totalMax, d3.sum(max)]);
@@ -251,7 +256,7 @@ export default class ColumnManager extends EventHandler {
       index = index + 1;
     }
 
-    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+
     minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMin]);
       return d.map((e) => minScale(e));
@@ -266,7 +271,7 @@ export default class ColumnManager extends EventHandler {
       return d.map((e) => nodeHeightScale(e));
     });
 
-
+    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     if (checkStringCol.length > 0 && totalMax > height) {
       return minHeights;
     } else if (checkStringCol.length > 0 && totalMax < totalMin) {

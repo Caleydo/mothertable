@@ -33,6 +33,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       all: {
         width: $body.property('clientWidth'),
         heightTo: $body.property('clientHeight'),
+        sort: this.sortCriteria
       }
     };
   }
