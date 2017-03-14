@@ -234,10 +234,14 @@ export default class VisManager {
                   visId = 'list';
                   break;
                 case VALUE_TYPE_INT || VALUE_TYPE_REAL:
-                  visId = 'barplot';
+                  if(minPreferredSize[0] > width){
+                      visId = 'phovea-vis-heatmap1d';
+                  }
                   break;
                 case VALUE_TYPE_CATEGORICAL:
-                    visId = 'phovea-vis-mosaic';
+                    if(minPreferredSize[1] > height){
+                      visId = 'phovea-vis-mosaic';
+                    }
                   break;
                 default:
                   visId = 'table';
