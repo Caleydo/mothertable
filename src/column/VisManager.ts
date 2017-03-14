@@ -8,8 +8,7 @@ import {IMotherTableType, AnyColumn} from './ColumnManager';
 import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   VALUE_TYPE_STRING
-} from '../../../phovea_core/src/datatype';
-import AColumn from './AColumn';
+} from 'phovea_core/src/datatype';
 
 
 export interface VisOptions {
