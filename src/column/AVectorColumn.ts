@@ -11,8 +11,6 @@ import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {VALUE_TYPE_INT, VALUE_TYPE_REAL} from 'phovea_core/src/datatype';
-import NumberColumn from "./NumberColumn";
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -88,8 +86,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   async updateMultiForms(idRanges) {
-
-    // this.updateSortIcon();
+    this.updateSortIcon();
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
     const v: any = await this.data.data();

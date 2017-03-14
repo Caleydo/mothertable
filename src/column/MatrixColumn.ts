@@ -123,12 +123,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       colRange = (await this.calculateDefaultRange());
     }
     for (const r of idRanges) {
-      const li = this.body.append('li').classed('multiformList', true);
+      const multiformDivs = this.body.append('div').classed('multiformList', true);
       let rowView = await this.data.idView(r);
       rowView = (<INumericalMatrix>rowView).t;
       let colView = await rowView.idView(colRange);
       colView = (<INumericalMatrix>colView).t;
-      const m = new MultiForm(colView, <HTMLElement>li.node(), this.multiFormParams());
+      const m = new MultiForm(colView, <HTMLElement>multiformDivs.node(), this.multiFormParams());
 
       this.multiformList.push(m);
     }
