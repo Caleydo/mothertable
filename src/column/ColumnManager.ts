@@ -64,8 +64,6 @@ export default class ColumnManager extends EventHandler {
 
     $('.columnList', this.node) // jquery
       .sortable({handle: '.columnHeader', axis: 'x'});
-    
-    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
   }
 
   private attachListener() {
@@ -263,7 +261,7 @@ export default class ColumnManager extends EventHandler {
         const view = await col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
-      
+
       const minRange = Math.min(...temp);
       const minSize = Math.min(...minSizes);
       const scale = minSize / minRange;
