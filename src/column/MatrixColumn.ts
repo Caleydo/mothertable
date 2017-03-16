@@ -17,7 +17,6 @@ import VisManager from './VisManager';
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
-  static readonly EVENT_COLUMN_ADDED = 'added';
 
   minWidth: number = 150;
   maxWidth: number = 300;
@@ -150,7 +149,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     const col = createColumn(data, this.orientation, <HTMLElement>this.$node.node());
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     this.columns.push(col);
-    this.fire(MatrixColumn.EVENT_COLUMN_ADDED, col);
     this.relayout();
   }
 

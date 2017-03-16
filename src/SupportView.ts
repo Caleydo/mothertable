@@ -3,7 +3,6 @@
  */
 
 import IDType from 'phovea_core/src/idtype/IDType';
-import {ICategoricalVector, INumericalVector} from 'phovea_core/src/vector';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
@@ -22,7 +21,7 @@ import AColumn from './column/AColumn';
 
 export default class SupportView extends EventHandler {
 
-  static EVENT_DATASET_ADDED = 'added';
+  static EVENT_DATASETS_ADDED = 'datasetAdded';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
   private static readonly HASH_FILTER_DELIMITER = ',';
@@ -30,7 +29,7 @@ export default class SupportView extends EventHandler {
   node: HTMLElement;
 
   private filterManager: FilterManager;
-  private _matrixData;
+  private _matrixData: Map<string, INumericalMatrix> = new Map();
   private datasets: IDataType[];
 
   constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
@@ -78,13 +77,16 @@ export default class SupportView extends EventHandler {
 
   private addInitialFilters() {
     if (hash.has(this.idType.id)) {
-      hash.getProp(this.idType.id)
+      const datasets = hash.getProp(this.idType.id)
         .split(SupportView.HASH_FILTER_DELIMITER)
         .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])
         .filter((data) => data !== undefined)
-        .forEach((data) => {
+        .map((data) => {
           this.addDataset(data);
+          return data;
         });
+
+      this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
   }
 
@@ -105,8 +107,13 @@ export default class SupportView extends EventHandler {
     this.filterManager.primarySortColumn(sortColdata);
   }
 
-  get matrixData() {
-    return this._matrixData;
+  /**
+   * Returns the matrix data for a given dataset id
+   * @param datasetId
+   * @returns {undefined|INumericalMatrix}
+   */
+  getMatrixData(datasetId:string):INumericalMatrix {
+    return this._matrixData.get(datasetId);
   }
 
   public remove(data: IDataType) {
@@ -145,7 +152,11 @@ export default class SupportView extends EventHandler {
         return false;
       }
       // -1 because of empty option
-      this.addDataset(this.datasets[index - 1]);
+      const data = this.datasets[index - 1];
+
+      this.addDataset(data);
+      this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
+
       this.updateURLHash();
       // reset selection
       select.selectedIndex = 0;
@@ -187,10 +198,9 @@ export default class SupportView extends EventHandler {
     if (isFilterAble(data) && !this.filterManager.contains(<IFilterAbleType>data)) {
       this.filterManager.push(<IFilterAbleType>data);
     }
-
-    this._matrixData = data;
-
-    this.fire(SupportView.EVENT_DATASET_ADDED, data);
+    if(data.desc.type === AColumn.DATATYPE.matrix) {
+      this._matrixData.set(data.desc.id, <INumericalMatrix>data);
+    }
   }
 
 }
