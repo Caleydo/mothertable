@@ -12,10 +12,12 @@ import {EventHandler} from 'phovea_core/src/event';
 import FilterManager from './filter/FilterManager';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
+import {asVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
+import AColumn from "./column/AColumn";
 
 
 export default class SupportView extends EventHandler {
@@ -51,6 +53,19 @@ export default class SupportView extends EventHandler {
   private async loadDatasets() {
     this.datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+    if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
+      const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
+      if (vectorsOnly.length > 0) {
+        const idStrings = await (<any>vectorsOnly[0]).names();
+        const idVector = asVector(idStrings, idStrings, {
+          name: 'IDS',
+          idtype: `${this.idType}`
+        });
+        this.datasets.push(idVector);
+      }
+
+    }
+
   }
 
   private setupFilterManager() {
