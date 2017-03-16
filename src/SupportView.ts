@@ -17,7 +17,7 @@ import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
-import AColumn from "./column/AColumn";
+import AColumn from './column/AColumn';
 
 
 export default class SupportView extends EventHandler {
