@@ -3,7 +3,6 @@
  */
 
 import IDType from 'phovea_core/src/idtype/IDType';
-import {ICategoricalVector, INumericalVector} from 'phovea_core/src/vector';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
@@ -17,7 +16,6 @@ import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
 import AColumn from './column/AColumn';
-import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 
 
 export default class SupportView extends EventHandler {
