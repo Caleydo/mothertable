@@ -17,6 +17,7 @@ import {IAnyVector} from 'phovea_core/src/vector';
 import {randomId} from 'phovea_core/src/index';
 import Range from 'phovea_core/src/range/Range';
 import {hash} from 'phovea_core/src/index';
+import {IDataType} from 'phovea_core/src/datatype';
 
 /**
  * The main class for the App app
@@ -167,7 +168,7 @@ export default class App {
         if (data.desc.type === AColumn.DATATYPE.matrix) {
           const otherIdtype: IDType = this.findType(data, idtype.id);
           this.triggerMatrix();
-          this.newSupportManger(otherIdtype);
+          this.newSupportManger(data, otherIdtype);
         }
 
         return promise;
@@ -223,7 +224,7 @@ export default class App {
   }
 
 
-  private newSupportManger(otherIdtype: IDType) {
+  private newSupportManger(data: IDataType, otherIdtype: IDType) {
 
     // this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
 
@@ -232,7 +233,7 @@ export default class App {
     const matrixSupportView = new SupportView(otherIdtype, node, id);
     this.supportView.push(matrixSupportView);
 
-    const m = this.supportView[0].matrixData;
+    const m = this.supportView[0].getMatrixData(data.desc.id);
     const matrixnode = <HTMLElement>node.querySelector(`.${otherIdtype.id}.filter-manager`);
     // d3.select(node).select(`.${otherIdtype.id}.filter-manager`);
     new MatrixFilter(m.t, matrixnode);

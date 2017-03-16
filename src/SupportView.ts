@@ -17,6 +17,7 @@ import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
 import AColumn from './column/AColumn';
+import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 
 
 export default class SupportView extends EventHandler {
@@ -29,7 +30,7 @@ export default class SupportView extends EventHandler {
   node: HTMLElement;
 
   private filterManager: FilterManager;
-  private _matrixData;
+  private _matrixData: Map<string, INumericalMatrix> = new Map();
   private datasets: IDataType[];
 
   constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
@@ -96,8 +97,13 @@ export default class SupportView extends EventHandler {
     this.filterManager.primarySortColumn(sortColdata);
   }
 
-  get matrixData() {
-    return this._matrixData;
+  /**
+   * Returns the matrix data for a given dataset id
+   * @param datasetId
+   * @returns {undefined|INumericalMatrix}
+   */
+  getMatrixData(datasetId:string):INumericalMatrix {
+    return this._matrixData.get(datasetId);
   }
 
   public remove(data: IDataType) {
@@ -183,7 +189,7 @@ export default class SupportView extends EventHandler {
       this.filterManager.push(<IFilterAbleType>data);
     }
     if(data.desc.type === AColumn.DATATYPE.matrix) {
-      this._matrixData = data;
+      this._matrixData.set(data.desc.id, <INumericalMatrix>data);
     }
   }
 
