@@ -58,7 +58,7 @@ export default class SupportView extends EventHandler {
       if (vectorsOnly.length > 0) {
         const idStrings = await (<IAnyVector>vectorsOnly[0]).names();
         const idVector = asVector(idStrings, idStrings, {
-          name: 'IDS',
+          name: 'Sample',
           idtype: `${this.idType}`
         });
         this.datasets.push(idVector);
