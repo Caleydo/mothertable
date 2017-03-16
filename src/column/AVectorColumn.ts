@@ -85,18 +85,19 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  async updateMultiForms(idRanges) {
+  async updateMultiForms(idRanges: Range[]) {
+    const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     this.updateSortIcon();
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
-    const v: any = await this.data.data();
     const domain = d3.extent(v);
     for (const r of idRanges) {
       const multiformdivs = this.body.append('div').classed('multiformList', true);
       const $header = multiformdivs.append('div').classed('vislist', true);
-      this.body.selectAll('.multiformList').on('mouseover', function () {
-        d3.select(this).select('.vislist').style('display', 'block');
-      })
+      this.body.selectAll('.multiformList')
+        .on('mouseover', function () {
+          d3.select(this).select('.vislist').style('display', 'block');
+        })
         .on('mouseleave', function () {
           d3.select(this).select('.vislist').style('display', 'none');
         });

@@ -21,17 +21,12 @@ export const SORT = {
 
 export default class SortEventHandler extends EventHandler {
 
-
   private sortCriteria: string;
-  private columns: AnyColumn[];
 
-  constructor(cols: AnyColumn[]) {
+  constructor() {
     super();
-    this.columns = cols;
     //this.sortCriteria = sortCriteria;
     //this.sortMe();
-
-
   }
 
   /**
@@ -72,18 +67,18 @@ export default class SortEventHandler extends EventHandler {
 
   /**
    *
-   * @param col Column Data {IVector}
-   * @returns {Promise<Range>}
+   * @param columns
+   * @returns {Promise<Range[][]>}
    */
-  async sortByMe(): Promise<Range[][]> {
-    const d = await this.columns[0].data.idView(this.columns[0].rangeView);
+  async sortColumns(columns): Promise<Range[][]> {
+    const d = await columns[0].data.idView(columns[0].rangeView);
     let range: any = [await d.ids()];
-    const initialColType = this.columns[0].data.desc.value.type;
+    const initialColType = columns[0].data.desc.value.type;
     const rangeForMultiform = [];
-    let dataElementsPerCol = [await (<IAnyVector>this.columns[0].data).length];
+    let dataElementsPerCol = [await (<IAnyVector>columns[0].data).length];
     let count = 0;
     let columnIndexForTie = NaN;
-    this.columns.some((val, index) => {
+    columns.some((val, index) => {
       if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
         columnIndexForTie = index;
       }
@@ -91,7 +86,7 @@ export default class SortEventHandler extends EventHandler {
     });
 
     //Iterate through all the columns
-    for (const col of this.columns) {
+    for (const col of columns) {
       const nextColumnData = (<any>col).data;
       const sortCriteria = (<any>col).sortCriteria;
       const rangeOfView = [];
@@ -113,15 +108,13 @@ export default class SortEventHandler extends EventHandler {
 
         // first column is categorical -> the next column will be stratified by the number of categories
       } else if (count === 0 && initialColType === VALUE_TYPE_CATEGORICAL) {
-        const temp = range.map((d) => d.dim(0).length);
-        dataElementsPerCol = temp;
+        dataElementsPerCol = range.map((d) => d.dim(0).length);
         rangeForMultiform.push([await (<any>col).data.length]);
 
         // stratify other categorical columns until it reaches a tie (numerical or string column)
       } else if (count < columnIndexForTie) {
         rangeForMultiform.push(dataElementsPerCol);
-        const temp = range.map((d) => (d.dim(0).length));
-        dataElementsPerCol = temp;
+        dataElementsPerCol = range.map((d) => (d.dim(0).length));
 
         // after tie (numerical or string column) use the preceeding stratification
       } else {
@@ -300,7 +293,7 @@ export function prepareRangeFromList(sortedRange: number[], stratifiedArr: numbe
  * @param arr
  * @returns {Range[][]} Returns the range object from list
  */
-function makeRangeFromList(arr: number[][][]) {
+function makeRangeFromList(arr: number[][][]):Range[][] {
   const rangeObject = arr.map((d) => {
     return d.map((e) => {
       const r = new Range();

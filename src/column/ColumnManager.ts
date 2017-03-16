@@ -39,9 +39,11 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
-  private columnsHierarchy: AnyColumn[] = [];
   private filtersHierarchy = [];
-  private rangeNow: Range;
+  /**
+   * Range from the first column
+   */
+  private firstColumnRange: Range;
   private rangeList = [];
   private colsWithRange = new Map();
 
@@ -75,16 +77,21 @@ export default class ColumnManager extends EventHandler {
     items.forEach((d) => d.remove());
   }
 
+  /**
+   * Adding a new column from given data
+   * Called when adding a new filter from dropdown or from hash
+   *
+   * @param data
+   * @returns {Promise<void>}
+   */
   async push(data: IMotherTableType) {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
     const col = createColumn(data, this.orientation, this.node);
 
-    if (this.rangeNow === undefined) {
-
-      this.rangeNow = await data.ids();
-
+    if (this.firstColumnRange === undefined) {
+      this.firstColumnRange = await data.ids();
     }
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
@@ -93,7 +100,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
     this.updateFiltersHierarchy(col);
-    this.updateSort(null);
+    this.updateSort();
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
     this.relayout();
   }
@@ -142,28 +149,39 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  async updateSort(evt: any) {
+  /**
+   * Sorting the ranges based on the filter hierarchy
+   */
+  async updateSort() {
+    // copy the array at this time and continue working with the available columns right now
+    // the filterHierarchy might change during the `await` and thus throw errors when splitting the multiforms
+    const cols = this.filtersHierarchy.slice();
 
-    const cols = this.filtersHierarchy;
-    if (cols.length < 1) {
-      return this.updateColumns([[this.rangeNow]]);
+    // special handling if matrix is added as first column
+    if (cols.length === 0) {
+      this.rangeList = [[this.firstColumnRange]];
+      this.updateColumns(cols, this.rangeList);
+      return;
     }
-    const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
-    this.rangeList = await s.sortByMe();
-    cols.forEach((col, index) => this.colsWithRange.set(col.data.desc.id, this.rangeList[index]));
-    // console.log(cols, this.rangeList)
-    this.updateColumns(this.rangeList);
 
+    // The sort object is created on the fly and destroyed after it exits this method
+    const s = new SortEventHandler();
+    this.rangeList = await s.sortColumns(cols);
+
+    cols.forEach((col, index) => {
+      this.colsWithRange.set(col.data.desc.id, this.rangeList[index]);
+    });
+
+    this.updateColumns(cols, this.rangeList);
   }
 
   async filterData(idRange: Range) {
     for (const col of this.columns) {
       col.rangeView = await idRange;
       col.dataView = await col.data.idView(idRange);
-
     }
-    this.updateSort(null);
 
+    this.updateSort();
   }
 
 
@@ -177,9 +195,9 @@ export default class ColumnManager extends EventHandler {
 
   /**
    * prepare column data same as sort hierarchy
+   * after dragging the filter -> update sort hierachy
    * @param filterList
    */
-
   updateSortHierarchy(filterList: AnyColumn[]) {
     this.filtersHierarchy = [];
     filterList.forEach((d) => {
@@ -189,24 +207,25 @@ export default class ColumnManager extends EventHandler {
       this.filtersHierarchy.push(this.columns[index]);
     });
 
-    this.updateSort(null);
+    this.updateSort();
   }
 
   onLockChange(event: any, lock: any) {
-    //console.log(lock);
     this.relayout();
   }
 
 
-  async updateColumns(idRange: Range[][]) {
-    const vectorsOnly = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+  async updateColumns(columns:AnyColumn[], idRange: Range[][]) {
+    const vectorsOnly = columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorsOnly.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
       col.updateMultiForms(r);
-
     });
-    const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
+
+    // handle matrix column as last range
+    const matrixCols = columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
+
     this.relayout();
   }
 
@@ -227,9 +246,9 @@ export default class ColumnManager extends EventHandler {
         .style('margin-top', (verticalMargin.top - margin.top) + 'px')
         .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
         .style('width', colWidths[i] + 'px');
-      col.multiformList.map((multiform, index) => {
-        scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
 
+      col.multiformList.forEach((multiform, index) => {
+        scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
     });
   }
@@ -240,25 +259,31 @@ export default class ColumnManager extends EventHandler {
     let index = 0;
     let totalMin = 0;
     let totalMax = 0;
+
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.colsWithRange.get(col.data.desc.id);
       const temp = [];
-      if (range === undefined) {
 
+      if (range === undefined) {
         range = this.rangeList[this.rangeList.length - 1];
       }
+
       for (const r of range) {
         const view = await col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
+
       // console.log(temp)
       const min = temp.map((d) => col.minHeight * d);
       const max = temp.map((d) => col.maxHeight * d);
+
       minHeights.push(min);
       maxHeights.push(max);
+
       totalMax = d3.max([totalMax, d3.sum(max)]);
       totalMin = d3.max([totalMin, d3.sum(min)]);
+
       index = index + 1;
     }
 
@@ -272,6 +297,7 @@ export default class ColumnManager extends EventHandler {
       const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
       return d.map((e) => maxScale(e));
     });
+
     const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
     const flexHeights = minHeights.map((d, i) => {
       return d.map((e) => nodeHeightScale(e));
