@@ -56,16 +56,14 @@ export default class SupportView extends EventHandler {
     if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
       const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
       if (vectorsOnly.length > 0) {
-        const idStrings = await (<any>vectorsOnly[0]).names();
+        const idStrings = await (<IAnyVector>vectorsOnly[0]).names();
         const idVector = asVector(idStrings, idStrings, {
           name: 'IDS',
           idtype: `${this.idType}`
         });
         this.datasets.push(idVector);
       }
-
     }
-
   }
 
   private setupFilterManager() {
