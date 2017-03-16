@@ -52,23 +52,30 @@ export default class ColumnManager extends EventHandler {
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
 
-    const colList = document.createElement('ol'); // Holder for column list
-    colList.classList.add('columnList');
-    node.appendChild(colList);
-    this.node.classList.add('column-manager');
-    this.drag();
-    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
+    this.build();
+    this.attachListener();
+  }
 
+  private build() {
+    d3.select(this.node)
+      .classed('column-manager', true)
+      .append('ol')
+      .classed('columnList', true);
+
+    $('.columnList', this.node) // jquery
+      .sortable({handle: '.columnHeader', axis: 'x'});
+  }
+
+  private attachListener() {
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
+      const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+      col[0].sortCriteria = sortData.sortMethod;
+      this.updateSortHierarchy(this.filtersHierarchy);
+    });
   }
 
   get length() {
     return this.columns.length;
-  }
-
-  sortByFilterIcon(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
-    const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
-    col[0].sortCriteria = sortData.sortMethod;
-    this.updateSortHierarchy(this.filtersHierarchy);
   }
 
   destroy() {
@@ -138,12 +145,6 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  private drag() {
-
-    $('.columnList', this.node).sortable({handle: '.columnHeader', axis: 'x'});
-
-  }
-
   updatePrimarySortByCol(evt: any, sortData) {
     this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   }
@@ -195,17 +196,16 @@ export default class ColumnManager extends EventHandler {
 
   /**
    * prepare column data same as sort hierarchy
-   * after dragging the filter -> update sort hierachy
+   * after dragging the filter -> update sort hierarchy
    * @param filterList
    */
   updateSortHierarchy(filterList: AnyColumn[]) {
-    this.filtersHierarchy = [];
-    filterList.forEach((d) => {
-      const index = this.columns.map(function (e) {
-        return e.data.desc.id;
-      }).indexOf(d.data.desc.id);
-      this.filtersHierarchy.push(this.columns[index]);
-    });
+    const ids = this.columns.map((e) => e.data.desc.id);
+    this.filtersHierarchy = filterList
+      .map((d) => {
+        const index = ids.indexOf(d.data.desc.id);
+        return this.columns[index];
+      });
 
     this.updateSort();
   }
@@ -216,8 +216,8 @@ export default class ColumnManager extends EventHandler {
 
 
   async updateColumns(columns:AnyColumn[], idRange: Range[][]) {
-    const vectorsOnly = columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    vectorsOnly.forEach((col) => {
+    const vectorCols = columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+    vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
       col.updateMultiForms(r);
     });
