@@ -70,6 +70,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
 
   async updateMatrixCol(colRange) {
+    // override in MatrixColumn
     return colRange;
   }
 
@@ -119,6 +120,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   async updateMultiForms(rowRanges: Range[]) {
+    // hook
   }
 
   protected lockColumnWidth($lockButton) {

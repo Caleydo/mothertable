@@ -36,18 +36,16 @@ export declare type IMotherTableType = IStringVector|ICategoricalVector|INumeric
 export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
-  static readonly EVENT_COLUMN_ADDED = 'added';
 
   readonly columns: AnyColumn[] = [];
-  private filtersHierarchy = [];
-  /**
-   * Range from the first column
-   */
+  private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
   private rangeList = [];
   private colsWithRange = new Map();
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
+  private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+  private onLockChange = (event: IEvent) => this.relayout();
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
@@ -70,7 +68,7 @@ export default class ColumnManager extends EventHandler {
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
       col[0].sortCriteria = sortData.sortMethod;
-      this.updateSortHierarchy(this.filtersHierarchy);
+      this.updateSort();
     });
   }
 
@@ -89,7 +87,7 @@ export default class ColumnManager extends EventHandler {
    * Called when adding a new filter from dropdown or from hash
    *
    * @param data
-   * @returns {Promise<void>}
+   * @returns {Promise<AnyColumn>}
    */
   async push(data: IMotherTableType) {
     // if (data.idtypes[0] !== this.idType) {
@@ -102,23 +100,26 @@ export default class ColumnManager extends EventHandler {
     }
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
-    col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
+    col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
+    col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
 
     this.columns.push(col);
-    this.updateFiltersHierarchy(col);
-    this.updateSort();
-    this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    this.relayout();
-  }
 
+    // add column to hierarchy if it isn't a matrix and already added
+    const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
+    if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length === 0) {
+      this.filtersHierarchy.push(col);
+    }
+
+    return col;
+  }
 
   remove(col: AnyColumn) {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.$node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
-    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
+    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
+    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.relayout();
@@ -145,8 +146,27 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  updatePrimarySortByCol(evt: any, sortData) {
-    this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+  /**
+   * Apply a filtered range to all columns
+   * @param idRange
+   * @returns {Promise<void>}
+   */
+  async filterData(idRange: Range) {
+    for (const col of this.columns) {
+      col.rangeView = idRange;
+      col.dataView = await col.data.idView(idRange);
+    }
+
+    this.updateSort();
+  }
+
+  /**
+   * Find corresponding columns for given list of filters and update the sorted hierarchy
+   * @param filterList
+   */
+  mapFiltersAndSort(filterList: AnyColumn[]) {
+    this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
+    this.updateSort();
   }
 
 
@@ -154,14 +174,12 @@ export default class ColumnManager extends EventHandler {
    * Sorting the ranges based on the filter hierarchy
    */
   async updateSort() {
-    // copy the array at this time and continue working with the available columns right now
-    // the filterHierarchy might change during the `await` and thus throw errors when splitting the multiforms
-    const cols = this.filtersHierarchy.slice();
+    const cols = this.filtersHierarchy;
 
     // special handling if matrix is added as first column
     if (cols.length === 0) {
       this.rangeList = [[this.firstColumnRange]];
-      this.updateColumns(cols, this.rangeList);
+      this.updateColumns(this.rangeList);
       return;
     }
 
@@ -173,57 +191,23 @@ export default class ColumnManager extends EventHandler {
       this.colsWithRange.set(col.data.desc.id, this.rangeList[index]);
     });
 
-    this.updateColumns(cols, this.rangeList);
+    this.updateColumns(this.rangeList);
   }
-
-  async filterData(idRange: Range) {
-    for (const col of this.columns) {
-      col.rangeView = await idRange;
-      col.dataView = await col.data.idView(idRange);
-    }
-
-    this.updateSort();
-  }
-
-
-  updateFiltersHierarchy(col) {
-    const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
-    if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length < 1) {
-      this.filtersHierarchy.push(col);
-    }
-  }
-
 
   /**
-   * prepare column data same as sort hierarchy
-   * after dragging the filter -> update sort hierarchy
-   * @param filterList
+   *
+   * @param idRange
+   * @returns {Promise<void>}
    */
-  updateSortHierarchy(filterList: AnyColumn[]) {
-    const ids = this.columns.map((e) => e.data.desc.id);
-    this.filtersHierarchy = filterList
-      .map((d) => {
-        const index = ids.indexOf(d.data.desc.id);
-        return this.columns[index];
-      });
-
-    this.updateSort();
-  }
-
-  onLockChange(event: any, lock: any) {
-    this.relayout();
-  }
-
-
-  async updateColumns(columns:AnyColumn[], idRange: Range[][]) {
-    const vectorCols = columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+  private async updateColumns(idRange: Range[][]) {
+    const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
       col.updateMultiForms(r);
     });
 
-    // handle matrix column as last range
-    const matrixCols = columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
+    // update matrix column with last sorted range
+    const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
 
     this.relayout();

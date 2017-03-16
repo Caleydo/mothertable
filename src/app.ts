@@ -7,7 +7,7 @@ import {select} from 'd3';
 import ColumnManager, {IMotherTableType, AnyColumn} from './column/ColumnManager';
 import SupportView from './SupportView';
 import {Range1D} from 'phovea_core/src/range';
-import {EOrientation} from './column/AColumn';
+import {EOrientation, default as AColumn} from './column/AColumn';
 import MatrixFilter from './filter/MatrixFilter';
 import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
@@ -150,37 +150,43 @@ export default class App {
     this.supportView.push(supportView);
 
     this.supportView[0].on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
-      this.manager.updateSortHierarchy(data);
+      this.manager.mapFiltersAndSort(data);
     });
-    // add to the columns if we add a dataset
-    this.supportView[0].on(SupportView.EVENT_DATASET_ADDED, (evt: any, data: IMotherTableType) => {
-      if (this.dataSize === undefined) {
-        this.dataSize = {total: data.length, filtered: data.length};
-        this.previewData(this.dataSize, idtype.id, node);
-        this.dataSize = {total: data.length, filtered: data.length};
-      }
 
-      this.manager.push(data);
-      const checkMatrixType = data.desc.type;
-      if (checkMatrixType === 'matrix') {
-        const otherIdtype: IDType = this.findType(data, idtype.id);
-        this.triggerMatrix();
-        this.newSupportManger(otherIdtype);
-      }
+    // add columns if we add one or multiple datasets
+    this.supportView[0].on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+      // first push all the new columns ...
+      const addedColumnsPromise = datasets.map((data) => {
+        if (this.dataSize === undefined) {
+          this.dataSize = {total: data.length, filtered: data.length};
+          this.previewData(this.dataSize, idtype.id, node);
+        }
 
+        const promise = this.manager.push(data);
+
+        if (data.desc.type === AColumn.DATATYPE.matrix) {
+          const otherIdtype: IDType = this.findType(data, idtype.id);
+          this.triggerMatrix();
+          this.newSupportManger(otherIdtype);
+        }
+
+        return promise;
+      });
+      // ... when all columns are pushed -> sort and render them
+      Promise.all(addedColumnsPromise)
+        .then(() => {
+          this.manager.updateSort();
+        });
     });
 
 
     this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
-
       this.manager.filterData(filter);
       // this.manager.update(filter);
       this.rowRange = filter;
       this.triggerMatrix();
       this.dataSize.filtered = filter.size()[0];
       this.previewData(this.dataSize, idtype.id, node);
-
-
     });
 
     this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
@@ -232,6 +238,7 @@ export default class App {
     new MatrixFilter(m.t, matrixnode);
 
     this.previewData(this.dataSize, otherIdtype.id, node);
+
     matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       // this.manager.filterData(this.rowRange);
       this.triggerMatrix(filter, matrixSupportView.id);
