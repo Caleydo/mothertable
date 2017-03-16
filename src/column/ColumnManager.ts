@@ -29,6 +29,7 @@ import * as d3 from 'd3';
 import min = d3.min;
 import {scaleTo} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
+import VisManager from './VisManager';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -41,6 +42,7 @@ export default class ColumnManager extends EventHandler {
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
   private rangeList = [];
+  private visManager: VisManager;
   private colsWithRange = new Map();
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -49,12 +51,12 @@ export default class ColumnManager extends EventHandler {
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
     super();
-
     this.build();
     this.attachListener();
   }
 
   private build() {
+    this.visManager = new VisManager();
     d3.select(this.node)
       .classed('column-manager', true)
       .append('ol')
@@ -62,6 +64,8 @@ export default class ColumnManager extends EventHandler {
 
     $('.columnList', this.node) // jquery
       .sortable({handle: '.columnHeader', axis: 'x'});
+    
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
   }
 
   private attachListener() {
@@ -232,6 +236,7 @@ export default class ColumnManager extends EventHandler {
         .style('width', colWidths[i] + 'px');
 
       col.multiformList.forEach((multiform, index) => {
+        this.visManager.assignVis(multiform, colWidths[i], rowHeight[i][index]);
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
     });
@@ -253,14 +258,19 @@ export default class ColumnManager extends EventHandler {
         range = this.rangeList[this.rangeList.length - 1];
       }
 
+      let minSizes = this.visManager.computeMinHeight(col);
       for (const r of range) {
         const view = await col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
+      
+      const minRange = Math.min(...temp);
+      const minSize = Math.min(...minSizes);
+      const scale = minSize / minRange;
 
       // console.log(temp)
-      const min = temp.map((d) => col.minHeight * d);
-      const max = temp.map((d) => col.maxHeight * d);
+      const min = temp.map((d) => scale * d);
+      const max = temp.map((d) => col.maxHeight * d);//TODO this is not true if we have e.g. just 1 - 5 items in multiform
 
       minHeights.push(min);
       maxHeights.push(max);
@@ -271,7 +281,7 @@ export default class ColumnManager extends EventHandler {
       index = index + 1;
     }
 
-    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
+
     minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMin]);
       return d.map((e) => minScale(e));
@@ -287,7 +297,7 @@ export default class ColumnManager extends EventHandler {
       return d.map((e) => nodeHeightScale(e));
     });
 
-
+    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     if (checkStringCol.length > 0 && totalMax > height) {
       return minHeights;
     } else if (checkStringCol.length > 0 && totalMax < totalMin) {
