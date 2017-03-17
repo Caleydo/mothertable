@@ -9,8 +9,11 @@ import Range from 'phovea_core/src/range/Range';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {SORT} from '../SortEventHandler/SortEventHandler';
 import {scaleTo} from './utils';
+import {createNode} from 'phovea_core/src/multiform/internal';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
+import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
+import VisManager from './VisManager';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -83,11 +86,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const view = await this.data.idView(idRange);
     this.dataView = view;
     //  this.replaceMultiForm(view, this.body);
-
   }
 
   async updateMultiForms(idRanges) {
     this.updateSortIcon();
+    let idList: {[id : number] : Range} = {};
+    this.multiformList.forEach((m) => {
+      idList[m.id] = m.data.range;
+    });
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
     const v: any = await this.data.data();
@@ -103,12 +109,33 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         });
       const view = await this.data.idView(r);
       const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
-      m.addIconVisChooser(<HTMLElement>$header.node());
+
+     /* Object.keys(idList).forEach(l) => {
+        if(idList[l].first == r.first && idList[l].last == r.last){
+            VisManager.updateUserVis(l, m.id);
+        }
+      });*/
+
+      this.addIconVisChooser(<HTMLElement>$header.node(), m);
       this.multiformList.push(m);
     }
-
-
   }
+
+  private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm) {
+    const s = toolbar.ownerDocument.createElement('div');
+    toolbar.insertBefore(s, toolbar.firstChild);
+    const visses = multiform.visses;
+
+    visses.forEach((v) => {
+      const child = createNode(s, 'i');
+      v.iconify(child);
+      child.onclick = () => {
+        multiform.switchTo(v);
+        VisManager.setUserVis(multiform.id, v);
+      };
+    });
+  }
+
 
 
 }

@@ -107,7 +107,7 @@ export default class VisManager {
   /**
    *User selected visualization for multiform with given id
    */
-  public userSelectedVisses: {[id : number] : IVisPluginDesc} = {};
+  public static userSelectedVisses: {[id : number] : IVisPluginDesc} = {};
 
   constructor(){
     this.vissesOptions = {
@@ -122,7 +122,7 @@ export default class VisManager {
     };
   }
 
-  static getDefaultVis(columnType: string, dataType: string){
+  static getDefaultVis(columnType: string, dataType: string) {
     switch(columnType){
       case 'vector':
         switch(dataType) {
@@ -142,6 +142,14 @@ export default class VisManager {
     }
   }
 
+  static setUserVis(id:number, vis:IVisPluginDesc) {
+      VisManager.userSelectedVisses[id] = vis;
+  }
+
+  static updateUserVis(idOld:number, idNew:number) {
+      VisManager.userSelectedVisses[idNew] = VisManager.userSelectedVisses[idOld];
+  }
+
   /*
    * Compute minimum height of column depending on
    * minimal size of user-selced visualizations and
@@ -151,8 +159,8 @@ export default class VisManager {
     let minColumnHeight : number[] = [];
     col.multiformList.forEach((multiform, index)=>{
       let minHeight;
-      if(multiform.id in this.userSelectedVisses){
-       minHeight = this.minVisSize(this.userSelectedVisses[multiform.id].id, multiform.data.dim)[1];
+      if(multiform.id in VisManager.userSelectedVisses){
+       minHeight = this.minVisSize(VisManager.userSelectedVisses[multiform.id].id, multiform.data.dim)[1];
       }else{
         minHeight = Number.POSITIVE_INFINITY;
         const visses:IVisPluginDesc[] = multiform.visses;
@@ -215,8 +223,8 @@ export default class VisManager {
 
   assignVis(multiform: MultiForm, width: number, height: number) {
     const visses:IVisPluginDesc[] = multiform.visses;
-    if(multiform.id in this.userSelectedVisses){
-      multiform.switchTo(this.userSelectedVisses[multiform.id]);
+    if(multiform.id in VisManager.userSelectedVisses){
+      multiform.switchTo(VisManager.userSelectedVisses[multiform.id]);
       //TODO Scale to required size
     }else{
       const preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type);
