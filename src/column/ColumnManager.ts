@@ -30,6 +30,7 @@ import min = d3.min;
 import {scaleTo} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
+import {isNumber} from "util";
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -154,6 +155,11 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<void>}
    */
   async filterData(idRange: Range) {
+    if (isNumber(idRange.ndim) !== true || idRange.size()[0] === 0) {
+      this.columns.forEach((col) => col.updateMultiForms([idRange]));
+      return;
+    }
+
     for (const col of this.columns) {
       col.rangeView = idRange;
       col.dataView = await col.data.idView(idRange);
