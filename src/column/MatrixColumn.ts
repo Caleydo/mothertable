@@ -13,6 +13,7 @@ import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
+import AColumnManager from './AColumnManager';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
@@ -26,25 +27,23 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   multiformList = [];
 
   private $colStrat:d3.Selection<any>;
-
-  readonly columns: AnyColumn[] = [];
+  private colStratManager:AColumnManager = new AColumnManager();
 
   constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
     super(data, orientation);
     this.dataView = data;
     this.calculateDefaultRange();
     this.$node = this.build($columnParent);
-
   }
 
-  protected build($parent: d3.Selection<any>) {
-    this.$node = super.build($parent);
+  protected build($parent: d3.Selection<any>): d3.Selection<any> {
+    const $node = super.build($parent);
 
-    this.$colStrat = this.$node.select('aside')
+    this.$colStrat = $node.select('aside')
       .append('ol')
       .attr('reversed', 'reversed');
 
-    return this.$node;
+    return $node;
   }
 
   protected multiFormParams(): IMultiFormOptions {
@@ -54,12 +53,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
         color: NUMERICAL_COLOR_MAP
       }
     };
-  }
-
-  pushColStratData(data: IMotherTableType) {
-    this.$colStrat.insert('li', 'li').html(data.desc.name);
-
-    return Promise.resolve;
   }
 
   async updateMultiForms(rowRanges?:Range[], colRange?:Range) {
@@ -76,7 +69,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     }
 
     for (const r of rowRanges) {
-      const multiformDivs = this.body.append('div').classed('multiformList', true);
+      const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
       let rowView = await this.data.idView(r);
       rowView = (<INumericalMatrix>rowView).t;
@@ -84,7 +77,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       let colView = await rowView.idView(colRange);
       colView = (<INumericalMatrix>colView).t;
 
-      const m = new MultiForm(colView, <HTMLElement>multiformDivs.node(), this.multiFormParams());
+      const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
       this.multiformList.push(m);
     }
   }
@@ -95,6 +88,27 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       this.colRange = rlist(indices.dim(1));
     }
     return this.colRange;
+  }
+
+  /**
+   *
+   * @param data
+   * @returns {Promise<AnyColumn>}
+   */
+  pushColStratData(data: IMotherTableType) {
+    const col = createColumn(data, EOrientation.Vertical, this.$colStrat);
+    this.colStratManager.add(col);
+    return Promise.resolve(col);
+  }
+
+  /**
+   *
+   * @returns {Promise<void>}
+   */
+  async updateColStrats() {
+    const rangeListMap:Map<string, Range[]> = await this.colStratManager.sort();
+    console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
+    this.colStratManager.stratify(rangeListMap);
   }
 
 }

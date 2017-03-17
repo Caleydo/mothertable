@@ -2,14 +2,12 @@
  * Created by bikramkawan on 11/02/2017.
  */
 
-import {EventHandler} from 'phovea_core/src/event';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
-import {AnyColumn} from '../column/ColumnManager';
 
 
 export const SORT = {
@@ -19,12 +17,11 @@ export const SORT = {
 };
 
 
-export default class SortEventHandler extends EventHandler {
+export default class SortHandler {
 
   private sortCriteria: string;
 
   constructor() {
-    super();
     //this.sortCriteria = sortCriteria;
     //this.sortMe();
   }
@@ -71,6 +68,9 @@ export default class SortEventHandler extends EventHandler {
    * @returns {Promise<Range[][]>}
    */
   async sortColumns(columns): Promise<Range[][]> {
+    if(columns.length === 0) {
+      return [[]];
+    }
     const d = await columns[0].data.idView(columns[0].rangeView);
     let range: any = [await d.ids()];
     const initialColType = columns[0].data.desc.value.type;

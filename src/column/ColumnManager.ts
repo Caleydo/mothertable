@@ -18,7 +18,7 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import IDType from 'phovea_core/src/idtype/IDType';
-import SortEventHandler from '../SortEventHandler/SortEventHandler';
+import SortHandler from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
@@ -96,7 +96,7 @@ export default class ColumnManager extends EventHandler {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
-    const col = createColumn(data, this.orientation, this.$parent);
+    const col = createColumn(data, this.orientation, this.$node);
 
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
@@ -125,7 +125,7 @@ export default class ColumnManager extends EventHandler {
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
-    this.relayout();
+    this.updateColumns();
   }
 
   /**
@@ -194,7 +194,7 @@ export default class ColumnManager extends EventHandler {
     }
 
     // The sort object is created on the fly and destroyed after it exits this method
-    const s = new SortEventHandler();
+    const s = new SortHandler();
     this.rangeList = await s.sortColumns(cols);
 
     cols.forEach((col, index) => {
@@ -371,7 +371,7 @@ export function distributeColWidths(columns: {lockedWidth: number, minWidth: num
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
   switch (data.desc.type) {
-    case 'vector':
+    case AColumn.DATATYPE.vector:
       const v = <IStringVector|ICategoricalVector|INumericalVector>data;
       switch (v.desc.value.type) {
         case VALUE_TYPE_STRING:
@@ -384,7 +384,7 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
       }
       throw new Error('invalid vector type');
 
-    case 'matrix':
+    case AColumn.DATATYPE.matrix:
       const m = <INumericalMatrix>data;
       switch (m.desc.value.type) {
         case VALUE_TYPE_INT:

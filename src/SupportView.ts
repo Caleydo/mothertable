@@ -78,6 +78,7 @@ export default class SupportView extends EventHandler {
   private async loadDatasets() {
     this.datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+
     if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
       const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
       if (vectorsOnly.length > 0) {

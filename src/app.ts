@@ -224,7 +224,9 @@ export default class App {
       // ... when all stratifications are pushed -> render the column and relayout
       Promise.all(promises)
         .then(() => {
-          col.updateMultiForms();
+          return Promise.all([col.updateColStrats(), col.updateMultiForms()]);
+        })
+        .then(() => {
           this.colManager.relayout();
         });
 
