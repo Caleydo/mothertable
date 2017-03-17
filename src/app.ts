@@ -3,31 +3,24 @@
  */
 
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import {select} from 'd3';
+import * as d3 from 'd3';
 import ColumnManager, {IMotherTableType, AnyColumn} from './column/ColumnManager';
 import SupportView from './SupportView';
-import {Range1D} from 'phovea_core/src/range';
 import {EOrientation, default as AColumn} from './column/AColumn';
 import MatrixFilter from './filter/MatrixFilter';
-import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
 import FilterManager from './filter/FilterManager';
 import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
-import {randomId} from 'phovea_core/src/index';
 import Range from 'phovea_core/src/range/Range';
 import {hash} from 'phovea_core/src/index';
 import {IDataType} from 'phovea_core/src/datatype';
+import {IFuelBarDataSize} from './SupportView';
+import Range1D from 'phovea_core/src/range/Range1D';
 
 /**
  * The main class for the App app
  */
-
-interface IdataSize {
-  total: number;
-  filtered: number;
-}
-
 export default class App {
 
   private readonly $node: d3.Selection<any>;
@@ -36,7 +29,7 @@ export default class App {
   private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range;
-  private dataSize: IdataSize;
+  private dataSize: IFuelBarDataSize;
 
   constructor(parent: HTMLElement) {
     this.$node = d3.select(parent);
@@ -54,7 +47,7 @@ export default class App {
       }
     }
 
-    this.buildStartSelection(select('#startSelection'));
+    this.buildStartSelection(d3.select('#startSelection'));
   }
 
   private async loadIdtypes() {
@@ -100,7 +93,7 @@ export default class App {
   private reset() {
     this.supportView[0].destroy();
     this.manager.destroy();
-    this.removePreviewData();
+    d3.selectAll('.rightPanel').remove();
     this.showSelection();
   }
 
@@ -149,9 +142,7 @@ export default class App {
     this.manager = new ColumnManager(idtype, EOrientation.Horizontal, this.$node.select('main'));
     this.manager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
-    const $supportView = this.buildSupportView(idtype);
-    //  this.node.querySelector('section.rightPanel').appendChild(node);
-    const supportView = new SupportView(idtype, $supportView, this.supportView.length);
+    const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
 
     this.supportView.push(supportView);
 
@@ -165,7 +156,7 @@ export default class App {
       const addedColumnsPromise = datasets.map((data) => {
         if (this.dataSize === undefined) {
           this.dataSize = {total: data.length, filtered: data.length};
-          this.previewData(this.dataSize, idtype.id, $supportView);
+          supportView.updateFuelBar(this.dataSize);
         }
 
         const promise = this.manager.push(data);
@@ -185,14 +176,13 @@ export default class App {
         });
     });
 
-
     this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
       this.manager.filterData(filter);
       // this.manager.update(filter);
       this.rowRange = filter;
       this.triggerMatrix();
       this.dataSize.filtered = filter.size()[0];
-      this.previewData(this.dataSize, idtype.id, $supportView);
+      supportView.updateFuelBar(this.dataSize);
     });
 
     this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
@@ -209,44 +199,21 @@ export default class App {
   }
 
 
-  private buildSupportView(idtype: IDType) {
-    const $supportView = this.$node.select('.rightPanel')
-      .append('div')
-      .classed(`support-view-${idtype.id}`, true)
-      .classed(`support-view`, true);
-
-    $supportView.append('h1')
-      .classed('idType', true)
-      .html(idtype.id.toUpperCase());
-
-    const $fuelBar = $supportView.append('div')
-      .classed(`dataPreview-${idtype.id}`, true)
-      .classed(`fuelBar`, true);
-
-    $fuelBar.append('div').classed('totalData', true);
-    $fuelBar.append('div').classed('filteredData', true);
-
-    return $supportView;
-  }
-
-
   private newSupportManger(data: IDataType, otherIdtype: IDType) {
-    const $supportView = this.buildSupportView(otherIdtype);
-    const matrixSupportView = new SupportView(otherIdtype, $supportView, this.supportView.length);
+    const matrixSupportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
     this.supportView.push(matrixSupportView);
 
     const m = this.supportView[0].getMatrixData(data.desc.id);
-    const $matrixnode = $supportView.select(`.${otherIdtype.id}.filter-manager`);
+    const $matrixnode = matrixSupportView.$node.select(`.${otherIdtype.id}.filter-manager`);
     // d3.select(node).select(`.${otherIdtype.id}.filter-manager` );
     new MatrixFilter(m.t, $matrixnode);
 
-    this.previewData(this.dataSize, otherIdtype.id, $supportView);
+    matrixSupportView.updateFuelBar(this.dataSize);
 
     matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
       this.triggerMatrix(filter, matrixSupportView.id);
-
       this.dataSize.filtered = filter.size()[0];
-      this.previewData(this.dataSize, otherIdtype.id, $supportView);
+      matrixSupportView.updateFuelBar(this.dataSize);
     });
   }
 
@@ -269,21 +236,6 @@ export default class App {
     }
 
     matrixCol[uniqueMatrix - 1].updateMultiForms(null, colRange);
-  }
-
-  private previewData(dataSize: IdataSize, idtype: string, $node: d3.Selection<any>) {
-    const availableWidth = parseFloat($node.select(`.dataPreview-${idtype}`).style('width'));
-    const total = (dataSize.total);
-    const filtered = (dataSize.filtered) || 0;
-    const totalWidth = availableWidth / total * filtered;
-    const d = $node.select(`.dataPreview-${idtype}`);
-
-    $node.select(`.dataPreview-${idtype}`).select('.totalData').style('width', `${totalWidth}px`);
-    $node.select(`.dataPreview-${idtype}`).select('.filteredData').style('width', `${availableWidth - totalWidth}px`);
-  }
-
-  private  removePreviewData() {
-    d3.selectAll('.rightPanel').remove();
   }
 
 }

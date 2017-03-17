@@ -19,6 +19,11 @@ import {hash} from 'phovea_core/src/index';
 import AColumn from './column/AColumn';
 
 
+export interface IFuelBarDataSize {
+  total: number;
+  filtered: number;
+}
+
 export default class SupportView extends EventHandler {
 
   static EVENT_DATASETS_ADDED = 'datasetAdded';
@@ -27,6 +32,7 @@ export default class SupportView extends EventHandler {
   private static readonly HASH_FILTER_DELIMITER = ',';
 
   $node: d3.Selection<any>;
+  private $fuelBar: d3.Selection<any>;
 
   private filterManager: FilterManager;
   private _matrixData: Map<string, INumericalMatrix> = new Map();
@@ -35,16 +41,33 @@ export default class SupportView extends EventHandler {
   constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
     this.build($parent);
+    this.init();
   }
 
   private get idTypeHash() {
     return this.idType.id + '_' + this.id;
   }
 
-  private async build($parent) {
-    this.$node = $parent.append('div')
-      .classed(this.idType.id, true);
+  private build($parent) {
+    const $wrapper = $parent.append('div')
+      .classed(`support-view-${this.idType.id}`, true)
+      .classed(`support-view`, true);
 
+    $wrapper.append('h1')
+      .classed('idType', true)
+      .html(this.idType.id.toUpperCase());
+
+    this.$fuelBar = $wrapper.append('div')
+      .classed(`dataPreview-${this.idType.id}`, true)
+      .classed(`fuelBar`, true);
+
+    this.$fuelBar.append('div').classed('totalData', true);
+    this.$fuelBar.append('div').classed('filteredData', true);
+
+    this.$node = $wrapper.append('div').classed(this.idType.id, true);
+  }
+
+  private async init() {
     this.setupFilterManager();
 
     await this.loadDatasets();
@@ -205,6 +228,16 @@ export default class SupportView extends EventHandler {
     if(data.desc.type === AColumn.DATATYPE.matrix) {
       this._matrixData.set(data.desc.id, <INumericalMatrix>data);
     }
+  }
+
+  public updateFuelBar(dataSize:IFuelBarDataSize) {
+    const availableWidth = parseFloat(this.$fuelBar.style('width'));
+    const total = (dataSize.total);
+    const filtered = (dataSize.filtered) || 0;
+    const totalWidth = availableWidth / total * filtered;
+
+    this.$fuelBar.select('.totalData').style('width', `${totalWidth}px`);
+    this.$fuelBar.select('.filteredData').style('width', `${availableWidth - totalWidth}px`);
   }
 
 }
