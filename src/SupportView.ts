@@ -3,7 +3,6 @@
  */
 
 import IDType from 'phovea_core/src/idtype/IDType';
-import {ICategoricalVector, INumericalVector} from 'phovea_core/src/vector';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
@@ -12,49 +11,65 @@ import {EventHandler} from 'phovea_core/src/event';
 import FilterManager from './filter/FilterManager';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
+import {asVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
+import AColumn from './column/AColumn';
 
 
 export default class SupportView extends EventHandler {
 
-  static EVENT_DATASET_ADDED = 'added';
+  static EVENT_DATASETS_ADDED = 'datasetAdded';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
   private static readonly HASH_FILTER_DELIMITER = ',';
 
-  node: HTMLElement;
+  $node: d3.Selection<any>;
 
   private filterManager: FilterManager;
-  private _matrixData;
+  private _matrixData: Map<string, INumericalMatrix> = new Map();
   private datasets: IDataType[];
 
-  constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
+  constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
-    this.build(parent);
+    this.build($parent);
   }
 
-  private async build(parent) {
-    this.node = parent.ownerDocument.createElement('div');
-    parent.appendChild(this.node);
-    this.node.classList.add(this.idType.id);
+  private get idTypeHash() {
+    return this.idType.id + '_' + this.id;
+  }
+
+  private async build($parent) {
+    this.$node = $parent.append('div')
+      .classed(this.idType.id, true);
 
     this.setupFilterManager();
 
     await this.loadDatasets();
-    this.buildSelectionBox(this.node);
+    this.buildSelectionBox(this.$node);
     this.addInitialFilters();
   }
 
   private async loadDatasets() {
     this.datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+    if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
+      const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
+      if (vectorsOnly.length > 0) {
+        const idStrings = await (<IAnyVector>vectorsOnly[0]).names();
+        const idVector = asVector(idStrings, idStrings, {
+          name: 'Sample',
+          idtype: `${this.idType}`
+        });
+        this.datasets.push(idVector);
+      }
+    }
   }
 
   private setupFilterManager() {
-    this.filterManager = new FilterManager(this.idType, this.node);
+    this.filterManager = new FilterManager(this.idType, this.$node);
     this.filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
       this.updateURLHash();
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
@@ -64,19 +79,23 @@ export default class SupportView extends EventHandler {
   }
 
   private addInitialFilters() {
-    if (hash.has(this.idType.id)) {
-      hash.getProp(this.idType.id)
+    if (hash.has(this.idTypeHash)) {
+      const datasets = hash.getProp(this.idTypeHash)
         .split(SupportView.HASH_FILTER_DELIMITER)
         .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])
         .filter((data) => data !== undefined)
-        .forEach((data) => {
+        .map((data) => {
           this.addDataset(data);
+          return data;
         });
+
+      this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
   }
 
   private updateURLHash() {
-    hash.setProp(this.idType.id,
+    // add random id to hash
+    hash.setProp(this.idTypeHash,
       this.filterManager.filters
         .map((d) => d.data.desc.name)
         .join(SupportView.HASH_FILTER_DELIMITER)
@@ -85,32 +104,38 @@ export default class SupportView extends EventHandler {
 
   destroy() {
     this.filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
-    this.node.remove();
+    this.$node.remove();
   }
 
   primarySortColumn(sortColdata) {
     this.filterManager.primarySortColumn(sortColdata);
   }
 
-  get matrixData() {
-    return this._matrixData;
+  /**
+   * Returns the matrix data for a given dataset id
+   * @param datasetId
+   * @returns {undefined|INumericalMatrix}
+   */
+  getMatrixData(datasetId:string):INumericalMatrix {
+    return this._matrixData.get(datasetId);
   }
 
   public remove(data: IDataType) {
-    if (isFilterAble(data) && this.filterManager.contains(<IFilterAbleType>data)) {
+    if (this.filterManager.contains(<IFilterAbleType>data)) {
       this.filterManager.remove(<IFilterAbleType>data);
       this.updateURLHash();
     }
   }
 
-  private buildSelectionBox(parent: HTMLElement) {
+  private buildSelectionBox($parent: d3.Selection<any>) {
 
-    parent.insertAdjacentHTML('afterbegin', `<div class="selection">
+    (<HTMLElement>$parent.node()).insertAdjacentHTML('afterbegin', `<div class="selection"> 
        <select class="form-control">
        <option value="attribute">Select Attribute</option>             
       </select>
     </div>`);
-    const select = <HTMLSelectElement>parent.querySelector('select');
+
+    const $select = $parent.select('select');
 
     this.addExplicitColors(this.datasets);
 
@@ -120,22 +145,25 @@ export default class SupportView extends EventHandler {
     // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
 
     this.datasets.forEach((d) => {
-      const option = parent.ownerDocument.createElement('option');
-      option.text = d.desc.name;
-      option.value = d.desc.id;
-      select.add(option);
+      $select.append('option')
+        .text(d.desc.name)
+        .attr('value', d.desc.id);
     });
 
-    select.addEventListener('change', (evt) => {
-      const index = select.selectedIndex;
+    $select.on('change', (evt) => {
+      const index = $select.property('selectedIndex');
       if (index === 0) { // empty selection
         return false;
       }
       // -1 because of empty option
-      this.addDataset(this.datasets[index - 1]);
+      const data = this.datasets[index - 1];
+
+      this.addDataset(data);
+      this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
+
       this.updateURLHash();
       // reset selection
-      select.selectedIndex = 0;
+      $select.property('selectedIndex', 0);
       return false;
     });
   }
@@ -171,22 +199,14 @@ export default class SupportView extends EventHandler {
   }
 
   private addDataset(data: IDataType) {
-    if (isFilterAble(data) && !this.filterManager.contains(<IFilterAbleType>data)) {
+    if (!this.filterManager.contains(<IFilterAbleType>data)) {
       this.filterManager.push(<IFilterAbleType>data);
     }
-
-    this._matrixData = data;
-
-    this.fire(SupportView.EVENT_DATASET_ADDED, data);
+    if(data.desc.type === AColumn.DATATYPE.matrix) {
+      this._matrixData.set(data.desc.id, <INumericalMatrix>data);
+    }
   }
 
-}
-
-function isFilterAble(data: IDataType) {
-  // everything except matrices can be filtered
-
-  return true;
-  //return data.desc.type !== 'matrix';
 }
 
 

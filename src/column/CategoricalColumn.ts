@@ -11,14 +11,14 @@ import VisManager from './VisManager';
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
 
-  minWidth: number = 30;
+  minWidth: number = 2;
   maxWidth: number = 200; //80
   minHeight: number = 2;
   maxHeight: number = 10;
 
-  constructor(data: ICategoricalVector, orientation: EOrientation, parent: HTMLElement) {
+  constructor(data: ICategoricalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
-    this.$node = this.build(parent);
+    this.$node = this.build($parent);
   }
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {

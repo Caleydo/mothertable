@@ -12,14 +12,14 @@ import {NUMERICAL_COLOR_MAP} from './utils';
 import VisManager from './VisManager';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
-  minWidth: number = 30;
+  minWidth: number = 2;
   maxWidth: number = 200;
   minHeight: number = 2;
   maxHeight: number = 10;
 
-  constructor(data: INumericalVector, orientation: EOrientation, parent: HTMLElement) {
+  constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
-    this.$node = this.build(parent);
+    this.$node = this.build($parent);
   }
 
   protected multiFormParams($body: d3.Selection<any>, domain?: number[]): IMultiFormOptions {

@@ -39,10 +39,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     };
   }
 
-  protected buildBody($body: d3.Selection<any>) {
-    //  this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
-  }
-
   protected buildToolbar($toolbar: d3.Selection<any>) {
     const $sortButton = $toolbar.append('button')
       .attr('class', 'fa sort fa-sort-amount-asc')
@@ -61,13 +57,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     super.buildToolbar($toolbar);
   }
 
-
-  layout(width: number, height: number) {
-
-    scaleTo(this.multiform, width, height, this.orientation);
-  }
-
-
   updateSortIcon() {
     if (this.sortCriteria === SORT.desc) {
       const s = this.$node.select('.fa.sort.fa-sort-amount-asc');
@@ -79,16 +68,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     }
   }
 
-  async update(idRange: Range) {
-    this.$node.select('main').remove();
-    this.$node.append('main');
-    //  this.multiform.destroy();
-    const view = await this.data.idView(idRange);
-    this.dataView = view;
-    //  this.replaceMultiForm(view, this.body);
-  }
-
-  async updateMultiForms(idRanges) {
+  async updateMultiForms(idRanges: Range[]) {
+    const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     this.updateSortIcon();
     let idList: {[id : number] : Range} = {};
     this.multiformList.forEach((m) => {
@@ -96,14 +77,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     });
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
-    const v: any = await this.data.data();
     const domain = d3.extent(v);
     for (const r of idRanges) {
       const multiformdivs = this.body.append('div').classed('multiformList', true);
       const $header = multiformdivs.append('div').classed('vislist', true);
-      this.body.selectAll('.multiformList').on('mouseover', function () {
-        d3.select(this).select('.vislist').style('display', 'block');
-      })
+      this.body.selectAll('.multiformList')
+        .on('mouseover', function () {
+          d3.select(this).select('.vislist').style('display', 'block');
+        })
         .on('mouseleave', function () {
           d3.select(this).select('.vislist').style('display', 'none');
         });

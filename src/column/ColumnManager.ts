@@ -30,6 +30,7 @@ import min = d3.min;
 import {scaleTo} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
+import {isNumber} from "util";
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -37,76 +38,92 @@ export declare type IMotherTableType = IStringVector|ICategoricalVector|INumeric
 export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
-  static readonly EVENT_COLUMN_ADDED = 'added';
+
+  private $node:d3.Selection<any>;
 
   readonly columns: AnyColumn[] = [];
-  private columnsHierarchy: AnyColumn[] = [];
-  private filtersHierarchy = [];
-  private rangeNow: Range;
+  private filtersHierarchy: AnyColumn[] = [];
+  private firstColumnRange: Range;
   private rangeList = [];
   private visManager: VisManager;
   private colsWithRange = new Map();
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
+  private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+  private onLockChange = (event: IEvent) => this.relayout();
 
-  constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
+  constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent:d3.Selection<any>) {
     super();
-    this.visManager = new VisManager();
-    const colList = document.createElement('ol'); // Holder for column list
-    colList.classList.add('columnList');
-    node.appendChild(colList);
-    this.node.classList.add('column-manager');
-    this.drag();
-    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
+    this.build();
+    this.attachListener();
+  }
 
+  private build() {
+    this.visManager = new VisManager();
+    this.$node = this.$parent
+      .classed('column-manager', true)
+      .append('ol')
+      .classed('columnList', true);
+
+    $('.columnList', this.$parent.node()) // jquery
+      .sortable({handle: '.columnHeader', axis: 'x'});
+  }
+
+  private attachListener() {
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
+      const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+      col[0].sortCriteria = sortData.sortMethod;
+      this.updateSort();
+    });
   }
 
   get length() {
     return this.columns.length;
   }
 
-  sortByFilterIcon(evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) {
-    const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
-    col[0].sortCriteria = sortData.sortMethod;
-    this.updateSortHierarchy(this.filtersHierarchy);
-  }
-
   destroy() {
     // delete all columns, can't remove myself, since I'm using the parent
-    const items = <HTMLElement[]>Array.from(this.node.querySelectorAll('.column'));
-    items.forEach((d) => d.remove());
+    this.$parent.selectAll('.column').remove();
   }
 
+  /**
+   * Adding a new column from given data
+   * Called when adding a new filter from dropdown or from hash
+   *
+   * @param data
+   * @returns {Promise<AnyColumn>}
+   */
   async push(data: IMotherTableType) {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
-    const col = createColumn(data, this.orientation, this.node);
+    const col = createColumn(data, this.orientation, this.$parent);
 
-    if (this.rangeNow === undefined) {
-
-      this.rangeNow = await data.ids();
-
+    if (this.firstColumnRange === undefined) {
+      this.firstColumnRange = await data.ids();
     }
 
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
-    col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
+    col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
+    col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
 
     this.columns.push(col);
-    this.updateFiltersHierarchy(col);
-    this.updateSort(null);
-    this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
-    this.relayout();
-  }
 
+    // add column to hierarchy if it isn't a matrix and already added
+    const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
+    if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length === 0) {
+      this.filtersHierarchy.push(col);
+    }
+
+    return col;
+  }
 
   remove(col: AnyColumn) {
     this.columns.splice(this.columns.indexOf(col), 1);
     col.$node.remove();
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.updatePrimarySortByCol.bind(this));
-    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange.bind(this));
+    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
+    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.relayout();
@@ -123,7 +140,7 @@ export default class ColumnManager extends EventHandler {
       return;
     }
     //move the dom element, too
-    this.node.insertBefore(col.$node.node(), this.node.childNodes[index]);
+    this.$parent.node().insertBefore(col.$node.node(), this.$parent.node().childNodes[index]);
 
     this.columns.splice(old, 1);
     if (old < index) {
@@ -133,107 +150,102 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  private drag() {
-
-    $('.columnList', this.node).sortable({handle: '.columnHeader', axis: 'x'});
-
-  }
-
-  updatePrimarySortByCol(evt: any, sortData) {
-    this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
-  }
-
-
-  async updateSort(evt: any) {
-
-    const cols = this.filtersHierarchy;
-    if (cols.length < 1) {
-      return this.updateColumns([[this.rangeNow]]);
-    }
-    const s = new SortEventHandler(cols);  // The sort object is created on the fly and destroyed after it exits this method
-    this.rangeList = await s.sortByMe();
-    cols.forEach((col, index) => this.colsWithRange.set(col.data.desc.id, this.rangeList[index]));
-    // console.log(cols, this.rangeList)
-    this.updateColumns(this.rangeList);
-
-  }
-
+  /**
+   * Apply a filtered range to all columns
+   * @param idRange
+   * @returns {Promise<void>}
+   */
   async filterData(idRange: Range) {
-    for (const col of this.columns) {
-      col.rangeView = await idRange;
-      col.dataView = await col.data.idView(idRange);
-
+    if (isNumber(idRange.ndim) !== true || idRange.size()[0] === 0) {
+      this.columns.forEach((col) => col.updateMultiForms([idRange]));
+      return;
     }
-    this.updateSort(null);
 
+    for (const col of this.columns) {
+      col.rangeView = idRange;
+      col.dataView = await col.data.idView(idRange);
+    }
+
+    this.updateSort();
   }
 
-
-  updateFiltersHierarchy(col) {
-    const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
-    if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length < 1) {
-      this.filtersHierarchy.push(col);
-    }
+  /**
+   * Find corresponding columns for given list of filters and update the sorted hierarchy
+   * @param filterList
+   */
+  mapFiltersAndSort(filterList: AnyColumn[]) {
+    this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
+    this.updateSort();
   }
 
 
   /**
-   * prepare column data same as sort hierarchy
-   * @param filterList
+   * Sorting the ranges based on the filter hierarchy
    */
+  async updateSort() {
+    const cols = this.filtersHierarchy;
 
-  updateSortHierarchy(filterList: AnyColumn[]) {
-    this.filtersHierarchy = [];
-    filterList.forEach((d) => {
-      const index = this.columns.map(function (e) {
-        return e.data.desc.id;
-      }).indexOf(d.data.desc.id);
-      this.filtersHierarchy.push(this.columns[index]);
+    // special handling if matrix is added as first column
+    if (cols.length === 0) {
+      this.rangeList = [[this.firstColumnRange]];
+      this.updateColumns(this.rangeList);
+      return;
+    }
+
+    // The sort object is created on the fly and destroyed after it exits this method
+    const s = new SortEventHandler();
+    this.rangeList = await s.sortColumns(cols);
+
+    cols.forEach((col, index) => {
+      this.colsWithRange.set(col.data.desc.id, this.rangeList[index]);
     });
 
-    this.updateSort(null);
+    this.updateColumns(this.rangeList);
   }
 
-  onLockChange(event: any, lock: any) {
-    //console.log(lock);
-    this.relayout();
-  }
-
-
-  async updateColumns(idRange: Range[][]) {
-    const vectorsOnly = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    vectorsOnly.forEach((col) => {
+  /**
+   *
+   * @param idRange
+   * @returns {Promise<void>}
+   */
+  private async updateColumns(idRange: Range[][]) {
+    const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+    vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
       col.updateMultiForms(r);
-
     });
+
+    // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
+
     this.relayout();
   }
 
   async relayout() {
     await resolveIn(10);
-    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
+    this.relayoutColStrats();
+    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight') - c.$node.select('aside').property('clientHeight')));
     const rowHeight = await this.calColHeight(height);
-    const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
-    // compute margin for the column stratifications (from @mijar)
-    const verticalMargin = this.columns.reduce((prev, c) => {
-      const act = c.getVerticalMargin();
-      return {top: Math.max(prev.top, act.top), bottom: Math.max(prev.bottom, act.bottom)};
-    }, {top: 0, bottom: 0});
+    const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
     this.columns.forEach((col, i) => {
-      const margin = col.getVerticalMargin();
-      col.$node
-        .style('margin-top', (verticalMargin.top - margin.top) + 'px')
-        .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
-        .style('width', colWidths[i] + 'px');
-      col.multiformList.map((multiform, index) => {
+      col.$node.style('width', colWidths[i] + 'px');
+
+      col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform, colWidths[i], rowHeight[i][index]);
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
     });
+  }
+
+  /**
+   * Calculate the maximum height of all column stratification areas and set it for every column
+   */
+  private relayoutColStrats() {
+    const $strats = this.$node.selectAll('aside');
+    const maxHeight = Math.max(...$strats[0].map((d:HTMLElement) => d.clientHeight));
+    $strats.style('height', `${maxHeight}px`);
   }
 
   private async calColHeight(height) {
@@ -242,19 +254,22 @@ export default class ColumnManager extends EventHandler {
     let index = 0;
     let totalMin = 0;
     let totalMax = 0;
+
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.colsWithRange.get(col.data.desc.id);
       const temp = [];
+
       if (range === undefined) {
         range = this.rangeList[this.rangeList.length - 1];
       }
 
-      let minSizes = this.visManager.computeMinHeight(col);
+      const minSizes = this.visManager.computeMinHeight(col);
       for (const r of range) {
         const view = await col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
       }
+
       const minRange = Math.min(...temp);
       const minSize = Math.min(...minSizes);
       const scale = minSize / minRange;
@@ -262,10 +277,13 @@ export default class ColumnManager extends EventHandler {
       // console.log(temp)
       const min = temp.map((d) => scale * d);
       const max = temp.map((d) => col.maxHeight * d);//TODO this is not true if we have e.g. just 1 - 5 items in multiform
+
       minHeights.push(min);
       maxHeights.push(max);
+
       totalMax = d3.max([totalMax, d3.sum(max)]);
       totalMin = d3.max([totalMin, d3.sum(min)]);
+
       index = index + 1;
     }
 
@@ -279,6 +297,7 @@ export default class ColumnManager extends EventHandler {
       const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
       return d.map((e) => maxScale(e));
     });
+
     const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
     const flexHeights = minHeights.map((d, i) => {
       return d.map((e) => nodeHeightScale(e));
@@ -352,28 +371,30 @@ export function distributeColWidths(columns: {lockedWidth: number, minWidth: num
 }
 
 
-export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
+export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
   switch (data.desc.type) {
     case 'vector':
       const v = <IStringVector|ICategoricalVector|INumericalVector>data;
       switch (v.desc.value.type) {
         case VALUE_TYPE_STRING:
-          return new StringColumn(<IStringVector>v, orientation, parent);
+          return new StringColumn(<IStringVector>v, orientation, $parent);
         case VALUE_TYPE_CATEGORICAL:
-          return new CategoricalColumn(<ICategoricalVector>v, orientation, parent);
+          return new CategoricalColumn(<ICategoricalVector>v, orientation, $parent);
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new NumberColumn(<INumericalVector>v, orientation, parent);
+          return new NumberColumn(<INumericalVector>v, orientation, $parent);
       }
       throw new Error('invalid vector type');
+
     case 'matrix':
       const m = <INumericalMatrix>data;
       switch (m.desc.value.type) {
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new MatrixColumn(<INumericalMatrix>m, orientation, parent);
+          return new MatrixColumn(<INumericalMatrix>m, orientation, $parent);
       }
       throw new Error('invalid matrix type');
+
     default:
       throw new Error('invalid data type');
   }

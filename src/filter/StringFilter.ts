@@ -7,35 +7,30 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 
 export default class StringFilter extends AVectorFilter<string, IStringVector> {
-  readonly node: HTMLElement;
+  readonly $node: d3.Selection<any>;
   private _textSearch: string;
 
-  constructor(data: IStringVector, parent: HTMLElement) {
+  constructor(data: IStringVector, $parent: d3.Selection<any>) {
     super(data);
-    this.node = this.build(parent);
+    this.$node = this.build($parent);
     this._textSearch = null;
   }
 
-  protected build(parent: HTMLElement) {
-    const node = super.build(parent);
+  protected build($parent: d3.Selection<any>) {
+    const $node = super.build($parent);
 
+    this.generateLabel($node, this.data.desc.name);
+    this.generateSearchInput($node.select('main'));
 
-    this.generateLabel(node, this.data.desc.name);
-    this.generateSearchInput(<HTMLElement>node.querySelector('main'));
-
-
-    // node.innerHTML = `<button>${this.data.desc.name}</button>`;
-    // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
-    //   console.log(this.data)
-    //   this.triggerFilterChanged();
-    // });
-
-    return node;
+    return $node;
   }
 
-  private async generateSearchInput(node: HTMLElement) {
+  private async generateSearchInput($node: d3.Selection<any>) {
     const that = this;
-    const textSearch = (<any>d3).select(node).append('input', 'text').classed('textSearch', true);
+    const textSearch = $node.append('input')
+      .attr('type', 'text')
+      .classed('textSearch', true);
+
     textSearch.on('keyup', function (d) {
       that._textSearch = this.value;
       that.triggerFilterChanged();

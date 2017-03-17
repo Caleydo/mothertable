@@ -10,42 +10,28 @@ import Range1D from 'phovea_core/src/range/Range1D';
 
 export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
-  readonly node: HTMLElement;
+  readonly $node: d3.Selection<any>;
   private _filterDim: {width: number, height: number};
 
-  constructor(data: INumericalMatrix, parent: HTMLElement) {
+  constructor(data: INumericalMatrix, $parent: d3.Selection<any>) {
     super(data);
 
-    this.node = this.build(parent);
+    this.$node = this.build($parent);
     this.activeFilter = false;
   }
 
-  protected build(parent: HTMLElement) {
-    const node = super.build(parent);
-    const li = <HTMLElement>document.createElement('li');
-    node.appendChild(li);
-    li.classList.add('filter');
+  protected build($parent: d3.Selection<any>) {
+    const $li = $parent.append('li')
+      .classed('filter', true)
+      .classed('nodrag', true);
 
-    const header = document.createElement('header');
-    li.appendChild(header);
-    const main = document.createElement('main');
-    li.appendChild(main);
+    $li.append('header');
+    $li.append('main');
 
-    const n = d3.select(main).selectAll('.matrix');
-    this.generateLabel(li, this.data.desc.name);
-    this.generateMatrixHeatmap(main, this.data.rowtype.id);
-    // this.generateRect(main);
-    //   }
+    this.generateLabel($li, this.data.desc.name);
+    this.generateMatrixHeatmap($li.select('main'), this.data.rowtype.id);
 
-
-    // this.generateMatrixHeatmap(node, this.data.rowtype.id);
-    // node.innerHTML = `<button>${this.data.desc.name}</button>`;
-    // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
-    //   console.log(this.data)
-    //   this.triggerFilterChanged();
-    // });
-
-    return node;
+    return $li;
   }
 
 
@@ -65,26 +51,26 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   }
 
 
-  private generateRect(node) {
+  private generateRect($node) {
 
-    d3.select(node).append('div').classed('matrix', true);
+    $node.append('div').classed('matrix', true);
 
   }
 
-  private async generateMatrixHeatmap(node, idtype) {
+  private async generateMatrixHeatmap($node, idtype) {
     const cellWidth = this.filterDim.width;
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
     const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(NUMERICAL_COLOR_MAP);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
-    const entries = d3.select(node).append('div').classed('matrixEntries', true);
+    const $entries = $node.append('div').classed('matrixEntries', true);
 
-    const list = entries
+    const $list = $entries
       .selectAll('div.matrixBins')
       .data(histData).enter();
 
-    list.append('div')
+    $list.append('div')
       .attr('class', 'matrixBins')
       .attr('title', (d, i) => `${i + 1}: ${d}`)
       .style('height', (d, i) => binScale(d) + 'px')
