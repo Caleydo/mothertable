@@ -32,9 +32,13 @@ export default class SupportView extends EventHandler {
   private _matrixData: Map<string, INumericalMatrix> = new Map();
   private datasets: IDataType[];
 
-  constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id?: string) {
+  constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id: number) {
     super();
     this.build(parent);
+  }
+
+  private get idTypeHash() {
+    return this.idType.id + '_' + this.id;
   }
 
   private async build(parent) {
@@ -76,8 +80,8 @@ export default class SupportView extends EventHandler {
   }
 
   private addInitialFilters() {
-    if (hash.has(this.idType.id)) {
-      const datasets = hash.getProp(this.idType.id)
+    if (hash.has(this.idTypeHash)) {
+      const datasets = hash.getProp(this.idTypeHash)
         .split(SupportView.HASH_FILTER_DELIMITER)
         .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])
         .filter((data) => data !== undefined)
@@ -91,7 +95,8 @@ export default class SupportView extends EventHandler {
   }
 
   private updateURLHash() {
-    hash.setProp(this.idType.id,
+    // add random id to hash
+    hash.setProp(this.idTypeHash,
       this.filterManager.filters
         .map((d) => d.data.desc.name)
         .join(SupportView.HASH_FILTER_DELIMITER)

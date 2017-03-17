@@ -145,8 +145,7 @@ export default class App {
 
     const node = <HTMLElement>this.buildSupportView(idtype);
     //  this.node.querySelector('section.rightPanel').appendChild(node);
-    const id = randomId();
-    const supportView = new SupportView(idtype, <HTMLElement>node, id);
+    const supportView = new SupportView(idtype, <HTMLElement>node, this.supportView.length);
 
     this.supportView.push(supportView);
 
@@ -226,13 +225,12 @@ export default class App {
 
   private newSupportManger(data: IDataType, otherIdtype: IDType) {
     const node = <HTMLElement>this.buildSupportView(otherIdtype);
-    const id: string = randomId();
-    const matrixSupportView = new SupportView(otherIdtype, node, id);
+    const matrixSupportView = new SupportView(otherIdtype, node, this.supportView.length);
     this.supportView.push(matrixSupportView);
 
     const m = this.supportView[0].getMatrixData(data.desc.id);
     const matrixnode = <HTMLElement>node.querySelector(`.${otherIdtype.id}.filter-manager`);
-    // d3.select(node).select(`.${otherIdtype.id}.filter-manager`);
+    // d3.select(node).select(`.${otherIdtype.id}.filter-manager` );
     new MatrixFilter(m.t, matrixnode);
 
     this.previewData(this.dataSize, otherIdtype.id, node);
@@ -245,7 +243,7 @@ export default class App {
     });
   }
 
-  private triggerMatrix(colRange?, id?: string) {
+  private triggerMatrix(colRange?, id?: number) {
     const matrixCol:MatrixColumn[] = <MatrixColumn[]>this.manager.columns.filter((d) => d instanceof MatrixColumn);
     const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
     if (uniqueMatrix === -1) {
