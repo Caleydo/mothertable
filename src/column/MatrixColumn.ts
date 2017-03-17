@@ -54,16 +54,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
-  getVerticalMargin() {
-    // TODO if other columns are added
-    return {top: 0, bottom: 0};
-  }
-
-
   async updateMatrixCol(idRange: Range) {
     this.colRange = idRange;
     this.updateMultiForms(this.rowRange, this.colRange);
-
   }
 
 

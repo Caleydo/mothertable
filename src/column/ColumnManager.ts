@@ -38,6 +38,8 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
 
+  private $node:d3.Selection<any>;
+
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
@@ -57,7 +59,7 @@ export default class ColumnManager extends EventHandler {
 
   private build() {
     this.visManager = new VisManager();
-    d3.select(this.node)
+    this.$node = d3.select(this.node)
       .classed('column-manager', true)
       .append('ol')
       .classed('columnList', true);
@@ -217,27 +219,28 @@ export default class ColumnManager extends EventHandler {
 
   async relayout() {
     await resolveIn(10);
-    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight')));
+    this.relayoutColStrats();
+    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight') - c.$node.select('aside').property('clientHeight')));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
-    // compute margin for the column stratifications (from @mijar)
-    const verticalMargin = this.columns.reduce((prev, c) => {
-      const act = c.getVerticalMargin();
-      return {top: Math.max(prev.top, act.top), bottom: Math.max(prev.bottom, act.bottom)};
-    }, {top: 0, bottom: 0});
 
     this.columns.forEach((col, i) => {
-      const margin = col.getVerticalMargin();
-      col.$node
-        .style('margin-top', (verticalMargin.top - margin.top) + 'px')
-        .style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px')
-        .style('width', colWidths[i] + 'px');
+      col.$node.style('width', colWidths[i] + 'px');
 
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform, colWidths[i], rowHeight[i][index]);
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
     });
+  }
+
+  /**
+   * Calculate the maximum height of all column stratification areas and set it for every column
+   */
+  private relayoutColStrats() {
+    const $strats = this.$node.selectAll('aside');
+    const maxHeight = Math.max(...$strats[0].map((d:HTMLElement) => d.clientHeight));
+    $strats.style('height', `${maxHeight}px`);
   }
 
   private async calColHeight(height) {
@@ -256,7 +259,7 @@ export default class ColumnManager extends EventHandler {
         range = this.rangeList[this.rangeList.length - 1];
       }
 
-      let minSizes = this.visManager.computeMinHeight(col);
+      const minSizes = this.visManager.computeMinHeight(col);
       for (const r of range) {
         const view = await col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);

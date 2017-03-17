@@ -43,10 +43,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return this.data.idtypes[0];
   }
 
-  getVerticalMargin() {
-    return {top: 0, bottom: 0};
-  }
-
   get body() {
     return this.$node.select('main');
   }
