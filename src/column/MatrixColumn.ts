@@ -40,7 +40,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   protected build($parent: d3.Selection<any>) {
     this.$node = super.build($parent);
 
-    this.$colStrat = this.$node.select('aside');
+    this.$colStrat = this.$node.select('aside')
+      .append('ol')
+      .attr('reversed', 'reversed');
 
     return this.$node;
   }
@@ -55,8 +57,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   pushColStratData(data: IMotherTableType) {
-    this.$colStrat.append('div').html(data.desc.name);
-    this.$colStrat.style('height', null);
+    this.$colStrat.insert('li', 'li').html(data.desc.name);
+
     return Promise.resolve;
   }
 
