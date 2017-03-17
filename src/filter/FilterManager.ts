@@ -33,29 +33,23 @@ export default class FilterManager extends EventHandler {
 
   private onFilterChanged = () => this.refilter();
 
-  constructor(public readonly idType: IDType, readonly node: HTMLElement) {
+  constructor(public readonly idType: IDType, readonly $node: d3.Selection<any>) {
     super();
-    this.build(node);
+    this.build();
     this.drag();
   }
 
-  private build(node: HTMLElement) {
-    this.node.classList.add('filter-manager');
-    const ol = document.createElement('ol');
-    ol.classList.add('filterlist');
-    node.appendChild(ol);
+  private build() {
+    this.$node
+      .classed('filter-manager', true)
+      .append('ol')
+      .classed('filterlist', true);
   }
 
   push(data: IFilterAbleType) {
-    // if (data.idtypes[0] !== this.idType) {
-    //   throw new Error('invalid idtype');
-    // }
-
-    const col = FilterManager.createFilter(data, this.node);
-    //console.log(col.data.desc.id)
-    col.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
-
-    this.filters.push(col);
+    const filter = FilterManager.createFilter(data, this.$node);
+    filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
+    this.filters.push(filter);
   }
 
 
@@ -79,7 +73,7 @@ export default class FilterManager extends EventHandler {
     const col = this.filters.find((d) => d.data === data);
 
     if (!col.activeFilter) {
-      col.node.remove();
+      col.$node.remove();
       this.filters.splice(this.filters.indexOf(col), 1);
     }
   }
@@ -97,9 +91,9 @@ export default class FilterManager extends EventHandler {
     }
 
     //move the dom element, too
-    const filterListNode = this.node.querySelector('.filterlist');
+    const filterListNode = this.$node.select('.filterlist');
     // this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
-    filterListNode.insertBefore(col.node, filterListNode.childNodes[index]);
+    filterListNode.node().insertBefore(col.$node.node(), filterListNode.node().childNodes[index]);
 
     this.filters.splice(old, 1);
     if (old < index) {
@@ -117,14 +111,14 @@ export default class FilterManager extends EventHandler {
     let posBefore;
     let posAfter;
     //Same as using query selector)
-    $('ol.filterlist', this.node).sortable({handle: 'header', axis: 'y', items: '> :not(.filter.nodrag)'});
+    $('ol.filterlist', this.$node.node()).sortable({handle: 'header', axis: 'y', items: '> :not(.filter.nodrag)'});
     // {axis: 'y'});
-    $('ol.filterlist', this.node).on('sortstart', function (event, ui) {
+    $('ol.filterlist', this.$node.node()).on('sortstart', function (event, ui) {
       //  console.log('start: ' + ui.item.index())
       posBefore = ui.item.index();
     });
 
-    $('ol.filterlist', this.node).on('sortupdate', function (event, ui) {
+    $('ol.filterlist', this.$node.node()).on('sortupdate', function (event, ui) {
       //  console.log('update: ' + ui.item.index())
       posAfter = ui.item.index();
       that.updateFilterOrder(posBefore, posAfter);
@@ -166,23 +160,23 @@ export default class FilterManager extends EventHandler {
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
   }
 
-  private static createFilter(data: IFilterAbleType, parent: HTMLElement): AnyColumn {
+  private static createFilter(data: IFilterAbleType, $parent: d3.Selection<any>): AnyColumn {
 
     switch (data.desc.type) {
       case 'vector':
         const v = <IStringVector|ICategoricalVector|INumericalVector>data;
         switch (v.desc.value.type) {
           case VALUE_TYPE_STRING:
-            return new StringFilter(<IStringVector>v, parent);
+            return new StringFilter(<IStringVector>v, $parent);
           case VALUE_TYPE_CATEGORICAL:
-            return new CategoricalFilter(<ICategoricalVector>v, parent);
+            return new CategoricalFilter(<ICategoricalVector>v, $parent);
           case VALUE_TYPE_INT:
           case VALUE_TYPE_REAL:
-            return new NumberFilter(<INumericalVector>v, parent);
+            return new NumberFilter(<INumericalVector>v, $parent);
         }
         throw new Error('invalid vector type');
       case 'matrix':
-        return new MatrixFilter(<INumericalMatrix>data, parent);
+        return new MatrixFilter(<INumericalMatrix>data, $parent);
       default:
         throw new Error('invalid data type');
     }

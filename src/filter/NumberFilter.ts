@@ -11,36 +11,26 @@ import {NUMERICAL_COLOR_MAP} from '../column/utils';
 
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
 
-  readonly node: HTMLElement;
+  readonly $node: d3.Selection<any>;
   private _filterDim: {width: number, height: number};
   private _numericalFilterRange: number[];
   private _toolTip: d3.Selection<SVGElement>;
   private _SVG: d3.Selection<SVGElement>;
 
-  constructor(data: INumericalVector, parent: HTMLElement) {
+  constructor(data: INumericalVector, $parent: d3.Selection<any>) {
     super(data);
-    this.node = this.build(parent);
+    this.$node = this.build($parent);
     this._numericalFilterRange = this.data.desc.value.range;
 
   }
 
 
-  protected build(parent: HTMLElement) {
-    const node = super.build(parent);
-
-    this.generateLabel(node, this.data.desc.name);
-    this._toolTip = this.generateTooltip(node);
-    this.generateDensityPlot(<HTMLElement>node.querySelector('main'));
-
-
-    // node.innerHTML = `<button>${this.data.desc.name}</button>`;
-    // console.log('hi');
-    // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
-    //
-    //   this.triggerFilterChanged();
-    // });
-
-    return node;
+  protected build($parent: d3.Selection<any>) {
+    const $node = super.build($parent);
+    this.generateLabel($node, this.data.desc.name);
+    this._toolTip = this.generateTooltip($node);
+    this.generateDensityPlot($node.select('main'));
+    return $node;
   }
 
   get filterDim(): {width: number; height: number} {
@@ -62,13 +52,13 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private async generateDensityPlot(node: HTMLElement) {
+  private async generateDensityPlot($node: d3.Selection<any>) {
     const c = this.computeCoordinates();
     const triangleYPos = c.triangle.yPos;
     const lineYPos = c.line.yPos;
     const brushRectPosY = c.brushRect.right;
     const margin = 5;
-    const svg = this.makeSVG(node);
+    const svg = this.makeSVG($node);
     await this.makeBins(svg);
     this.makeBrush(svg, brushRectPosY - margin * 2, c.range);
 
@@ -81,15 +71,15 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this.makeBrushLine(svg, margin, lineYPos, 'leftLine');
     this.makeBrushLine(svg, brushRectPosY - margin, lineYPos, 'rightLine');
     const bottomLine = this.makeBrushLine(svg, margin, lineYPos - margin, 'bottomLine');
-    d3.select(this.node).select('.bottomLine')
+    this.$node.select('.bottomLine')
       .attr('d', `M${margin} ${lineYPos - margin},L${brushRectPosY - margin} ${lineYPos - margin}`);
   }
 
-  private makeSVG(node: HTMLElement) {
+  private makeSVG($node: d3.Selection<any>) {
     const cellWidth = this.filterDim.width + 10;
     const cellHeight = this.filterDim.height;
     const svgHeight = cellHeight + 25;
-    const svg = d3.select(node).append('svg')
+    const svg = $node.append('svg')
       .attr('height', svgHeight + 'px')
       .attr('width', cellWidth + 'px')
       .style('margin-left', '5px');
@@ -97,7 +87,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     return svg;
   }
 
-  private async makeBins(svg) {
+  private async makeBins($svg) {
 
     const cellWidth = this.filterDim.width - 10;
     const cellHeight = this.filterDim.height;
@@ -109,7 +99,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
 
 
-    const binsBackgroundRect = svg.append('g')
+    const binsBackgroundRect = $svg.append('g')
       .classed('binsEntries', true)
       .attr('transform', 'translate(5,0)')
       .selectAll('g.bins').data(histData).enter();
@@ -124,7 +114,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .attr('stroke-width', 0.5)
       .attr('fill', 'lightgrey');
 
-    const binsForegroundRect = svg.append('g')
+    const binsForegroundRect = $svg.append('g')
       .classed('binsEntries', true)
       .attr('transform', 'translate(5,0)')
       .attr('clip-path', 'url(#brushClipping)')
@@ -157,14 +147,14 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private makeBrush(svg, width, range) {
+  private makeBrush($svg, width, range) {
     const that = this;
     const c = this.computeCoordinates();
     const scale = d3.scale.linear()
       .domain(range)
       .range([0, width]);
 
-    const clipPathRect = svg
+    const clipPathRect = $svg
       .append('clipPath')
       .attr('id', 'brushClipping')
       .append('rect');
@@ -196,13 +186,13 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
         that.triggerFilterChanged();
       });
 
-    const g = svg.append('g');
+    const g = $svg.append('g');
     brush(g);
     g.attr('transform', 'translate(5,0)');
     g.selectAll('rect').attr('height', this.filterDim.height);
     copyBrush(g.select('.extent'));
 
-    return svg;
+    return $svg;
 
   }
 
@@ -239,7 +229,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const brushScaledVal = [c.axisScale(range[0]), c.axisScale(range[1])];
     const windowScaledVal = [c.rangeScale(brushScaledVal[0]), c.rangeScale(brushScaledVal[1])];
     const margin = 5;
-    const $node = d3.select(this.node);
+    const $node = this.$node;
     $node.select('.leftTriangle')
       .attr('transform', `translate(${brushScaledVal[0]},${c.triangle.yPos - 5})`);
 
@@ -251,7 +241,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     $node.select('.rightLine')
       .attr('d', `M${brushScaledVal[1] - margin} 0,L${brushScaledVal[1] - margin} ${c.triangle.yPos - margin}`);
     $node.select('.bottomLine')
-      .attr('d', `M${brushScaledVal[0]} ${c.triangle.yPos - margin * 2},L${brushScaledVal[1] - margin} ${c.triangle.yPos - margin * 2}`)
+      .attr('d', `M${brushScaledVal[0]} ${c.triangle.yPos - margin * 2},L${brushScaledVal[1] - margin} ${c.triangle.yPos - margin * 2}`);
 
     $node.select('.leftText')
       .attr('x', brushScaledVal[0])

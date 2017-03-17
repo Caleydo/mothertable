@@ -36,10 +36,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     };
   }
 
-  protected buildBody($body: d3.Selection<any>) {
-    //  this.multiform = new MultiForm(this.data, <HTMLElement>$body.node(), this.multiFormParams($body));
-  }
-
   protected buildToolbar($toolbar: d3.Selection<any>) {
     const $sortButton = $toolbar.append('button')
       .attr('class', 'fa sort fa-sort-amount-asc')
@@ -58,13 +54,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     super.buildToolbar($toolbar);
   }
 
-
-  layout(width: number, height: number) {
-
-    scaleTo(this.multiform, width, height, this.orientation);
-  }
-
-
   updateSortIcon() {
     if (this.sortCriteria === SORT.desc) {
       const s = this.$node.select('.fa.sort.fa-sort-amount-asc');
@@ -74,16 +63,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       const s = this.$node.select('.fa.sort.fa-sort-amount-desc');
       s.attr('class', 'fa sort fa-sort-amount-asc');
     }
-  }
-
-  async update(idRange: Range) {
-    this.$node.select('main').remove();
-    this.$node.append('main');
-    //  this.multiform.destroy();
-    const view = await this.data.idView(idRange);
-    this.dataView = view;
-    //  this.replaceMultiForm(view, this.body);
-
   }
 
   async updateMultiForms(idRanges: Range[]) {

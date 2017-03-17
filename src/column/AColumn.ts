@@ -43,15 +43,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return this.data.idtypes[0];
   }
 
-  abstract layout(width: number, height: number);
-
-  abstract async update(idRange: Range, count?): Promise<any>;
-
-
-  getVerticalMargin() {
-    return {top: 0, bottom: 0};
-  }
-
   get body() {
     return this.$node.select('main');
   }
@@ -64,24 +55,15 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return this.$node.select('div.toolbar');
   }
 
-  // async updateMatrix(rowRange, colRange) {
-  //   return rowRange;
-  // }
-
-
-  async updateMatrixCol(colRange) {
-    // override in MatrixColumn
-    return colRange;
-  }
-
-  protected build(parent: HTMLElement) {
-    this.$node = d3.select(parent).select('.columnList')
+  protected build($parent: d3.Selection<any>) {
+    this.$node = $parent.select('.columnList')
       .append('li')
       .classed('column', true)
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
       .style('min-width', this.minWidth + 'px')
       .style('width', this.maxWidth + 'px')
       .html(`
+        <aside></aside>
         <header class="columnHeader">
           <div class="toolbar"></div>
           <span>${this.data.desc.name}</span>
@@ -101,8 +83,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     return this.$node;
   }
-
-  protected abstract buildBody($body: d3.Selection<any>);
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
     const $lockButton = $toolbar.append('button')

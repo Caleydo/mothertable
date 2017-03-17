@@ -15,29 +15,34 @@ import * as d3 from 'd3';
 import VisManager from './VisManager';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
-  static readonly EVENT_COLUMN_REMOVED = 'removed';
-  static readonly EVENT_DATA_REMOVED = 'removedData';
-
   minWidth: number = 150;
   maxWidth: number = 300;
   minHeight: number = 2;
   maxHeight: number = 10;
 
-  private multiform: MultiForm;
-  private rowRange: Range[] = [];
+  private rowRanges: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
   multiformList = [];
 
-  readonly columns: AnyColumn[] = [];
-  private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
+  private $colStrat:d3.Selection<any>;
 
-  constructor(data: INumericalMatrix, orientation: EOrientation, columnParent: HTMLElement) {
+  readonly columns: AnyColumn[] = [];
+
+  constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
     super(data, orientation);
     this.dataView = data;
     this.calculateDefaultRange();
-    this.$node = this.build(columnParent);
+    this.$node = this.build($columnParent);
 
+  }
+
+  protected build($parent: d3.Selection<any>) {
+    this.$node = super.build($parent);
+
+    this.$colStrat = this.$node.select('aside');
+
+    return this.$node;
   }
 
   protected multiFormParams(): IMultiFormOptions {
@@ -49,139 +54,39 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
-  protected buildBody($body: d3.Selection<any>) {
-    //   this.multiform = new MultiForm(this.dataView, <HTMLElement>$body.node(), this.multiFormParams());
+  async updateMultiForms(rowRanges:Range[], colRange?:Range) {
+    this.body.selectAll('.multiformList').remove();
+    this.multiformList = [];
+
+    if (!rowRanges) {
+      rowRanges = this.rowRanges;
+    }
+    this.rowRanges = rowRanges;
+
+    if (!colRange) {
+      colRange = (await this.calculateDefaultRange());
+    }
+
+    for (const r of rowRanges) {
+      const multiformDivs = this.body.append('div').classed('multiformList', true);
+
+      let rowView = await this.data.idView(r);
+      rowView = (<INumericalMatrix>rowView).t;
+
+      let colView = await rowView.idView(colRange);
+      colView = (<INumericalMatrix>colView).t;
+
+      const m = new MultiForm(colView, <HTMLElement>multiformDivs.node(), this.multiFormParams());
+      this.multiformList.push(m);
+    }
   }
-
-  protected buildToolbar($toolbar: d3.Selection<any>) {
-    // if (this.multiform) {
-    //   const $visList = $toolbar.append('div').classed('vislist', true);
-    //   this.multiform.addIconVisChooser(<HTMLElement>$visList.node());
-    // }
-
-    super.buildToolbar($toolbar);
-  }
-
-  layout(width: number, height: number) {
-    scaleTo(this.multiform, width, height, this.orientation);
-
-    this.columns.forEach((col) => {
-      const margin = col.getVerticalMargin();
-      col.layout(width, height);
-    });
-  }
-
-  async relayout() {
-    //  await resolveIn(10);
-
-    const height = Math.min(this.$node.property('clientHeight') - this.$node.select('header').property('clientHeight'));
-    // compute margin
-    const verticalMargin = this.getVerticalMargin();
-    const margin = this.getVerticalMargin();
-
-    this.$node.style('margin-top', (verticalMargin.top - margin.top) + 'px');
-    this.$node.style('margin-bottom', (verticalMargin.bottom - margin.bottom) + 'px');
-
-    this.layout(this.body.property('clientWidth'), height);
-  }
-
-  getVerticalMargin() {
-    // TODO if other columns are added
-    return {top: 0, bottom: 0};
-  }
-
-  // update(idRange: Range1D) {
-  //   this.multiform.destroy();
-  //   this.data.idView(rlist(idRange)).then((view) => {
-  //     this.multiform = this.replaceMultiForm(view, this.body);
-  //   });
-  // }
-
 
   async calculateDefaultRange() {
-    const indices = await this.data.ids();
     if (this.colRange === undefined) {
+      const indices = await this.data.ids();
       this.colRange = rlist(indices.dim(1));
     }
     return this.colRange;
   }
-
-
-  async updateMatrixCol(idRange: Range) {
-    this.colRange = idRange;
-    this.updateMultiForms(this.rowRange, this.colRange);
-
-  }
-
-
-  async updateMultiForms(idRanges: Range[], colRange?) {
-    this.rowRange = idRanges;
-    this.body.selectAll('.multiformList').remove();
-    this.multiformList = [];
-
-    if (colRange === undefined) {
-      colRange = (await this.calculateDefaultRange());
-    }
-    for (const r of idRanges) {
-      const multiformDivs = this.body.append('div').classed('multiformList', true);
-      let rowView = await this.data.idView(r);
-      rowView = (<INumericalMatrix>rowView).t;
-      let colView = await rowView.idView(colRange);
-      colView = (<INumericalMatrix>colView).t;
-      const m = new MultiForm(colView, <HTMLElement>multiformDivs.node(), this.multiFormParams());
-
-      this.multiformList.push(m);
-    }
-
-  }
-
-  async update(idRange: Range) {
-    // this.multiform.destroy();
-    // const view = await (<any>this.data).idView(idRange);
-    //this.multiform = this.replaceMultiForm(view, this.body);
-  }
-
-  push(data: IMotherTableType) {
-    if (data.idtypes[0] !== this.data.coltype) {
-      throw new Error('invalid idtype');
-    }
-
-    const col = createColumn(data, this.orientation, <HTMLElement>this.$node.node());
-    col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    this.columns.push(col);
-    this.relayout();
-  }
-
-  remove(col: AnyColumn) {
-    this.columns.splice(this.columns.indexOf(col), 1);
-    col.$node.remove();
-    col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    this.fire(MatrixColumn.EVENT_COLUMN_REMOVED, col);
-    this.fire(MatrixColumn.EVENT_DATA_REMOVED, col.data);
-    this.relayout();
-  }
-
-  /**
-   * move a column at the given index
-   * @param col
-   * @param index
-   */
-  move(col: AnyColumn, index: number) {
-    const old = this.columns.indexOf(col);
-    if (old === index) {
-      return;
-    }
-
-    // move the dom element, too
-    this.$node.node().insertBefore(col.$node.node(), this.$node.node().childNodes[index]);
-
-    this.columns.splice(old, 1);
-    if (old < index) {
-      index -= 1; //shifted because of deletion
-    }
-    this.columns.splice(index, 0, col);
-    this.relayout();
-  }
-
 
 }
