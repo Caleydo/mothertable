@@ -25,7 +25,7 @@ export default class App {
 
   private readonly $node: d3.Selection<any>;
 
-  private manager: ColumnManager;
+  private colManager: ColumnManager;
   private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range;
@@ -92,7 +92,7 @@ export default class App {
 
   private reset() {
     this.supportView[0].destroy();
-    this.manager.destroy();
+    this.colManager.destroy();
     d3.selectAll('.rightPanel').remove();
     this.showSelection();
   }
@@ -110,8 +110,8 @@ export default class App {
     };
 
     window.addEventListener('resize', debounce(() => {
-      if (this.manager) {
-        this.manager.relayout();
+      if (this.colManager) {
+        this.colManager.relayout();
       }
     }, 300));
   }
@@ -139,19 +139,19 @@ export default class App {
     this.hideSelection();
 
     // create a column manager
-    this.manager = new ColumnManager(idtype, EOrientation.Horizontal, this.$node.select('main'));
-    this.manager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+    this.colManager = new ColumnManager(idtype, EOrientation.Horizontal, this.$node.select('main'));
+    this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
 
     this.supportView.push(supportView);
 
-    this.supportView[0].on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
-      this.manager.mapFiltersAndSort(data);
+    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+      this.colManager.mapFiltersAndSort(data);
     });
 
     // add columns if we add one or multiple datasets
-    this.supportView[0].on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+    supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
       // first push all the new columns ...
       const addedColumnsPromise = datasets.map((data) => {
         if (this.dataSize === undefined) {
@@ -159,7 +159,7 @@ export default class App {
           supportView.updateFuelBar(this.dataSize);
         }
 
-        const promise = this.manager.push(data);
+        const promise = this.colManager.push(data);
 
         if (data.desc.type === AColumn.DATATYPE.matrix) {
           const otherIdtype: IDType = this.findType(data, idtype.id);
@@ -172,12 +172,12 @@ export default class App {
       // ... when all columns are pushed -> sort and render them
       Promise.all(addedColumnsPromise)
         .then(() => {
-          this.manager.updateSort();
+          this.colManager.updateSort();
         });
     });
 
-    this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
-      this.manager.filterData(filter);
+    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+      this.colManager.filterData(filter);
       // this.manager.update(filter);
       this.rowRange = filter;
       this.triggerMatrix();
@@ -185,14 +185,14 @@ export default class App {
       supportView.updateFuelBar(this.dataSize);
     });
 
-    this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
-      const cols = this.manager.columns;
+    this.colManager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
+      const cols = this.colManager.columns;
       const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
       if (countSame < 1) {
-        this.supportView[0].remove(data);
+        supportView.remove(data);
       }
 
-      if (this.manager.length === 0) {
+      if (this.colManager.length === 0) {
         this.reset();
       }
     });
@@ -218,7 +218,7 @@ export default class App {
   }
 
   private triggerMatrix(colRange?, id?: number) {
-    const matrixCol:MatrixColumn[] = <MatrixColumn[]>this.manager.columns.filter((d) => d instanceof MatrixColumn);
+    const matrixCol:MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
     const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
     if (uniqueMatrix === -1) {
       return;
