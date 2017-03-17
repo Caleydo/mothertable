@@ -237,9 +237,10 @@ export default class ColumnManager extends EventHandler {
    * Calculate the maximum height of all column stratification areas and set it for every column
    */
   private relayoutColStrats() {
-    const $strats = this.$node.selectAll('aside');
+    const $strats = this.$node.selectAll('aside')
+      .style('height', null); // remove height first, to calculate a new one
     const maxHeight = Math.max(...$strats[0].map((d:HTMLElement) => d.clientHeight));
-    $strats.style('height', `${maxHeight}px`);
+    $strats.style('height', maxHeight + 'px');
   }
 
   private async calColHeight(height) {
