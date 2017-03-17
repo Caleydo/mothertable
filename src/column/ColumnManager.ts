@@ -51,7 +51,7 @@ export default class ColumnManager extends EventHandler {
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
 
-  constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly node: HTMLElement) {
+  constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent:d3.Selection<any>) {
     super();
     this.build();
     this.attachListener();
@@ -59,12 +59,12 @@ export default class ColumnManager extends EventHandler {
 
   private build() {
     this.visManager = new VisManager();
-    this.$node = d3.select(this.node)
+    this.$node = this.$parent
       .classed('column-manager', true)
       .append('ol')
       .classed('columnList', true);
 
-    $('.columnList', this.node) // jquery
+    $('.columnList', this.$parent.node()) // jquery
       .sortable({handle: '.columnHeader', axis: 'x'});
   }
 
@@ -82,8 +82,7 @@ export default class ColumnManager extends EventHandler {
 
   destroy() {
     // delete all columns, can't remove myself, since I'm using the parent
-    const items = <HTMLElement[]>Array.from(this.node.querySelectorAll('.column'));
-    items.forEach((d) => d.remove());
+    this.$parent.selectAll('.column').remove();
   }
 
   /**
@@ -97,7 +96,7 @@ export default class ColumnManager extends EventHandler {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
-    const col = createColumn(data, this.orientation, this.node);
+    const col = createColumn(data, this.orientation, this.$parent);
 
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
@@ -140,7 +139,7 @@ export default class ColumnManager extends EventHandler {
       return;
     }
     //move the dom element, too
-    this.node.insertBefore(col.$node.node(), this.node.childNodes[index]);
+    this.$parent.node().insertBefore(col.$node.node(), this.$parent.node().childNodes[index]);
 
     this.columns.splice(old, 1);
     if (old < index) {
@@ -222,7 +221,7 @@ export default class ColumnManager extends EventHandler {
     this.relayoutColStrats();
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight') - c.$node.select('aside').property('clientHeight')));
     const rowHeight = await this.calColHeight(height);
-    const colWidths = distributeColWidths(this.columns, this.node.clientWidth);
+    const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
@@ -366,28 +365,30 @@ export function distributeColWidths(columns: {lockedWidth: number, minWidth: num
 }
 
 
-export function createColumn(data: IMotherTableType, orientation: EOrientation, parent: HTMLElement): AnyColumn {
+export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
   switch (data.desc.type) {
     case 'vector':
       const v = <IStringVector|ICategoricalVector|INumericalVector>data;
       switch (v.desc.value.type) {
         case VALUE_TYPE_STRING:
-          return new StringColumn(<IStringVector>v, orientation, parent);
+          return new StringColumn(<IStringVector>v, orientation, $parent);
         case VALUE_TYPE_CATEGORICAL:
-          return new CategoricalColumn(<ICategoricalVector>v, orientation, parent);
+          return new CategoricalColumn(<ICategoricalVector>v, orientation, $parent);
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new NumberColumn(<INumericalVector>v, orientation, parent);
+          return new NumberColumn(<INumericalVector>v, orientation, $parent);
       }
       throw new Error('invalid vector type');
+
     case 'matrix':
       const m = <INumericalMatrix>data;
       switch (m.desc.value.type) {
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new MatrixColumn(<INumericalMatrix>m, orientation, parent);
+          return new MatrixColumn(<INumericalMatrix>m, orientation, $parent);
       }
       throw new Error('invalid matrix type');
+
     default:
       throw new Error('invalid data type');
   }

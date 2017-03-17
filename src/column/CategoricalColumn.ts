@@ -16,9 +16,9 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   minHeight: number = 2;
   maxHeight: number = 10;
 
-  constructor(data: ICategoricalVector, orientation: EOrientation, parent: HTMLElement) {
+  constructor(data: ICategoricalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
-    this.$node = this.build(parent);
+    this.$node = this.build($parent);
   }
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {

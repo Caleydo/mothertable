@@ -55,8 +55,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return this.$node.select('div.toolbar');
   }
 
-  protected build(parent: HTMLElement) {
-    this.$node = d3.select(parent).select('.columnList')
+  protected build($parent: d3.Selection<any>) {
+    this.$node = $parent.select('.columnList')
       .append('li')
       .classed('column', true)
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)

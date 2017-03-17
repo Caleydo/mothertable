@@ -26,30 +26,29 @@ export default class SupportView extends EventHandler {
 
   private static readonly HASH_FILTER_DELIMITER = ',';
 
-  node: HTMLElement;
+  $node: d3.Selection<any>;
 
   private filterManager: FilterManager;
   private _matrixData: Map<string, INumericalMatrix> = new Map();
   private datasets: IDataType[];
 
-  constructor(public readonly idType: IDType, parent: HTMLElement, public readonly id: number) {
+  constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
-    this.build(parent);
+    this.build($parent);
   }
 
   private get idTypeHash() {
     return this.idType.id + '_' + this.id;
   }
 
-  private async build(parent) {
-    this.node = parent.ownerDocument.createElement('div');
-    parent.appendChild(this.node);
-    this.node.classList.add(this.idType.id);
+  private async build($parent) {
+    this.$node = $parent.append('div')
+      .classed(this.idType.id, true);
 
     this.setupFilterManager();
 
     await this.loadDatasets();
-    this.buildSelectionBox(this.node);
+    this.buildSelectionBox(this.$node);
     this.addInitialFilters();
   }
 
@@ -70,7 +69,7 @@ export default class SupportView extends EventHandler {
   }
 
   private setupFilterManager() {
-    this.filterManager = new FilterManager(this.idType, this.node);
+    this.filterManager = new FilterManager(this.idType, this.$node);
     this.filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
       this.updateURLHash();
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
@@ -105,7 +104,7 @@ export default class SupportView extends EventHandler {
 
   destroy() {
     this.filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
-    this.node.remove();
+    this.$node.remove();
   }
 
   primarySortColumn(sortColdata) {
@@ -122,20 +121,21 @@ export default class SupportView extends EventHandler {
   }
 
   public remove(data: IDataType) {
-    if (isFilterAble(data) && this.filterManager.contains(<IFilterAbleType>data)) {
+    if (this.filterManager.contains(<IFilterAbleType>data)) {
       this.filterManager.remove(<IFilterAbleType>data);
       this.updateURLHash();
     }
   }
 
-  private buildSelectionBox(parent: HTMLElement) {
+  private buildSelectionBox($parent: d3.Selection<any>) {
 
-    parent.insertAdjacentHTML('afterbegin', `<div class="selection">
+    (<HTMLElement>$parent.node()).insertAdjacentHTML('afterbegin', `<div class="selection"> 
        <select class="form-control">
        <option value="attribute">Select Attribute</option>             
       </select>
     </div>`);
-    const select = <HTMLSelectElement>parent.querySelector('select');
+
+    const $select = $parent.select('select');
 
     this.addExplicitColors(this.datasets);
 
@@ -145,14 +145,13 @@ export default class SupportView extends EventHandler {
     // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
 
     this.datasets.forEach((d) => {
-      const option = parent.ownerDocument.createElement('option');
-      option.text = d.desc.name;
-      option.value = d.desc.id;
-      select.add(option);
+      $select.append('option')
+        .text(d.desc.name)
+        .attr('value', d.desc.id);
     });
 
-    select.addEventListener('change', (evt) => {
-      const index = select.selectedIndex;
+    $select.on('change', (evt) => {
+      const index = $select.property('selectedIndex');
       if (index === 0) { // empty selection
         return false;
       }
@@ -164,7 +163,7 @@ export default class SupportView extends EventHandler {
 
       this.updateURLHash();
       // reset selection
-      select.selectedIndex = 0;
+      $select.property('selectedIndex', 0);
       return false;
     });
   }
@@ -200,7 +199,7 @@ export default class SupportView extends EventHandler {
   }
 
   private addDataset(data: IDataType) {
-    if (isFilterAble(data) && !this.filterManager.contains(<IFilterAbleType>data)) {
+    if (!this.filterManager.contains(<IFilterAbleType>data)) {
       this.filterManager.push(<IFilterAbleType>data);
     }
     if(data.desc.type === AColumn.DATATYPE.matrix) {
@@ -208,13 +207,6 @@ export default class SupportView extends EventHandler {
     }
   }
 
-}
-
-function isFilterAble(data: IDataType) {
-  // everything except matrices can be filtered
-
-  return true;
-  //return data.desc.type !== 'matrix';
 }
 
 

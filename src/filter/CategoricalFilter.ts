@@ -10,21 +10,21 @@ import SortEventHandler, {SORT, stringSort} from '../SortEventHandler/SortEventH
 import {on} from 'phovea_core/src/event';
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
-  readonly node: HTMLElement;
+  readonly $node: d3.Selection<any>;
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
   private _sortCriteria: string = SORT.asc;
 
 
-  constructor(data: ICategoricalVector, parent: HTMLElement) {
+  constructor(data: ICategoricalVector, $parent: d3.Selection<any>) {
     super(data);
-    this.node = this.build(parent);
+    this.$node = this.build($parent);
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
 
   }
 
-  protected build(parent: HTMLElement) {
-    const node = super.build(parent);
+  protected build($parent: d3.Selection<any>) {
+    const $node = super.build($parent);
     // node.innerHTML = `<button>${this.data.desc.name}</button>`;
     // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
     //
@@ -32,11 +32,11 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     // });
 
 
-    this.generateLabel(node, this.data.desc.name);
+    this.generateLabel($node, this.data.desc.name);
     const dispHistogram: boolean = true;
-    this.generateCategories(<HTMLElement>node.querySelector('main'), dispHistogram);
+    this.generateCategories($node.select('main'), dispHistogram);
 
-    return node;
+    return $node;
   }
 
   sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
@@ -45,9 +45,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     }
 
     this._sortCriteria = sortData.sortMethod;
-    d3.select(this.node).select('main').remove();
-    d3.select(this.node).append('main');
-    this.generateCategories(<HTMLElement>this.node.querySelector('main'), true);
+    this.$node.select('main').remove();
+    this.$node.append('main');
+    this.generateCategories(this.$node.select('main'), true);
   }
 
   get filterDim(): {width: number; height: number} {
@@ -60,14 +60,14 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   }
 
 
-  private async generateCategories(node: HTMLElement, dispHistogram: boolean) {
+  private async generateCategories($node: d3.Selection<any>, dispHistogram: boolean) {
     const that = this;
     const cellHeight = this.filterDim.height;
     const allCatNames = await(<any>this.data).data();
     const categories = (<any>this.data).desc.value.categories;
 
     const c20 = d3.scale.category20();
-    const toolTip = (this.generateTooltip(node));
+    const toolTip = (this.generateTooltip($node));
     const cellDimension = this.filterDim.width / categories.length;
     const catData = [];
     const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
@@ -87,7 +87,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       $this.classed('active', !$this.classed('active'));
       if ($this.classed('active') === false) {
         $this.select('.categoriesColor').style('background-color', (d) => d.color);
-        const l = d3.select(node).selectAll('.catNames');
+        const l = $node.selectAll('.catNames');
         const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
         d3.select(v[0]).style('color', 'black');
         const cat = that._activeCategories;
@@ -97,7 +97,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
       } else if ($this.classed('active') === true) {
         $this.select('.categoriesColor').style('background-color', null);
-        const l = d3.select(node).selectAll('.catNames');
+        const l = $node.selectAll('.catNames');
         const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
         d3.select(v[0]).style('color', null);
         let ind = -1;
@@ -113,7 +113,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       }
     };
 
-    const catEntries = d3.select(node).append('div').classed('catentries', true);
+    const catEntries = $node.append('div').classed('catentries', true);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(catData, (d) => d.count)]).range([0, this._filterDim.height]);
 
@@ -136,7 +136,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .style('background-color', (d) => d.color);
 
     catListDiv.exit().remove();
-    const catlabels = d3.select(node).append('div').classed('catlabels', true);
+    const catlabels = $node.append('div').classed('catlabels', true);
     const catNames = catlabels
       .selectAll('div.catNames')
       .data(sortedCatData);

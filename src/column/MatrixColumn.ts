@@ -29,16 +29,16 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   readonly columns: AnyColumn[] = [];
 
-  constructor(data: INumericalMatrix, orientation: EOrientation, columnParent: HTMLElement) {
+  constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
     super(data, orientation);
     this.dataView = data;
     this.calculateDefaultRange();
-    this.$node = this.build(columnParent);
+    this.$node = this.build($columnParent);
 
   }
 
-  protected build(parent: HTMLElement) {
-    this.$node = super.build(parent);
+  protected build($parent: d3.Selection<any>) {
+    this.$node = super.build($parent);
 
     this.$colStrat = this.$node.select('aside');
 
