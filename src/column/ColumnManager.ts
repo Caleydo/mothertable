@@ -72,7 +72,7 @@ export default class ColumnManager extends EventHandler {
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
       col[0].sortCriteria = sortData.sortMethod;
-      this.updateSort();
+      this.sortColumns();
     });
   }
 
@@ -160,7 +160,7 @@ export default class ColumnManager extends EventHandler {
       col.dataView = await col.data.idView(idRange);
     }
 
-    this.updateSort();
+    this.updateColumns();
   }
 
   /**
@@ -169,20 +169,27 @@ export default class ColumnManager extends EventHandler {
    */
   mapFiltersAndSort(filterList: AnyColumn[]) {
     this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
-    this.updateSort();
+    this.updateColumns();
   }
 
+  /**
+   * Sort, stratify and render all columns
+   */
+  async updateColumns() {
+    await this.sortColumns();
+    await this.stratifyColumns();
+    this.relayout();
+  }
 
   /**
    * Sorting the ranges based on the filter hierarchy
    */
-  async updateSort() {
+  private async sortColumns() {
     const cols = this.filtersHierarchy;
 
     // special handling if matrix is added as first column
     if (cols.length === 0) {
       this.rangeList = [[this.firstColumnRange]];
-      this.updateColumns(this.rangeList);
       return;
     }
 
@@ -193,8 +200,6 @@ export default class ColumnManager extends EventHandler {
     cols.forEach((col, index) => {
       this.colsWithRange.set(col.data.desc.id, this.rangeList[index]);
     });
-
-    this.updateColumns(this.rangeList);
   }
 
   /**
@@ -202,7 +207,7 @@ export default class ColumnManager extends EventHandler {
    * @param idRange
    * @returns {Promise<void>}
    */
-  private async updateColumns(idRange: Range[][]) {
+  private async stratifyColumns() {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
@@ -211,9 +216,7 @@ export default class ColumnManager extends EventHandler {
 
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
-    matrixCols.map((col) => col.updateMultiForms(idRange[idRange.length - 1]));
-
-    this.relayout();
+    matrixCols.map((col) => col.updateMultiForms(this.rangeList[this.rangeList.length - 1]));
   }
 
   async relayout() {

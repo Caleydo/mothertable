@@ -173,7 +173,7 @@ export default class App {
           return columns;
         })
         .then(() => {
-          this.colManager.updateSort();
+          this.colManager.updateColumns();
         });
     });
 
