@@ -63,6 +63,16 @@ export default class AColumnManager {
     this.stratifyMatrixCols(rangeListMap);
   }
 
+  filter(range:Range[]) {
+    this.vectorCols.forEach((col) => {
+      col.updateMultiForms(range);
+    });
+    // TODO might be wrong
+    this.matrixCols.forEach((col) => {
+      col.updateMultiForms(range);
+    });
+  }
+
   private stratifyVectorCols(rangeListMap:Map<string, Range[]>) {
     this.vectorCols.forEach((col) => {
       col.updateMultiForms(rangeListMap.get(col.data.desc.id));

@@ -9,11 +9,11 @@ import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
 import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
-import {IEvent} from 'phovea_core/src/event';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
+import Range1D from 'phovea_core/src/range/Range1D';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
@@ -109,6 +109,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     const rangeListMap:Map<string, Range[]> = await this.colStratManager.sort();
     console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
     this.colStratManager.stratify(rangeListMap);
+  }
+
+  filterStratData(range: Range) {
+    this.colStratManager.filter([range]);
   }
 
 }

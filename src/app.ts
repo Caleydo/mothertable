@@ -209,7 +209,8 @@ export default class App {
 
     supportView.updateFuelBar(this.dataSize);
 
-    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+      col.filterStratData(filter);
       this.triggerMatrix(filter, supportView.id);
       this.dataSize.filtered = filter.size()[0];
       supportView.updateFuelBar(this.dataSize);
