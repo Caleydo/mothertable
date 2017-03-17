@@ -225,9 +225,6 @@ export default class App {
 
 
   private newSupportManger(data: IDataType, otherIdtype: IDType) {
-
-    // this.newManager = new ColumnManager(otherIdtype, EOrientation.Horizontal, <HTMLElement>this.node.querySelector('main'));
-
     const node = <HTMLElement>this.buildSupportView(otherIdtype);
     const id: string = randomId();
     const matrixSupportView = new SupportView(otherIdtype, node, id);
@@ -241,18 +238,15 @@ export default class App {
     this.previewData(this.dataSize, otherIdtype.id, node);
 
     matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
-      // this.manager.filterData(this.rowRange);
       this.triggerMatrix(filter, matrixSupportView.id);
 
       this.dataSize.filtered = filter.size()[0];
       this.previewData(this.dataSize, otherIdtype.id, node);
     });
-
-
   }
 
   private triggerMatrix(colRange?, id?: string) {
-    const matrixCol = this.manager.columns.filter((d) => d instanceof MatrixColumn);
+    const matrixCol:MatrixColumn[] = <MatrixColumn[]>this.manager.columns.filter((d) => d instanceof MatrixColumn);
     const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
     if (uniqueMatrix === -1) {
       return;
@@ -262,19 +256,14 @@ export default class App {
     }
     const indices = (<any>matrixCol[0]).data.indices;
     if (this.rowRange === undefined) {
-
       this.rowRange = (indices.dim(0));
-
     }
 
     if (colRange === undefined) {
       colRange = (indices.dim(1));
-
     }
 
     matrixCol[uniqueMatrix - 1].updateMatrixCol(colRange);
-
-
   }
 
   private previewData(dataSize: IdataSize, idtype: string, node: HTMLElement) {
@@ -283,14 +272,13 @@ export default class App {
     const filtered = (dataSize.filtered) || 0;
     const totalWidth = availableWidth / total * filtered;
     const d = d3.select(node).select(`.dataPreview-${idtype}`);
+
     d3.select(node).select(`.dataPreview-${idtype}`).select('.totalData').style('width', `${totalWidth}px`);
     d3.select(node).select(`.dataPreview-${idtype}`).select('.filteredData').style('width', `${availableWidth - totalWidth}px`);
-
   }
 
   private  removePreviewData() {
     d3.selectAll('.rightPanel').remove();
-
   }
 
 }

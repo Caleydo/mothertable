@@ -55,11 +55,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return this.$node.select('div.toolbar');
   }
 
-  async updateMatrixCol(colRange) {
-    // override in MatrixColumn
-    return colRange;
-  }
-
   protected build(parent: HTMLElement) {
     this.$node = d3.select(parent).select('.columnList')
       .append('li')
