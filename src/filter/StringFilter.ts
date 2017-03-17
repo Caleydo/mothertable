@@ -19,16 +19,8 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   protected build($parent: d3.Selection<any>) {
     const $node = super.build($parent);
 
-
     this.generateLabel($node, this.data.desc.name);
     this.generateSearchInput($node.select('main'));
-
-
-    // node.innerHTML = `<button>${this.data.desc.name}</button>`;
-    // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
-    //   console.log(this.data)
-    //   this.triggerFilterChanged();
-    // });
 
     return $node;
   }
