@@ -92,7 +92,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       });
 
     $toolbar.append('button')
-      .classed('fa fa-close', true)
+      .classed('fa fa-trash', true)
       .on('click', () => {
         this.fire(AColumn.EVENT_REMOVE_ME);
         return false;
