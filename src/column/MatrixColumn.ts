@@ -54,7 +54,13 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
-  async updateMultiForms(rowRanges:Range[], colRange?:Range) {
+  pushColStratData(data: IMotherTableType) {
+    this.$colStrat.append('div').html(data.desc.name);
+    this.$colStrat.style('height', null);
+    return Promise.resolve;
+  }
+
+  async updateMultiForms(rowRanges?:Range[], colRange?:Range) {
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 

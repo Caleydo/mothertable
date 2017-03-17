@@ -116,11 +116,10 @@ export default class App {
     }, 300));
   }
 
-  private findType(data: IMotherTableType, currentIDType: string) {
+  private findType(data: IDataType, currentIDType: string) {
     const coltype = data.desc.coltype;
     const rowtype = data.desc.rowtype;
     if (rowtype === currentIDType) {
-
       const idType = this.idtypes.filter((d) => d.id === coltype);
       return idType[0];
 
@@ -158,19 +157,21 @@ export default class App {
           this.dataSize = {total: data.length, filtered: data.length};
           supportView.updateFuelBar(this.dataSize);
         }
-
-        const promise = this.colManager.push(data);
-
-        if (data.desc.type === AColumn.DATATYPE.matrix) {
-          const otherIdtype: IDType = this.findType(data, idtype.id);
-          this.triggerMatrix();
-          this.newSupportManger(data, otherIdtype);
-        }
-
-        return promise;
+        return this.colManager.push(data);
       });
       // ... when all columns are pushed -> sort and render them
       Promise.all(addedColumnsPromise)
+        .then((columns:AnyColumn[]) => {
+          // add new support views for matrix column
+          columns
+            .filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix)
+            .forEach((col) => {
+              this.triggerMatrix();
+              this.addMatrixColSupportManger(<MatrixColumn>col);
+            });
+
+          return columns;
+        })
         .then(() => {
           this.colManager.updateSort();
         });
@@ -198,22 +199,35 @@ export default class App {
     });
   }
 
+  private addMatrixColSupportManger(col:MatrixColumn) {
+    const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
+    const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
+    this.supportView.push(supportView);
 
-  private newSupportManger(data: IDataType, otherIdtype: IDType) {
-    const matrixSupportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
-    this.supportView.push(matrixSupportView);
+    const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
+    new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
 
-    const m = this.supportView[0].getMatrixData(data.desc.id);
-    const $matrixnode = matrixSupportView.$node.select(`.${otherIdtype.id}.filter-manager`);
-    // d3.select(node).select(`.${otherIdtype.id}.filter-manager` );
-    new MatrixFilter(m.t, $matrixnode);
+    supportView.updateFuelBar(this.dataSize);
 
-    matrixSupportView.updateFuelBar(this.dataSize);
-
-    matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
-      this.triggerMatrix(filter, matrixSupportView.id);
+    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
+      this.triggerMatrix(filter, supportView.id);
       this.dataSize.filtered = filter.size()[0];
-      matrixSupportView.updateFuelBar(this.dataSize);
+      supportView.updateFuelBar(this.dataSize);
+    });
+
+    // add columns if we add one or multiple datasets
+    supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+      // first push all the new stratifications ...
+      const promises = datasets.map((d) => {
+        return col.pushColStratData(d);
+      });
+      // ... when all stratifications are pushed -> render the column and relayout
+      Promise.all(promises)
+        .then(() => {
+          col.updateMultiForms();
+          this.colManager.relayout();
+        });
+
     });
   }
 
