@@ -263,7 +263,7 @@ export default class App {
       colRange = (indices.dim(1));
     }
 
-    matrixCol[uniqueMatrix - 1].updateMatrixCol(colRange);
+    matrixCol[uniqueMatrix - 1].updateMultiForms(null, colRange);
   }
 
   private previewData(dataSize: IdataSize, idtype: string, node: HTMLElement) {

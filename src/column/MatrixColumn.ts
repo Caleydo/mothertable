@@ -20,7 +20,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minHeight: number = 2;
   maxHeight: number = 10;
 
-  private rowRange: Range[] = [];
+  private rowRanges: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
   multiformList = [];
@@ -54,39 +54,39 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
-  async updateMatrixCol(idRange: Range) {
-    this.colRange = idRange;
-    this.updateMultiForms(this.rowRange, this.colRange);
-  }
-
-  async updateMultiForms(idRanges: Range[], colRange?) {
-    this.rowRange = idRanges;
+  async updateMultiForms(rowRanges:Range[], colRange?:Range) {
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 
-    if (colRange === undefined) {
+    if (!rowRanges) {
+      rowRanges = this.rowRanges;
+    }
+    this.rowRanges = rowRanges;
+
+    if (!colRange) {
       colRange = (await this.calculateDefaultRange());
     }
-    for (const r of idRanges) {
+
+    for (const r of rowRanges) {
       const multiformDivs = this.body.append('div').classed('multiformList', true);
+
       let rowView = await this.data.idView(r);
       rowView = (<INumericalMatrix>rowView).t;
+
       let colView = await rowView.idView(colRange);
       colView = (<INumericalMatrix>colView).t;
-      const m = new MultiForm(colView, <HTMLElement>multiformDivs.node(), this.multiFormParams());
 
+      const m = new MultiForm(colView, <HTMLElement>multiformDivs.node(), this.multiFormParams());
       this.multiformList.push(m);
     }
-
   }
 
   async calculateDefaultRange() {
-    const indices = await this.data.ids();
     if (this.colRange === undefined) {
+      const indices = await this.data.ids();
       this.colRange = rlist(indices.dim(1));
     }
     return this.colRange;
   }
-
 
 }
