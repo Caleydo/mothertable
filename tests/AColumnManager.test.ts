@@ -11,8 +11,7 @@ import {EOrientation} from '../src/column/AColumn';
 import {asVector} from 'phovea_core/src/vector/Vector';
 import {IVector} from 'phovea_core/src/vector';
 import {asMatrix} from 'phovea_core/src/matrix/Matrix';
-import {IMatrix} from '../../phovea_core/src/matrix/IMatrix';
-import Range from 'phovea_core/src/range/Range';
+import {IMatrix} from 'phovea_core/src/matrix/IMatrix';
 
 describe('AColumnManager', () => {
 
