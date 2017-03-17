@@ -68,7 +68,7 @@ export default class VisManager {
   private readonly barplotOptions: VisOptions = {
     rowMinHeight: 2,
     rowMaxHeight: 10,
-    minWidth: 20,
+    minWidth: 40,
     maxWidth: 50
   };
   private readonly heatmap1DOptions: VisOptions = {
