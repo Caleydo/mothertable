@@ -107,7 +107,7 @@ export default class VisManager {
   /**
    *User selected visualization for multiform with given id
    */
-  public static userSelectedVisses: {[id : number] : IVisPluginDesc} = {};
+  public static userSelectedVisses: {[id : string] : IVisPluginDesc} = {};
 
   constructor(){
     this.vissesOptions = {
@@ -146,8 +146,14 @@ export default class VisManager {
       VisManager.userSelectedVisses[id] = vis;
   }
 
-  static updateUserVis(idOld:number, idNew:number) {
+  static updateUserVis(idOld:string, idNew:string) {
+    if(idOld in VisManager.userSelectedVisses) {
       VisManager.userSelectedVisses[idNew] = VisManager.userSelectedVisses[idOld];
+    }
+  }
+
+  static removeUserVis(id:string) {
+    delete VisManager.userSelectedVisses[id];
   }
 
   /*

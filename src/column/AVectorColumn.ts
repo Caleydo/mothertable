@@ -71,10 +71,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   async updateMultiForms(idRanges: Range[]) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     this.updateSortIcon();
-    let idList: {[id : number] : Range} = {};
+    let idList: {[id : string] : Range} = {};
     this.multiformList.forEach((m) => {
       idList[m.id] = m.data.range;
     });
+
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
     const domain = d3.extent(v);
@@ -90,17 +91,40 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         });
       const view = await this.data.idView(r);
       const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
-
-     /* Object.keys(idList).forEach(l) => {
-        if(idList[l].first == r.first && idList[l].last == r.last){
-            VisManager.updateUserVis(l, m.id);
+      Object.keys(idList).forEach((l) => {
+        let newRange = r.dims[0].asList().toString();
+        let originalRange = idList[l].dims[0].toString();
+        if(newRange == originalRange){
+            VisManager.updateUserVis(l, m.id.toString());
+        }else{
+          let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
+          let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
+          if(this.superbag(oldRangeList, newRangeList)){
+            VisManager.updateUserVis(l, m.id.toString());
+          }
         }
-      });*/
-
+      });
       this.addIconVisChooser(<HTMLElement>$header.node(), m);
       this.multiformList.push(m);
     }
+    Object.keys(idList).forEach((l) => {
+      VisManager.removeUserVis(l);
+    });
   }
+
+  private superbag(sup, sub) {
+    let i, j;
+    for (i=0,j=0; i<sup.length && j<sub.length;) {
+        if (sup[i] < sub[j]) {
+            ++i;
+        } else if (sup[i] == sub[j]) {
+            ++i; ++j;
+        } else {
+            return false;
+        }
+    }
+    return j == sub.length;
+}
 
   private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm) {
     const s = toolbar.ownerDocument.createElement('div');
