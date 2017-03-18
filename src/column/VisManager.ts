@@ -67,25 +67,31 @@ export default class VisManager {
   };
   private readonly barplotOptions: VisOptions = {
     rowMinHeight: 2,
-    rowMaxHeight: 10,
+    rowMaxHeight: 25,
     minWidth: 40,
     maxWidth: 50
   };
   private readonly heatmap1DOptions: VisOptions = {
     rowMinHeight: 2,
-    rowMaxHeight: 10,
+    rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
   private readonly heatmapOptions: VisOptions = {
     rowMinHeight: 2,
-    rowMaxHeight: 10,
+    rowMaxHeight: 25,
     columnMinWidth: 2,
     columnMaxWidth: 10
   };
   private readonly boxplotOptions: VisOptions = {
     minHeight: 10,
     maxHeight: 50,
+    minWidth: 20,
+    maxWidth: 50
+  };
+  private readonly propSymbolOptions: VisOptions = {
+    rowMinHeight: 10,
+    rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
@@ -97,7 +103,7 @@ export default class VisManager {
   };
   private readonly mosaicOptions: VisOptions = {
     rowMinHeight: 2,
-    rowMaxHeight: 10,
+    rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
@@ -118,7 +124,8 @@ export default class VisManager {
       'phovea-vis-heatmap': this.heatmapOptions,
       'phovea-vis-histogram': this.histogramOptions,
       'phovea-vis-mosaic': this.mosaicOptions,
-      'phovea-vis-box': this.boxplotOptions
+      'phovea-vis-box': this.boxplotOptions,
+      'proportionalSymbol' : this.propSymbolOptions
     };
   }
 
@@ -133,12 +140,12 @@ export default class VisManager {
           case VALUE_TYPE_CATEGORICAL:
             return 'phovea-vis-heatmap1d';
           default:
-            return 'table';
+            return 'list';
         }
       case 'matrix':
         return 'phovea-vis-heatmap';
       default:
-        return 'table'
+        return 'list'
     }
   }
 
@@ -174,7 +181,6 @@ export default class VisManager {
           let minHeightTmp = this.minVisSize(v.id,multiform.data.dim)[1];
           minHeight = (minHeight > minHeightTmp) ? minHeightTmp : minHeight;
         });
-
       }
       minColumnHeight.push(minHeight);
     });
@@ -255,7 +261,7 @@ export default class VisManager {
                     }
                   break;
                 default:
-                  visId = 'table';
+                  visId = 'list';
                   break;
             }
             break;
@@ -263,7 +269,7 @@ export default class VisManager {
               visId = 'phovea-vis-heatmap';
               break;
             default:
-              visId = 'table';
+              visId = 'list';
               break;
     }
 
