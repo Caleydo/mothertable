@@ -14,7 +14,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   minWidth: number = 2;
   maxWidth: number = 200; //80
   minHeight: number = 2;
-  maxHeight: number = 10;
+  maxHeight: number = 25;
 
   constructor(data: ICategoricalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);

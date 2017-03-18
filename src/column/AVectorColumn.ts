@@ -91,16 +91,27 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         });
       const view = await this.data.idView(r);
       const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
-      Object.keys(idList).forEach((l) => {
+
+      Object.keys(idList).some((l) => {
         let newRange = r.dims[0].asList().toString();
         let originalRange = idList[l].dims[0].toString();
+        //set the vis for the same multiform
+        //TODO performance: move this test higher, so the multiform with unchanged range is not redrawn
         if(newRange == originalRange){
-            VisManager.updateUserVis(l, m.id.toString());
+          VisManager.updateUserVis(l, m.id.toString());
+          return true;
         }else{
           let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
           let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
+          //set the vis for split multiform
           if(this.superbag(oldRangeList, newRangeList)){
             VisManager.updateUserVis(l, m.id.toString());
+            return true;
+          }
+          //set the vis for merged multiform
+          if(this.superbag(newRangeList, oldRangeList)){
+            VisManager.updateUserVis(l, m.id.toString());
+            return true;
           }
         }
       });
@@ -137,6 +148,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       child.onclick = () => {
         multiform.switchTo(v);
         VisManager.setUserVis(multiform.id, v);
+
       };
     });
   }
