@@ -208,6 +208,12 @@ export default class ColumnManager extends EventHandler {
     cols.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, [this.nonStratifiedRange]);
     });
+
+    const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    if (categoricalCol.length > 0) {
+      this.stratifyColid = categoricalCol[0].data.desc.id;
+    }
+
     if (this.stratifyColid !== undefined) {
       this.stratify(this.stratifyColid);
     } else {
