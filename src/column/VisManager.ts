@@ -102,16 +102,16 @@ export default class VisManager {
     maxWidth: 50
   };
 
-  private readonly vissesOptions: {[id : string] : VisOptions};
+  private readonly vissesOptions: {[id: string]: VisOptions};
 
   /**
    *User selected visualization for multiform with given id
    */
-  public userSelectedVisses: {[id : number] : IVisPluginDesc} = {};
+  public userSelectedVisses: {[id: number]: IVisPluginDesc} = {};
 
-  constructor(){
+  constructor() {
     this.vissesOptions = {
-      'table' : this.stringOptions,
+      'table': this.stringOptions,
       'barplot': this.barplotOptions,
       'list': this.stringOptions,
       'phovea-vis-heatmap1d': this.heatmap1DOptions,
@@ -122,10 +122,10 @@ export default class VisManager {
     };
   }
 
-  static getDefaultVis(columnType: string, dataType: string){
-    switch(columnType){
+  static getDefaultVis(columnType: string, dataType: string) {
+    switch (columnType) {
       case 'vector':
-        switch(dataType) {
+        switch (dataType) {
           case VALUE_TYPE_STRING:
             return 'list';
           case VALUE_TYPE_INT || VALUE_TYPE_REAL:
@@ -147,17 +147,17 @@ export default class VisManager {
    * minimal size of user-selced visualizations and
    * minimal size of visualizations available for given datatype
    */
-  computeMinHeight(col:AnyColumn) : number [] {
-    let minColumnHeight : number[] = [];
-    col.multiformList.forEach((multiform, index)=>{
+  computeMinHeight(col: AnyColumn): number [] {
+    let minColumnHeight: number[] = [];
+    col.multiformList.forEach((multiform, index) => {
       let minHeight;
-      if(multiform.id in this.userSelectedVisses){
-       minHeight = this.minVisSize(this.userSelectedVisses[multiform.id].id, multiform.data.dim)[1];
-      }else{
+      if (multiform.id in this.userSelectedVisses) {
+        minHeight = this.minVisSize(this.userSelectedVisses[multiform.id].id, multiform.data.dim)[1];
+      } else {
         minHeight = Number.POSITIVE_INFINITY;
-        const visses:IVisPluginDesc[] = multiform.visses;
+        const visses: IVisPluginDesc[] = multiform.visses;
         visses.forEach((v) => {
-          let minHeightTmp = this.minVisSize(v.id,multiform.data.dim)[1];
+          let minHeightTmp = this.minVisSize(v.id, multiform.data.dim)[1];
           minHeight = (minHeight > minHeightTmp) ? minHeightTmp : minHeight;
         });
 
@@ -168,97 +168,97 @@ export default class VisManager {
   }
 
 
-  minVisSize(vis : string, dims : number[]) : number[] {
+  minVisSize(vis: string, dims: number[]): number[] {
     let minVisHeight;
     let minVisWidth;
-    switch(vis) {
-        case ("table"):
-            minVisHeight = (dims[0] + 1) * this.vissesOptions[vis].rowMinHeight;
-            minVisWidth = ((dims[1] + 1) || 1) * this.vissesOptions[vis].columnMinWidth;
-            break;
-        case ("list"):
-            minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
-            minVisWidth = this.vissesOptions[vis].minWidth;
-            break;
-        case ("barplot"):
-            minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
-            minVisWidth = this.vissesOptions[vis].minWidth;
-            break;
-        case ("phovea-vis-heatmap1d"):
-            minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
-            minVisWidth = this.vissesOptions[vis].minWidth;
-            break;
-        case ("phovea-vis-heatmap"):
-            minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
-            minVisWidth = (dims[1] || 1) * this.vissesOptions[vis].columnMinWidth;
-            break;
-        case ("phovea-vis-histogram"):
-            minVisHeight = this.vissesOptions[vis].minHeight;
-            minVisWidth = this.vissesOptions[vis].minWidth;
-            break;
-        case ("phovea-vis-box"):
-            minVisHeight = this.vissesOptions[vis].minHeight;
-            minVisWidth = this.vissesOptions[vis].minWidth;
-            break;
-        case ("phovea-vis-mosaic"):
-          //TODO correct mosaic height
-            minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
-            minVisWidth = this.vissesOptions[vis].minWidth;
-            break;
+    switch (vis) {
+      case ('table'):
+        minVisHeight = (dims[0] + 1) * this.vissesOptions[vis].rowMinHeight;
+        minVisWidth = ((dims[1] + 1) || 1) * this.vissesOptions[vis].columnMinWidth;
+        break;
+      case ('list'):
+        minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
+        minVisWidth = this.vissesOptions[vis].minWidth;
+        break;
+      case ('barplot'):
+        minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
+        minVisWidth = this.vissesOptions[vis].minWidth;
+        break;
+      case ('phovea-vis-heatmap1d'):
+        minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
+        minVisWidth = this.vissesOptions[vis].minWidth;
+        break;
+      case ('phovea-vis-heatmap'):
+        minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
+        minVisWidth = (dims[1] || 1) * this.vissesOptions[vis].columnMinWidth;
+        break;
+      case ('phovea-vis-histogram'):
+        minVisHeight = this.vissesOptions[vis].minHeight;
+        minVisWidth = this.vissesOptions[vis].minWidth;
+        break;
+      case ('phovea-vis-box'):
+        minVisHeight = this.vissesOptions[vis].minHeight;
+        minVisWidth = this.vissesOptions[vis].minWidth;
+        break;
+      case ('phovea-vis-mosaic'):
+        //TODO correct mosaic height
+        minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
+        minVisWidth = this.vissesOptions[vis].minWidth;
+        break;
       default:
-            minVisHeight = 50;
-            minVisWidth = 20;
+        minVisHeight = 50;
+        minVisWidth = 20;
     }
     return [minVisWidth, minVisHeight];
   }
 
 
   assignVis(multiform: MultiForm, width: number, height: number) {
-    const visses:IVisPluginDesc[] = multiform.visses;
-    if(multiform.id in this.userSelectedVisses){
+    const visses: IVisPluginDesc[] = multiform.visses;
+    if (multiform.id in this.userSelectedVisses) {
       multiform.switchTo(this.userSelectedVisses[multiform.id]);
       //TODO Scale to required size
-    }else{
+    } else {
       const preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type);
       let minPreferredSize = this.minVisSize(preferredVis, multiform.data.dim);
 
       let visId;
-      if(!((minPreferredSize[1] <= height) && (minPreferredSize[0] <= width))){
-        switch(multiform.data.desc.type){
+      if (!((minPreferredSize[1] <= height) && (minPreferredSize[0] <= width))) {
+        switch (multiform.data.desc.type) {
           case 'vector':
-            switch(multiform.data.desc.value.type) {
-                case VALUE_TYPE_STRING:
-                  visId = 'list';
-                  break;
-                case VALUE_TYPE_INT || VALUE_TYPE_REAL:
-                  if(minPreferredSize[0] > width){
-                      visId = 'phovea-vis-heatmap1d';
-                  }
-                  break;
-                case VALUE_TYPE_CATEGORICAL:
-                    if(minPreferredSize[1] > height){
-                      visId = 'phovea-vis-mosaic';
-                    }
-                  break;
-                default:
-                  visId = 'table';
-                  break;
+            switch (multiform.data.desc.value.type) {
+              case VALUE_TYPE_STRING:
+                visId = 'list';
+                break;
+              case VALUE_TYPE_INT || VALUE_TYPE_REAL:
+                if (minPreferredSize[0] > width) {
+                  visId = 'phovea-vis-heatmap1d';
+                }
+                break;
+              case VALUE_TYPE_CATEGORICAL:
+                if (minPreferredSize[1] > height) {
+                  visId = 'phovea-vis-mosaic';
+                }
+                break;
+              default:
+                visId = 'table';
+                break;
             }
             break;
-            case 'matrix':
-              visId = 'phovea-vis-heatmap';
-              break;
-            default:
-              visId = 'table';
-              break;
-    }
+          case 'matrix':
+            visId = 'phovea-vis-heatmap';
+            break;
+          default:
+            visId = 'table';
+            break;
+        }
 
         visses.forEach((v) => {
-          if(v.id == visId){
+          if (v.id === visId) {
             multiform.switchTo(v);
           }
         });
-      }else{
+      } else {
         multiform.switchTo(preferredVis);
       }
     }
