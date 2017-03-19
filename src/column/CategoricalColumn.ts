@@ -19,6 +19,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   constructor(data: ICategoricalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
     this.$node = this.build($parent);
+    this.toolbar.insert('button', ':first-child').classed('fa fa-bars', true);
   }
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
