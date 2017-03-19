@@ -237,7 +237,7 @@ export default class VisManager {
                 break;
               case VALUE_TYPE_CATEGORICAL:
                 if (minPreferredSize[1] > height) {
-                  visId = 'phovea-vis-mosaic';
+                  visId = 'phovea-vis-heatmap1d';
                 }
                 break;
               default:
