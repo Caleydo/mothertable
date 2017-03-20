@@ -39,7 +39,7 @@ export default class FilterManager extends EventHandler {
     super();
     this.build();
     this.drag();
-    on(CategoricalFilter.EVENT_STRATIFYME, this.stratifyMe.bind(this));
+
   }
 
   private build() {
@@ -52,6 +52,7 @@ export default class FilterManager extends EventHandler {
   push(data: IFilterAbleType) {
     const filter = FilterManager.createFilter(data, this.$node);
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
+    on(CategoricalFilter.EVENT_STRATIFYME, this.stratifyMe.bind(this));
     this.filters.push(filter);
   }
 
@@ -67,7 +68,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  private stratifyMe(evt, col:string) {
+  private stratifyMe(evt, col: string) {
     const colid = this.filters.filter((d) => d.data.desc.id === col);
     d3.selectAll('.fa.fa-bars').style('border', null);
     colid[0].$node.select('.fa.fa-bars').style('border', '1px solid');
