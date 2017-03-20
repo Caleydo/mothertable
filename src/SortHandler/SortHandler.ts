@@ -9,6 +9,10 @@ import {
 import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
 
+interface ISortResults {
+  combined:Range;
+  stratified:Map<string,number[]>;
+}
 
 export const SORT = {
   asc: 'asc',
@@ -36,11 +40,12 @@ export default class SortHandler {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
+        return (await this.sortString(newView, sortCriteria));
       case VALUE_TYPE_CATEGORICAL:
         return (await this.collectRangeList(newView, sortCriteria, 'sc'));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return (await this.collectRangeList(newView, sortCriteria, 'ir'));
+        return (await this.sortNumber(newView, sortCriteria));
     }
   }
 
@@ -62,28 +67,19 @@ export default class SortHandler {
   }
 
 
+
   /**
    *
    * @param columns
    * @returns {Promise<Range[][]>}
    */
-  async sortColumns(columns): Promise<Range[][]> {
-    if(columns.length === 0) {
-      return [[]];
-    }
+  async sortColumns(columns):Promise<ISortResults> {
+    // if(columns.length === 0) {
+    //   return [[]];
+    // }
     const d = await columns[0].data.idView(columns[0].rangeView);
     let range: any = [await d.ids()];
-    const initialColType = columns[0].data.desc.value.type;
-    const rangeForMultiform = [];
-    let dataElementsPerCol = [await (<IAnyVector>columns[0].data).length];
-    let count = 0;
-    let columnIndexForTie = NaN;
-    columns.some((val, index) => {
-      if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
-        columnIndexForTie = index;
-      }
-      return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
-    });
+    const rangesPerCol = new Map();
 
     //Iterate through all the columns
     for (const col of columns) {
@@ -100,34 +96,12 @@ export default class SortHandler {
       }
 
       range = await this.concatRanges(rangeOfView);
-
-      // first column is not categorical -> all further columns will have only one multiform
-      if (count === 0 && initialColType !== VALUE_TYPE_CATEGORICAL) {
-        dataElementsPerCol = [await (<any>col).data.length];
-        rangeForMultiform.push(dataElementsPerCol);
-
-        // first column is categorical -> the next column will be stratified by the number of categories
-      } else if (count === 0 && initialColType === VALUE_TYPE_CATEGORICAL) {
-        dataElementsPerCol = range.map((d) => d.dim(0).length);
-        rangeForMultiform.push([await (<any>col).data.length]);
-
-        // stratify other categorical columns until it reaches a tie (numerical or string column)
-      } else if (count < columnIndexForTie) {
-        rangeForMultiform.push(dataElementsPerCol);
-        dataElementsPerCol = range.map((d) => (d.dim(0).length));
-
-        // after tie (numerical or string column) use the preceeding stratification
-      } else {
-        rangeForMultiform.push(dataElementsPerCol);
-      }
-
-      count = count + 1;
+      const dataElementsPerCol = range.map((d) => (d.dim(0).length));
+      rangesPerCol.set(col.data.desc.id, dataElementsPerCol);
     }
 
-    const mergedRanges = this.mergeRanges(range);
-    const rangeListArr = prepareRangeFromList(mergedRanges.dim(0).asList(), rangeForMultiform);
-    const rangesPerColumn = makeRangeFromList(rangeListArr);
-    return rangesPerColumn;
+    // console.log(range, rangesPerCol)
+    return {combined: this.mergeRanges(range), stratified: rangesPerCol};
   }
 
 
@@ -293,7 +267,7 @@ export function prepareRangeFromList(sortedRange: number[], stratifiedArr: numbe
  * @param arr
  * @returns {Range[][]} Returns the range object from list
  */
-function makeRangeFromList(arr: number[][][]):Range[][] {
+function makeRangeFromList(arr: number[][][]): Range[][] {
   const rangeObject = arr.map((d) => {
     return d.map((e) => {
       const r = new Range();

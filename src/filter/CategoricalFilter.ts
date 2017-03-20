@@ -7,19 +7,23 @@ import {ICategoricalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import SortHandler, {SORT, stringSort} from '../SortHandler/SortHandler';
-import {on} from 'phovea_core/src/event';
+import CategoricalColumn from '../column/CategoricalColumn';
+import {on, fire} from 'phovea_core/src/event';
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly $node: d3.Selection<any>;
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
   private _sortCriteria: string = SORT.asc;
+  static readonly EVENT_STRATIFYME = 'updateStratifyIcon';
 
 
   constructor(data: ICategoricalVector, $parent: d3.Selection<any>) {
     super(data);
     this.$node = this.build($parent);
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
+    this.attachListener();
+
   }
 
   protected build($parent: d3.Selection<any>) {
@@ -29,6 +33,22 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     this.generateCategories($node.select('main'), dispHistogram);
     return $node;
   }
+
+  private attachListener() {
+    const splitIcon = this.$node.select('header').insert('a', ':first-child')
+      .classed('fa fa-bars', true);
+    splitIcon.on('click', () => {
+      d3.selectAll('.fa.fa-bars').classed('active', false);
+      const b = splitIcon.attr('class');
+      if (b === 'fa fa-bars') {
+        fire(CategoricalColumn.EVENT_STRATIFYME, this);
+        splitIcon.classed('active', true);
+      } else {
+        splitIcon.classed('active', false);
+      }
+    });
+  }
+
 
   sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
     if (sortData.col !== this) {
@@ -118,7 +138,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .attr('class', 'categoriesTransparent')
       .attr('title', (d) => `${d.name}: ${d.count}`)
       .style('height', cellHeight + 'px')
-      .on('click', function(d) {
+      .on('click', function (d) {
         onClick(d, d3.select(this));
       })
       .append('div')
@@ -136,7 +156,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .style('color', 'black')
       .attr('title', (d) => `${d.name}: ${d.count}`)
       .text((d, i) => d.name)
-      .on('click', function(d, i) {
+      .on('click', function (d, i) {
         onClick(d, d3.select(catListDiv[0][i]));
       });
     catNames.exit().remove();

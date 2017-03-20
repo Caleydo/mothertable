@@ -27,11 +27,13 @@ import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
-import {scaleTo} from './utils';
+import {scaleTo, makeRangeFromList, makeListFromRange} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
+import {isNumber} from 'util';
+import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
-import {isNumber} from "util";
+
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -40,20 +42,28 @@ export default class ColumnManager extends EventHandler {
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
 
-  private $node:d3.Selection<any>;
+  private $node: d3.Selection<any>;
 
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
-  private rangeList = [];
+  private stratifiedRanges: Range[]; // This is the rangelist used for stratification
+  private nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private visManager: VisManager;
   private colsWithRange = new Map();
+  private dataPerStratificaiton; //The number of data elements per stratification
+  private stratifyColid: string; // This is column Name used for stratification
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
+  private stratifyMe = (event: IEvent, colid) => {
+    this.stratifyColid = colid.data.desc.id;
+    this.stratifyAndRelayout();
+  };
 
-  constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent:d3.Selection<any>) {
+
+  constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
     this.build();
     this.attachListener();
@@ -74,8 +84,17 @@ export default class ColumnManager extends EventHandler {
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
       col[0].sortCriteria = sortData.sortMethod;
-      this.sortColumns();
+      this.updateColumns();
     });
+
+    on(CategoricalColumn.EVENT_STRATIFYME, (evt: any, colid) => {
+
+      const col = this.filtersHierarchy.filter((d) => d.data.desc.id === colid.data.desc.id);
+      this.stratifyColid = col[0].data.desc.id;
+      this.stratifyAndRelayout();
+    });
+
+
   }
 
   get length() {
@@ -107,6 +126,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
+    col.on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
 
     this.columns.push(col);
 
@@ -184,6 +204,11 @@ export default class ColumnManager extends EventHandler {
    */
   async updateColumns() {
     await this.sortColumns();
+    await this.stratifyAndRelayout();
+  }
+
+  async stratifyAndRelayout() {
+    this.updateStratifyID(this.stratifyColid);
     await this.stratifyColumns();
     this.relayout();
   }
@@ -194,18 +219,41 @@ export default class ColumnManager extends EventHandler {
   private async sortColumns() {
     const cols = this.filtersHierarchy;
 
-    // special handling if matrix is added as first column
+    //special handling if matrix is added as first column
     if (cols.length === 0) {
-      this.rangeList = [[this.firstColumnRange]];
+      this.nonStratifiedRange = this.firstColumnRange;
+      this.stratifiedRanges = [this.firstColumnRange];
       return;
     }
 
     // The sort object is created on the fly and destroyed after it exits this method
     const s = new SortHandler();
-    this.rangeList = await s.sortColumns(cols);
+    const r = await s.sortColumns(cols);
+    this.nonStratifiedRange = r.combined;
+    this.stratifiedRanges = [r.combined];
+    this.dataPerStratificaiton = r.stratified;
+    cols.forEach((col) => {
+      this.colsWithRange.set(col.data.desc.id, [this.nonStratifiedRange]);
+    });
 
-    cols.forEach((col, index) => {
-      this.colsWithRange.set(col.data.desc.id, this.rangeList[index]);
+    const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    if (categoricalCol.length > 0 && this.stratifyColid === undefined) {
+      this.stratifyColid = categoricalCol[0].data.desc.id;
+    }
+  }
+
+  private async updateStratifyID(colid) {
+    if (colid === undefined) {
+      return;
+    }
+
+    this.stratifyColid = colid;
+    const cols = this.filtersHierarchy;
+    const datas = this.dataPerStratificaiton.get(colid);
+    const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
+    this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
+    cols.forEach((col) => {
+      this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
     });
   }
 
@@ -223,7 +271,9 @@ export default class ColumnManager extends EventHandler {
 
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
-    matrixCols.map((col) => col.updateMultiForms(this.rangeList[this.rangeList.length - 1]));
+    matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
+
+
   }
 
   async relayout() {
@@ -249,7 +299,7 @@ export default class ColumnManager extends EventHandler {
   private relayoutColStrats() {
     const $strats = this.$node.selectAll('aside')
       .style('height', null); // remove height first, to calculate a new one
-    const maxHeight = Math.max(...$strats[0].map((d:HTMLElement) => d.clientHeight));
+    const maxHeight = Math.max(...$strats[0].map((d: HTMLElement) => d.clientHeight));
     $strats.style('height', maxHeight + 'px');
   }
 
@@ -266,7 +316,7 @@ export default class ColumnManager extends EventHandler {
       const temp = [];
 
       if (range === undefined) {
-        range = this.rangeList[this.rangeList.length - 1];
+        range = this.stratifiedRanges;
       }
 
       const minSizes = this.visManager.computeMinHeight(col);
