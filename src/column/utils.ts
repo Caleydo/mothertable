@@ -5,6 +5,7 @@
 import {ZoomLogic} from 'phovea_core/src/behavior';
 import {EOrientation} from './AColumn';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
+import Range from 'phovea_core/src/range/Range';
 
 
 export function scaleTo(multiform: MultiForm, width: number, height: number, orientation: EOrientation) {
@@ -24,7 +25,7 @@ export function scaleTo(multiform: MultiForm, width: number, height: number, ori
 }
 
 
-export const NUMERICAL_COLOR_MAP:string[] = ['#fff5f0', '#67000d'];
+export const NUMERICAL_COLOR_MAP: string[] = ['#fff5f0', '#67000d'];
 
 
 export function reArrangeRangeList(draggedArray, fullRangeasList) {
@@ -84,4 +85,13 @@ function spliceArr(rangeArr, dragIndices) {
   r = r.filter((d) => d !== 0);
   return r;
 
+}
+export function makeRangeFromList(arr: number[]): Range {
+  const r = new Range();
+  r.dim(0).pushList(arr);
+  return r;
+}
+
+export function makeListFromRange(range: Range): number[] {
+  return range.dim(0).asList();
 }

@@ -74,6 +74,7 @@
       text-decoration: none;
       cursor: pointer;
       color: inherit;
+      padding-right: 5px;
     }
   }
 
@@ -197,5 +198,11 @@ li {
   font-family: sans-serif;
   font-size: 12px;
   fill: black
+
+}
+
+.fa.fa-bars.active {
+
+  border: 1px solid
 
 }
