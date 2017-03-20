@@ -218,7 +218,7 @@ export default class ColumnManager extends EventHandler {
     });
 
     const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
-    if (categoricalCol.length > 0) {
+    if (categoricalCol.length > 0 && this.stratifyColid === undefined) {
       this.stratifyColid = categoricalCol[0].data.desc.id;
     }
 
