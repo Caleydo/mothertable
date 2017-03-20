@@ -325,6 +325,10 @@ export default class VisManager {
         minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
         minVisWidth = this.vissesOptions[vis].minWidth;
         break;
+      case('proportionalSymbol'):
+        minVisHeight = dims[0] * this.vissesOptions[vis].rowMinHeight;
+        minVisWidth = this.vissesOptions[vis].minWidth;
+        break;
       default:
         minVisHeight = 50;
         minVisWidth = 20;

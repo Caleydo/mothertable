@@ -328,14 +328,23 @@ export default class ColumnManager extends EventHandler {
   let totalMax = 0;
 
   //first run - check if the unagregatted visses fit and if not, switch all non-user-unaggregated rows to aggregated
+  let aggregationNeeded = false;
   for (const col of this.columns) {
-    let minSizes = this.visManager.computeMinHeight(col);
-    if (minSizes < height) {
+    const minSizes = this.visManager.computeMinHeight(col);
+    if (d3.sum(minSizes) > height) {
+      aggregationNeeded = true;
       minSizes.forEach((m, id) => {
         if (!VisManager.isUserSelectedUnaggregatedRow[id]) {
           this.updateAggregationLevelForRow(id, VisManager.aggregationType.AGGREGATED);
         }
       });
+    }
+  }
+  if(!aggregationNeeded){
+    for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
+      if (!VisManager.isUserSelectedUnaggregatedRow[i]) {
+          this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
+      }
     }
   }
 
@@ -362,6 +371,8 @@ export default class ColumnManager extends EventHandler {
     minHeights.push(min);
     maxHeights.push(max);
 
+    totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
+
     index = index + 1;
   }
 
@@ -384,28 +395,20 @@ export default class ColumnManager extends EventHandler {
     return d.map((e) => minScale(e));
   });
 
+
     maxHeights = maxHeights.map((d, i) => {
       const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
       return d.map((e) => maxScale(e));
     });
 
-    const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
-    const flexHeights = minHeights.map((d, i) => {
-      return d.map((e) => nodeHeightScale(e));
-    });
-
-
-    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     if (totalMin > height) {
       return minHeights;
-    } else if (checkStringCol.length > 0 && totalMax > height) {
-      return minHeights;
-    } else if (checkStringCol.length > 0 && totalMax < totalMin) {
+    } else if (totalMax > height) {
       return minHeights;
     } else if (totalMax < height) {
       return maxHeights;
     } else {
-      return flexHeights;
+      return minHeights;
     }
 
   }
