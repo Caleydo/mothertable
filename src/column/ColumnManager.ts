@@ -18,7 +18,7 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn} from 'phovea_core/src';
 import IDType from 'phovea_core/src/idtype/IDType';
-import SortEventHandler from '../SortEventHandler/SortEventHandler';
+import SortHandler from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
@@ -31,7 +31,9 @@ import {scaleTo, makeRangeFromList, makeListFromRange} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
 import {isNumber} from 'util';
-import {prepareRangeFromList} from '../SortEventHandler/SortEventHandler';
+import {prepareRangeFromList} from '../SortHandler/SortHandler';
+import {AnyFilter} from '../filter/AFilter';
+
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -78,7 +80,7 @@ export default class ColumnManager extends EventHandler {
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
       col[0].sortCriteria = sortData.sortMethod;
-      this.updateSort();
+      this.sortColumns();
     });
 
     on(CategoricalColumn.EVENT_STRATIFYME, (evt: any, colid) => {
@@ -110,7 +112,7 @@ export default class ColumnManager extends EventHandler {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
-    const col = createColumn(data, this.orientation, this.$parent);
+    const col = createColumn(data, this.orientation, this.$node);
 
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
@@ -140,7 +142,7 @@ export default class ColumnManager extends EventHandler {
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
-    this.relayout();
+    this.updateColumns();
   }
 
   /**
@@ -180,35 +182,42 @@ export default class ColumnManager extends EventHandler {
       col.dataView = await col.data.idView(idRange);
     }
 
-    this.updateSort();
+    this.updateColumns();
   }
 
   /**
-   * Find corresponding columns for given list of filters and update the sorted hierarchy
+   * Find corresponding columns for given list of filters and update the sorted  hierarchy
    * @param filterList
    */
-  mapFiltersAndSort(filterList: AnyColumn[]) {
+  mapFiltersAndSort(filterList: AnyFilter[]) {
     this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
-    this.updateSort();
+    this.updateColumns();
   }
 
+  /**
+   * Sort, stratify and render all columns
+   */
+  async updateColumns() {
+    await this.sortColumns();
+    await this.stratifyColumns();
+    this.relayout();
+  }
 
   /**
    * Sorting the ranges based on the filter hierarchy
    */
-  async updateSort() {
+  private async sortColumns() {
     const cols = this.filtersHierarchy;
 
     //special handling if matrix is added as first column
     if (cols.length === 0) {
       this.nonStratifiedRange = this.firstColumnRange;
       this.stratifiedRanges = [this.firstColumnRange];
-      this.updateColumns();
       return;
     }
 
     // The sort object is created on the fly and destroyed after it exits this method
-    const s = new SortEventHandler();
+    const s = new SortHandler();
     const r = await s.sortColumns(cols);
     this.nonStratifiedRange = r.combined;
     this.stratifiedRanges = [r.combined];
@@ -221,13 +230,6 @@ export default class ColumnManager extends EventHandler {
     if (categoricalCol.length > 0 && this.stratifyColid === undefined) {
       this.stratifyColid = categoricalCol[0].data.desc.id;
     }
-
-    if (this.stratifyColid !== undefined) {
-      this.stratify(this.stratifyColid);
-    } else {
-      this.updateColumns();
-    }
-
   }
 
   private stratify(colid) {
@@ -239,18 +241,19 @@ export default class ColumnManager extends EventHandler {
     cols.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
     });
-
-    this.updateColumns();
-
   }
-
 
   /**
    *
    * @param idRange
    * @returns {Promise<void>}
    */
-  private async updateColumns() {
+  private async stratifyColumns() {
+
+    if (this.stratifyColid !== undefined) {
+      this.stratify(this.stratifyColid);
+    }
+
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
@@ -261,7 +264,7 @@ export default class ColumnManager extends EventHandler {
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
 
-    this.relayout();
+
   }
 
   async relayout() {
@@ -285,9 +288,10 @@ export default class ColumnManager extends EventHandler {
    * Calculate the maximum height of all column stratification areas and set it for every column
    */
   private relayoutColStrats() {
-    const $strats = this.$node.selectAll('aside');
-    const maxHeight = Math.max(...$strats[0].map((d: HTMLElement) => d.clientHeight));
-    $strats.style('height', `${maxHeight}px`);
+    const $strats = this.$node.selectAll('aside')
+      .style('height', null); // remove height first, to calculate a new one
+    const maxHeight = Math.max(...$strats[0].map((d:HTMLElement) => d.clientHeight));
+    $strats.style('height', maxHeight + 'px');
   }
 
   private async calColHeight(height) {
@@ -415,7 +419,7 @@ export function distributeColWidths(columns: {lockedWidth: number, minWidth: num
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
   switch (data.desc.type) {
-    case 'vector':
+    case AColumn.DATATYPE.vector:
       const v = <IStringVector|ICategoricalVector|INumericalVector>data;
       switch (v.desc.value.type) {
         case VALUE_TYPE_STRING:
@@ -428,7 +432,7 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
       }
       throw new Error('invalid vector type');
 
-    case 'matrix':
+    case AColumn.DATATYPE.matrix:
       const m = <INumericalMatrix>data;
       switch (m.desc.value.type) {
         case VALUE_TYPE_INT:

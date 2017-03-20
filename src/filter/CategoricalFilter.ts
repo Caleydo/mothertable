@@ -6,7 +6,7 @@ import AVectorFilter from './AVectorFilter';
 import {ICategoricalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
-import SortEventHandler, {SORT, stringSort} from '../SortEventHandler/SortEventHandler';
+import SortHandler, {SORT, stringSort} from '../SortHandler/SortHandler';
 import CategoricalColumn from '../column/CategoricalColumn';
 import {on, fire} from 'phovea_core/src/event';
 
@@ -28,17 +28,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
   protected build($parent: d3.Selection<any>) {
     const $node = super.build($parent);
-    // node.innerHTML = `<button>${this.data.desc.name}</button>`;
-    // (<HTMLElement>node.querySelector('button')).addEventListener('click', () => {
-    //
-    //   this.triggerFilterChanged();
-    // });
-
-
     this.generateLabel($node, this.data.desc.name);
     const dispHistogram: boolean = true;
     this.generateCategories($node.select('main'), dispHistogram);
-
     return $node;
   }
 

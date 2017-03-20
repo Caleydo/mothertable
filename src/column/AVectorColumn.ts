@@ -7,7 +7,7 @@ import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
-import {SORT} from '../SortEventHandler/SortEventHandler';
+import {SORT} from '../SortHandler/SortHandler';
 import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
@@ -67,30 +67,30 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   async updateMultiForms(idRanges: Range[]) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
-    this.updateSortIcon();
-    this.body.selectAll('.multiformList').remove();
-    this.multiformList = [];
     const domain = d3.extent(v);
-    for (const r of idRanges) {
-      const multiformdivs = this.body.append('div').classed('multiformList', true);
-      const $header = multiformdivs.append('div').classed('vislist', true);
-      this.body.selectAll('.multiformList')
-        .on('mouseover', function () {
-          d3.select(this).select('.vislist').style('display', 'block');
-        })
-        .on('mouseleave', function () {
-          d3.select(this).select('.vislist').style('display', 'none');
-        });
-      const view = await this.data.idView(r);
-      const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
-      m.addIconVisChooser(<HTMLElement>$header.node());
-      this.multiformList.push(m);
-    }
 
+    const viewPromises = idRanges.map((r) => this.data.idView(r));
+    Promise.all(viewPromises).then((views) => {
+      this.updateSortIcon();
+      this.body.selectAll('.multiformList').remove();
+      this.multiformList = [];
 
+      views.forEach((view) => {
+        const $multiformdivs = this.body.append('div').classed('multiformList', true);
+        const $header = $multiformdivs.append('div').classed('vislist', true);
+        this.body.selectAll('.multiformList')
+          .on('mouseover', function () {
+            d3.select(this).select('.vislist').style('display', 'block');
+          })
+          .on('mouseleave', function () {
+            d3.select(this).select('.vislist').style('display', 'none');
+          });
+        const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
+        m.addIconVisChooser(<HTMLElement>$header.node());
+        this.multiformList.push(m);
+      });
+    });
   }
-
-
 }
 
 export default AVectorColumn;

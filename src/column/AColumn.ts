@@ -7,7 +7,7 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import Range from 'phovea_core/src/range/Range';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
-import {SORT} from '../SortEventHandler/SortEventHandler';
+import {SORT} from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 export enum EOrientation {
   Horizontal,
@@ -44,20 +44,48 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   get body() {
-    return this.$node.select('main');
+    return this.$node.select(':scope > main'); // :scope = enforce direct children
   }
 
   get header() {
     return this.$node.select('header.columnHeader');
   }
 
-  protected get toolbar() {
-    return this.$node.select('div.toolbar');
+  protected build($parent: d3.Selection<any>): d3.Selection<any> {
+    if(this.orientation === EOrientation.Horizontal) {
+      return this.buildHorizontal($parent);
+    }
+    return this.buildVertical($parent);
   }
 
-  protected build($parent: d3.Selection<any>) {
-    this.$node = $parent.select('.columnList')
+  /**
+   * Add template for stratifications columns (in the header )
+   * @param $parent
+   * @returns {Selection<any>}
+   */
+  protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
+    const $node = $parent.insert('li', 'li')
+      .datum(this)
+      .classed('column-strat', true)
+      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .html(`
+        <header>
+          <span>${this.data.desc.name}</span>
+        </header> 
+        <main></main>
+      `);
+    return $node;
+  }
+
+  /**
+   * Add template for regular columns (in the main view)
+   * @param $parent
+   * @returns {Selection<any>}
+   */
+  protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
+    const $node = $parent
       .append('li')
+      .datum(this)
       .classed('column', true)
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
       .style('min-width', this.minWidth + 'px')
@@ -70,18 +98,17 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         </header>
         <main></main>`);
 
-    const header = this.$node.selectAll('header')
+    const header = $node.selectAll('header')
       .on('mouseover', function () {
-        d3.select(this).select('.toolbar').style('display', 'block');
+        $node.select('.toolbar').style('display', 'block');
       })
       .on('mouseleave', function () {
-        d3.select(this).select('.toolbar').style('display', 'none');
+        $node.select('.toolbar').style('display', 'none');
       });
 
-    // this.buildBody(this.body);
-    this.buildToolbar(this.toolbar);
+    this.buildToolbar($node.select('div.toolbar'));
 
-    return this.$node;
+    return $node;
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
@@ -92,7 +119,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       });
 
     $toolbar.append('button')
-      .classed('fa fa-close', true)
+      .classed('fa fa-trash', true)
       .on('click', () => {
         this.fire(AColumn.EVENT_REMOVE_ME);
         return false;

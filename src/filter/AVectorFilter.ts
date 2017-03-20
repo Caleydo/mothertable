@@ -5,7 +5,7 @@
 import AFilter from './AFilter';
 import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc} from 'phovea_core/src/datatype';
-import {SORT} from '../SortEventHandler/SortEventHandler';
+import {SORT} from '../SortHandler/SortHandler';
 import * as d3 from 'd3';
 import {on, fire} from 'phovea_core/src/event';
 

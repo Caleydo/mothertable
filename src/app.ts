@@ -3,40 +3,34 @@
  */
 
 import {listAll, IDType} from 'phovea_core/src/idtype';
-import {select} from 'd3';
+import * as d3 from 'd3';
 import ColumnManager, {IMotherTableType, AnyColumn} from './column/ColumnManager';
 import SupportView from './SupportView';
-import {Range1D} from 'phovea_core/src/range';
 import {EOrientation, default as AColumn} from './column/AColumn';
 import MatrixFilter from './filter/MatrixFilter';
-import * as d3 from 'd3';
 import MatrixColumn from './column/MatrixColumn';
 import FilterManager from './filter/FilterManager';
 import {AVectorColumn} from './column/AVectorColumn';
 import {IAnyVector} from 'phovea_core/src/vector';
-import {randomId} from 'phovea_core/src/index';
 import Range from 'phovea_core/src/range/Range';
 import {hash} from 'phovea_core/src/index';
 import {IDataType} from 'phovea_core/src/datatype';
+import {IFuelBarDataSize} from './SupportView';
+import Range1D from 'phovea_core/src/range/Range1D';
+import {AnyFilter} from './filter/AFilter';
 
 /**
  * The main class for the App app
  */
-
-interface IdataSize {
-  total: number;
-  filtered: number;
-}
-
 export default class App {
 
   private readonly $node: d3.Selection<any>;
 
-  private manager: ColumnManager;
+  private colManager: ColumnManager;
   private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range;
-  private dataSize: IdataSize;
+  private dataSize: IFuelBarDataSize;
 
   constructor(parent: HTMLElement) {
     this.$node = d3.select(parent);
@@ -54,7 +48,7 @@ export default class App {
       }
     }
 
-    this.buildStartSelection(select('#startSelection'));
+    this.buildStartSelection(d3.select('#startSelection'));
   }
 
   private async loadIdtypes() {
@@ -99,8 +93,8 @@ export default class App {
 
   private reset() {
     this.supportView[0].destroy();
-    this.manager.destroy();
-    this.removePreviewData();
+    this.colManager.destroy();
+    d3.selectAll('.rightPanel').remove();
     this.showSelection();
   }
 
@@ -117,17 +111,16 @@ export default class App {
     };
 
     window.addEventListener('resize', debounce(() => {
-      if (this.manager) {
-        this.manager.relayout();
+      if (this.colManager) {
+        this.colManager.relayout();
       }
     }, 300));
   }
 
-  private findType(data: IMotherTableType, currentIDType: string) {
+  private findType(data: IDataType, currentIDType: string) {
     const coltype = data.desc.coltype;
     const rowtype = data.desc.rowtype;
     if (rowtype === currentIDType) {
-
       const idType = this.idtypes.filter((d) => d.id === coltype);
       return idType[0];
 
@@ -146,112 +139,108 @@ export default class App {
     this.hideSelection();
 
     // create a column manager
-    this.manager = new ColumnManager(idtype, EOrientation.Horizontal, this.$node.select('main'));
-    this.manager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+    this.colManager = new ColumnManager(idtype, EOrientation.Horizontal, this.$node.select('main'));
+    this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
-    const $supportView = this.buildSupportView(idtype);
-    //  this.node.querySelector('section.rightPanel').appendChild(node);
-    const supportView = new SupportView(idtype, $supportView, this.supportView.length);
+    const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
 
     this.supportView.push(supportView);
 
-    this.supportView[0].on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
-      this.manager.mapFiltersAndSort(data);
+    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
+      this.colManager.mapFiltersAndSort(data);
     });
 
     // add columns if we add one or multiple datasets
-    this.supportView[0].on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+    supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
       // first push all the new columns ...
       const addedColumnsPromise = datasets.map((data) => {
         if (this.dataSize === undefined) {
           this.dataSize = {total: data.length, filtered: data.length};
-          this.previewData(this.dataSize, idtype.id, $supportView);
+          supportView.updateFuelBar(this.dataSize);
         }
-
-        const promise = this.manager.push(data);
-
-        if (data.desc.type === AColumn.DATATYPE.matrix) {
-          const otherIdtype: IDType = this.findType(data, idtype.id);
-          this.triggerMatrix();
-          this.newSupportManger(data, otherIdtype);
-        }
-
-        return promise;
+        return this.colManager.push(data);
       });
       // ... when all columns are pushed -> sort and render them
       Promise.all(addedColumnsPromise)
+        .then((columns:AnyColumn[]) => {
+          // add new support views for matrix column
+          columns
+            .filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix)
+            .forEach((col) => {
+              this.triggerMatrix();
+              this.addMatrixColSupportManger(<MatrixColumn>col);
+            });
+
+          return columns;
+        })
         .then(() => {
-          this.manager.updateSort();
+          this.colManager.updateColumns();
         });
     });
 
-
-    this.supportView[0].on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
-      this.manager.filterData(filter);
+    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+      this.colManager.filterData(filter);
       // this.manager.update(filter);
       this.rowRange = filter;
       this.triggerMatrix();
       this.dataSize.filtered = filter.size()[0];
-      this.previewData(this.dataSize, idtype.id, $supportView);
+      supportView.updateFuelBar(this.dataSize);
     });
 
-    this.manager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
-      const cols = this.manager.columns;
+    this.colManager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
+      const cols = this.colManager.columns;
       const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
       if (countSame < 1) {
-        this.supportView[0].remove(data);
+        supportView.remove(data);
       }
 
-      if (this.manager.length === 0) {
+      if (this.colManager.length === 0) {
         this.reset();
       }
     });
   }
 
+  private addMatrixColSupportManger(col:MatrixColumn) {
+    const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
+    const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
+    this.supportView.push(supportView);
 
-  private buildSupportView(idtype: IDType) {
-    const $supportView = this.$node.select('.rightPanel')
-      .append('div')
-      .classed(`support-view-${idtype.id}`, true)
-      .classed(`support-view`, true);
+    const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
+    new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
 
-    $supportView.append('h1')
-      .classed('idType', true)
-      .html(idtype.id.toUpperCase());
+    supportView.updateFuelBar(this.dataSize);
 
-    const $fuelBar = $supportView.append('div')
-      .classed(`dataPreview-${idtype.id}`, true)
-      .classed(`fuelBar`, true);
-
-    $fuelBar.append('div').classed('totalData', true);
-    $fuelBar.append('div').classed('filteredData', true);
-
-    return $supportView;
-  }
-
-
-  private newSupportManger(data: IDataType, otherIdtype: IDType) {
-    const $supportView = this.buildSupportView(otherIdtype);
-    const matrixSupportView = new SupportView(otherIdtype, $supportView, this.supportView.length);
-    this.supportView.push(matrixSupportView);
-
-    const m = this.supportView[0].getMatrixData(data.desc.id);
-    const $matrixnode = $supportView.select(`.${otherIdtype.id}.filter-manager`);
-    // d3.select(node).select(`.${otherIdtype.id}.filter-manager` );
-    new MatrixFilter(m.t, $matrixnode);
-
-    this.previewData(this.dataSize, otherIdtype.id, $supportView);
-
-    matrixSupportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range1D) => {
-      this.triggerMatrix(filter, matrixSupportView.id);
-
+    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+      col.filterStratData(filter);
+      this.triggerMatrix(filter, supportView.id);
       this.dataSize.filtered = filter.size()[0];
-      this.previewData(this.dataSize, otherIdtype.id, $supportView);
+      supportView.updateFuelBar(this.dataSize);
+    });
+
+    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
+      col.updateColStratsSorting(data);
+    });
+
+    // add columns if we add one or multiple datasets
+    supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+      // first push all the new stratifications ...
+      const promises = datasets.map((d) => {
+        return col.pushColStratData(d);
+      });
+      // ... when all stratifications are pushed -> render the column and relayout
+      Promise.all(promises)
+        .then(() => {
+          return Promise.all([col.updateColStrats(), col.updateMultiForms()]);
+        })
+        .then(() => {
+          this.colManager.relayout();
+        });
+
     });
   }
 
   private triggerMatrix(colRange?, id?: number) {
-    const matrixCol:MatrixColumn[] = <MatrixColumn[]>this.manager.columns.filter((d) => d instanceof MatrixColumn);
+    const matrixCol:MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
     const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
     if (uniqueMatrix === -1) {
       return;
@@ -269,21 +258,6 @@ export default class App {
     }
 
     matrixCol[uniqueMatrix - 1].updateMultiForms(null, colRange);
-  }
-
-  private previewData(dataSize: IdataSize, idtype: string, $node: d3.Selection<any>) {
-    const availableWidth = parseFloat($node.select(`.dataPreview-${idtype}`).style('width'));
-    const total = (dataSize.total);
-    const filtered = (dataSize.filtered) || 0;
-    const totalWidth = availableWidth / total * filtered;
-    const d = $node.select(`.dataPreview-${idtype}`);
-
-    $node.select(`.dataPreview-${idtype}`).select('.totalData').style('width', `${totalWidth}px`);
-    $node.select(`.dataPreview-${idtype}`).select('.filteredData').style('width', `${availableWidth - totalWidth}px`);
-  }
-
-  private  removePreviewData() {
-    d3.selectAll('.rightPanel').remove();
   }
 
 }
