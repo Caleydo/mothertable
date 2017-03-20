@@ -47,7 +47,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,VisManager.aggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }

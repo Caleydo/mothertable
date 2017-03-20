@@ -92,13 +92,13 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       const view = await this.data.idView(r);
       const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
 
-      Object.keys(idList).some((l) => {
+    /*  Object.keys(idList).some((l) => {
         let newRange = r.dims[0].asList().toString();
         let originalRange = idList[l].dims[0].toString();
         //set the vis for the same multiform
         //TODO performance: move this test higher, so the multiform with unchanged range is not redrawn
         if(newRange == originalRange){
-          VisManager.updateUserVis(l, m.id.toString());
+          VisManager.updateUserVis(l, m.id.toString(),);
           return true;
         }else{
           let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
@@ -114,12 +114,12 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             return true;
           }
         }
-      });
+      });*/
       this.addIconVisChooser(<HTMLElement>$header.node(), m);
       this.multiformList.push(m);
     }
     Object.keys(idList).forEach((l) => {
-      VisManager.removeUserVis(l);
+      VisManager.removeUserVisses(l);
     });
   }
 
@@ -142,7 +142,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     toolbar.insertBefore(s, toolbar.firstChild);
     const visses = multiform.visses;
 
-    visses.forEach((v) => {
+ /*   visses.forEach((v) => {
       const child = createNode(s, 'i');
       v.iconify(child);
       child.onclick = () => {
@@ -150,7 +150,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         VisManager.setUserVis(multiform.id, v);
 
       };
-    });
+    });*/
   }
 
 

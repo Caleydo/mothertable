@@ -47,6 +47,8 @@ export default class ColumnManager extends EventHandler {
   private rangeList = [];
   private visManager: VisManager;
   private colsWithRange = new Map();
+  private rowCounter = 0;
+
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
@@ -238,6 +240,19 @@ export default class ColumnManager extends EventHandler {
       });
     });
   }
+
+  private buildRows(){
+
+  }
+
+  public updateAggregationType (multiformID : string){
+    this.columns.forEach((col) => {
+    //  col.multiformList.forEach(())
+
+    });
+
+  }
+
 
   /**
    * Calculate the maximum height of all column stratification areas and set it for every column

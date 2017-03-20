@@ -113,7 +113,13 @@ export default class VisManager {
   /**
    *User selected visualization for multiform with given id
    */
-  public static userSelectedVisses: {[id : string] : IVisPluginDesc} = {};
+  public static userSelectedAggregatedVisses: {[id : string] : IVisPluginDesc} = {};
+  public static userSelectedUnaggregatedVisses: {[id : string] : IVisPluginDesc} = {};
+
+  public static aggregationType = {
+    AGGREGATED : 1,
+    UNAGGREGATED : 2,
+  };
 
   constructor(){
     this.vissesOptions = {
@@ -129,7 +135,7 @@ export default class VisManager {
     };
   }
 
-  static getDefaultVis(columnType: string, dataType: string) {
+  static getDefaultVis(columnType: string, dataType: string, aggregationType ) {
     switch(columnType){
       case 'vector':
         switch(dataType) {
@@ -149,31 +155,46 @@ export default class VisManager {
     }
   }
 
-  static setUserVis(id:number, vis:IVisPluginDesc) {
-      VisManager.userSelectedVisses[id] = vis;
+  static setUserVis(id:number, vis:IVisPluginDesc, aggregationType) {
+    if(aggregationType == VisManager.aggregationType.AGGREGATED){
+      VisManager.userSelectedAggregatedVisses[id] = vis;
+    }else{
+      VisManager.userSelectedUnaggregatedVisses[id] = vis;
+    }
+
   }
 
-  static updateUserVis(idOld:string, idNew:string) {
-    if(idOld in VisManager.userSelectedVisses) {
-      VisManager.userSelectedVisses[idNew] = VisManager.userSelectedVisses[idOld];
+  static updateUserVis(idOld:string, idNew:string, aggregationType) {
+    if(aggregationType == VisManager.aggregationType.AGGREGATED){
+      if(idOld in VisManager.userSelectedAggregatedVisses) {
+        VisManager.userSelectedAggregatedVisses[idNew] = VisManager.userSelectedAggregatedVisses[idOld];
+      }
+    }else{
+      if(idOld in VisManager.userSelectedUnaggregatedVisses) {
+        VisManager.userSelectedUnaggregatedVisses[idNew] = VisManager.userSelectedUnaggregatedVisses[idOld];
+      }
     }
   }
 
-  static removeUserVis(id:string) {
-    delete VisManager.userSelectedVisses[id];
+  static removeUserVisses(id:string) {
+    delete VisManager.userSelectedAggregatedVisses[id];
+    delete VisManager.userSelectedUnaggregatedVisses[id];
   }
+
 
   /*
    * Compute minimum height of column depending on
-   * minimal size of user-selced visualizations and
+   * minimal size of user-selected visualizations and
    * minimal size of visualizations available for given datatype
    */
   computeMinHeight(col:AnyColumn) : number [] {
     let minColumnHeight : number[] = [];
     col.multiformList.forEach((multiform, index)=>{
       let minHeight;
-      if(multiform.id in VisManager.userSelectedVisses){
-       minHeight = this.minVisSize(VisManager.userSelectedVisses[multiform.id].id, multiform.data.dim)[1];
+      if(multiform.id in VisManager.userSelectedAggregatedVisses){
+       minHeight = this.minVisSize(VisManager.userSelectedAggregatedVisses[multiform.id].id, multiform.data.dim)[1];
+      }else if(multiform.id in VisManager.userSelectedUnaggregatedVisses){
+       minHeight = this.minVisSize(VisManager.userSelectedUnaggregatedVisses[multiform.id].id, multiform.data.dim)[1];
       }else{
         minHeight = Number.POSITIVE_INFINITY;
         const visses:IVisPluginDesc[] = multiform.visses;
@@ -235,11 +256,13 @@ export default class VisManager {
 
   assignVis(multiform: MultiForm, width: number, height: number) {
     const visses:IVisPluginDesc[] = multiform.visses;
-    if(multiform.id in VisManager.userSelectedVisses){
-      multiform.switchTo(VisManager.userSelectedVisses[multiform.id]);
+    if(multiform.id in VisManager.userSelectedAggregatedVisses){//TODO add check if it should be aggregated or not
+      multiform.switchTo(VisManager.userSelectedAggregatedVisses[multiform.id]);
       //TODO Scale to required size
+    }else if(multiform.id in VisManager.userSelectedUnaggregatedVisses) {//TODO add check if it should be aggregated or not
+       multiform.switchTo(VisManager.userSelectedUnaggregatedVisses[multiform.id]);
     }else{
-      const preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type);
+      const preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type,VisManager.aggregationType.UNAGGREGATED);//TODO check agggregation type for multiform
       let minPreferredSize = this.minVisSize(preferredVis, multiform.data.dim);
 
       let visId;

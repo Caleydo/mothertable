@@ -24,7 +24,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams($body: d3.Selection<any>, domain?: number[]): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,VisManager.aggregationType.UNAGGREGATED),
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP
       },
