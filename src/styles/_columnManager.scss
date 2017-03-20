@@ -63,6 +63,14 @@
       // height: 600px;
       //align-items: center;
     }
+
+    // column stratification
+    aside {
+      ol, li {
+        list-style-type: decimal;
+        margin: 0;
+      }
+    }
   }
 }
 
