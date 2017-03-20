@@ -18,6 +18,7 @@ import {IDataType} from 'phovea_core/src/datatype';
 import {IFuelBarDataSize} from './SupportView';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter} from './filter/AFilter';
+import {formatIdTypeName} from './column/utils';
 
 /**
  * The main class for the App app
@@ -65,9 +66,9 @@ export default class App {
     elems.enter().append('div')
       .classed('btn-group', true)
       .attr('role', 'group')
-      .html(`<button type="button" class="btn btn-default btn-lg">Artists</button>`);
+      .html(`<button type="button" class="btn btn-default btn-lg"></button>`);
     elems.select('button')
-      .text((d) => d.names)
+      .text((d) => formatIdTypeName(d.name))
       .on('click', (idtype) => {
         hash.setProp('idtype', idtype.id);
         this.setPrimaryIDType(idtype);

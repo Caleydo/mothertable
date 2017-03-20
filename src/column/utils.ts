@@ -95,3 +95,17 @@ export function makeRangeFromList(arr: number[]): Range {
 export function makeListFromRange(range: Range): number[] {
   return range.dim(0).asList();
 }
+
+
+export function formatAttributeName(name: string): string {
+  return name
+    .replace('patient.', ''); // HACK for TCGA dataset
+}
+
+export function formatIdTypeName(name: string): string {
+  return name // HACK for TCGA dataset
+    .replace('artist', 'Artist')
+    .replace('country', 'Country')
+    .replace('GENE_SYMBOL', 'Gene')
+    .replace('TCGA_SAMPLE', 'Patient');
+}
