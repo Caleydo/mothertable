@@ -10,6 +10,10 @@ import * as d3 from 'd3';
 import {SORT} from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {formatAttributeName} from './utils';
+import MultiForm from '../../../phovea_core/src/multiform/MultiForm';
+import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
+import {IVisPluginDesc} from '../../../phovea_core/src/vis';
+import VisManager from './VisManager';
 export enum EOrientation {
   Horizontal,
   Vertical
@@ -35,6 +39,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   sortCriteria: string = SORT.asc;
   rangeView: Range;
   multiformList = [];
+
+  selectedAggVis:IVisPluginDesc;
+  selectedUnaggVis:IVisPluginDesc;
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
@@ -123,7 +130,34 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         this.fire(AColumn.EVENT_REMOVE_ME);
         return false;
       });
+
+    this.appendVisChooser(this.selectedAggVis, $toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas');
+    this.appendVisChooser(this.selectedUnaggVis, $toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas');
   }
+
+  private appendVisChooser(selectedVis:IVisPluginDesc, $toolbar:d3.Selection<any>, faIcon:string, title:string):IMultiForm {
+    const $node = $toolbar.append('div').classed('visChooser', true);
+
+    const m = new MultiForm(this.data, document.createElement('dummy-to-discard'), { initialVis: this.activeVis });
+    m.addIconVisChooser(<HTMLElement>$node.node());
+    m.on('change', (evt, vis) => {
+      selectedVis = vis;
+      console.log('selected', vis);
+    });
+
+    $node.insert('i', ':first-child')
+      .attr('title', title)
+      .attr('class', faIcon)
+      .attr('aria-hidden', 'true');
+
+    $node
+      .append('span')
+      .attr('class', 'sr-only')
+      .text(title);
+
+    return m;
+  }
+
 
   async updateMultiForms(rowRanges: Range[]) {
     // hook

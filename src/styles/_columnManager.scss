@@ -41,7 +41,9 @@
       .toolbar {
         text-align: center;
 
+        div.visChooser,
         a {
+          display: inline-block;
           cursor: pointer;
           color: $toolbar-link-color;
 
@@ -55,9 +57,57 @@
             color: $toolbar-link-active-color;
           }
         }
-        a + a{
+
+        a + div.visChooser,
+        div.visChooser + a,
+        div.visChooser + div.visChooser,
+        a + a {
           margin-left: 5px;
         }
+
+        // correct y-position for rotated icon
+        i.fa-window-minimize {
+          transform: rotate(90deg) translateY(-5px);
+        }
+
+        div.visChooser {
+          position: relative;
+
+          div {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            z-index: 999;
+            background: #fff;
+            padding: 2px;
+            border: 1px solid $header-bg-color;
+
+            > i {
+              display: block;
+              cursor: pointer;
+              width: 1.2em;
+
+              /*&:after {
+                content: attr(title);
+              }*/
+
+              &:hover {
+                background: $header-bg-color;
+              }
+            }
+
+            > i + i {
+              margin-top: 3px;
+            }
+          }
+
+          &:hover {
+            div {
+              display: flex;
+            }
+          }
+        }
+
       }
     }
 
