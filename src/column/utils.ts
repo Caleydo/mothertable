@@ -109,3 +109,44 @@ export function formatIdTypeName(name: string): string {
     .replace('GENE_SYMBOL', 'Gene')
     .replace('TCGA_SAMPLE', 'Patient');
 }
+
+
+export function updateRangeList(rangeList: Range[], brushedStringIndices: number[]) {
+  rangeList.map((d) => console.log(makeListfromRange(d)));
+  const dragRange = makeRangeFromList(brushedStringIndices);
+  const updateRange = rangeList.map((r) => {
+    const rSize = r.intersect(dragRange);
+    if ((rSize.size()[0] > 0)) {
+      const m = reArrangeRangeList(brushedStringIndices, makeListfromRange(r));
+      const rlist = m.map((d) => makeRangeFromList(d));
+      rlist.map((r) => console.log(makeListfromRange(r)))
+      return rlist;
+    } else {
+      return [r];
+    }
+
+  });
+  const m = reformatRangeList(updateRange);
+  m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
+  return reformatRangeList(updateRange);
+}
+
+
+function makeListfromRange(range: Range) {
+  return (range.dim(0).asList());
+
+}
+
+function reformatRangeList(rearrangeRange: Range[][]) {
+  return rearrangeRange.reduce((p, b) => p.concat(b));
+
+}
+
+export function mergeRanges(ranges: Range[]) {
+  const mergedRange = ranges.reduce((currentVal, nextValue) => {
+    const r = new Range();
+    r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
+    return r;
+  });
+  return mergedRange;
+}

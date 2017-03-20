@@ -68,7 +68,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   async updateMultiForms(idRanges: Range[]) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     const domain = d3.extent(v);
-
     const viewPromises = idRanges.map((r) => this.data.idView(r));
     Promise.all(viewPromises).then((views) => {
       this.updateSortIcon();

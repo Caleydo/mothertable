@@ -27,12 +27,13 @@ import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
-import {scaleTo, makeRangeFromList, makeListFromRange} from './utils';
+import {scaleTo, updateRangeList, makeRangeFromList, makeListFromRange} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
 import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
+import {List} from 'phovea_vis/src/list';
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -53,6 +54,9 @@ export default class ColumnManager extends EventHandler {
   private colsWithRange = new Map();
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
+  private brushedRange: Range;
+  private brushedStringIndices: number[] = [];
+
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
@@ -93,7 +97,7 @@ export default class ColumnManager extends EventHandler {
       this.stratifyColid = col[0].data.desc.id;
       this.stratifyAndRelayout();
     });
-
+    on(List.EVENT_BRUSHING, this.stringColumnOnDrag.bind(this));
 
   }
 
@@ -171,6 +175,33 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
+
+  async stringColumnOnDrag(evt: any, brushIndices: any[], multiformData: IAnyVector) {
+
+    this.brushedStringIndices = await this.getBrushIndices(brushIndices, multiformData);
+    // this.brushedStringIndices = brushIndices;
+    console.log(brushIndices, this.brushedStringIndices, (await multiformData.ids()).dim(0).asList())
+    this.updateRangeList(this.brushedStringIndices);
+  }
+
+  async updateRangeList(brushedStringIndices: number[]) {
+    const newRange = updateRangeList(this.stratifiedRanges, brushedStringIndices);
+    this.brushedRange = makeRangeFromList(brushedStringIndices);
+    this.filtersHierarchy.forEach((col) => {
+      this.colsWithRange.set(col.data.desc.id, newRange);
+    });
+    this.stratifyAndRelayout();
+
+  }
+
+
+  async getBrushIndices(stringList: number[], multiformData: IAnyVector) {
+    const brushedStringIndices = [];
+
+    const m = (await multiformData.ids()).dim(0).asList();
+    return m.slice(stringList[0], stringList[1] + 1);
+  }
+
   /**
    * Apply a filtered range to all columns
    * @param idRange
@@ -208,7 +239,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   async stratifyAndRelayout() {
-    this.updateStratifyID(this.stratifyColid);
+    //this.updateStratifyID(this.stratifyColid);
     await this.stratifyColumns();
     this.relayout();
   }
@@ -287,8 +318,13 @@ export default class ColumnManager extends EventHandler {
       col.$node.style('width', colWidths[i] + 'px');
 
       col.multiformList.forEach((multiform, index) => {
+        let b = 0;
+        if ((this.brushedRange !== undefined)) {
+          b = multiform.data.range.intersect(this.brushedRange).size()[0];
+        }
+        const f = (b > 0) ? 1.5 : 1;
         this.visManager.assignVis(multiform, colWidths[i], rowHeight[i][index]);
-        scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
+        scaleTo(multiform, colWidths[i], f * rowHeight[i][index], col.orientation);
       });
     });
   }

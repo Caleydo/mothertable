@@ -8,10 +8,11 @@ import {
 } from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
+import {mergeRanges} from '../column/utils';
 
 interface ISortResults {
-  combined:Range;
-  stratified:Map<string,number[]>;
+  combined: Range;
+  stratified: Map<string,number[]>;
 }
 
 export const SORT = {
@@ -67,13 +68,12 @@ export default class SortHandler {
   }
 
 
-
   /**
    *
    * @param columns
    * @returns {Promise<Range[][]>}
    */
-  async sortColumns(columns):Promise<ISortResults> {
+  async sortColumns(columns): Promise<ISortResults> {
     // if(columns.length === 0) {
     //   return [[]];
     // }
@@ -101,18 +101,9 @@ export default class SortHandler {
     }
 
     // console.log(range, rangesPerCol)
-    return {combined: this.mergeRanges(range), stratified: rangesPerCol};
+    return {combined: mergeRanges(range), stratified: rangesPerCol};
   }
 
-
-  mergeRanges(ranges) {
-    const mergedRange = ranges.reduce((currentVal, nextValue) => {
-      const r = new Range();
-      r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-      return r;
-    });
-    return mergedRange;
-  }
 
   async concatRanges(rangeOfViewData: Range[][]) {
     if (Array.isArray(rangeOfViewData[0]) === true) {
