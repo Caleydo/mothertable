@@ -9,6 +9,7 @@ import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
 import {SORT} from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
+import {formatAttributeName} from './utils';
 export enum EOrientation {
   Horizontal,
   Vertical
@@ -74,7 +75,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
       .html(`
         <header>
-          <span>${this.data.desc.name}</span>
+          <span>${formatAttributeName(this.data.desc.name)}</span>
         </header> 
         <main></main>
       `);
@@ -98,7 +99,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         <aside></aside>
         <header class="columnHeader">
           <div class="toolbar"></div>
-          <span>${this.data.desc.name}</span>
+          <span>${formatAttributeName(this.data.desc.name)}</span>
         </header>
         <main></main>`);
 

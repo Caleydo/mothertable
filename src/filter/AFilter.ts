@@ -6,6 +6,7 @@ import {IDataType} from 'phovea_core/src/datatype';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
+import {formatAttributeName} from '../column/utils';
 
 export declare type AnyFilter = AFilter<any, IDataType>;
 
@@ -45,12 +46,11 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     $node.select('header')
       .append('h2')
       .classed('filterlabel', true)
-      .text(labelname);
+      .text(formatAttributeName(labelname));
   }
 
   protected triggerFilterChanged() {
     this.fire(AFilter.EVENT_FILTER_CHANGED, this);
-
   }
 
   protected checkFilterApplied(fullRange: number, vectorViewRange: number) {

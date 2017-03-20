@@ -17,6 +17,7 @@ import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
 import AColumn from './column/AColumn';
+import {formatAttributeName, formatIdTypeName} from './column/utils';
 
 
 export interface IFuelBarDataSize {
@@ -55,7 +56,7 @@ export default class SupportView extends EventHandler {
 
     $wrapper.append('h1')
       .classed('idType', true)
-      .html(this.idType.id.toUpperCase());
+      .html(formatIdTypeName(this.idType.name));
 
     this.$fuelBar = $wrapper.append('div')
       .classed(`dataPreview-${this.idType.id}`, true)
@@ -84,7 +85,7 @@ export default class SupportView extends EventHandler {
       if (vectorsOnly.length > 0) {
         const idStrings = await (<IAnyVector>vectorsOnly[0]).names();
         const idVector = asVector(idStrings, idStrings, {
-          name: 'Sample',
+          name: formatIdTypeName(this.idType.name),
           idtype: `${this.idType}`
         });
         this.datasets.push(idVector);
@@ -170,7 +171,7 @@ export default class SupportView extends EventHandler {
 
     this.datasets.forEach((d) => {
       $select.append('option')
-        .text(d.desc.name)
+        .text(formatAttributeName(d.desc.name))
         .attr('value', d.desc.id);
     });
 
