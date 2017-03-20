@@ -2,15 +2,17 @@
  * Created by bikramkawan on 11/02/2017.
  */
 
-import {EventHandler} from 'phovea_core/src/event';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
-import {AnyColumn} from '../column/ColumnManager';
 
+interface ISortResults {
+  combined:Range;
+  stratified:Map<string,number[]>;
+}
 
 export const SORT = {
   asc: 'asc',
@@ -19,12 +21,11 @@ export const SORT = {
 };
 
 
-export default class SortEventHandler extends EventHandler {
+export default class SortHandler {
 
   private sortCriteria: string;
 
   constructor() {
-    super();
     //this.sortCriteria = sortCriteria;
     //this.sortMe();
   }
@@ -66,12 +67,16 @@ export default class SortEventHandler extends EventHandler {
   }
 
 
+
   /**
    *
    * @param columns
    * @returns {Promise<Range[][]>}
    */
-  async sortColumns(columns) {
+  async sortColumns(columns):Promise<ISortResults> {
+    // if(columns.length === 0) {
+    //   return [[]];
+    // }
     const d = await columns[0].data.idView(columns[0].rangeView);
     let range: any = [await d.ids()];
     const rangesPerCol = new Map();
@@ -88,13 +93,11 @@ export default class SortEventHandler extends EventHandler {
         //Create VectorView  of from each array element of range.
         const newView = await nextColumnData.idView(n);
         rangeOfView.push(await this.chooseType(newView, sortCriteria));
-
       }
 
       range = await this.concatRanges(rangeOfView);
       const dataElementsPerCol = range.map((d) => (d.dim(0).length));
       rangesPerCol.set(col.data.desc.id, dataElementsPerCol);
-
     }
 
     // console.log(range, rangesPerCol)

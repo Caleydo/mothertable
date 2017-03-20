@@ -7,7 +7,7 @@ import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
-import {SORT} from '../SortEventHandler/SortEventHandler';
+import {SORT} from '../SortHandler/SortHandler';
 import {scaleTo} from './utils';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import * as d3 from 'd3';
@@ -70,59 +70,30 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   async updateMultiForms(idRanges: Range[]) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
-    this.updateSortIcon();
-    let idList: {[id : string] : Range} = {};
-    this.multiformList.forEach((m) => {
-      idList[m.id] = m.data.range;
-    });
-
-    this.body.selectAll('.multiformList').remove();
-    this.multiformList = [];
     const domain = d3.extent(v);
-    for (const r of idRanges) {
-      const multiformdivs = this.body.append('div').classed('multiformList', true);
-      const $header = multiformdivs.append('div').classed('vislist', true);
-      this.body.selectAll('.multiformList')
-        .on('mouseover', function () {
-          d3.select(this).select('.vislist').style('display', 'block');
-        })
-        .on('mouseleave', function () {
-          d3.select(this).select('.vislist').style('display', 'none');
-        });
-      const view = await this.data.idView(r);
-      const m = new MultiForm(view, <HTMLElement>multiformdivs.node(), this.multiFormParams(multiformdivs, domain));
 
-    /*  Object.keys(idList).some((l) => {
-        let newRange = r.dims[0].asList().toString();
-        let originalRange = idList[l].dims[0].toString();
-        //set the vis for the same multiform
-        //TODO performance: move this test higher, so the multiform with unchanged range is not redrawn
-        if(newRange == originalRange){
-          VisManager.updateUserVis(l, m.id.toString(),);
-          return true;
-        }else{
-          let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
-          let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
-          //set the vis for split multiform
-          if(this.superbag(oldRangeList, newRangeList)){
-            VisManager.updateUserVis(l, m.id.toString());
-            return true;
-          }
-          //set the vis for merged multiform
-          if(this.superbag(newRangeList, oldRangeList)){
-            VisManager.updateUserVis(l, m.id.toString());
-            return true;
-          }
-        }
-      });*/
-      this.addIconVisChooser(<HTMLElement>$header.node(), m);
-      this.multiformList.push(m);
-    }
-    Object.keys(idList).forEach((l) => {
-      VisManager.removeUserVisses(l);
+    const viewPromises = idRanges.map((r) => this.data.idView(r));
+    Promise.all(viewPromises).then((views) => {
+      this.updateSortIcon();
+      this.body.selectAll('.multiformList').remove();
+      this.multiformList = [];
+
+      views.forEach((view) => {
+        const $multiformdivs = this.body.append('div').classed('multiformList', true);
+        const $header = $multiformdivs.append('div').classed('vislist', true);
+        this.body.selectAll('.multiformList')
+          .on('mouseover', function () {
+            d3.select(this).select('.vislist').style('display', 'block');
+          })
+          .on('mouseleave', function () {
+            d3.select(this).select('.vislist').style('display', 'none');
+          });
+        const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
+        m.addIconVisChooser(<HTMLElement>$header.node());
+        this.multiformList.push(m);
+      });
     });
   }
-
   private superbag(sup, sub) {
     let i, j;
     for (i=0,j=0; i<sup.length && j<sub.length;) {
@@ -152,8 +123,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       };
     });*/
   }
-
-
 
 }
 
