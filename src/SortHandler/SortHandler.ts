@@ -9,6 +9,10 @@ import {
 import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
 
+interface ISortResults {
+  combined:Range;
+  stratified:Map<string,number[]>;
+}
 
 export const SORT = {
   asc: 'asc',
@@ -63,15 +67,16 @@ export default class SortHandler {
   }
 
 
+
   /**
    *
    * @param columns
    * @returns {Promise<Range[][]>}
    */
-  async sortColumns(columns) {
-    if(columns.length === 0) {
-      return [[]];
-    }
+  async sortColumns(columns):Promise<ISortResults> {
+    // if(columns.length === 0) {
+    //   return [[]];
+    // }
     const d = await columns[0].data.idView(columns[0].rangeView);
     let range: any = [await d.ids()];
     const rangesPerCol = new Map();
@@ -88,13 +93,11 @@ export default class SortHandler {
         //Create VectorView  of from each array element of range.
         const newView = await nextColumnData.idView(n);
         rangeOfView.push(await this.chooseType(newView, sortCriteria));
-
       }
 
       range = await this.concatRanges(rangeOfView);
       const dataElementsPerCol = range.map((d) => (d.dim(0).length));
       rangesPerCol.set(col.data.desc.id, dataElementsPerCol);
-
     }
 
     // console.log(range, rangesPerCol)

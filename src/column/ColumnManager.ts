@@ -57,7 +57,11 @@ export default class ColumnManager extends EventHandler {
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
-  private stratifyMe = (event: IEvent, colid) => this.stratify(colid.data.desc.id);
+  private stratifyMe = (event: IEvent, colid) => {
+    this.stratifyColid = colid.data.desc.id;
+    this.stratifyAndRelayout();
+  };
+
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
@@ -80,13 +84,14 @@ export default class ColumnManager extends EventHandler {
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
       col[0].sortCriteria = sortData.sortMethod;
-      this.sortColumns();
+      this.updateColumns();
     });
 
     on(CategoricalColumn.EVENT_STRATIFYME, (evt: any, colid) => {
+
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === colid.data.desc.id);
       this.stratifyColid = col[0].data.desc.id;
-      this.stratify(this.stratifyColid);
+      this.stratifyAndRelayout();
     });
 
 
@@ -199,6 +204,11 @@ export default class ColumnManager extends EventHandler {
    */
   async updateColumns() {
     await this.sortColumns();
+    await this.stratifyAndRelayout();
+  }
+
+  async stratifyAndRelayout() {
+    this.updateStratifyID(this.stratifyColid);
     await this.stratifyColumns();
     this.relayout();
   }
@@ -232,7 +242,11 @@ export default class ColumnManager extends EventHandler {
     }
   }
 
-  private stratify(colid) {
+  private async updateStratifyID(colid) {
+    if (colid === undefined) {
+      return;
+    }
+
     this.stratifyColid = colid;
     const cols = this.filtersHierarchy;
     const datas = this.dataPerStratificaiton.get(colid);
@@ -249,11 +263,6 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<void>}
    */
   private async stratifyColumns() {
-
-    if (this.stratifyColid !== undefined) {
-      this.stratify(this.stratifyColid);
-    }
-
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
@@ -290,7 +299,7 @@ export default class ColumnManager extends EventHandler {
   private relayoutColStrats() {
     const $strats = this.$node.selectAll('aside')
       .style('height', null); // remove height first, to calculate a new one
-    const maxHeight = Math.max(...$strats[0].map((d:HTMLElement) => d.clientHeight));
+    const maxHeight = Math.max(...$strats[0].map((d: HTMLElement) => d.clientHeight));
     $strats.style('height', maxHeight + 'px');
   }
 

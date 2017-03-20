@@ -51,8 +51,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return this.$node.select('header.columnHeader');
   }
 
+  get toolbar() {
+    return this.$node.select('header > .toolbar');
+  }
+
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
-    if(this.orientation === EOrientation.Horizontal) {
+    if (this.orientation === EOrientation.Horizontal) {
       return this.buildHorizontal($parent);
     }
     return this.buildVertical($parent);
