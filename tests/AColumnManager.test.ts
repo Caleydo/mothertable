@@ -2,6 +2,7 @@
  * Created by Holger Stitz on 17.03.2017.
  */
 
+/*
 /// <reference types="jasmine" />
 import * as d3 from 'd3';
 import AColumnManager from '../src/column/AColumnManager';
@@ -62,3 +63,4 @@ describe('AColumnManager', () => {
   });
 
 });
+*/
