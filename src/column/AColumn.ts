@@ -10,9 +10,9 @@ import * as d3 from 'd3';
 import {SORT} from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {formatAttributeName} from './utils';
-import MultiForm from '../../../phovea_core/src/multiform/MultiForm';
-import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
-import {IVisPluginDesc} from '../../../phovea_core/src/vis';
+import MultiForm from 'phovea_core/src/multiform/MultiForm';
+import {IMultiForm} from 'phovea_core/src/multiform/IMultiForm';
+import {IVisPluginDesc} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 export enum EOrientation {
   Horizontal,
