@@ -15,6 +15,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
   private _sortCriteria: string = SORT.asc;
+  static readonly EVENT_STRATIFYME = 'updateStratifyIcon';
 
 
   constructor(data: ICategoricalVector, $parent: d3.Selection<any>) {
@@ -53,10 +54,10 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       } else {
         splitIcon.style('border', 'none');
       }
-
     });
-
   }
+
+
 
   sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
     if (sortData.col !== this) {

@@ -17,7 +17,9 @@ import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
+import {on, fire} from 'phovea_core/src/event';
 import * as $ from 'jquery';
+import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 
 
@@ -37,6 +39,7 @@ export default class FilterManager extends EventHandler {
     super();
     this.build();
     this.drag();
+    on(CategoricalFilter.EVENT_STRATIFYME, this.stratifyMe.bind(this));
   }
 
   private build() {
@@ -62,6 +65,14 @@ export default class FilterManager extends EventHandler {
   contains(data: IFilterAbleType) {
     return this.filters.some((d) => d.data === data);
   }
+
+
+  private stratifyMe(evt, col:string) {
+    const colid = this.filters.filter((d) => d.data.desc.id === col);
+    d3.selectAll('.fa.fa-bars').style('border', null);
+    colid[0].$node.select('.fa.fa-bars').style('border', '1px solid');
+  }
+
 
   /**
    * Removes the column from the filters by the given data parameter,

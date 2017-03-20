@@ -8,6 +8,8 @@ import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import VisManager from './VisManager';
+import {on, fire} from 'phovea_core/src/event';
+import CategoricalFilter from '../filter/CategoricalFilter';
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
 
@@ -36,6 +38,8 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
       .classed('fa fa-bars', true)
       .on('click', () => {
         this.fire(CategoricalColumn.EVENT_STRATIFYME, this.data.desc.id);
+        fire(CategoricalFilter.EVENT_STRATIFYME, this.data.desc.id);
+
       });
 
   }

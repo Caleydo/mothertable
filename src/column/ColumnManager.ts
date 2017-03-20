@@ -82,7 +82,6 @@ export default class ColumnManager extends EventHandler {
     });
 
     on(CategoricalColumn.EVENT_STRATIFYME, (evt: any, colid: string) => {
-      console.log(colid)
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === colid);
       this.stratifyColid = col[0].data.desc.id;
       this.stratify(this.stratifyColid);
@@ -232,7 +231,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   private stratify(colid) {
-    console.log(colid)
     this.stratifyColid = colid;
     const cols = this.filtersHierarchy;
     const datas = this.dataPerStratificaiton.get(colid);
