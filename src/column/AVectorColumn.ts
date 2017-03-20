@@ -75,10 +75,15 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const viewPromises = idRanges.map((r) => this.data.idView(r));
     Promise.all(viewPromises).then((views) => {
       this.updateSortIcon();
+      let idList: {[id: string]: Range} = {};
+      this.multiformList.forEach((m) => {
+        idList[m.id] = m.data.range;
+      });
       this.body.selectAll('.multiformList').remove();
       this.multiformList = [];
+      let isUserUnagregated  = [];
 
-      views.forEach((view) => {
+      views.forEach((view, id) => {
         const $multiformdivs = this.body.append('div').classed('multiformList', true);
         const $header = $multiformdivs.append('div').classed('vislist', true);
         this.body.selectAll('.multiformList')
@@ -89,11 +94,42 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             d3.select(this).select('.vislist').style('display', 'none');
           });
         const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
-        m.addIconVisChooser(<HTMLElement>$header.node());
+        VisManager.setMultiformAggregationType(m.id.toString(), VisManager.aggregationType.UNAGGREGATED);
         this.multiformList.push(m);
+        const r = (<any>m).data.range;
+        Object.keys(idList).some((l, index) => {
+          let newRange = r.dims[0].asList().toString();
+          let originalRange = idList[l].dims[0].toString();
+          if (newRange == originalRange) {
+            VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+            isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
+            return true;
+          } else {
+            let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
+            let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
+            if (this.superbag(oldRangeList, newRangeList)) {
+              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
+              return true;
+            }
+            if (this.superbag(newRangeList, oldRangeList)) {
+              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
+              return true;
+            }
+          }
+        });
+        if( Object.keys(idList).length == 0){
+          isUserUnagregated = VisManager.isUserSelectedUnaggregatedRow;
+        }
+      });
+      VisManager.isUserSelectedUnaggregatedRow = isUserUnagregated;
+      Object.keys(idList).forEach((l) => {
+        delete VisManager.multiformAggregationType[l];
       });
     });
   }
+
   private superbag(sup, sub) {
     let i, j;
     for (i=0,j=0; i<sup.length && j<sub.length;) {
@@ -106,7 +142,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         }
     }
     return j == sub.length;
-}
+  }
 
   private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm) {
     const s = toolbar.ownerDocument.createElement('div');

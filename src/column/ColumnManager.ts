@@ -318,8 +318,7 @@ export default class ColumnManager extends EventHandler {
     $strats.style('height', maxHeight + 'px');
   }
 
-  private async calColHeight(height)
-{
+  private async calColHeight(height) {
   let ranges = [];
   let bottomOfHierarchyIndex = 0;
   let minHeights = [];
@@ -328,111 +327,72 @@ export default class ColumnManager extends EventHandler {
   let totalMin = 0;
   let totalMax = 0;
 
+  //first run - check if the unagregatted visses fit and if not, switch all non-user-unaggregated rows to aggregated
+  for (const col of this.columns) {
+    let minSizes = this.visManager.computeMinHeight(col);
+    if (minSizes < height) {
+      minSizes.forEach((m, id) => {
+        if (!VisManager.isUserSelectedUnaggregatedRow[id]) {
+          this.updateAggregationLevelForRow(id, VisManager.aggregationType.AGGREGATED);
+        }
+      });
+    }
+  }
+
+
   for (const col of this.columns) {
     const type = col.data.desc.type;
     let range = this.colsWithRange.get(col.data.desc.id);
     const temp = [];
 
-      if (range === undefined) {
-        range = this.stratifiedRanges;
-      }
-
+    if (range === undefined) {
+      range = this.stratifiedRanges;
+    }
     const minSizes = this.visManager.computeMinHeight(col);
+
     for (const r of range) {
       const view = await
       col.data.idView(r);
       (type === AColumn.DATATYPE.matrix) ? temp.push(await(<IAnyMatrix>view).nrow) : temp.push(await(<IAnyVector>view).length);
     }
 
-    const minRange = Math.min(...temp);
-    const minSize = Math.min(...minSizes);
-    const scale = minSize / minRange;
-
-    // console.log(temp)
-    const min = temp.map((d, index) => {
-      let minTmp = scale * d;
-      return (minSizes[index] > minTmp) ? minSizes[index] : minTmp;
-    });
-
-    const max = temp.map((d, index) => {
-      return col.maxHeight * d;
-    });//TODO this is not true if we have e.g. just 1 - 5 items in multiform
+    const min = minSizes;
+    const max = temp.map((d) => col.maxHeight * d);
 
     minHeights.push(min);
     maxHeights.push(max);
-    ranges.push(temp);
-    if (temp.length > ranges[bottomOfHierarchyIndex].length) {
-      bottomOfHierarchyIndex = index;
-    }
-
-    totalMax = d3.max([totalMax, d3.sum(max)]);
-    totalMin = d3.max([totalMin, d3.sum(min)]);
 
     index = index + 1;
   }
 
-  let rangePointers = [];
-
-  ranges.forEach((range) => {
-    let currentRangeIndex = 0;
-    let bottomRangeIndex = 0;
-    let thisRangePointers = [];
-    range.forEach((r) => {
-      let sumCounter = 0;
-      let currentPointers: number[] = [];
-      while (sumCounter < r) {
-        sumCounter = sumCounter + ranges[bottomOfHierarchyIndex][bottomRangeIndex];
-        currentPointers.push(bottomRangeIndex);
-        bottomRangeIndex = bottomRangeIndex + 1;
-      }
-      thisRangePointers.push(currentPointers);
-      currentRangeIndex = currentRangeIndex + 1;
+  for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
+    let minSize = [];
+    minHeights.forEach((m) => {
+      minSize.push(m[i]);
     });
-    rangePointers.push(thisRangePointers);
-  });
-
-  let n = 0;
-  while (n < this.columns.length) {
-    n = n + 1;
-    minHeights = minHeights.map((d, i) => {
-      return d.map((e, j) => {
-        let minSize = 0;
-        rangePointers[i][j].forEach((f) => {
-          minSize = minSize + minHeights[bottomOfHierarchyIndex][f];
-        });
-        if (Math.round(minSize) >= Math.round(e)) {
-          return minSize;
-        }
-        else {
-          const minScale = d3.scale.linear().domain([0, Math.round(minSize)]).range([0, e]);
-          rangePointers[i][j].forEach((f) => {
-             minHeights[bottomOfHierarchyIndex][f] = minScale(minHeights[bottomOfHierarchyIndex][f]);
-          });
-          return e;
-        }
-      });
+    let min = Math.max(...minSize);
+    minHeights.forEach((m) => {
+      m[i] = min;
     });
+    totalMin = totalMin + min;
   }
 
+  let totalHeight = height < totalMin ? totalMin : height;
 
-/*
   minHeights = minHeights.map((d, i) => {
-    const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMin]);
+    const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalHeight]);
     return d.map((e) => minScale(e));
-  });*/
-
-  maxHeights = maxHeights.map((d, i) => {
-    const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
-    return d.map((e) => maxScale(e));
   });
 
-  const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
-  const flexHeights = minHeights.map((d, i) => {
-    return d.map((e) => nodeHeightScale(e));
-  });
+    maxHeights = maxHeights.map((d, i) => {
+      const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
+      return d.map((e) => maxScale(e));
+    });
 
-
-
+    const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
+    const flexHeights = minHeights.map((d, i) => {
+      return d.map((e) => nodeHeightScale(e));
+    });
 
 
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
@@ -449,6 +409,13 @@ export default class ColumnManager extends EventHandler {
     }
 
   }
+
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType) {
+    for (const col of this.columns) {
+        VisManager.setMultiformAggregationType(col.multiformList[rowIndex].id, aggregationType);
+    }
+  }
+
 }
 
 
