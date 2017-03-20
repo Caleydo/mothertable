@@ -10,8 +10,8 @@ import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
 
 interface ISortResults {
-  combined:Range;
-  stratified:Map<string,number[]>;
+  combined: Range;
+  stratified: Map<string,number[]>;
 }
 
 export const SORT = {
@@ -40,12 +40,11 @@ export default class SortHandler {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
-        return (await this.sortString(newView, sortCriteria));
       case VALUE_TYPE_CATEGORICAL:
         return (await this.collectRangeList(newView, sortCriteria, 'sc'));
       case VALUE_TYPE_INT:
       case VALUE_TYPE_REAL:
-        return (await this.sortNumber(newView, sortCriteria));
+        return (await this.collectRangeList(newView, sortCriteria, 'ir'));
     }
   }
 
@@ -67,13 +66,12 @@ export default class SortHandler {
   }
 
 
-
   /**
    *
    * @param columns
    * @returns {Promise<Range[][]>}
    */
-  async sortColumns(columns):Promise<ISortResults> {
+  async sortColumns(columns): Promise<ISortResults> {
     // if(columns.length === 0) {
     //   return [[]];
     // }
