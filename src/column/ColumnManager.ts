@@ -30,6 +30,7 @@ import min = d3.min;
 import {scaleTo} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
+import {AnyFilter} from '../filter/AFilter';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -164,10 +165,10 @@ export default class ColumnManager extends EventHandler {
   }
 
   /**
-   * Find corresponding columns for given list of filters and update the sorted hierarchy
+   * Find corresponding columns for given list of filters and update the sorted  hierarchy
    * @param filterList
    */
-  mapFiltersAndSort(filterList: AnyColumn[]) {
+  mapFiltersAndSort(filterList: AnyFilter[]) {
     this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
     this.updateColumns();
   }

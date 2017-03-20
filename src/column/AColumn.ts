@@ -65,6 +65,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    */
   protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent.insert('li', 'li')
+      .datum(this)
       .classed('column-strat', true)
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
       .html(`
@@ -84,6 +85,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent
       .append('li')
+      .datum(this)
       .classed('column', true)
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
       .style('min-width', this.minWidth + 'px')

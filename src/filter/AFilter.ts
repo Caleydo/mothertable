@@ -7,6 +7,7 @@ import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 
+export declare type AnyFilter = AFilter<any, IDataType>;
 
 abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';

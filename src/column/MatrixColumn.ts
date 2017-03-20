@@ -14,6 +14,7 @@ import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import Range1D from 'phovea_core/src/range/Range1D';
+import {AnyFilter} from '../filter/AFilter';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
@@ -113,6 +114,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   filterStratData(range: Range) {
     //this.colStratManager.filter([range]);
+  }
+
+  updateColStratsSorting(filterList: AnyFilter[]) {
+    this.colStratManager.sortByFilters(filterList);
+    this.updateColStrats();
+    // TODO still need to update the DOM order in `this.$colStrat`
   }
 
 }

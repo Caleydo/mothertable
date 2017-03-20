@@ -17,6 +17,7 @@ import {hash} from 'phovea_core/src/index';
 import {IDataType} from 'phovea_core/src/datatype';
 import {IFuelBarDataSize} from './SupportView';
 import Range1D from 'phovea_core/src/range/Range1D';
+import {AnyFilter} from './filter/AFilter';
 
 /**
  * The main class for the App app
@@ -145,7 +146,7 @@ export default class App {
 
     this.supportView.push(supportView);
 
-    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
     });
 
@@ -214,6 +215,10 @@ export default class App {
       this.triggerMatrix(filter, supportView.id);
       this.dataSize.filtered = filter.size()[0];
       supportView.updateFuelBar(this.dataSize);
+    });
+
+    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
+      col.updateColStratsSorting(data);
     });
 
     // add columns if we add one or multiple datasets

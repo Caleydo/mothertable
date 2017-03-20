@@ -6,10 +6,11 @@ import {AnyColumn} from './ColumnManager';
 import AColumn from './AColumn';
 import SortHandler from '../SortHandler/SortHandler';
 import Range from 'phovea_core/src/range/Range';
+import {AnyFilter} from '../filter/AFilter';
 
 export default class AColumnManager {
 
-  readonly columns: AnyColumn[] = [];
+  columns: AnyColumn[] = [];
 
   constructor() {
     //
@@ -71,6 +72,10 @@ export default class AColumnManager {
     this.matrixCols.forEach((col) => {
       col.updateMultiForms(range);
     });
+  }
+
+  sortByFilters(filterList:AnyFilter[]) {
+    this.columns = filterList.map((f) => this.columns.filter((c) => c.data === f.data)[0]);
   }
 
   private stratifyVectorCols(rangeListMap:Map<string, Range[]>) {
