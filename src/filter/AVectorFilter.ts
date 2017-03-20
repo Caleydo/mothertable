@@ -20,29 +20,31 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
     const $li = $ol.append('li').classed('filter', true);
     const $header = $li.append('header');
     $li.append('main');
-    this.addSortIcon($header);
+    const $toolbar = $header.append('div').classed('toolbar', true);
+    this.addSortIcon($toolbar);
     return $li;
   }
 
 
-  private addSortIcon($node: d3.Selection<any>) {
-    // this.sortCriteria = SORT.asc;
-    const sortIconNode = $node.append('a').classed('fa sort fa-sort-amount-asc', true);
-    sortIconNode.on('click', () => {
-      const b = sortIconNode.attr('class');
-      if (b === 'fa sort fa-sort-amount-asc') {
-        const sortMethod = SORT.desc;
-        const sortData = {'sortMethod': sortMethod, col: this};
-        fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        sortIconNode.attr('class', 'fa sort fa-sort-amount-desc');
-      } else {
-        const sortMethod = SORT.asc;
-        const sortData = {'sortMethod': sortMethod, col: this};
-        fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        sortIconNode.attr('class', 'fa sort fa-sort-amount-asc');
-      }
-    });
-
+  protected addSortIcon($node: d3.Selection<any>) {
+    const $sortButton = $node.append('a')
+      .attr('title', 'Sort descending')
+      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`)
+      .on('click', () => {
+        if ($sortButton.select('i').classed('fa-sort-amount-asc')) {
+          $sortButton
+            .attr('title', 'Sort ascending')
+            .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+          const sortData = {'sortMethod': SORT.desc, col: this};
+          fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+        } else {
+          $sortButton
+            .attr('title', 'Sort descending')
+            .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+          const sortData = {'sortMethod': SORT.asc, col: this};
+          fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+        }
+      });
   }
 
 
