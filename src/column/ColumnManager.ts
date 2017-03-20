@@ -77,7 +77,7 @@ export default class ColumnManager extends EventHandler {
       .classed('columnList', true);
 
     $('.columnList', this.$parent.node()) // jquery
-      .sortable({handle: '.columnHeader', axis: 'x'});
+      .sortable({handle: '.labelName', axis: 'x'});
   }
 
   private attachListener() {

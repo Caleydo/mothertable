@@ -75,7 +75,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
       .html(`
         <header>
-          <span>${formatAttributeName(this.data.desc.name)}</span>
+          <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
         </header> 
         <main></main>
       `);
@@ -98,18 +98,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .html(`
         <aside></aside>
         <header class="columnHeader">
+          <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
           <div class="toolbar"></div>
-          <span>${formatAttributeName(this.data.desc.name)}</span>
         </header>
         <main></main>`);
-
-    const header = $node.selectAll('header')
-      .on('mouseover', function () {
-        $node.select('.toolbar').style('display', 'block');
-      })
-      .on('mouseleave', function () {
-        $node.select('.toolbar').style('display', 'none');
-      });
 
     this.buildToolbar($node.select('div.toolbar'));
 
@@ -117,14 +109,16 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    const $lockButton = $toolbar.append('button')
-      .classed('fa fa-unlock', true)
+    const $lockButton = $toolbar.append('a')
+      .attr('title', 'Lock column')
+      .html(`<i class="fa fa-unlock fa-fw" aria-hidden="true"></i><span class="sr-only">Lock column</span>`)
       .on('click', () => {
         this.lockColumnWidth($lockButton);
       });
 
-    $toolbar.append('button')
-      .classed('fa fa-trash', true)
+    $toolbar.append('a')
+      .attr('title', 'Remove column')
+      .html(`<i class="fa fa-trash fa-fw" aria-hidden="true"></i><span class="sr-only">Remove column</span>`)
       .on('click', () => {
         this.fire(AColumn.EVENT_REMOVE_ME);
         return false;
@@ -136,15 +130,21 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected lockColumnWidth($lockButton) {
-    if ($lockButton.classed('fa-lock')) {
+    if ($lockButton.select('i').classed('fa-lock')) {
       // UNLOCKING
-      $lockButton.attr('class', 'fa fa-unlock');
+      $lockButton
+        .classed('active', false)
+        .attr('title', 'Lock column')
+        .html(`<i class="fa fa-unlock fa-fw" aria-hidden="true"></i><span class="sr-only">Lock column</span>`);
       this.lockedWidth = -1;
       this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'unlocked');
 
     } else {
       // LOCKING
-      $lockButton.attr('class', 'fa fa-lock');
+      $lockButton
+        .classed('active', true)
+        .attr('title', 'Unlock column')
+        .html(`<i class="fa fa-lock fa-fw" aria-hidden="true"></i><span class="sr-only">Unlock column</span>`);
       this.lockedWidth = this.$node.property('clientWidth');
       this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
     }

@@ -14,9 +14,11 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
+
+  static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
+
   multiform: MultiForm;
   dataView: IDataType;
-  static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
   multiformList = [];
 
   constructor(data: DATATYPE, orientation: EOrientation) {
@@ -37,31 +39,38 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    const $sortButton = $toolbar.append('button')
-      .attr('class', 'fa sort fa-sort-amount-asc')
+    const $sortButton = $toolbar.append('a')
+      .attr('title', 'Sort descending')
+      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`)
       .on('click', () => {
-        if ($sortButton.classed('fa-sort-amount-asc')) {
-          // const sortMethod = SORT.desc;
+        if ($sortButton.select('i').classed('fa-sort-amount-asc')) {
           this.sortCriteria = SORT.desc;
           this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-          $sortButton.attr('class', 'fa sort fa-sort-amount-desc');
+          $sortButton
+            .attr('title', 'Sort ascending')
+            .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
         } else {
           this.sortCriteria = SORT.asc;
           this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-          $sortButton.attr('class', 'fa sort fa-sort-amount-asc');
+          $sortButton
+            .attr('title', 'Sort descending')
+            .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
         }
       });
+
     super.buildToolbar($toolbar);
   }
 
-  updateSortIcon() {
+  private updateSortIcon() {
     if (this.sortCriteria === SORT.desc) {
-      const s = this.$node.select('.fa.sort.fa-sort-amount-asc');
-      s.attr('class', 'fa sort fa-sort-amount-desc');
-    }
-    if (this.sortCriteria === SORT.asc) {
-      const s = this.$node.select('.fa.sort.fa-sort-amount-desc');
-      s.attr('class', 'fa sort fa-sort-amount-asc');
+      this.$node.select('button.sort')
+        .attr('title', 'Sort ascending')
+        .html(`<i class="sort fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+
+    } else if (this.sortCriteria === SORT.asc) {
+      this.$node.select('button.sort')
+        .attr('title', 'Sort descending')
+        .html(`<i class="sort fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
     }
   }
 
