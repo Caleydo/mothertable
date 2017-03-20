@@ -37,8 +37,8 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
     this.toolbar.insert('button', ':first-child')
       .classed('fa fa-bars', true)
       .on('click', () => {
-        this.fire(CategoricalColumn.EVENT_STRATIFYME, this.data.desc.id);
-        fire(CategoricalFilter.EVENT_STRATIFYME, this.data.desc.id);
+        this.fire(CategoricalColumn.EVENT_STRATIFYME, this);
+        fire(CategoricalFilter.EVENT_STRATIFYME, this);
 
       });
 

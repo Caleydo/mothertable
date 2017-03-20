@@ -68,10 +68,10 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  private stratifyMe(evt, col: string) {
-    const colid = this.filters.filter((d) => d.data.desc.id === col);
-    d3.selectAll('.fa.fa-bars').style('border', null);
-    colid[0].$node.select('.fa.fa-bars').style('border', '1px solid');
+  private stratifyMe(evt, col) {
+    const colid = this.filters.filter((d) => d.data.desc.id === col.data.desc.id);
+    d3.selectAll('.fa.fa-bars').classed('active', false);
+    colid[0].$node.select('.fa.fa-bars').classed('active', true);
   }
 
 

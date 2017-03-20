@@ -45,17 +45,17 @@ export default class ColumnManager extends EventHandler {
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
-  private stratifiedRanges: Range[];
-  private nonStratifiedRange: Range;
+  private stratifiedRanges: Range[]; // This is the rangelist used for stratification
+  private nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private visManager: VisManager;
   private colsWithRange = new Map();
-  private dataPerStratificaiton;
-  private stratifyColid: string;
+  private dataPerStratificaiton; //The number of data elements per stratification
+  private stratifyColid: string; // This is column Name used for stratification
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
-  private stratifyMe = (event: IEvent, colid) => this.stratify(colid);
+  private stratifyMe = (event: IEvent, colid) => this.stratify(colid.data.desc.id);
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
@@ -81,8 +81,8 @@ export default class ColumnManager extends EventHandler {
       this.updateSort();
     });
 
-    on(CategoricalColumn.EVENT_STRATIFYME, (evt: any, colid: string) => {
-      const col = this.filtersHierarchy.filter((d) => d.data.desc.id === colid);
+    on(CategoricalColumn.EVENT_STRATIFYME, (evt: any, colid) => {
+      const col = this.filtersHierarchy.filter((d) => d.data.desc.id === colid.data.desc.id);
       this.stratifyColid = col[0].data.desc.id;
       this.stratify(this.stratifyColid);
     });

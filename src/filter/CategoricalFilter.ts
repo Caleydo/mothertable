@@ -46,17 +46,16 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const splitIcon = this.$node.select('header').insert('a', ':first-child')
       .classed('fa fa-bars', true);
     splitIcon.on('click', () => {
-      d3.selectAll('.fa.fa-bars').style('border', null);
+      d3.selectAll('.fa.fa-bars').classed('active', false);
       const b = splitIcon.attr('class');
       if (b === 'fa fa-bars') {
-        fire(CategoricalColumn.EVENT_STRATIFYME, this.data.desc.id);
-        splitIcon.style('border', '1px solid');
+        fire(CategoricalColumn.EVENT_STRATIFYME, this);
+        splitIcon.classed('active', true);
       } else {
-        splitIcon.style('border', 'none');
+        splitIcon.classed('active', false);
       }
     });
   }
-
 
 
   sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
