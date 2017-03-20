@@ -68,12 +68,30 @@
       width: 200px;
     }
 
-    a {
+    .toolbar {
+      text-align: center;
       order: 2;
-      text-decoration: none;
-      cursor: pointer;
-      color: inherit;
       padding-right: 5px;
+      white-space: nowrap;
+
+      a {
+        text-decoration: none;
+        cursor: pointer;
+        color: $toolbar-link-color;
+
+        &:active,
+        &:focus,
+        &:hover {
+          color: $toolbar-link-hover-color;
+        }
+
+        &.active {
+          color: $toolbar-link-active-color;
+        }
+      }
+      a + a{
+        margin-left: 5px;
+      }
     }
   }
 
