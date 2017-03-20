@@ -12,7 +12,7 @@ import {NUMERICAL_COLOR_MAP} from './utils';
 import VisManager from './VisManager';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
-  minWidth: number = 30;
+  minWidth: number = 2;
   maxWidth: number = 200;
   minHeight: number = 2;
   maxHeight: number = 10;

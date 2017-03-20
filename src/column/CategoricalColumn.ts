@@ -11,7 +11,7 @@ import VisManager from './VisManager';
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
 
-  minWidth: number = 30;
+  minWidth: number = 2;
   maxWidth: number = 200; //80
   minHeight: number = 2;
   maxHeight: number = 10;
