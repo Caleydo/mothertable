@@ -87,6 +87,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       this.multiformList.forEach((m) => {
         idList[m.id] = m.data.range;
       });
+
       this.body.selectAll('.multiformList').remove();
       this.multiformList = [];
       let isUserUnagregated  = [];
@@ -102,6 +103,17 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             d3.select(this).select('.vislist').style('display', 'none');
           });
         const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
+        if( Object.keys(idList).length == 0){
+          isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[id] || false;
+        }
+        //assign visses
+        let vissagg = this.selectedAggVis;
+        if(this.selectedAggVis){
+            VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
+         }
+        if(this.selectedUnaggVis){
+            VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
+        }
         VisManager.setMultiformAggregationType(m.id.toString(), VisManager.aggregationType.UNAGGREGATED);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
@@ -110,7 +122,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           let originalRange = idList[l].dims[0].toString();
           if (newRange == originalRange) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-            VisManager.updateUserVis(l, m.id.toString());
             isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
             return true;
           } else {
@@ -118,29 +129,22 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
             if (this.superbag(oldRangeList, newRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              VisManager.updateUserVis(l, m.id.toString());
               isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
             if (this.superbag(newRangeList, oldRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              VisManager.updateUserVis(l, m.id.toString());
               isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
           }
         });
-        if( Object.keys(idList).length == 0){
-          isUserUnagregated = VisManager.isUserSelectedUnaggregatedRow;
-        }
       });
       VisManager.isUserSelectedUnaggregatedRow = isUserUnagregated;
       Object.keys(idList).forEach((l) => {
         delete VisManager.multiformAggregationType[l];
         VisManager.removeUserVisses(l);
       });
-
-
     });
   }
 

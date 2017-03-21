@@ -126,7 +126,7 @@ export default class VisManager {
    */
   public static userSelectedAggregatedVisses: {[id : string]: IVisPluginDesc} = {};
   public static userSelectedUnaggregatedVisses: {[id : string]: IVisPluginDesc} = {};
-  public static isUserSelectedUnaggregatedRow = [false];
+  public static isUserSelectedUnaggregatedRow = [];
   public static multiformAggregationType: {[id : string]: any} = {};
 
   public static aggregationType = {

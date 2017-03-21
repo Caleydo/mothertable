@@ -22,6 +22,7 @@ export enum EOrientation {
 
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
+  static readonly VISUALIZATION_SWITCHED = 'switched';
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix'};
@@ -132,11 +133,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         return false;
       });
 
-    this.appendVisChooser(this.selectedAggVis, $toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', VisManager.aggregationType.UNAGGREGATED);
-    this.appendVisChooser(this.selectedUnaggVis, $toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', VisManager.aggregationType.AGGREGATED);
+    this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', VisManager.aggregationType.UNAGGREGATED);
+    this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', VisManager.aggregationType.AGGREGATED);
   }
 
-  private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm, aggregationType, selectedVis:IVisPluginDesc) {
+  private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm, aggregationType) {
     const s = toolbar.ownerDocument.createElement('div');
     toolbar.insertBefore(s, toolbar.firstChild);
     const visses = multiform.visses;
@@ -147,11 +148,13 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       this.multiformList.forEach((mul) => {
         if(aggregationType == VisManager.aggregationType.UNAGGREGATED){
           delete VisManager.userSelectedUnaggregatedVisses[mul.id.toString()];
+          this.selectedUnaggVis = null;
         }else{
           delete VisManager.userSelectedAggregatedVisses[mul.id.toString()];
+          this.selectedAggVis = null;
         }
       });
-      //TODO force relayout
+      this.fire(AColumn.VISUALIZATION_SWITCHED);
     };
 
     visses.forEach((v) => {
@@ -159,22 +162,26 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         const child = createNode(s, 'i');
         v.iconify(child);
         child.onclick = () => {
-          selectedVis = v;
+          if(aggregationType == VisManager.aggregationType.UNAGGREGATED){
+            this.selectedUnaggVis = v;
+          }else{
+            this.selectedAggVis = v;
+           }
           this.multiformList.forEach((mul) => {
             VisManager.setUserVis(mul.id, v, aggregationType);
-           //TODO force relayout
           });
+          this.fire(AColumn.VISUALIZATION_SWITCHED);
           console.log('selected', v);
         }
       }
     });
   }
 
-  private appendVisChooser(selectedVis:IVisPluginDesc, $toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):IMultiForm {
+  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):IMultiForm {
     const $node = $toolbar.append('div').classed('visChooser', true);
 
     const m = new MultiForm(this.data, document.createElement('dummy-to-discard'), { initialVis: this.activeVis });
-    this.addIconVisChooser(<HTMLElement>$node.node(), m, aggregationType, selectedVis);
+    this.addIconVisChooser(<HTMLElement>$node.node(), m, aggregationType);
     $node.insert('i', ':first-child')
       .attr('title', title)
       .attr('class', faIcon)
