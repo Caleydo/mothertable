@@ -242,15 +242,12 @@ export default class VisManager {
     }
   }
 
-  static updateUserVis(idOld:string, idNew:string, aggregationType) {
-    if(aggregationType == VisManager.aggregationType.AGGREGATED){
-      if(idOld in VisManager.userSelectedAggregatedVisses) {
-        VisManager.userSelectedAggregatedVisses[idNew] = VisManager.userSelectedAggregatedVisses[idOld];
-      }
-    }else{
-      if(idOld in VisManager.userSelectedUnaggregatedVisses) {
-        VisManager.userSelectedUnaggregatedVisses[idNew] = VisManager.userSelectedUnaggregatedVisses[idOld];
-      }
+  static updateUserVis(idOld:string, idNew:string) {
+    if(idOld in VisManager.userSelectedAggregatedVisses) {
+      VisManager.userSelectedAggregatedVisses[idNew] = VisManager.userSelectedAggregatedVisses[idOld];
+    }
+    if(idOld in VisManager.userSelectedUnaggregatedVisses) {
+      VisManager.userSelectedUnaggregatedVisses[idNew] = VisManager.userSelectedUnaggregatedVisses[idOld];
     }
   }
 

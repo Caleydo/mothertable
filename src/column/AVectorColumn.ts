@@ -9,7 +9,6 @@ import Range from 'phovea_core/src/range/Range';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {SORT} from '../SortHandler/SortHandler';
 import {scaleTo} from './utils';
-import {createNode} from 'phovea_core/src/multiform/internal';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
@@ -111,6 +110,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           let originalRange = idList[l].dims[0].toString();
           if (newRange == originalRange) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+            VisManager.updateUserVis(l, m.id.toString());
             isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
             return true;
           } else {
@@ -118,11 +118,13 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
             if (this.superbag(oldRangeList, newRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              VisManager.updateUserVis(l, m.id.toString());
               isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
             if (this.superbag(newRangeList, oldRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              VisManager.updateUserVis(l, m.id.toString());
               isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
@@ -135,7 +137,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       VisManager.isUserSelectedUnaggregatedRow = isUserUnagregated;
       Object.keys(idList).forEach((l) => {
         delete VisManager.multiformAggregationType[l];
+        VisManager.removeUserVisses(l);
       });
+
+
     });
   }
 
@@ -153,21 +158,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     return j == sub.length;
   }
 
-  private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm) {
-    const s = toolbar.ownerDocument.createElement('div');
-    toolbar.insertBefore(s, toolbar.firstChild);
-    const visses = multiform.visses;
-
- /*   visses.forEach((v) => {
-      const child = createNode(s, 'i');
-      v.iconify(child);
-      child.onclick = () => {
-        multiform.switchTo(v);
-        VisManager.setUserVis(multiform.id, v);
-
-      };
-    });*/
-  }
 
 }
 

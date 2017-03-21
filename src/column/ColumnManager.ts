@@ -275,7 +275,6 @@ export default class ColumnManager extends EventHandler {
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
 
-
   }
 
   async relayout() {

@@ -8,6 +8,7 @@ import Range from 'phovea_core/src/range/Range';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
 import {SORT} from '../SortHandler/SortHandler';
+import {createNode} from 'phovea_core/src/multiform/internal';
 import AVectorFilter from '../filter/AVectorFilter';
 import {formatAttributeName} from './utils';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
@@ -131,20 +132,49 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         return false;
       });
 
-    this.appendVisChooser(this.selectedAggVis, $toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas');
-    this.appendVisChooser(this.selectedUnaggVis, $toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas');
+    this.appendVisChooser(this.selectedAggVis, $toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', VisManager.aggregationType.UNAGGREGATED);
+    this.appendVisChooser(this.selectedUnaggVis, $toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', VisManager.aggregationType.AGGREGATED);
   }
 
-  private appendVisChooser(selectedVis:IVisPluginDesc, $toolbar:d3.Selection<any>, faIcon:string, title:string):IMultiForm {
+  private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm, aggregationType, selectedVis:IVisPluginDesc) {
+    const s = toolbar.ownerDocument.createElement('div');
+    toolbar.insertBefore(s, toolbar.firstChild);
+    const visses = multiform.visses;
+    const visIds = VisManager.getPossibleVisses(this.data.desc.type, this.data.desc.value.type, aggregationType);
+    const defVis = createNode(s, 'i');
+    defVis.innerText = "--";
+    defVis.onclick  = () => {
+      this.multiformList.forEach((mul) => {
+        if(aggregationType == VisManager.aggregationType.UNAGGREGATED){
+          delete VisManager.userSelectedUnaggregatedVisses[mul.id.toString()];
+        }else{
+          delete VisManager.userSelectedAggregatedVisses[mul.id.toString()];
+        }
+      });
+      //TODO force relayout
+    };
+
+    visses.forEach((v) => {
+      if(visIds.indexOf(v.id) != -1){
+        const child = createNode(s, 'i');
+        v.iconify(child);
+        child.onclick = () => {
+          selectedVis = v;
+          this.multiformList.forEach((mul) => {
+            VisManager.setUserVis(mul.id, v, aggregationType);
+           //TODO force relayout
+          });
+          console.log('selected', v);
+        }
+      }
+    });
+  }
+
+  private appendVisChooser(selectedVis:IVisPluginDesc, $toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):IMultiForm {
     const $node = $toolbar.append('div').classed('visChooser', true);
 
     const m = new MultiForm(this.data, document.createElement('dummy-to-discard'), { initialVis: this.activeVis });
-    m.addIconVisChooser(<HTMLElement>$node.node());
-    m.on('change', (evt, vis) => {
-      selectedVis = vis;
-      console.log('selected', vis);
-    });
-
+    this.addIconVisChooser(<HTMLElement>$node.node(), m, aggregationType, selectedVis);
     $node.insert('i', ':first-child')
       .attr('title', title)
       .attr('class', faIcon)
