@@ -103,11 +103,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             d3.select(this).select('.vislist').style('display', 'none');
           });
         const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
-        if( Object.keys(idList).length == 0){
-          isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[id] || false;
-        }
         //assign visses
-        let vissagg = this.selectedAggVis;
         if(this.selectedAggVis){
             VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
          }
@@ -117,7 +113,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         VisManager.setMultiformAggregationType(m.id.toString(), VisManager.aggregationType.UNAGGREGATED);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
-        Object.keys(idList).some((l, index) => {
+        let isSuccesor = Object.keys(idList).some((l, index) => {
           let newRange = r.dims[0].asList().toString();
           let originalRange = idList[l].dims[0].toString();
           if (newRange == originalRange) {
@@ -139,6 +135,9 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             }
           }
         });
+        if(!isSuccesor || Object.keys(idList).length == 0){
+          isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[id] || false;
+        }
       });
       VisManager.isUserSelectedUnaggregatedRow = isUserUnagregated;
       Object.keys(idList).forEach((l) => {

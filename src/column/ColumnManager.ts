@@ -280,7 +280,8 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
     this.relayoutColStrats();
-    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight') - c.$node.select('aside').property('clientHeight')));
+    const header = 47;//TODO solve programatically
+    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
@@ -326,19 +327,44 @@ export default class ColumnManager extends EventHandler {
     let totalMax = 0;
 
 
-    //switch all visses that can be switched to unaggregated
+    //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
+    /****************************************************************************************/
     for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
         this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
     }
 
-    //first run - check if the unagregatted visses fit and if not, switch all non-user-unaggregated rows to aggregated
+    //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
     let aggregationNeeded = false;
     for (const col of this.columns) {
       const minSizes = this.visManager.computeMinHeight(col);
       if (d3.sum(minSizes) > height) {
         aggregationNeeded = true;
       }
+      minHeights.push(minSizes);
     }
+
+    if(!aggregationNeeded) {
+      //choose minimal block height for each row of multiforms/stratification group
+      for (let i = 0; i < VisManager.isUserSelectedUnaggregatedRow.length; i++) {
+        let minSize = [];
+        minHeights.forEach((m) => {
+          minSize.push(m[i]);
+        });
+        let min = Math.max(...minSize);
+        minHeights.forEach((m) => {
+          m[i] = min;
+        });
+        totalMin = totalMin + min;
+      }
+      if(totalMin > height){
+        aggregationNeeded = true;
+      }
+    }
+
+    /*************************************************************************/
+
+    totalMin = 0;
+    minHeights = [];
 
     //set the propper aggregation level
     if(aggregationNeeded){
@@ -396,11 +422,11 @@ export default class ColumnManager extends EventHandler {
       totalMin = totalMin + min;
     }
 
-
     let totalHeight = height < totalMin ? totalMin : height;
 
     minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalHeight]);
+      let h = d3.sum(d.map((e) => minScale(e)));
       return d.map((e) => minScale(e));
     });
 
@@ -419,7 +445,6 @@ export default class ColumnManager extends EventHandler {
      } else {
        return minHeights;
      }
-
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType) {
