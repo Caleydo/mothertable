@@ -9,15 +9,15 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import VisManager from './VisManager';
 import {on, fire} from 'phovea_core/src/event';
-import CategoricalFilter from '../filter/CategoricalFilter';
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
+
+  static readonly EVENT_STRATIFYME = 'stratifyByMe';
 
   minWidth: number = 2;
   maxWidth: number = 200; //80
   minHeight: number = 2;
   maxHeight: number = 25;
-  static readonly EVENT_STRATIFYME = 'stratifyByMe';
 
   constructor(data: ICategoricalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -33,15 +33,17 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
 
 
   private attachListener() {
-    const that = this;
-    this.toolbar.insert('button', ':first-child')
-      .classed('fa fa-bars', true)
+    const $stratifyButton = this.toolbar.insert('a', ':first-child')
+      .attr('title', 'Stratify table by this column')
+      .html(`<i class="fa fa-bars fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
       .on('click', () => {
         this.fire(CategoricalColumn.EVENT_STRATIFYME, this);
-        fire(CategoricalFilter.EVENT_STRATIFYME, this);
-
+        fire(CategoricalColumn.EVENT_STRATIFYME, this);
       });
 
+    on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
+      $stratifyButton.classed('active', ref.data.desc.id === this.data.desc.id);
+    });
   }
 
 }

@@ -15,15 +15,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   private _filterDim: {width: number, height: number};
   private _activeCategories: string[];
   private _sortCriteria: string = SORT.asc;
-  static readonly EVENT_STRATIFYME = 'updateStratifyIcon';
 
 
   constructor(data: ICategoricalVector, $parent: d3.Selection<any>) {
     super(data);
     this.$node = this.build($parent);
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
-    this.attachListener();
-
   }
 
   protected build($parent: d3.Selection<any>) {
@@ -34,19 +31,19 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     return $node;
   }
 
-  private attachListener() {
-    const splitIcon = this.$node.select('header').insert('a', ':first-child')
-      .classed('fa fa-bars', true);
-    splitIcon.on('click', () => {
-      d3.selectAll('.fa.fa-bars').classed('active', false);
-      const b = splitIcon.attr('class');
-      if (b === 'fa fa-bars') {
+  protected addSortIcon($node: d3.Selection<any>) {
+    const $stratifyButton = $node.append('a')
+      .attr('title', 'Stratify table by this column')
+      .html(`<i class="fa fa-bars fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
+      .on('click', () => {
         fire(CategoricalColumn.EVENT_STRATIFYME, this);
-        splitIcon.classed('active', true);
-      } else {
-        splitIcon.classed('active', false);
-      }
+      });
+
+    on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
+      $stratifyButton.classed('active', ref.data.desc.id === this.data.desc.id);
     });
+
+    super.addSortIcon($node);
   }
 
 
