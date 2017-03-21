@@ -127,6 +127,26 @@
       }
     }
   }
+
+  .column.aggSwitcher {
+    main > div {
+      margin-bottom: 2px;
+      display: flex;
+      flex-direction: column;
+
+      &.agg {
+        background: $toolbar-link-hover-color;
+      }
+
+      &.unagg {
+        background: $toolbar-link-color;
+      }
+
+      &.auto {
+        background: $header-bg-color;
+      }
+    }
+  }
 }
 
 .itemWidth {

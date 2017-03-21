@@ -14,11 +14,12 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from 'phovea_core/src/multiform/IMultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
+
+
 export enum EOrientation {
   Horizontal,
   Vertical
 }
-
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
