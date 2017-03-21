@@ -33,6 +33,7 @@ import VisManager from './VisManager';
 import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
+import AggSwitcherColumn from './AggSwitcherColumn';
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -44,6 +45,7 @@ export default class ColumnManager extends EventHandler {
 
   private $node: d3.Selection<any>;
 
+  private aggSwitcherCol: AggSwitcherColumn;
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
@@ -71,13 +73,20 @@ export default class ColumnManager extends EventHandler {
 
   private build() {
     this.visManager = new VisManager();
+
     this.$node = this.$parent
       .classed('column-manager', true)
       .append('ol')
       .classed('columnList', true);
 
     $('.columnList', this.$parent.node()) // jquery
-      .sortable({handle: '.labelName', axis: 'x'});
+      .sortable({
+        handle: '.labelName',
+        axis: 'x',
+        items: '> :not(.nodrag)'
+      });
+
+    this.aggSwitcherCol = new AggSwitcherColumn(null, EOrientation.Horizontal, this.$node);
   }
 
   private attachListener() {
@@ -273,7 +282,8 @@ export default class ColumnManager extends EventHandler {
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
 
-
+    // update aggregation switcher column
+    this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
   }
 
   async relayout() {
@@ -291,6 +301,10 @@ export default class ColumnManager extends EventHandler {
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
     });
+
+    if(this.columns.length > 0) {
+      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
+    }
   }
 
   /**

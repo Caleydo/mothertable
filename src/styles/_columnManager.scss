@@ -127,6 +127,25 @@
       }
     }
   }
+
+  .column.aggSwitcher {
+    main > div {
+      line-height: 1px;
+      margin-bottom: 2px;
+
+      &.agg {
+        background: $toolbar-link-hover-color;
+      }
+
+      &.unagg {
+        background: $toolbar-link-color;
+      }
+
+      &.auto {
+        background: $header-bg-color;
+      }
+    }
+  }
 }
 
 .itemWidth {
