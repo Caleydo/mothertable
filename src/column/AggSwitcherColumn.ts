@@ -2,6 +2,7 @@
  * Created by Holger Stitz on 21.03.2017.
  */
 
+import * as d3 from 'd3';
 import {EOrientation, default as AColumn} from './AColumn';
 import {IDataType} from 'phovea_core/src/datatype';
 
@@ -12,8 +13,11 @@ export enum AggMode {
 }
 
 export default class AggSwitcherColumn extends AColumn<any, IDataType> {
-  minWidth: number = 20;
-  maxWidth: number = 20;
+
+  static readonly EVENT_GROUP_AGG_CHANGED = 'groupAggChanged';
+
+  minWidth: number = 40;
+  maxWidth: number = 40;
 
   private $main:d3.Selection<any>;
 
@@ -50,7 +54,43 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
       .selectAll('div')
       .data(heights);
 
-    $blocks.enter().append('div');
+    const $enter = $blocks.enter().append('div');
+
+    $enter.append('a')
+      .attr('href', '#')
+      .text('Agg')
+      .on('click', (d,i) => {
+        const e = <Event>d3.event;
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.modePerGroup[i] = AggMode.Aggregated;
+        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, this.modePerGroup[i], this.modePerGroup);
+      });
+
+    $enter.append('a')
+      .attr('href', '#')
+      .text('Unagg')
+      .on('click', (d,i) => {
+        const e = <Event>d3.event;
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.modePerGroup[i] = AggMode.Unaggregated;
+        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, this.modePerGroup[i], this.modePerGroup);
+      });
+
+    $enter.append('a')
+      .attr('href', '#')
+      .text('Auto')
+      .on('click', (d,i) => {
+        const e = <Event>d3.event;
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.modePerGroup[i] = AggMode.Automatic;
+        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, this.modePerGroup[i], this.modePerGroup);
+      });
 
     $blocks
       .attr('class', (d, i) => {

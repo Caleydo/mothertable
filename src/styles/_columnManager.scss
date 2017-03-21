@@ -130,8 +130,9 @@
 
   .column.aggSwitcher {
     main > div {
-      line-height: 1px;
       margin-bottom: 2px;
+      display: flex;
+      flex-direction: column;
 
       &.agg {
         background: $toolbar-link-hover-color;

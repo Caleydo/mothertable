@@ -34,6 +34,7 @@ import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
+import {AggMode} from './AggSwitcherColumn';
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -103,7 +104,9 @@ export default class ColumnManager extends EventHandler {
       this.stratifyAndRelayout();
     });
 
-
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:AggMode, allGroups:AggMode[]) => {
+      console.log(index, value, allGroups);
+    });
   }
 
   get length() {
@@ -293,6 +296,10 @@ export default class ColumnManager extends EventHandler {
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
+    if(this.columns.length > 0) {
+      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
+    }
+
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
 
@@ -301,10 +308,6 @@ export default class ColumnManager extends EventHandler {
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
     });
-
-    if(this.columns.length > 0) {
-      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
-    }
   }
 
   /**
