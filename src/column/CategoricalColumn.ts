@@ -9,6 +9,7 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import VisManager from './VisManager';
 import {on, fire} from 'phovea_core/src/event';
+import {AggMode} from './AggSwitcherColumn';
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
 
@@ -27,7 +28,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, VisManager.aggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, AggMode.Unaggregated),
     });
   }
 

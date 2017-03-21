@@ -15,6 +15,7 @@ import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter} from '../filter/AFilter';
+import {AggMode} from './AggSwitcherColumn';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
@@ -49,7 +50,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,VisManager.aggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, AggMode.Unaggregated),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }

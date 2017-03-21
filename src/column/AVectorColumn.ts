@@ -13,6 +13,7 @@ import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
 import VisManager from './VisManager';
+import {AggMode} from './AggSwitcherColumn';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -110,7 +111,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         if(this.selectedUnaggVis){
             VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
         }
-        VisManager.setMultiformAggregationType(m.id.toString(), VisManager.aggregationType.UNAGGREGATED);
+        VisManager.setMultiformAggregationType(m.id.toString(), AggMode.Unaggregated);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
         let isSuccesor = Object.keys(idList).some((l, index) => {

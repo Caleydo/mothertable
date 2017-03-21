@@ -316,19 +316,6 @@ export default class ColumnManager extends EventHandler {
     });
   }
 
-  private buildRows(){
-
-  }
-
-  public updateAggregationType (multiformID : string){
-    this.columns.forEach((col) => {
-    //  col.multiformList.forEach(())
-
-    });
-
-  }
-
-
   /**
    * Calculate the maximum height of all column stratification areas and set it for every column
    */
@@ -351,7 +338,7 @@ export default class ColumnManager extends EventHandler {
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
-        this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
+        this.updateAggregationLevelForRow(i, AggMode.Unaggregated);
     }
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
@@ -391,14 +378,14 @@ export default class ColumnManager extends EventHandler {
     if(aggregationNeeded){
       for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
         if (!VisManager.isUserSelectedUnaggregatedRow[i]) {
-            this.updateAggregationLevelForRow(i, VisManager.aggregationType.AGGREGATED);
+            this.updateAggregationLevelForRow(i, AggMode.Aggregated);
         }else{
-            this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
+            this.updateAggregationLevelForRow(i, AggMode.Unaggregated);
         }
       }
     }else{
       for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
-        this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
+        this.updateAggregationLevelForRow(i, AggMode.Unaggregated);
       }
     }
 

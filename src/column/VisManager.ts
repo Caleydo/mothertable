@@ -9,6 +9,8 @@ import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   VALUE_TYPE_STRING
 } from 'phovea_core/src/datatype';
+import AggSwitcherColumn from './AggSwitcherColumn';
+import {AggMode} from './AggSwitcherColumn';
 
 
 export interface VisOptions {
@@ -129,10 +131,6 @@ export default class VisManager {
   public static isUserSelectedUnaggregatedRow = [];
   public static multiformAggregationType: {[id : string]: any} = {};
 
-  public static aggregationType = {
-    AGGREGATED : 1,
-    UNAGGREGATED : 2,
-  };
 
   constructor() {
     this.vissesOptions = {
@@ -150,7 +148,7 @@ export default class VisManager {
 
   static getDefaultVis(columnType: string, dataType: string, aggregationType ) {
     switch(aggregationType){
-      case VisManager.aggregationType.AGGREGATED:
+      case AggMode.Aggregated:
         switch(columnType){
           case 'vector':
             switch (dataType) {
@@ -168,7 +166,7 @@ export default class VisManager {
           default:
             return 'list'
         }
-      case VisManager.aggregationType.UNAGGREGATED:
+      case AggMode.Unaggregated:
         switch(columnType){
           case 'vector':
             switch (dataType) {
@@ -191,7 +189,7 @@ export default class VisManager {
 
   static getPossibleVisses(columnType: string, dataType: string, aggregationType ) {
     switch(aggregationType){
-      case VisManager.aggregationType.AGGREGATED:
+      case AggMode.Aggregated:
         switch(columnType){
           case 'vector':
             switch (dataType) {
@@ -209,7 +207,7 @@ export default class VisManager {
           default:
             return
         }
-      case VisManager.aggregationType.UNAGGREGATED:
+      case AggMode.Unaggregated:
         switch(columnType){
           case 'vector':
             switch (dataType) {
@@ -235,19 +233,10 @@ export default class VisManager {
   }
 
   static setUserVis(id:number, vis:IVisPluginDesc, aggregationType) {
-    if(aggregationType == VisManager.aggregationType.AGGREGATED){
+    if(aggregationType == AggMode.Aggregated){
       VisManager.userSelectedAggregatedVisses[id] = vis;
     }else{
       VisManager.userSelectedUnaggregatedVisses[id] = vis;
-    }
-  }
-
-  static updateUserVis(idOld:string, idNew:string) {
-    if(idOld in VisManager.userSelectedAggregatedVisses) {
-      VisManager.userSelectedAggregatedVisses[idNew] = VisManager.userSelectedAggregatedVisses[idOld];
-    }
-    if(idOld in VisManager.userSelectedUnaggregatedVisses) {
-      VisManager.userSelectedUnaggregatedVisses[idNew] = VisManager.userSelectedUnaggregatedVisses[idOld];
     }
   }
 
@@ -266,10 +255,10 @@ export default class VisManager {
     col.multiformList.forEach((multiform, index) => {
       let minHeight;
       if(multiform.id in VisManager.userSelectedAggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.AGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == AggMode.Aggregated) {
         minHeight = this.minVisSize(VisManager.userSelectedAggregatedVisses[multiform.id].id, multiform.data.dim)[1];
       }else if(multiform.id in VisManager.userSelectedUnaggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.UNAGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == AggMode.Unaggregated) {
         minHeight = this.minVisSize(VisManager.userSelectedUnaggregatedVisses[multiform.id].id, multiform.data.dim)[1];
       }else{
         minHeight = Number.POSITIVE_INFINITY;
@@ -336,20 +325,20 @@ export default class VisManager {
 
   assignVis(multiform: MultiForm, width: number, height: number) {
     if(multiform.id in VisManager.userSelectedAggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.AGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == AggMode.Aggregated) {
       multiform.switchTo(VisManager.userSelectedAggregatedVisses[multiform.id]);
     }else if(multiform.id in VisManager.userSelectedUnaggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.UNAGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == AggMode.Unaggregated) {
        multiform.switchTo(VisManager.userSelectedUnaggregatedVisses[multiform.id]);
     }else{
       let preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type,VisManager.multiformAggregationType[multiform.id]);
       let minPreferredSize = this.minVisSize(preferredVis, multiform.data.dim);
 
       if (!((minPreferredSize[1] <= height) && (minPreferredSize[0] <= width))) {
-        if(VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.AGGREGATED) {
+        if(VisManager.multiformAggregationType[multiform.id] == AggMode.Aggregated) {
           //choose smaller agggreg vis
         }
-        if(VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.UNAGGREGATED) {
+        if(VisManager.multiformAggregationType[multiform.id] == AggMode.Unaggregated) {
           //choose smaller nonaggre vis vis
         }
       }
