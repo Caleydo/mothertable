@@ -146,7 +146,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     defVis.innerText = "--";
     defVis.onclick  = () => {
       this.multiformList.forEach((mul) => {
-        if(aggregationType == VisManager.aggregationType.UNAGGREGATED){
+        if(aggregationType === VisManager.aggregationType.UNAGGREGATED){
           delete VisManager.userSelectedUnaggregatedVisses[mul.id.toString()];
           this.selectedUnaggVis = null;
         }else{
@@ -158,11 +158,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     };
 
     visses.forEach((v) => {
-      if(visIds.indexOf(v.id) != -1){
+      if(visIds.indexOf(v.id) !== -1){
         const child = createNode(s, 'i');
         v.iconify(child);
         child.onclick = () => {
-          if(aggregationType == VisManager.aggregationType.UNAGGREGATED){
+          if(aggregationType === VisManager.aggregationType.UNAGGREGATED){
             this.selectedUnaggVis = v;
           }else{
             this.selectedAggVis = v;

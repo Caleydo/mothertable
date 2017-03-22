@@ -116,7 +116,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         let isSuccesor = Object.keys(idList).some((l, index) => {
           let newRange = r.dims[0].asList().toString();
           let originalRange = idList[l].dims[0].toString();
-          if (newRange == originalRange) {
+          if (newRange === originalRange) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
             isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
             return true;
@@ -135,7 +135,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             }
           }
         });
-        if(!isSuccesor || Object.keys(idList).length == 0){
+        if(!isSuccesor || Object.keys(idList).length === 0){
           isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[id] || false;
         }
       });
@@ -152,13 +152,13 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     for (i=0,j=0; i<sup.length && j<sub.length;) {
         if (sup[i] < sub[j]) {
             ++i;
-        } else if (sup[i] == sub[j]) {
+        } else if (sup[i] === sub[j]) {
             ++i; ++j;
         } else {
             return false;
         }
     }
-    return j == sub.length;
+    return j === sub.length;
   }
 
 
