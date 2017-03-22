@@ -126,7 +126,6 @@ export default class VisManager {
    */
   public static userSelectedAggregatedVisses: {[id : string]: IVisPluginDesc} = {};
   public static userSelectedUnaggregatedVisses: {[id : string]: IVisPluginDesc} = {};
-  public static isUserSelectedUnaggregatedRow = [];
   public static multiformAggregationType: {[id : string]: any} = {};
 
   public static aggregationType = {
@@ -343,16 +342,6 @@ export default class VisManager {
        multiform.switchTo(VisManager.userSelectedUnaggregatedVisses[multiform.id]);
     }else{
       let preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type,VisManager.multiformAggregationType[multiform.id]);
-      let minPreferredSize = this.minVisSize(preferredVis, multiform.data.dim);
-
-      if (!((minPreferredSize[1] <= height) && (minPreferredSize[0] <= width))) {
-        if(VisManager.multiformAggregationType[multiform.id] === VisManager.aggregationType.AGGREGATED) {
-          //choose smaller agggreg vis
-        }
-        if(VisManager.multiformAggregationType[multiform.id] === VisManager.aggregationType.UNAGGREGATED) {
-          //choose smaller nonaggre vis vis
-        }
-      }
       multiform.switchTo(preferredVis);
     }
   }

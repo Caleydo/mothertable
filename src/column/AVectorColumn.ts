@@ -90,7 +90,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
       this.body.selectAll('.multiformList').remove();
       this.multiformList = [];
-      let isUserUnagregated  = [];
 
       views.forEach((view, id) => {
         const $multiformdivs = this.body.append('div').classed('multiformList', true);
@@ -118,28 +117,21 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           let originalRange = idList[l].dims[0].toString();
           if (newRange === originalRange) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-            isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
             return true;
           } else {
             let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
             let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
             if (this.superbag(oldRangeList, newRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
             if (this.superbag(newRangeList, oldRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
           }
         });
-        if(!isSuccesor || Object.keys(idList).length === 0){
-          isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[id] || false;
-        }
       });
-      VisManager.isUserSelectedUnaggregatedRow = isUserUnagregated;
       Object.keys(idList).forEach((l) => {
         delete VisManager.multiformAggregationType[l];
         VisManager.removeUserVisses(l);

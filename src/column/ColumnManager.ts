@@ -295,19 +295,6 @@ export default class ColumnManager extends EventHandler {
     });
   }
 
-  private buildRows(){
-
-  }
-
-  public updateAggregationType (multiformID : string){
-    this.columns.forEach((col) => {
-    //  col.multiformList.forEach(())
-
-    });
-
-  }
-
-
   /**
    * Calculate the maximum height of all column stratification areas and set it for every column
    */
@@ -329,7 +316,7 @@ export default class ColumnManager extends EventHandler {
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
         this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
     }
 
@@ -345,7 +332,7 @@ export default class ColumnManager extends EventHandler {
 
     if(!aggregationNeeded) {
       //choose minimal block height for each row of multiforms/stratification group
-      for (let i = 0; i < VisManager.isUserSelectedUnaggregatedRow.length; i++) {
+      for (let i = 0; i < this.columns[0].multiformList.length; i++) {
         let minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[i]);
@@ -366,20 +353,12 @@ export default class ColumnManager extends EventHandler {
     totalMin = 0;
     minHeights = [];
 
-    //set the propper aggregation level
-    if(aggregationNeeded){
-      for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
-        if (!VisManager.isUserSelectedUnaggregatedRow[i]) {
-            this.updateAggregationLevelForRow(i, VisManager.aggregationType.AGGREGATED);
-        }else{
-            this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
-        }
-      }
-    }else{
-      for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
-        this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
-      }
+
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
+      let aggMode = aggregationNeeded ? VisManager.aggregationType.AGGREGATED : VisManager.aggregationType.UNAGGREGATED;
+      this.updateAggregationLevelForRow(i, aggMode);
     }
+
 
     //copute height requiremmts per column
     for (const col of this.columns) {
@@ -410,7 +389,7 @@ export default class ColumnManager extends EventHandler {
     }
 
     //choose minimal block height for each row of multiforms/stratification group
-    for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
       let minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
