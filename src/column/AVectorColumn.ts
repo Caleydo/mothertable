@@ -116,7 +116,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         let isSuccesor = Object.keys(idList).some((l, index) => {
           let newRange = r.dims[0].asList();
           let originalRange = idList[l].dims[0].asList();
-          if (newRange.toString() == originalRange.toString()) {
+          if (newRange.toString() === originalRange.toString()) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
             isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];;
             return true;
@@ -133,11 +133,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             }
           }
         });
-        if(!isSuccesor || Object.keys(idList).length == 0){
+        if(!isSuccesor || Object.keys(idList).length === 0){
           isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[id] || AggMode.Automatic;
         }
       });
-      if(AggSwitcherColumn.modePerGroup.length != isUserUnagregated.length){
+      if(AggSwitcherColumn.modePerGroup.length !== isUserUnagregated.length){
         AggSwitcherColumn.modePerGroup = isUserUnagregated;
       }
       Object.keys(idList).forEach((l) => {

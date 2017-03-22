@@ -338,7 +338,7 @@ export default class ColumnManager extends EventHandler {
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for(let i =0; i< this.columns[0].multiformList.length; i++){
-        let mode = AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic ? AggMode.Unaggregated : AggSwitcherColumn.modePerGroup[i];
+        let mode = AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic ? AggMode.Unaggregated : AggSwitcherColumn.modePerGroup[i];
         this.updateAggregationLevelForRow(i, mode);
     }
 
@@ -377,7 +377,7 @@ export default class ColumnManager extends EventHandler {
 
     //set the propper aggregation level
     for(let i =0; i< this.columns[0].multiformList.length; i++){
-      if (AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic) {
+      if (AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic) {
         let mode = aggregationNeeded ? AggMode.Aggregated : AggMode.Unaggregated;
         this.updateAggregationLevelForRow(i, mode);
       }else{
@@ -422,7 +422,7 @@ export default class ColumnManager extends EventHandler {
         minSize.push(m[i]);
       });
       let min = Math.max(...minSize);
-      if(AggSwitcherColumn.modePerGroup[i] == AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic && aggregationNeeded)){
+      if(AggSwitcherColumn.modePerGroup[i] === AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic && aggregationNeeded)){
           min = 60;
           totalAggreg = totalAggreg + min;
       }
@@ -430,7 +430,7 @@ export default class ColumnManager extends EventHandler {
         m[i] = min;
       });
       maxHeights.forEach((m) => {
-        if(AggSwitcherColumn.modePerGroup[i] == AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic && aggregationNeeded)){
+        if(AggSwitcherColumn.modePerGroup[i] === AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic && aggregationNeeded)){
           m[i] = min;
         }
       });
@@ -444,7 +444,7 @@ export default class ColumnManager extends EventHandler {
       const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnagreggated]);
       let h = d3.sum(d.map((e) => minScale(e)));
       return d.map((e, j) => {
-        return minScale(e) > maxHeights[i][j] || minScale(e) == 0 ? maxHeights[i][j] : minScale(e);
+        return minScale(e) > maxHeights[i][j] || minScale(e) === 0 ? maxHeights[i][j] : minScale(e);
       });
     });
 
