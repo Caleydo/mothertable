@@ -59,7 +59,7 @@ export default class ColumnManager extends EventHandler {
   private stratifyColid: string; // This is column Name used for stratification
   private brushedRange: Range;
   private brushedStringIndices: number[] = [];
-  private brushedItems: number[] = [];
+  private rangeList;
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -111,7 +111,7 @@ export default class ColumnManager extends EventHandler {
     on(List.EVENT_BRUSHING, this.stringColumnOnDrag.bind(this));
 
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:AggMode, allGroups:AggMode[]) => {
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: AggMode, allGroups: AggMode[]) => {
       console.log(index, value, allGroups);
     });
   }
@@ -209,8 +209,9 @@ export default class ColumnManager extends EventHandler {
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
-    //console.log(this.colsWithRange)
-    //this.stratifiedRanges = newRange;
+
+    this.rangeList = newRange;
+    console.log(this.rangeList)
     this.stratifyAndRelayout();
 
   }
@@ -303,10 +304,20 @@ export default class ColumnManager extends EventHandler {
     const cols = this.filtersHierarchy;
     const datas = this.dataPerStratificaiton.get(colid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
-    this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
-    cols.forEach((col) => {
-      this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
-    });
+
+    console.log(this.stratifiedRanges, this.colsWithRange);
+    if ((this.brushedRange === undefined)) {
+      this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
+      cols.forEach((col) => {
+        this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
+      });
+    } else {
+      cols.forEach((col) => {
+        this.colsWithRange.set(col.data.desc.id, this.rangeList);
+      });
+    }
+
+
   }
 
   /**
@@ -316,6 +327,7 @@ export default class ColumnManager extends EventHandler {
    */
   private async stratifyColumns() {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
+    console.log(this.colsWithRange, this.stratifiedRanges,this.rangeList)
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
       col.updateMultiForms(r);
@@ -337,7 +349,7 @@ export default class ColumnManager extends EventHandler {
 
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
-    if(this.columns.length > 0) {
+    if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
     }
 
