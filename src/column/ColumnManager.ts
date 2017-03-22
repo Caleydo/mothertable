@@ -310,7 +310,7 @@ export default class ColumnManager extends EventHandler {
       col.$node.style('width', colWidths[i] + 'px');
 
       col.multiformList.forEach((multiform, index) => {
-        this.visManager.assignVis(multiform, colWidths[i], rowHeight[i][index]);
+        this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
       });
     });
@@ -341,7 +341,6 @@ export default class ColumnManager extends EventHandler {
         let mode = AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic ? AggMode.Unaggregated : AggSwitcherColumn.modePerGroup[i];
         this.updateAggregationLevelForRow(i, mode);
     }
-
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
     let aggregationNeeded = false;

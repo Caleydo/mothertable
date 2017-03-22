@@ -326,8 +326,7 @@ export default class VisManager {
     return [minVisWidth, minVisHeight];
   }
 
-
-  assignVis(multiform: MultiForm, width: number, height: number) {
+  assignVis(multiform: MultiForm) {
     if(multiform.id in VisManager.userSelectedAggregatedVisses
         && VisManager.multiformAggregationType[multiform.id] === AggMode.Aggregated) {
       multiform.switchTo(VisManager.userSelectedAggregatedVisses[multiform.id]);
@@ -336,16 +335,6 @@ export default class VisManager {
        multiform.switchTo(VisManager.userSelectedUnaggregatedVisses[multiform.id]);
     }else{
       let preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type,VisManager.multiformAggregationType[multiform.id]);
-      let minPreferredSize = this.minVisSize(preferredVis, multiform.data.dim);
-
-      if (!((minPreferredSize[1] <= height) && (minPreferredSize[0] <= width))) {
-        if(VisManager.multiformAggregationType[multiform.id] === AggMode.Aggregated) {
-          //choose smaller agggreg vis
-        }
-        if(VisManager.multiformAggregationType[multiform.id] === AggMode.Unaggregated) {
-          //choose smaller nonaggre vis vis
-        }
-      }
       multiform.switchTo(preferredVis);
     }
   }
