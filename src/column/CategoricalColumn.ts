@@ -17,7 +17,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   minWidth: number = 2;
   maxWidth: number = 200; //80
   minHeight: number = 2;
-  maxHeight: number = 10;
+  maxHeight: number = 25;
 
   constructor(data: ICategoricalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -27,7 +27,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, VisManager.aggregationType.UNAGGREGATED),
     });
   }
 

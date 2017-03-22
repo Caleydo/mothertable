@@ -56,10 +56,13 @@ export default class ColumnManager extends EventHandler {
   private colsWithRange = new Map();
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
+  private rowCounter = 0;
+
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
+  private onVisChange = (event: IEvent) => this.relayout();
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -139,6 +142,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
+    col.on(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
 
     this.columns.push(col);
 
@@ -157,6 +161,7 @@ export default class ColumnManager extends EventHandler {
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
+    col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.updateColumns();
@@ -292,7 +297,8 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
     this.relayoutColStrats();
-    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight') - c.$node.select('aside').property('clientHeight')));
+    const header = 47;//TODO solve programatically
+    const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
@@ -321,12 +327,61 @@ export default class ColumnManager extends EventHandler {
   }
 
   private async calColHeight(height) {
+    let ranges = [];
     let minHeights = [];
     let maxHeights = [];
     let index = 0;
     let totalMin = 0;
     let totalMax = 0;
 
+
+    //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
+    /****************************************************************************************/
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
+        this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
+    }
+
+    //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
+    let aggregationNeeded = false;
+    for (const col of this.columns) {
+      const minSizes = this.visManager.computeMinHeight(col);
+      if (d3.sum(minSizes) > height) {
+        aggregationNeeded = true;
+      }
+      minHeights.push(minSizes);
+    }
+
+    if(!aggregationNeeded) {
+      //choose minimal block height for each row of multiforms/stratification group
+      for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+        let minSize = [];
+        minHeights.forEach((m) => {
+          minSize.push(m[i]);
+        });
+        let min = Math.max(...minSize);
+        minHeights.forEach((m) => {
+          m[i] = min;
+        });
+        totalMin = totalMin + min;
+      }
+      if(totalMin > height){
+        aggregationNeeded = true;
+      }
+    }
+
+    /*************************************************************************/
+
+    totalMin = 0;
+    minHeights = [];
+
+
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
+      let aggMode = aggregationNeeded ? VisManager.aggregationType.AGGREGATED : VisManager.aggregationType.UNAGGREGATED;
+      this.updateAggregationLevelForRow(i, aggMode);
+    }
+
+
+    //copute height requiremmts per column
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.colsWithRange.get(col.data.desc.id);
@@ -335,58 +390,69 @@ export default class ColumnManager extends EventHandler {
       if (range === undefined) {
         range = this.stratifiedRanges;
       }
-
       const minSizes = this.visManager.computeMinHeight(col);
+
       for (const r of range) {
-        const view = await col.data.idView(r);
-        (type === AColumn.DATATYPE.matrix) ? temp.push(await (<IAnyMatrix>view).nrow) : temp.push(await (<IAnyVector>view).length);
+        const view = await
+        col.data.idView(r);
+        (type === AColumn.DATATYPE.matrix) ? temp.push(await(<IAnyMatrix>view).nrow) : temp.push(await(<IAnyVector>view).length);
       }
 
-      const minRange = Math.min(...temp);
-      const minSize = Math.min(...minSizes);
-      const scale = minSize / minRange;
-
-      // console.log(temp)
-      const min = temp.map((d) => scale * d);
-      const max = temp.map((d) => col.maxHeight * d);//TODO this is not true if we have e.g. just 1 - 5 items in multiform
+      const min = minSizes;
+      const max = temp.map((d) => col.maxHeight * d);
 
       minHeights.push(min);
       maxHeights.push(max);
 
-      totalMax = d3.max([totalMax, d3.sum(max)]);
-      totalMin = d3.max([totalMin, d3.sum(min)]);
+      totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
 
       index = index + 1;
     }
 
+    //choose minimal block height for each row of multiforms/stratification group
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
+      let minSize = [];
+      minHeights.forEach((m) => {
+        minSize.push(m[i]);
+      });
+      let min = Math.max(...minSize);
+      minHeights.forEach((m) => {
+        m[i] = min;
+      });
+      totalMin = totalMin + min;
+    }
+
+    let totalHeight = height < totalMin ? totalMin : height;
 
     minHeights = minHeights.map((d, i) => {
-      const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMin]);
+      const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalHeight]);
+      let h = d3.sum(d.map((e) => minScale(e)));
       return d.map((e) => minScale(e));
     });
+
 
     maxHeights = maxHeights.map((d, i) => {
       const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
       return d.map((e) => maxScale(e));
     });
 
-    const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
-    const flexHeights = minHeights.map((d, i) => {
-      return d.map((e) => nodeHeightScale(e));
-    });
-
-    const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
-    if (checkStringCol.length > 0 && totalMax > height) {
-      return minHeights;
-    } else if (checkStringCol.length > 0 && totalMax < totalMin) {
-      return minHeights;
-    } else if (totalMax < height) {
-      return maxHeights;
-    } else {
-      return flexHeights;
-    }
-
+    if (totalMin > height) {
+       return minHeights;
+     } else if (totalMax > height) {
+       return minHeights;
+     } else if (totalMax < height) {
+       return maxHeights;
+     } else {
+       return minHeights;
+     }
   }
+
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType) {
+    for (const col of this.columns) {
+        VisManager.setMultiformAggregationType(col.multiformList[rowIndex].id, aggregationType);
+    }
+  }
+
 }
 
 
