@@ -101,27 +101,29 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           });
         const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
         //assign visses
-        if (this.selectedAggVis) {
-          VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
-        }
-        if (this.selectedUnaggVis) {
-          VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
+        if(this.selectedAggVis){
+            VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
+         }
+        if(this.selectedUnaggVis){
+            VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
         }
         VisManager.setMultiformAggregationType(m.id.toString(), VisManager.aggregationType.UNAGGREGATED);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
-        Object.keys(idList).some((l) => {
-          let newRange = r.dims[0].asList();
-          let originalRange = idList[l].dims[0].asList();
-          if (newRange.toString() === originalRange.toString()) {
+        let isSuccesor = Object.keys(idList).some((l, index) => {
+          let newRange = r.dims[0].asList().toString();
+          let originalRange = idList[l].dims[0].toString();
+          if (newRange === originalRange) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
             return true;
           } else {
-            if (this.superbag(originalRange, newRange)) {
+            let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
+            let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
+            if (this.superbag(oldRangeList, newRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
               return true;
             }
-            if (this.superbag(newRange, originalRange)) {
+            if (this.superbag(newRangeList, oldRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
               return true;
             }
@@ -135,13 +137,18 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     });
   }
 
-  /*
-   *Checks if one array contains all elements of another array
-   *@sup rhe larger array
-   *@sub the smaller array
-   */
   private superbag(sup, sub) {
-    return sub.every(elem => sup.indexOf(elem) > -1);
+    let i, j;
+    for (i=0,j=0; i<sup.length && j<sub.length;) {
+        if (sup[i] < sub[j]) {
+            ++i;
+        } else if (sup[i] === sub[j]) {
+            ++i; ++j;
+        } else {
+            return false;
+        }
+    }
+    return j === sub.length;
   }
 
 
