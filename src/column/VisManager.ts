@@ -235,7 +235,7 @@ export default class VisManager {
   }
 
   static setUserVis(id:number, vis:IVisPluginDesc, aggregationType) {
-    if(aggregationType === VisManager.aggregationType.AGGREGATED){
+    if(aggregationType == VisManager.aggregationType.AGGREGATED){
       VisManager.userSelectedAggregatedVisses[id] = vis;
     }else{
       VisManager.userSelectedUnaggregatedVisses[id] = vis;
@@ -266,10 +266,10 @@ export default class VisManager {
     col.multiformList.forEach((multiform, index) => {
       let minHeight;
       if(multiform.id in VisManager.userSelectedAggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] === VisManager.aggregationType.AGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.AGGREGATED) {
         minHeight = this.minVisSize(VisManager.userSelectedAggregatedVisses[multiform.id].id, multiform.data.dim)[1];
       }else if(multiform.id in VisManager.userSelectedUnaggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] === VisManager.aggregationType.UNAGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.UNAGGREGATED) {
         minHeight = this.minVisSize(VisManager.userSelectedUnaggregatedVisses[multiform.id].id, multiform.data.dim)[1];
       }else{
         minHeight = Number.POSITIVE_INFINITY;
@@ -336,14 +336,23 @@ export default class VisManager {
 
   assignVis(multiform: MultiForm, width: number, height: number) {
     if(multiform.id in VisManager.userSelectedAggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] === VisManager.aggregationType.AGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.AGGREGATED) {
       multiform.switchTo(VisManager.userSelectedAggregatedVisses[multiform.id]);
     }else if(multiform.id in VisManager.userSelectedUnaggregatedVisses
-        && VisManager.multiformAggregationType[multiform.id] === VisManager.aggregationType.UNAGGREGATED) {
+        && VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.UNAGGREGATED) {
        multiform.switchTo(VisManager.userSelectedUnaggregatedVisses[multiform.id]);
     }else{
       let preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type,VisManager.multiformAggregationType[multiform.id]);
       let minPreferredSize = this.minVisSize(preferredVis, multiform.data.dim);
+
+      if (!((minPreferredSize[1] <= height) && (minPreferredSize[0] <= width))) {
+        if(VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.AGGREGATED) {
+          //choose smaller agggreg vis
+        }
+        if(VisManager.multiformAggregationType[multiform.id] == VisManager.aggregationType.UNAGGREGATED) {
+          //choose smaller nonaggre vis vis
+        }
+      }
       multiform.switchTo(preferredVis);
     }
   }

@@ -116,23 +116,30 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         let isSuccesor = Object.keys(idList).some((l, index) => {
           let newRange = r.dims[0].asList().toString();
           let originalRange = idList[l].dims[0].toString();
-          if (newRange === originalRange) {
+          if (newRange == originalRange) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+            isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
             return true;
           } else {
             let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
             let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
             if (this.superbag(oldRangeList, newRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
             if (this.superbag(newRangeList, oldRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
               return true;
             }
           }
         });
+        if(!isSuccesor || Object.keys(idList).length == 0){
+          isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[id] || false;
+        }
       });
+      VisManager.isUserSelectedUnaggregatedRow = isUserUnagregated;
       Object.keys(idList).forEach((l) => {
         delete VisManager.multiformAggregationType[l];
         VisManager.removeUserVisses(l);
@@ -145,13 +152,13 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     for (i=0,j=0; i<sup.length && j<sub.length;) {
         if (sup[i] < sub[j]) {
             ++i;
-        } else if (sup[i] === sub[j]) {
+        } else if (sup[i] == sub[j]) {
             ++i; ++j;
         } else {
             return false;
         }
     }
-    return j === sub.length;
+    return j == sub.length;
   }
 
 
