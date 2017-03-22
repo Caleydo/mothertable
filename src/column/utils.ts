@@ -128,6 +128,7 @@ export function updateRangeList(rangeList: Range[], brushedStringIndices: number
   });
   const m = reformatRangeList(updateRange);
   m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
+  console.log(updateRange)
   return reformatRangeList(updateRange);
 }
 
@@ -149,4 +150,14 @@ export function mergeRanges(ranges: Range[]) {
     return r;
   });
   return mergedRange;
+}
+
+export function makeArrayBetweenNumbers(range:number[]) {
+  const increments = 1;
+  const arr = [];
+  for (let val = range[0]; val <= range[1]; val += increments) {
+    arr.push(val);
+  }
+  return arr;
+
 }

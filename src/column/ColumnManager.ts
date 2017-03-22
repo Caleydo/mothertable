@@ -27,7 +27,7 @@ import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
-import {scaleTo, updateRangeList, makeRangeFromList, makeListFromRange} from './utils';
+import {scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
 import {isNumber} from 'util';
@@ -56,6 +56,7 @@ export default class ColumnManager extends EventHandler {
   private stratifyColid: string; // This is column Name used for stratification
   private brushedRange: Range;
   private brushedStringIndices: number[] = [];
+  private brushedItems: number[] = [];
 
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -179,20 +180,23 @@ export default class ColumnManager extends EventHandler {
   async stringColumnOnDrag(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
     this.brushedStringIndices = await this.getBrushIndices(brushIndices, multiformData);
+
     this.brushedRange = makeRangeFromList(this.brushedStringIndices);
-    console.log(this.brushedRange, this.brushedStringIndices);
-    this.relayout();
-    // this.brushedStringIndices = brushIndices;
+    console.log(this.brushedRange, this.brushedStringIndices, brushIndices);
     // console.log(brushIndices, this.brushedStringIndices, (await multiformData.ids()).dim(0).asList())
-    //this.updateRangeList(this.brushedStringIndices);
+    this.updateRangeList(this.brushedStringIndices);
+    //this.stratifyColumns();
   }
 
   async updateRangeList(brushedStringIndices: number[]) {
     const newRange = updateRangeList(this.stratifiedRanges, brushedStringIndices);
+    console.log(this.colsWithRange, newRange)
     this.brushedRange = makeRangeFromList(brushedStringIndices);
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
+    //console.log(this.colsWithRange)
+    //this.stratifiedRanges = newRange;
     this.stratifyAndRelayout();
 
   }
@@ -242,7 +246,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   async stratifyAndRelayout() {
-    this.updateStratifyID(this.stratifyColid);
+   // this.updateStratifyID(this.stratifyColid);
     await this.stratifyColumns();
     this.relayout();
   }
@@ -297,6 +301,7 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<void>}
    */
   private async stratifyColumns() {
+    console.log(this.colsWithRange)
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
@@ -314,14 +319,13 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
     this.relayoutColStrats();
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - c.$node.select('header').property('clientHeight') - c.$node.select('aside').property('clientHeight')));
-    let rowHeight = await this.calColHeight(height);
-    console.log(rowHeight, 'rowheight')
+    const rowHeight = await this.calColHeight(height);
 
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
-
+      console.log(col)
       col.multiformList.forEach((multiform, index) => {
         let b = 0;
         if ((this.brushedRange !== undefined)) {
@@ -349,7 +353,7 @@ export default class ColumnManager extends EventHandler {
     let maxHeights = [];
     let totalMin = 0;
     let totalMax = 0;
-    const heightPerBrushItems = 5;
+    const heightPerBrushItems = 10;
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.colsWithRange.get(col.data.desc.id);
@@ -379,7 +383,7 @@ export default class ColumnManager extends EventHandler {
       totalMin = d3.max([totalMin, d3.sum(min)]);
 
     }
-    console.log(minHeights, maxHeights, 'a')
+
 
     minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMin]);
@@ -394,20 +398,20 @@ export default class ColumnManager extends EventHandler {
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
+    //
+    // if (this.brushedStringIndices.length !== 0) {
+    //   const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
+    //   this.stratifiedRanges.forEach((r, i) => {
+    //     const m = r.intersect(this.brushedRange).size()[0];
+    //     minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
+    //     maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : minHeights[i];
+    //   });
+    // }
 
-    if (this.brushedStringIndices.length !== 0) {
-      const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
-      this.stratifiedRanges.forEach((r, i) => {
-        const m = r.intersect(this.brushedRange).size()[0];
-        console.log(m, minHeights[i], heightForBrush);
-        minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
-        maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : minHeights[i];
-      });
-    }
-
+    totalMax = d3.max([totalMax, d3.sum(minHeights)]);
+    totalMin = d3.max([totalMin, d3.sum(maxHeights)]);
     const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
     const flexHeights = minHeights.map((d, i) => nodeHeightScale(d));
-
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     if (checkStringCol.length > 0 && totalMax > height) {
       return minHeights;
