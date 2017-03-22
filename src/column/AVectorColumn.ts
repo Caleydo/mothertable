@@ -135,6 +135,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     });
   }
 
+  /*
+   *Checks if one array contains all elements of another array
+   *@sup the larger array
+   *@sub the smaller array
+   */
   private superbag(sup, sub) {
     return sub.every(elem => sup.indexOf(elem) > -1);
   }
