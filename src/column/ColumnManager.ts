@@ -33,6 +33,8 @@ import VisManager from './VisManager';
 import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
+import AggSwitcherColumn from './AggSwitcherColumn';
+import {AggMode} from './AggSwitcherColumn';
 import {List} from 'phovea_vis/src/list';
 
 
@@ -45,6 +47,7 @@ export default class ColumnManager extends EventHandler {
 
   private $node: d3.Selection<any>;
 
+  private aggSwitcherCol: AggSwitcherColumn;
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
@@ -76,13 +79,20 @@ export default class ColumnManager extends EventHandler {
 
   private build() {
     this.visManager = new VisManager();
+
     this.$node = this.$parent
       .classed('column-manager', true)
       .append('ol')
       .classed('columnList', true);
 
     $('.columnList', this.$parent.node()) // jquery
-      .sortable({handle: '.labelName', axis: 'x'});
+      .sortable({
+        handle: '.labelName',
+        axis: 'x',
+        items: '> :not(.nodrag)'
+      });
+
+    this.aggSwitcherCol = new AggSwitcherColumn(null, EOrientation.Horizontal, this.$node);
   }
 
   private attachListener() {
@@ -100,6 +110,10 @@ export default class ColumnManager extends EventHandler {
     });
     on(List.EVENT_BRUSHING, this.stringColumnOnDrag.bind(this));
 
+
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:AggMode, allGroups:AggMode[]) => {
+      console.log(index, value, allGroups);
+    });
   }
 
   get length() {
@@ -246,7 +260,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   async stratifyAndRelayout() {
-   // this.updateStratifyID(this.stratifyColid);
+    this.updateStratifyID(this.stratifyColid);
     await this.stratifyColumns();
     this.relayout();
   }
@@ -301,7 +315,6 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<void>}
    */
   private async stratifyColumns() {
-    console.log(this.colsWithRange)
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
@@ -312,7 +325,8 @@ export default class ColumnManager extends EventHandler {
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
 
-
+    // update aggregation switcher column
+    this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
   }
 
   async relayout() {
@@ -323,9 +337,13 @@ export default class ColumnManager extends EventHandler {
 
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
+    if(this.columns.length > 0) {
+      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
+    }
+
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
-      console.log(col)
+
       col.multiformList.forEach((multiform, index) => {
         let b = 0;
         if ((this.brushedRange !== undefined)) {
@@ -333,7 +351,7 @@ export default class ColumnManager extends EventHandler {
         }
         const f = (b > 0) ? 1.5 : 1;
         this.visManager.assignVis(multiform, colWidths[i], rowHeight[index]);
-        scaleTo(multiform, colWidths[i], f * rowHeight[index], col.orientation);
+        scaleTo(multiform, colWidths[i], f * rowHeight[i][index], col.orientation);
       });
     });
   }
@@ -351,9 +369,10 @@ export default class ColumnManager extends EventHandler {
   private async calColHeight(height) {
     let minHeights = [];
     let maxHeights = [];
+    let index = 0;
     let totalMin = 0;
     let totalMax = 0;
-    const heightPerBrushItems = 10;
+
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.colsWithRange.get(col.data.desc.id);
@@ -379,9 +398,11 @@ export default class ColumnManager extends EventHandler {
 
       minHeights.push(min);
       maxHeights.push(max);
+
       totalMax = d3.max([totalMax, d3.sum(max)]);
       totalMin = d3.max([totalMin, d3.sum(min)]);
 
+      index = index + 1;
     }
 
 
@@ -390,28 +411,16 @@ export default class ColumnManager extends EventHandler {
       return d.map((e) => minScale(e));
     });
 
-
     maxHeights = maxHeights.map((d, i) => {
       const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
       return d.map((e) => maxScale(e));
     });
 
-    minHeights = minHeights[0];
-    maxHeights = maxHeights[0];
-    //
-    // if (this.brushedStringIndices.length !== 0) {
-    //   const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
-    //   this.stratifiedRanges.forEach((r, i) => {
-    //     const m = r.intersect(this.brushedRange).size()[0];
-    //     minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
-    //     maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : minHeights[i];
-    //   });
-    // }
-
-    totalMax = d3.max([totalMax, d3.sum(minHeights)]);
-    totalMin = d3.max([totalMin, d3.sum(maxHeights)]);
     const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
-    const flexHeights = minHeights.map((d, i) => nodeHeightScale(d));
+    const flexHeights = minHeights.map((d, i) => {
+      return d.map((e) => nodeHeightScale(e));
+    });
+
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     if (checkStringCol.length > 0 && totalMax > height) {
       return minHeights;
