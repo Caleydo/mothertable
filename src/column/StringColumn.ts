@@ -21,7 +21,7 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,VisManager.aggregationType.UNAGGREGATED),
       'list': {
         cssClass: 'taggle-vis-list'
       }
