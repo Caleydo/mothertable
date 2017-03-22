@@ -6,7 +6,10 @@ import {ZoomLogic} from 'phovea_core/src/behavior';
 import {EOrientation} from './AColumn';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import Range from 'phovea_core/src/range/Range';
-
+import {
+  VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
+  IDataType
+} from 'phovea_core/src/datatype';
 
 export function scaleTo(multiform: MultiForm, width: number, height: number, orientation: EOrientation) {
   const zoom = new ZoomLogic(multiform, multiform.asMetaData);
@@ -108,4 +111,17 @@ export function formatIdTypeName(name: string): string {
     .replace('country', 'Country')
     .replace('GENE_SYMBOL', 'Gene')
     .replace('TCGA_SAMPLE', 'Patient');
+}
+
+export function findColumnTie(cols) {
+  let columnIndexForTie = NaN;
+  cols.some((val, index) => {
+    if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
+      columnIndexForTie = index;
+    }
+    return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
+  });
+
+  return columnIndexForTie;
+
 }
