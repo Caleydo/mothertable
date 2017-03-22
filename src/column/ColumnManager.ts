@@ -194,32 +194,24 @@ export default class ColumnManager extends EventHandler {
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
     this.brushedStringIndices = await this.getBrushIndices(brushIndices, multiformData);
-    console.log(brushIndices)
     this.brushedRange = makeRangeFromList(this.brushedStringIndices);
-    console.log(this.brushedRange, this.brushedStringIndices, brushIndices);
-    // console.log(brushIndices, this.brushedStringIndices, (await multiformData.ids()).dim(0).asList())
     this.updateRangeList(this.brushedStringIndices);
-    //this.stratifyColumns();
+
   }
 
   async updateRangeList(brushedStringIndices: number[]) {
     const newRange = updateRangeList(this.stratifiedRanges, brushedStringIndices);
-    console.log(this.colsWithRange, newRange)
     this.brushedRange = makeRangeFromList(brushedStringIndices);
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
-
     this.rangeList = newRange;
-    console.log(this.rangeList)
     this.stratifyAndRelayout();
 
   }
 
 
   async getBrushIndices(stringList: number[], multiformData: IAnyVector) {
-    const brushedStringIndices = [];
-
     const m = (await multiformData.ids()).dim(0).asList();
     return m.slice(stringList[0], stringList[1] + 1);
   }
@@ -327,7 +319,6 @@ export default class ColumnManager extends EventHandler {
    */
   private async stratifyColumns() {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    console.log(this.colsWithRange, this.stratifiedRanges, this.rangeList)
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
       col.updateMultiForms(r);
@@ -349,22 +340,21 @@ export default class ColumnManager extends EventHandler {
 
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
-    if (this.columns.length > 0) {
-      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
+
+    if (this.columns.length > 0 && this.brushedStringIndices.length === undefined) {
+      this.aggSwitcherCol.updateSwitcherBlocks(this.stratifiedRanges.map((d, i) => rowHeight[i]));
+
     }
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
 
       col.multiformList.forEach((multiform, index) => {
-        let b = 0;
-        if ((this.brushedRange !== undefined)) {
-          b = multiform.data.range.intersect(this.brushedRange).size()[0];
-        }
-        const f = (b > 0) ? 1.5 : 1;
+
         this.visManager.assignVis(multiform, colWidths[i], rowHeight[index]);
-        scaleTo(multiform, colWidths[i], f * rowHeight[i][index], col.orientation);
+        scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
       });
+
     });
   }
 
@@ -384,7 +374,7 @@ export default class ColumnManager extends EventHandler {
     let index = 0;
     let totalMin = 0;
     let totalMax = 0;
-
+    const heightPerBrushItems = 10;
     for (const col of this.columns) {
       const type = col.data.desc.type;
       let range = this.colsWithRange.get(col.data.desc.id);
@@ -428,10 +418,25 @@ export default class ColumnManager extends EventHandler {
       return d.map((e) => maxScale(e));
     });
 
+    minHeights = minHeights[0];
+    maxHeights = maxHeights[0];
+    console.log(minHeights, maxHeights)
+    const brushIndex = [];
+    if (this.brushedStringIndices.length !== 0) {
+      const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
+      this.rangeList.forEach((r, i) => {
+
+
+        const m = r.intersect(this.brushedRange).size()[0];
+        console.log(m, minHeights[i], heightForBrush);
+        minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
+        maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : minHeights[i];
+      });
+    }
+
+
     const nodeHeightScale = d3.scale.linear().domain([0, totalMin]).range([0, height]);
-    const flexHeights = minHeights.map((d, i) => {
-      return d.map((e) => nodeHeightScale(e));
-    });
+    const flexHeights = minHeights.map((d, i) => nodeHeightScale(d));
 
     const checkStringCol = this.columns.filter((d) => (<any>d).data.desc.value.type === VALUE_TYPE_STRING);
     if (checkStringCol.length > 0 && totalMax > height) {
