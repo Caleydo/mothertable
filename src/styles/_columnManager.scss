@@ -6,6 +6,9 @@
   overflow: auto;
   margin-top: 2px;
 
+  // disable selection in the whole main view
+  user-select: none;
+
   .columnList {
     display: flex;
     align-items: stretch;

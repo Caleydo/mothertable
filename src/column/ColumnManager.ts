@@ -337,7 +337,7 @@ export default class ColumnManager extends EventHandler {
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for(let i =0; i< AggSwitcherColumn.modePerGroup.length; i++){
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
         let mode = AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic ? AggMode.Unaggregated : AggSwitcherColumn.modePerGroup[i];
         this.updateAggregationLevelForRow(i, mode);
     }
@@ -355,7 +355,7 @@ export default class ColumnManager extends EventHandler {
 
     if(!aggregationNeeded) {
       //choose minimal block height for each row of multiforms/stratification group
-      for (let i = 0; i < AggSwitcherColumn.modePerGroup.length; i++) {
+      for (let i = 0; i < this.columns[0].multiformList.length; i++) {
         let minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[i]);
@@ -377,8 +377,7 @@ export default class ColumnManager extends EventHandler {
     minHeights = [];
 
     //set the propper aggregation level
-
-    for(let i =0; i< AggSwitcherColumn.modePerGroup.length; i++){
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
       if (AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic) {
         let mode = aggregationNeeded ? AggMode.Aggregated : AggMode.Unaggregated;
         this.updateAggregationLevelForRow(i, mode);
@@ -386,6 +385,7 @@ export default class ColumnManager extends EventHandler {
         this.updateAggregationLevelForRow(i, AggSwitcherColumn.modePerGroup[i]);
       }
     }
+
 
     //copute height requiremmts per column
     for (const col of this.columns) {
@@ -418,8 +418,7 @@ export default class ColumnManager extends EventHandler {
 
     let totalAggreg = 0;
     //choose minimal and maximal block height for each row of multiforms/stratification group
-    for(let i =0; i< AggSwitcherColumn.modePerGroup.length; i++){
-      let minSize = [];
+    for(let i =0; i< this.columns[0].multiformList.length; i++){      let minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
       });

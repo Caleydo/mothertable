@@ -8,10 +8,8 @@ import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {SORT} from '../SortHandler/SortHandler';
-import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
 import VisManager from './VisManager';
 import {AggMode} from './VisManager';
 import AggSwitcherColumn from './AggSwitcherColumn';
@@ -106,31 +104,29 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           });
         const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
         //assign visses
-        if(this.selectedAggVis){
-            VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
-         }
-        if(this.selectedUnaggVis){
-            VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
+        if (this.selectedAggVis) {
+          VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
+        }
+        if (this.selectedUnaggVis) {
+          VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
         }
         VisManager.setMultiformAggregationType(m.id.toString(), AggMode.Unaggregated);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
         let isSuccesor = Object.keys(idList).some((l, index) => {
-          let newRange = r.dims[0].asList().toString();
-          let originalRange = idList[l].dims[0].toString();
-          if (newRange == originalRange) {
+          let newRange = r.dims[0].asList();
+          let originalRange = idList[l].dims[0].asList();
+          if (newRange.toString() == originalRange.toString()) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
             isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];;
             return true;
           } else {
-            let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
-            let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
-            if (this.superbag(oldRangeList, newRangeList)) {
+            if (this.superbag(originalRange, newRange)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
               isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
               return true;
             }
-            if (this.superbag(newRangeList, oldRangeList)) {
+            if (this.superbag(newRange, originalRange)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
               isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
               return true;
@@ -151,18 +147,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     });
   }
 
-  private superbag(sup, sub) {
-    let i, j;
-    for (i=0,j=0; i<sup.length && j<sub.length;) {
-        if (sup[i] < sub[j]) {
-            ++i;
-        } else if (sup[i] == sub[j]) {
-            ++i; ++j;
-        } else {
-            return false;
-        }
-    }
-    return j == sub.length;
+  /**
+   * Checks if one array contains all elements of another array
+   * @param sup the larger array
+   * @param sub the smaller array
+   * @returns {boolean}
+   */
+  private superbag(sup:any[], sub:any[]):boolean {
+    return sub.every(elem => sup.indexOf(elem) > -1);
   }
 
 

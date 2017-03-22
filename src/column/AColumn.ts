@@ -9,7 +9,6 @@ import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
 import {SORT} from '../SortHandler/SortHandler';
 import {createNode} from 'phovea_core/src/multiform/internal';
-import AVectorFilter from '../filter/AVectorFilter';
 import {formatAttributeName} from './utils';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from 'phovea_core/src/multiform/IMultiForm';
@@ -150,7 +149,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     defVis.innerText = "--";
     defVis.onclick  = () => {
       this.multiformList.forEach((mul) => {
-        if(aggregationType == AggMode.Unaggregated){
+        if(aggregationType === AggMode.Unaggregated){
           delete VisManager.userSelectedUnaggregatedVisses[mul.id.toString()];
           this.selectedUnaggVis = null;
         }else{
@@ -162,11 +161,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     };
 
     visses.forEach((v) => {
-      if(visIds.indexOf(v.id) != -1){
+      if(visIds.indexOf(v.id) !== -1){
         const child = createNode(s, 'i');
         v.iconify(child);
         child.onclick = () => {
-          if(aggregationType == AggMode.Unaggregated){
+          if(aggregationType === AggMode.Unaggregated){
             this.selectedUnaggVis = v;
           }else{
             this.selectedAggVis = v;

@@ -13,7 +13,6 @@ import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
-import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter} from '../filter/AFilter';
 import {AggMode} from './VisManager';
 
