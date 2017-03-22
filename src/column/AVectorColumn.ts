@@ -14,6 +14,7 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
 import VisManager from './VisManager';
 import {AggMode} from './VisManager';
+import AggSwitcherColumn from './AggSwitcherColumn';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -119,28 +120,30 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           let originalRange = idList[l].dims[0].toString();
           if (newRange == originalRange) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-            isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
+            isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];;
             return true;
           } else {
             let newRangeList = r.dims[0].asList().sort((a, b) => (a - b));
             let oldRangeList = idList[l].dims[0].asList().sort((a, b) => (a - b));
             if (this.superbag(oldRangeList, newRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
+              isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
               return true;
             }
             if (this.superbag(newRangeList, oldRangeList)) {
               VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[index];
+              isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
               return true;
             }
           }
         });
         if(!isSuccesor || Object.keys(idList).length == 0){
-          isUserUnagregated[id] = VisManager.isUserSelectedUnaggregatedRow[id] || false;
+          isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[id] || AggMode.Automatic;
         }
       });
-      VisManager.isUserSelectedUnaggregatedRow = isUserUnagregated;
+      if(AggSwitcherColumn.modePerGroup.length != isUserUnagregated.length){
+        AggSwitcherColumn.modePerGroup = isUserUnagregated;
+      }
       Object.keys(idList).forEach((l) => {
         delete VisManager.multiformAggregationType[l];
         VisManager.removeUserVisses(l);

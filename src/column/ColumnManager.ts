@@ -416,28 +416,45 @@ export default class ColumnManager extends EventHandler {
       index = index + 1;
     }
 
-    //choose minimal block height for each row of multiforms/stratification group
+    let totalAggreg = 0;
+    //choose minimal and maximal block height for each row of multiforms/stratification group
     for(let i =0; i< AggSwitcherColumn.modePerGroup.length; i++){
       let minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
       });
       let min = Math.max(...minSize);
+      if(AggSwitcherColumn.modePerGroup[i] == AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic && aggregationNeeded)){
+          min = 60;
+          totalAggreg = totalAggreg + min;
+      }
       minHeights.forEach((m) => {
         m[i] = min;
+      });
+      maxHeights.forEach((m) => {
+        if(AggSwitcherColumn.modePerGroup[i] == AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic && aggregationNeeded)){
+          m[i] = min;
+        }
       });
       totalMin = totalMin + min;
     }
 
-    let totalHeight = height < totalMin ? totalMin : height;
+    let totalMinUnaggregatedHeight = totalMin - totalAggreg;
+    let spaceForUnagreggated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
 
     minHeights = minHeights.map((d, i) => {
-      const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalHeight]);
+      const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnagreggated]);
       let h = d3.sum(d.map((e) => minScale(e)));
-      return d.map((e) => minScale(e));
+      return d.map((e, j) => {
+        return minScale(e) > maxHeights[i][j] || minScale(e) == 0 ? maxHeights[i][j] : minScale(e);
+      });
     });
 
+    return minHeights;
 
+
+
+/*
     maxHeights = maxHeights.map((d, i) => {
       const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
       return d.map((e) => maxScale(e));
@@ -451,7 +468,7 @@ export default class ColumnManager extends EventHandler {
        return maxHeights;
      } else {
        return minHeights;
-     }
+     }*/
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType) {
