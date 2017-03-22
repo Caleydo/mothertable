@@ -33,6 +33,8 @@ import VisManager from './VisManager';
 import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
+import AggSwitcherColumn from './AggSwitcherColumn';
+import {AggMode} from './AggSwitcherColumn';
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -44,6 +46,7 @@ export default class ColumnManager extends EventHandler {
 
   private $node: d3.Selection<any>;
 
+  private aggSwitcherCol: AggSwitcherColumn;
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
@@ -74,13 +77,20 @@ export default class ColumnManager extends EventHandler {
 
   private build() {
     this.visManager = new VisManager();
+
     this.$node = this.$parent
       .classed('column-manager', true)
       .append('ol')
       .classed('columnList', true);
 
     $('.columnList', this.$parent.node()) // jquery
-      .sortable({handle: '.labelName', axis: 'x'});
+      .sortable({
+        handle: '.labelName',
+        axis: 'x',
+        items: '> :not(.nodrag)'
+      });
+
+    this.aggSwitcherCol = new AggSwitcherColumn(null, EOrientation.Horizontal, this.$node);
   }
 
   private attachListener() {
@@ -95,7 +105,12 @@ export default class ColumnManager extends EventHandler {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === colid.data.desc.id);
       this.stratifyColid = col[0].data.desc.id;
       this.stratifyAndRelayout();
-    });  }
+    });
+
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:AggMode, allGroups:AggMode[]) => {
+      console.log(index, value, allGroups);
+    });
+  }
 
   get length() {
     return this.columns.length;
@@ -275,6 +290,8 @@ export default class ColumnManager extends EventHandler {
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
 
+    // update aggregation switcher column
+    this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
   }
 
   async relayout() {
@@ -284,6 +301,10 @@ export default class ColumnManager extends EventHandler {
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
+
+    if(this.columns.length > 0) {
+      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
+    }
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');

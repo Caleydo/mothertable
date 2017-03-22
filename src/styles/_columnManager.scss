@@ -6,6 +6,9 @@
   overflow: auto;
   margin-top: 2px;
 
+  // disable selection in the whole main view
+  user-select: none;
+
   .columnList {
     display: flex;
     align-items: stretch;
@@ -124,6 +127,26 @@
       ol, li {
         list-style-type: decimal;
         margin: 0;
+      }
+    }
+  }
+
+  .column.aggSwitcher {
+    main > div {
+      margin-bottom: 2px;
+      display: flex;
+      flex-direction: column;
+
+      &.agg {
+        background: $toolbar-link-hover-color;
+      }
+
+      &.unagg {
+        background: $toolbar-link-color;
+      }
+
+      &.auto {
+        background: $header-bg-color;
       }
     }
   }

@@ -7,6 +7,9 @@
   min-width: $rightPanelWidth;
   max-width: $rightPanelWidth;
 
+  // disable selection in the whole filter dialog
+  user-select: none;
+
   &:empty {
     display: none;
   }
