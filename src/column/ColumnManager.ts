@@ -108,7 +108,7 @@ export default class ColumnManager extends EventHandler {
       this.stratifyColid = col[0].data.desc.id;
       this.stratifyAndRelayout();
     });
-    on(List.EVENT_BRUSHING, this.stringColumnOnDrag.bind(this));
+    on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
 
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: AggMode, allGroups: AggMode[]) => {
@@ -191,10 +191,10 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  async stringColumnOnDrag(evt: any, brushIndices: any[], multiformData: IAnyVector) {
+  async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
     this.brushedStringIndices = await this.getBrushIndices(brushIndices, multiformData);
-
+    console.log(brushIndices)
     this.brushedRange = makeRangeFromList(this.brushedStringIndices);
     console.log(this.brushedRange, this.brushedStringIndices, brushIndices);
     // console.log(brushIndices, this.brushedStringIndices, (await multiformData.ids()).dim(0).asList())
@@ -327,7 +327,7 @@ export default class ColumnManager extends EventHandler {
    */
   private async stratifyColumns() {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    console.log(this.colsWithRange, this.stratifiedRanges,this.rangeList)
+    console.log(this.colsWithRange, this.stratifiedRanges, this.rangeList)
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
       col.updateMultiForms(r);
