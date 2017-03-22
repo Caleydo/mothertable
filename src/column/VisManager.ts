@@ -9,8 +9,7 @@ import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   VALUE_TYPE_STRING
 } from 'phovea_core/src/datatype';
-import AggSwitcherColumn from './AggSwitcherColumn';
-import {AggMode} from './AggSwitcherColumn';
+
 
 
 export interface VisOptions {
@@ -54,6 +53,12 @@ export interface VisOptions {
    * @default 10
    */
   columnMaxWidth?: number;
+}
+
+export enum AggMode {
+  Aggregated,
+  Unaggregated,
+  Automatic
 }
 
 

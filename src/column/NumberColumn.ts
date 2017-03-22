@@ -10,7 +10,7 @@ import {mixin} from 'phovea_core/src/index';
 import NumberFilter from '../filter/NumberFilter';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import VisManager from './VisManager';
-import {AggMode} from './AggSwitcherColumn';
+import {AggMode} from './VisManager';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   minWidth: number = 2;

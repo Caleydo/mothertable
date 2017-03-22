@@ -13,7 +13,7 @@ import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
 import VisManager from './VisManager';
-import {AggMode} from './AggSwitcherColumn';
+import {AggMode} from './VisManager';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {

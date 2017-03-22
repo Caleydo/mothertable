@@ -34,7 +34,7 @@ import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
-import {AggMode} from './AggSwitcherColumn';
+import {AggMode} from './VisManager';
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -57,7 +57,6 @@ export default class ColumnManager extends EventHandler {
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
   private rowCounter = 0;
-
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
@@ -108,6 +107,7 @@ export default class ColumnManager extends EventHandler {
     });
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:AggMode, allGroups:AggMode[]) => {
+      this.relayout();
       console.log(index, value, allGroups);
     });
   }
@@ -337,9 +337,11 @@ export default class ColumnManager extends EventHandler {
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
-        this.updateAggregationLevelForRow(i, AggMode.Unaggregated);
+    for(let i =0; i< AggSwitcherColumn.modePerGroup.length; i++){
+        let mode = AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic ? AggMode.Unaggregated : AggSwitcherColumn.modePerGroup[i];
+        this.updateAggregationLevelForRow(i, mode);
     }
+
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
     let aggregationNeeded = false;
@@ -353,7 +355,7 @@ export default class ColumnManager extends EventHandler {
 
     if(!aggregationNeeded) {
       //choose minimal block height for each row of multiforms/stratification group
-      for (let i = 0; i < VisManager.isUserSelectedUnaggregatedRow.length; i++) {
+      for (let i = 0; i < AggSwitcherColumn.modePerGroup.length; i++) {
         let minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[i]);
@@ -375,17 +377,13 @@ export default class ColumnManager extends EventHandler {
     minHeights = [];
 
     //set the propper aggregation level
-    if(aggregationNeeded){
-      for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
-        if (!VisManager.isUserSelectedUnaggregatedRow[i]) {
-            this.updateAggregationLevelForRow(i, AggMode.Aggregated);
-        }else{
-            this.updateAggregationLevelForRow(i, AggMode.Unaggregated);
-        }
-      }
-    }else{
-      for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
-        this.updateAggregationLevelForRow(i, AggMode.Unaggregated);
+
+    for(let i =0; i< AggSwitcherColumn.modePerGroup.length; i++){
+      if (AggSwitcherColumn.modePerGroup[i] == AggMode.Automatic) {
+        let mode = aggregationNeeded ? AggMode.Aggregated : AggMode.Unaggregated;
+        this.updateAggregationLevelForRow(i, mode);
+      }else{
+        this.updateAggregationLevelForRow(i, AggSwitcherColumn.modePerGroup[i]);
       }
     }
 
@@ -414,11 +412,12 @@ export default class ColumnManager extends EventHandler {
 
       totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
 
+
       index = index + 1;
     }
 
     //choose minimal block height for each row of multiforms/stratification group
-    for(let i =0; i< VisManager.isUserSelectedUnaggregatedRow.length; i++){
+    for(let i =0; i< AggSwitcherColumn.modePerGroup.length; i++){
       let minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);

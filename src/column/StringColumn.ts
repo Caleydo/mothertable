@@ -7,7 +7,8 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import VisManager from './VisManager';
-import {AggMode} from './AggSwitcherColumn';
+import {AggMode} from './VisManager';
+
 
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
   minWidth: number = 20;

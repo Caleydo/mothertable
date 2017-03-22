@@ -9,7 +9,8 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import VisManager from './VisManager';
 import {on, fire} from 'phovea_core/src/event';
-import {AggMode} from './AggSwitcherColumn';
+import {AggMode} from './VisManager';
+
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
 

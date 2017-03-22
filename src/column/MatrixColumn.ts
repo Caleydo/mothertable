@@ -15,7 +15,8 @@ import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter} from '../filter/AFilter';
-import {AggMode} from './AggSwitcherColumn';
+import {AggMode} from './VisManager';
+
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;

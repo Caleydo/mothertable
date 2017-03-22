@@ -15,7 +15,8 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from 'phovea_core/src/multiform/IMultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
-import {AggMode} from './AggSwitcherColumn';
+import {AggMode} from './VisManager';
+import AggSwitcherColumn from './AggSwitcherColumn';
 
 
 export enum EOrientation {
@@ -28,6 +29,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix'};
+  private aggSwitcherCol: AggSwitcherColumn;
   $node: d3.Selection<any>;
 
   minWidth: number = 10;
