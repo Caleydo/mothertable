@@ -13,6 +13,7 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import VisManager from './VisManager';
 import {AggMode} from './VisManager';
 import AggSwitcherColumn from './AggSwitcherColumn';
+import {superbag} from './utils';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -116,21 +117,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         let isSuccesor = Object.keys(idList).some((l, index) => {
           let newRange = r.dims[0].asList();
           let originalRange = idList[l].dims[0].asList();
-          if (newRange.toString() === originalRange.toString()) {
+          if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange) ) {
             VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-            isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];;
+            isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
             return true;
-          } else {
-            if (this.superbag(originalRange, newRange)) {
-              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
-              return true;
-            }
-            if (this.superbag(newRange, originalRange)) {
-              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
-              return true;
-            }
           }
         });
         if(!isSuccesor || Object.keys(idList).length === 0){
@@ -145,16 +135,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         VisManager.removeUserVisses(l);
       });
     });
-  }
-
-  /**
-   * Checks if one array contains all elements of another array
-   * @param sup the larger array
-   * @param sub the smaller array
-   * @returns {boolean}
-   */
-  private superbag(sup:any[], sub:any[]):boolean {
-    return sub.every(elem => sup.indexOf(elem) > -1);
   }
 
 

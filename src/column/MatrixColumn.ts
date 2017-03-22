@@ -8,20 +8,21 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP, superbag} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import {AnyFilter} from '../filter/AFilter';
 import {AggMode} from './VisManager';
+import AggSwitcherColumn from './AggSwitcherColumn';
 
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
   maxWidth: number = 300;
   minHeight: number = 2;
-  maxHeight: number = 10;
+  maxHeight: number = 25;
 
   private rowRanges: Range[] = [];
   private colRange: Range;
@@ -58,8 +59,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   async updateMultiForms(rowRanges?:Range[], colRange?:Range) {
-    this.body.selectAll('.multiformList').remove();
-    this.multiformList = [];
+    await this.data.data();
+    let idList: {[id: string]: Range} = {};
+    this.rowRanges.forEach((r, i) => {
+      idList[i] = r;
+    });
 
     if (!rowRanges) {
       rowRanges = this.rowRanges;
@@ -69,19 +73,54 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
     }
+    const viewPromises = rowRanges.map((r) => this.data.idView(r));
+    Promise.all(viewPromises).then((rowViews) => {
+      const colViewPromises = rowViews.map((rowView) => {
+        const rw = (<INumericalMatrix>rowView).t;
+        return rw.idView(colRange);
+      });
+      Promise.all(colViewPromises).then((views) => {
+        this.body.selectAll('.multiformList').remove();
+        this.multiformList = [];
+        let isUserUnagregated = [];
 
-    for (const r of rowRanges) {
-      const $multiformDivs = this.body.append('div').classed('multiformList', true);
+        views.forEach((view, id) => {
+          let colView = (<INumericalMatrix>view).t;
+          const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
-      let rowView = await this.data.idView(r);
-      rowView = (<INumericalMatrix>rowView).t;
+          const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
+          this.multiformList.push(m);
 
-      let colView = await rowView.idView(colRange);
-      colView = (<INumericalMatrix>colView).t;
-
-      const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
-      this.multiformList.push(m);
-    }
+          if (this.selectedAggVis) {
+            VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
+          }
+          if (this.selectedUnaggVis) {
+            VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
+          }
+          VisManager.setMultiformAggregationType(m.id.toString(), AggMode.Unaggregated);
+          const r = (<any>m).data.range;
+          let isSuccesor = Object.keys(idList).some((l, index) => {
+            let newRange = r.dims[0].asList();
+            let originalRange = idList[l].dims[0].asList();
+            if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
+              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
+              return true;
+            }
+          });
+          if (!isSuccesor || Object.keys(idList).length === 0) {
+            isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[id] || AggMode.Automatic;
+          }
+        });
+        if (AggSwitcherColumn.modePerGroup.length !== isUserUnagregated.length) {
+          AggSwitcherColumn.modePerGroup = isUserUnagregated;
+        }
+        Object.keys(idList).forEach((l) => {
+          delete VisManager.multiformAggregationType[l];
+          VisManager.removeUserVisses(l);
+        });
+      });
+    });
   }
 
   async calculateDefaultRange() {
