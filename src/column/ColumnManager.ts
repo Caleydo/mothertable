@@ -30,7 +30,6 @@ import min = d3.min;
 import {scaleTo, makeRangeFromList, makeListFromRange} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
-import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
@@ -194,7 +193,7 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<void>}
    */
   async filterData(idRange: Range) {
-    if (isNumber(idRange.ndim) !== true || idRange.size()[0] === 0) {
+    if (((!isNaN(idRange.ndim) && isFinite(idRange.ndim)) !== true) || idRange.size()[0] === 0) {
       this.columns.forEach((col) => col.updateMultiForms([idRange]));
       return;
     }
