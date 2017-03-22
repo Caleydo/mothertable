@@ -14,6 +14,7 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IMultiForm} from 'phovea_core/src/multiform/IMultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
+import {EAggregationType} from './VisManager';
 
 
 export enum EOrientation {
@@ -133,8 +134,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         return false;
       });
 
-    this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', VisManager.aggregationType.UNAGGREGATED);
-    this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', VisManager.aggregationType.AGGREGATED);
+    this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
+    this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
   }
 
   private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm, aggregationType) {
@@ -146,7 +147,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     defVis.innerText = "--";
     defVis.onclick  = () => {
       this.multiformList.forEach((mul) => {
-        if(aggregationType === VisManager.aggregationType.UNAGGREGATED){
+        if(aggregationType === EAggregationType.UNAGGREGATED){
           delete VisManager.userSelectedUnaggregatedVisses[mul.id.toString()];
           this.selectedUnaggVis = null;
         }else{
@@ -162,7 +163,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         const child = createNode(s, 'i');
         v.iconify(child);
         child.onclick = () => {
-          if(aggregationType === VisManager.aggregationType.UNAGGREGATED){
+          if(aggregationType === EAggregationType.UNAGGREGATED){
             this.selectedUnaggVis = v;
           }else{
             this.selectedAggVis = v;

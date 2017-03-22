@@ -34,7 +34,7 @@ import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
-import {AggMode} from './AggSwitcherColumn';
+import {EAggregationType} from './VisManager';
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -107,7 +107,7 @@ export default class ColumnManager extends EventHandler {
       this.stratifyAndRelayout();
     });
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:AggMode, allGroups:AggMode[]) => {
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:EAggregationType, allGroups:EAggregationType[]) => {
       console.log(index, value, allGroups);
     });
   }
@@ -338,7 +338,7 @@ export default class ColumnManager extends EventHandler {
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for(let i =0; i< this.columns[0].multiformList.length; i++){
-        this.updateAggregationLevelForRow(i, VisManager.aggregationType.UNAGGREGATED);
+        this.updateAggregationLevelForRow(i, EAggregationType.UNAGGREGATED);
     }
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
@@ -376,7 +376,7 @@ export default class ColumnManager extends EventHandler {
 
 
     for(let i =0; i< this.columns[0].multiformList.length; i++){
-      let aggMode = aggregationNeeded ? VisManager.aggregationType.AGGREGATED : VisManager.aggregationType.UNAGGREGATED;
+      let aggMode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
       this.updateAggregationLevelForRow(i, aggMode);
     }
 

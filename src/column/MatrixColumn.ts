@@ -14,6 +14,7 @@ import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import {AnyFilter} from '../filter/AFilter';
+import {EAggregationType} from './VisManager';
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
@@ -48,7 +49,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,VisManager.aggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }

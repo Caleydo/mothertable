@@ -11,6 +11,7 @@ import {SORT} from '../SortHandler/SortHandler';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import VisManager from './VisManager';
+import {EAggregationType} from './VisManager';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -107,7 +108,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         if (this.selectedUnaggVis) {
           VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
         }
-        VisManager.setMultiformAggregationType(m.id.toString(), VisManager.aggregationType.UNAGGREGATED);
+        VisManager.setMultiformAggregationType(m.id.toString(), EAggregationType.UNAGGREGATED);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
         Object.keys(idList).some((l) => {
