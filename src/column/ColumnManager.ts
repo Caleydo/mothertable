@@ -295,19 +295,6 @@ export default class ColumnManager extends EventHandler {
     });
   }
 
-  private buildRows(){
-
-  }
-
-  public updateAggregationType (multiformID : string){
-    this.columns.forEach((col) => {
-    //  col.multiformList.forEach(())
-
-    });
-
-  }
-
-
   /**
    * Calculate the maximum height of all column stratification areas and set it for every column
    */
@@ -452,7 +439,6 @@ export default class ColumnManager extends EventHandler {
         VisManager.setMultiformAggregationType(col.multiformList[rowIndex].id, aggregationType);
     }
   }
-
 }
 
 
