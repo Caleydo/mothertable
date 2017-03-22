@@ -7,7 +7,6 @@ import {INumericalVector} from 'phovea_core/src/vector';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
-import NumberFilter from '../filter/NumberFilter';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import VisManager from './VisManager';
 

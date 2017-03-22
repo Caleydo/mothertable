@@ -8,10 +8,8 @@ import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {SORT} from '../SortHandler/SortHandler';
-import {scaleTo} from './utils';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {IMultiForm} from '../../../phovea_core/src/multiform/IMultiForm';
 import VisManager from './VisManager';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 

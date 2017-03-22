@@ -3,7 +3,7 @@
  */
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
-import {IMotherTableType, AnyColumn} from './ColumnManager';
+import {AnyColumn} from './ColumnManager';
 
 import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
