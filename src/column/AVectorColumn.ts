@@ -82,9 +82,9 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const viewPromises = idRanges.map((r) => this.data.idView(r));
     Promise.all(viewPromises).then((views) => {
       this.updateSortIcon();
-      let idList: {[id: string]: Range} = {};
+      let idList:Map<number, Range> = new Map<number, Range>();
       this.multiformList.forEach((m) => {
-        idList[m.id] = m.data.range;
+        idList.set(m.id, m.data.range);
       });
 
       this.body.selectAll('.multiformList').remove();
@@ -103,34 +103,34 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         const m = new MultiForm(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
         //assign visses
         if (this.selectedAggVis) {
-          VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
+          VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
         }
         if (this.selectedUnaggVis) {
-          VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
+          VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
         }
-        VisManager.setMultiformAggregationType(m.id.toString(), EAggregationType.UNAGGREGATED);
+        VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
-        Object.keys(idList).some((l) => {
+        Array.from(idList.keys()).some((l) => {
           let newRange = r.dims[0].asList();
-          let originalRange = idList[l].dims[0].asList();
+          let originalRange = idList.get(l).dims[0].asList();
           if (newRange.toString() === originalRange.toString()) {
-            VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+            VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
             return true;
           } else {
             if (this.superbag(originalRange, newRange)) {
-              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
               return true;
             }
             if (this.superbag(newRange, originalRange)) {
-              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+              VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
               return true;
             }
           }
         });
       });
-      Object.keys(idList).forEach((l) => {
-        delete VisManager.multiformAggregationType[l];
+      Array.from(idList.keys()).forEach((l) => {
+        VisManager.multiformAggregationType.delete(l);
         VisManager.removeUserVisses(l);
       });
     });

@@ -11,7 +11,6 @@ import {SORT} from '../SortHandler/SortHandler';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {formatAttributeName} from './utils';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {IMultiForm} from 'phovea_core/src/multiform/IMultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
@@ -41,7 +40,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
-  multiformList = [];
+  multiformList:MultiForm[] = [];
 
   selectedAggVis:IVisPluginDesc;
   selectedUnaggVis:IVisPluginDesc;
@@ -148,10 +147,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     defVis.onclick  = () => {
       this.multiformList.forEach((mul) => {
         if(aggregationType === EAggregationType.UNAGGREGATED){
-          delete VisManager.userSelectedUnaggregatedVisses[mul.id.toString()];
+          VisManager.userSelectedUnaggregatedVisses.delete(mul.id);
           this.selectedUnaggVis = null;
         }else{
-          delete VisManager.userSelectedAggregatedVisses[mul.id.toString()];
+          VisManager.userSelectedAggregatedVisses.delete(mul.id);
           this.selectedAggVis = null;
         }
       });
@@ -172,13 +171,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
             VisManager.setUserVis(mul.id, v, aggregationType);
           });
           this.fire(AColumn.VISUALIZATION_SWITCHED);
-          console.log('selected', v);
         }
       }
     });
   }
 
-  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):IMultiForm {
+  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):MultiForm {
     const $node = $toolbar.append('div').classed('visChooser', true);
 
     const m = new MultiForm(this.data, document.createElement('dummy-to-discard'), { initialVis: this.activeVis });

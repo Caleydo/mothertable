@@ -447,10 +447,10 @@ export default class ColumnManager extends EventHandler {
      }
   }
 
-  private updateAggregationLevelForRow(rowIndex: number, aggregationType) {
-    for (const col of this.columns) {
-        VisManager.setMultiformAggregationType(col.multiformList[rowIndex].id, aggregationType);
-    }
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {
+    this.columns.forEach((col) => {
+      VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
+    });
   }
 
 }
