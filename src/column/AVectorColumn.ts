@@ -137,10 +137,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   /**
    * Checks if one array contains all elements of another array
-   * @sup the larger array
-   * @sub the smaller array
+   * @param sup the larger array
+   * @param sub the smaller array
+   * @returns {boolean}
    */
-  private superbag(sup, sub) {
+  private superbag(sup:any[], sub:any[]):boolean {
     return sub.every(elem => sup.indexOf(elem) > -1);
   }
 
