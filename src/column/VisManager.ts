@@ -134,6 +134,8 @@ export default class VisManager {
   public static userSelectedAggregatedVisses:Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
   public static userSelectedUnaggregatedVisses:Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
   public static multiformAggregationType:Map<number, EAggregationType> = new Map<number, EAggregationType>();
+  public static modePerGroup:EAggregationType[] = [];
+
 
   constructor() {
     this.vissesOptions = {
@@ -330,8 +332,7 @@ export default class VisManager {
     return [minVisWidth, minVisHeight];
   }
 
-
-  assignVis(multiform: MultiForm, width: number, height: number) {
+  assignVis(multiform: MultiForm) {
     if(VisManager.userSelectedAggregatedVisses.has(multiform.id)
         && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.AGGREGATED) {
       multiform.switchTo(VisManager.userSelectedAggregatedVisses.get(multiform.id));
