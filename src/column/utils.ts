@@ -52,6 +52,17 @@ export function insertArrayAt(array, index, arrayToInsert) {
   Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
 }
 
+/**
+ * Checks if one array contains all elements of another array
+ * @param sup the larger array
+ * @param sub the smaller array
+ * @returns {boolean}
+ */
+export function superbag(sup:any[], sub:any[]):boolean {
+  return sub.every(elem => sup.indexOf(elem) > -1);
+}
+
+
 
 export function reArrangeRangeListAfter(draggedArray, fullRangeList) {
   let indices = [];

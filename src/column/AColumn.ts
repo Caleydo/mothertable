@@ -11,7 +11,7 @@ import {SORT} from '../SortHandler/SortHandler';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {formatAttributeName} from './utils';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {IVisPluginDesc} from 'phovea_core/src/vis';
+import {IVisPluginDesc, list as listVisses} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 
@@ -137,19 +137,18 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
   }
 
-  private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm, aggregationType) {
+  private addIconVisChooser(toolbar: HTMLElement, visses: IVisPluginDesc[], aggregationType: EAggregationType) {
     const s = toolbar.ownerDocument.createElement('div');
     toolbar.insertBefore(s, toolbar.firstChild);
-    const visses = multiform.visses;
     const visIds = VisManager.getPossibleVisses(this.data.desc.type, this.data.desc.value.type, aggregationType);
     const defVis = createNode(s, 'i');
-    defVis.innerText = "--";
+    defVis.innerText = '--';
     defVis.onclick  = () => {
       this.multiformList.forEach((mul) => {
-        if(aggregationType === EAggregationType.UNAGGREGATED){
+        if(aggregationType === EAggregationType.UNAGGREGATED) {
           VisManager.userSelectedUnaggregatedVisses.delete(mul.id);
           this.selectedUnaggVis = null;
-        }else{
+        }else {
           VisManager.userSelectedAggregatedVisses.delete(mul.id);
           this.selectedAggVis = null;
         }
@@ -158,29 +157,28 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     };
 
     visses.forEach((v) => {
-      if(visIds.indexOf(v.id) !== -1){
+      if(visIds.indexOf(v.id) !== -1) {
         const child = createNode(s, 'i');
         v.iconify(child);
         child.onclick = () => {
-          if(aggregationType === EAggregationType.UNAGGREGATED){
+          if(aggregationType === EAggregationType.UNAGGREGATED) {
             this.selectedUnaggVis = v;
-          }else{
+          }else {
             this.selectedAggVis = v;
            }
           this.multiformList.forEach((mul) => {
             VisManager.setUserVis(mul.id, v, aggregationType);
           });
           this.fire(AColumn.VISUALIZATION_SWITCHED);
-        }
+        };
       }
     });
   }
 
-  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):MultiForm {
+  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType) {
     const $node = $toolbar.append('div').classed('visChooser', true);
 
-    const m = new MultiForm(this.data, document.createElement('dummy-to-discard'), { initialVis: this.activeVis });
-    this.addIconVisChooser(<HTMLElement>$node.node(), m, aggregationType);
+    this.addIconVisChooser(<HTMLElement>$node.node(), listVisses(this.data), aggregationType);
     $node.insert('i', ':first-child')
       .attr('title', title)
       .attr('class', faIcon)
@@ -190,8 +188,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .append('span')
       .attr('class', 'sr-only')
       .text(title);
-
-    return m;
   }
 
 

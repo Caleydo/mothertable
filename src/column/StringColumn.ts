@@ -9,6 +9,7 @@ import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 
+
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
   minWidth: number = 20;
   maxWidth: number = 300;

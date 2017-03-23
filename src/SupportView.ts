@@ -18,6 +18,7 @@ import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
 import AColumn from './column/AColumn';
 import {formatAttributeName, formatIdTypeName} from './column/utils';
+import {IStratification} from 'phovea_core/src/stratification';
 
 
 export interface IFuelBarDataSize {
@@ -103,16 +104,15 @@ export default class SupportView extends EventHandler {
     this.propagate(this.filterManager, FilterManager.EVENT_FILTER_CHANGED);
   }
 
-  private addInitialFilters() {
+  private async addInitialFilters() {
     if (hash.has(this.idTypeHash)) {
-      const datasets = hash.getProp(this.idTypeHash)
+      const datasets = await Promise.all(hash.getProp(this.idTypeHash)
         .split(SupportView.HASH_FILTER_DELIMITER)
         .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])
         .filter((data) => data !== undefined)
         .map((data) => {
-          this.addDataset(data);
-          return data;
-        });
+          return this.addDataset(data);
+        }));
 
       this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
@@ -175,15 +175,15 @@ export default class SupportView extends EventHandler {
         .attr('value', d.desc.id);
     });
 
-    $select.on('change', (evt) => {
+    $select.on('change', async (evt) => {
       const index = $select.property('selectedIndex');
       if (index === 0) { // empty selection
         return false;
       }
       // -1 because of empty option
-      const data = this.datasets[index - 1];
+      let data = this.datasets[index - 1];
 
-      this.addDataset(data);
+      data = await this.addDataset(data);
       this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
 
       this.updateURLHash();
@@ -209,7 +209,7 @@ export default class SupportView extends EventHandler {
     ];
 
     datasets.forEach((tableVector, j) => {
-      if (tableVector.desc.value.type === 'categorical') {
+      if ((tableVector.desc.type === 'vector' || tableVector.desc.type === 'matrix') && tableVector.desc.value.type === 'categorical') {
         const categories = tableVector.desc.value.categories;
         categories.forEach((v, i) => {
           if (v.color === undefined) {
@@ -223,13 +223,17 @@ export default class SupportView extends EventHandler {
     });
   }
 
-  private addDataset(data: IDataType) {
+  private async addDataset(data: IDataType) {
+    if (data.desc.type === 'stratification') {
+      data = await (<IStratification>data).asVector();
+    }
     if (!this.filterManager.contains(<IFilterAbleType>data)) {
       this.filterManager.push(<IFilterAbleType>data);
     }
     if(data.desc.type === AColumn.DATATYPE.matrix) {
       this._matrixData.set(data.desc.id, <INumericalMatrix>data);
     }
+    return data;
   }
 
   public updateFuelBar(dataSize:IFuelBarDataSize) {
@@ -267,6 +271,8 @@ export function isPossibleDataset(data: IDataType) {
           return true;
       }
       return false;
+    case 'stratification':
+      return true;
     default:
       return false;
   }
