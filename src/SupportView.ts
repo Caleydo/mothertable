@@ -82,7 +82,6 @@ export default class SupportView extends EventHandler {
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
 
     const matrixColumns = await Promise.all(this.datasets.filter((d) => d.desc.type === 'matrix').map(splitMatrixInVectors));
-    debugger;
     this.datasets.push(...[].concat(...matrixColumns));
 
     if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
