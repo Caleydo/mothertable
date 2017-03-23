@@ -9,7 +9,7 @@ import {
 } from 'phovea_core/src/datatype';
 import {EventHandler} from 'phovea_core/src/event';
 import FilterManager from './filter/FilterManager';
-import {INumericalMatrix} from 'phovea_core/src/matrix';
+import {INumericalMatrix, IAnyMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {asVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
@@ -80,6 +80,10 @@ export default class SupportView extends EventHandler {
   private async loadDatasets() {
     this.datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
+
+    const matrixColumns = await Promise.all(this.datasets.filter((d) => d.desc.type === 'matrix').map(splitMatrixInVectors));
+    debugger;
+    this.datasets.push(...[].concat(...matrixColumns));
 
     if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
       const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
@@ -286,4 +290,20 @@ export function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
   }
 
   return d;
+}
+
+
+async function splitMatrixInVectors(matrix: IAnyMatrix) {
+  const colNames = await matrix.cols();
+  const cols = matrix.ncol;
+  const r : IAnyVector[] = [];
+  for (let i = 0; i < cols; ++i) {
+    const v = matrix.slice(i);
+    const anyDesc : any = v.desc;
+    // hack the name to include the column label
+    anyDesc.name = colNames[i];
+    anyDesc.fqname = matrix.desc.fqname + '/' + colNames[i];
+    r.push(v);
+  }
+  return r;
 }
