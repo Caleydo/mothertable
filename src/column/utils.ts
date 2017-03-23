@@ -112,7 +112,6 @@ export function formatIdTypeName(name: string): string {
 
 
 export function updateRangeList(rangeList: Range[], brushedStringIndices: number[]) {
-  const dragRange = makeRangeFromList(brushedStringIndices);
   const updateRange = rangeList.map((r, index) => {
     const isSuperset = checkArraySubset(makeListfromRange(r), brushedStringIndices);
     if (isSuperset === true) {

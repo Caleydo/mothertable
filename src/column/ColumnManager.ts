@@ -206,7 +206,7 @@ export default class ColumnManager extends EventHandler {
 
   async updateRangeList(brushedStringIndices: number[]) {
     const newRange = updateRangeList(this.stratifiedRanges, brushedStringIndices);
-    console.log(newRange)
+    //   console.log(newRange)
     this.brushedRange = makeRangeFromList(brushedStringIndices);
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
@@ -339,7 +339,7 @@ export default class ColumnManager extends EventHandler {
       col.updateMultiForms(r);
     });
 
-    console.log(this.colsWithRange, this.stratifiedRanges)
+    //   console.log(this.colsWithRange, this.stratifiedRanges)
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
@@ -504,16 +504,19 @@ export default class ColumnManager extends EventHandler {
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
-
+    console.log(minHeights, maxHeights, 'a', totalMax, totalMin)
     if (this.brushedStringIndices.length !== 0) {
       const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
       this.rangeList.forEach((r, i) => {
         const m = r.intersect(this.brushedRange).size()[0];
         minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
         maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : maxHeights[i];
+        totalMax = (m > 0) ? totalMax - heightForBrush : totalMax;
+        totalMin = (m > 0) ? totalMin - heightForBrush : totalMin;
       });
     }
 
+    console.log(minHeights, maxHeights, 'b', totalMax, totalMin)
     if (totalMin > height) {
       return minHeights;
     } else if (totalMax > height) {
