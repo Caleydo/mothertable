@@ -422,11 +422,11 @@ export default class ColumnManager extends EventHandler {
     if (!aggregationNeeded) {
       //choose minimal block height for each row of multiforms/stratification group
       for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-        let minSize = [];
+        const minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[i]);
         });
-        let min = Math.max(...minSize);
+        const min = Math.max(...minSize);
         minHeights.forEach((m) => {
           m[i] = min;
         });
@@ -444,7 +444,7 @@ export default class ColumnManager extends EventHandler {
 
 
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      let aggMode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
+      const aggMode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
       this.updateAggregationLevelForRow(i, aggMode);
     }
     //copute height requiremmts per column
@@ -477,22 +477,22 @@ export default class ColumnManager extends EventHandler {
 
     //choose minimal block height for each row of multiforms/stratification group
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      let minSize = [];
+      const minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
       });
-      let min = Math.max(...minSize);
+      const min = Math.max(...minSize);
       minHeights.forEach((m) => {
         m[i] = min;
       });
       totalMin = totalMin + min;
     }
 
-    let totalHeight = height < totalMin ? totalMin : height;
+    const totalHeight = height < totalMin ? totalMin : height;
 
     minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalHeight]);
-      let h = d3.sum(d.map((e) => minScale(e)));
+      const h = d3.sum(d.map((e) => minScale(e)));
       return d.map((e) => minScale(e));
     });
 
@@ -504,7 +504,6 @@ export default class ColumnManager extends EventHandler {
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
-    console.log(minHeights, maxHeights, 'a', totalMax, totalMin)
     if (this.brushedStringIndices.length !== 0) {
       const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
       this.rangeList.forEach((r, i) => {
@@ -516,7 +515,6 @@ export default class ColumnManager extends EventHandler {
       });
     }
 
-    console.log(minHeights, maxHeights, 'b', totalMax, totalMin)
     if (totalMin > height) {
       return minHeights;
     } else if (totalMax > height) {
