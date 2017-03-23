@@ -331,9 +331,11 @@ export default class ColumnManager extends EventHandler {
     let maxHeights = [];
     let index = 0;
     let totalMin = 0;
+    let totalMax = 0;
 
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
+    /****************************************************************************************/
     for(let i =0; i< this.columns[0].multiformList.length; i++){
         let mode = VisManager.modePerGroup[i] ===EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
         this.updateAggregationLevelForRow(i, mode);
@@ -349,8 +351,8 @@ export default class ColumnManager extends EventHandler {
       minHeights.push(minSizes);
     }
 
-    //choose minimal block height for each row of multiforms/stratification group
     if(!aggregationNeeded) {
+      //choose minimal block height for each row of multiforms/stratification group
       for (let i = 0; i < this.columns[0].multiformList.length; i++) {
         let minSize = [];
         minHeights.forEach((m) => {
@@ -367,17 +369,21 @@ export default class ColumnManager extends EventHandler {
       }
     }
 
-  /*************************************************************************/
+    /*************************************************************************/
 
     totalMin = 0;
     minHeights = [];
 
     //set the propper aggregation level
     for(let i =0; i< this.columns[0].multiformList.length; i++){
-      let mode = (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) ? VisManager.modePerGroup[i] :
-        (aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED);
+      if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
+        let mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
         this.updateAggregationLevelForRow(i, mode);
+      }else{
+        this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
+      }
     }
+
 
     //copute height requiremmts per column
     for (const col of this.columns) {
@@ -401,6 +407,9 @@ export default class ColumnManager extends EventHandler {
 
       minHeights.push(min);
       maxHeights.push(max);
+
+      totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
+
 
       index = index + 1;
     }
@@ -430,7 +439,7 @@ export default class ColumnManager extends EventHandler {
     let totalMinUnaggregatedHeight = totalMin - totalAggreg;
     let spaceForUnaggregated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
 
-   minHeights = minHeights.map((d, i) => {
+    minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnaggregated]);
       return d.map((e, j) => {
         return minScale(e) > maxHeights[i][j] || minScale(e) === 0 ? maxHeights[i][j] : minScale(e);
@@ -438,6 +447,7 @@ export default class ColumnManager extends EventHandler {
     });
 
     return minHeights;
+
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {

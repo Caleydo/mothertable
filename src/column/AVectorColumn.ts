@@ -135,6 +135,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       });
     });
   }
+
+
 }
 
 export default AVectorColumn;
