@@ -59,11 +59,17 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   async updateMultiForms(rowRanges?:Range[], colRange?:Range) {
-    await this.data.data();
+    this.body.selectAll('.multiformList').remove();
+    this.multiformList = [];
+
+
     let idList: {[id: string]: Range} = {};
     this.rowRanges.forEach((r, i) => {
       idList[i] = r;
     });
+
+
+    let isUserUnagregated = [];
 
     if (!rowRanges) {
       rowRanges = this.rowRanges;
@@ -73,53 +79,49 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
     }
-    const viewPromises = rowRanges.map((r) => this.data.idView(r));
-    Promise.all(viewPromises).then((rowViews) => {
-      const colViewPromises = rowViews.map((rowView) => {
-        const rw = (<INumericalMatrix>rowView).t;
-        return rw.idView(colRange);
-      });
-      Promise.all(colViewPromises).then((views) => {
-        this.body.selectAll('.multiformList').remove();
-        this.multiformList = [];
-        let isUserUnagregated = [];
 
-        views.forEach((view, id) => {
-          let colView = (<INumericalMatrix>view).t;
-          const $multiformDivs = this.body.append('div').classed('multiformList', true);
+    let id = 0;
 
-          const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
-          this.multiformList.push(m);
+    for (const r of rowRanges) {
+      const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
-          if (this.selectedAggVis) {
-            VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
-          }
-          if (this.selectedUnaggVis) {
-            VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
-          }
-          VisManager.setMultiformAggregationType(m.id.toString(), AggMode.Unaggregated);
-          const r = (<any>m).data.range;
-          let isSuccesor = Object.keys(idList).some((l, index) => {
-            let newRange = r.dims[0].asList();
-            let originalRange = idList[l].dims[0].asList();
-            if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
-              VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
-              isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
-              return true;
-            }
-          });
-          if (!isSuccesor || Object.keys(idList).length === 0) {
-            isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[id] || AggMode.Automatic;
-          }
-        });
-        if (AggSwitcherColumn.modePerGroup.length !== isUserUnagregated.length) {
-          AggSwitcherColumn.modePerGroup = isUserUnagregated;
+      let rowView = await this.data.idView(r);
+      rowView = (<INumericalMatrix>rowView).t;
+
+      let colView = await rowView.idView(colRange);
+      colView = (<INumericalMatrix>colView).t;
+
+      const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
+      this.multiformList.push(m);
+
+     if (this.selectedAggVis) {
+        VisManager.userSelectedAggregatedVisses[m.id.toString()] = this.selectedAggVis;
+      }
+      if (this.selectedUnaggVis) {
+        VisManager.userSelectedUnaggregatedVisses[m.id.toString()] = this.selectedUnaggVis;
+      }
+       VisManager.setMultiformAggregationType(m.id.toString(), AggMode.Unaggregated);
+
+      let isSuccesor = Object.keys(idList).some((l, index) => {
+        let newRange = r.dims[0].asList();
+        let originalRange = idList[l].dims[0].asList();
+        if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
+          VisManager.setMultiformAggregationType(m.id.toString(), VisManager.multiformAggregationType[l]);
+          isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[index];
+          return true;
         }
-        Object.keys(idList).forEach((l) => {
-          delete VisManager.multiformAggregationType[l];
-          VisManager.removeUserVisses(l);
-        });
       });
+      if (!isSuccesor || Object.keys(idList).length === 0) {
+        isUserUnagregated[id] = AggSwitcherColumn.modePerGroup[id] || AggMode.Automatic;
+      }
+      id = id +1;
+    }
+    if (AggSwitcherColumn.modePerGroup.length !== isUserUnagregated.length) {
+      AggSwitcherColumn.modePerGroup = isUserUnagregated;
+    }
+    Object.keys(idList).forEach((l) => {
+      delete VisManager.multiformAggregationType[l];
+      VisManager.removeUserVisses(l);
     });
   }
 
