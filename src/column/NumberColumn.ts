@@ -9,6 +9,7 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import VisManager from './VisManager';
+import {EAggregationType} from './VisManager';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
   minWidth: number = 2;
@@ -23,7 +24,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams($body: d3.Selection<any>, domain?: number[]): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,VisManager.aggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP
       },
