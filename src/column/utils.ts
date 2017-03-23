@@ -112,29 +112,21 @@ export function formatIdTypeName(name: string): string {
 
 
 export function updateRangeList(rangeList: Range[], brushedStringIndices: number[]) {
-  rangeList.map((d) => console.log(makeListfromRange(d)));
   const dragRange = makeRangeFromList(brushedStringIndices);
-
   const updateRange = rangeList.map((r, index) => {
-    const rSize = r.intersect(dragRange);
-    console.log(dragRange, makeListfromRange(rSize))
-    if ((rSize.size()[0] > 0)) {
-
+    const isSuperset = checkArraySubset(makeListfromRange(r), brushedStringIndices);
+    if (isSuperset === true) {
       const m = reArrangeRangeList(brushedStringIndices, makeListfromRange(r));
       const rlist = m.map((d) => makeRangeFromList(d));
-      rlist.map((r) => console.log(makeListfromRange(r),'r'))
-      // console.log(rlist)
       return rlist;
     } else {
-
       return [r];
     }
 
   });
 
-
-  const m = reformatRangeList(updateRange);
-  m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
+  // const m = reformatRangeList(updateRange);
+  // m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
   return reformatRangeList(updateRange);
 }
 
@@ -165,5 +157,13 @@ export function makeArrayBetweenNumbers(range: number[]) {
     arr.push(val);
   }
   return arr;
+}
 
+// Check is Arr2 is child of Array1
+function checkArraySubset(parentArr, childArr) {
+  const isSuperset = childArr.every(function (val) {
+    return parentArr.indexOf(val) >= 0;
+  });
+
+  return isSuperset;
 }
