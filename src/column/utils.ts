@@ -114,13 +114,15 @@ export function formatIdTypeName(name: string): string {
 export function updateRangeList(rangeList: Range[], brushedStringIndices: number[]) {
   rangeList.map((d) => console.log(makeListfromRange(d)));
   const dragRange = makeRangeFromList(brushedStringIndices);
-  const brushedStratification = [];
+
   const updateRange = rangeList.map((r, index) => {
     const rSize = r.intersect(dragRange);
+    console.log(dragRange, makeListfromRange(rSize))
     if ((rSize.size()[0] > 0)) {
+
       const m = reArrangeRangeList(brushedStringIndices, makeListfromRange(r));
       const rlist = m.map((d) => makeRangeFromList(d));
-      //  rlist.map((r) => console.log(makeListfromRange(r)))
+      rlist.map((r) => console.log(makeListfromRange(r),'r'))
       // console.log(rlist)
       return rlist;
     } else {
@@ -131,9 +133,8 @@ export function updateRangeList(rangeList: Range[], brushedStringIndices: number
   });
 
 
-
   const m = reformatRangeList(updateRange);
-  // m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
+  m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
   return reformatRangeList(updateRange);
 }
 

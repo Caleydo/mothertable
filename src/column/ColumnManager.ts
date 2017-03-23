@@ -35,7 +35,7 @@ import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
-import {AggMode} from './AggSwitcherColumn';
+
 import {List} from 'phovea_vis/src/list';
 
 
@@ -114,7 +114,7 @@ export default class ColumnManager extends EventHandler {
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
 
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:EAggregationType, allGroups:EAggregationType[]) => {
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
       console.log(index, value, allGroups);
     });
   }
@@ -200,19 +200,18 @@ export default class ColumnManager extends EventHandler {
 
     this.brushedStringIndices = await this.getBrushIndices(brushIndices, multiformData);
     this.brushedRange = makeRangeFromList(this.brushedStringIndices);
-    this.updateRangeList(this.brushedStringIndices);
+    this.stratifyAndRelayout();
 
   }
 
   async updateRangeList(brushedStringIndices: number[]) {
     const newRange = updateRangeList(this.stratifiedRanges, brushedStringIndices);
+    console.log(newRange)
     this.brushedRange = makeRangeFromList(brushedStringIndices);
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
     this.rangeList = newRange;
-    this.stratifyAndRelayout();
-
   }
 
 
@@ -258,10 +257,28 @@ export default class ColumnManager extends EventHandler {
   }
 
   async stratifyAndRelayout() {
-    this.updateStratifyID(this.stratifyColid);
+
+    await this.updateStratifyID(this.stratifyColid);
+    if (this.brushedStringIndices.length === 0) {
+      await this.stratifyColumns();
+      this.relayout();
+    }
+    await this.updateRangeList(this.brushedStringIndices);
     await this.stratifyColumns();
     this.relayout();
   }
+
+  //
+  // async updateBrushingAndRelayout() {
+  //   if (this.brushedStringIndices.length === 0) {
+  //     await this.stratifyColumns();
+  //     this.relayout();
+  //   }
+  //   await this.updateRangeList(this.brushedStringIndices);
+  //
+  //
+  // }
+
 
   /**
    * Sorting the ranges based on the filter hierarchy
@@ -302,9 +319,12 @@ export default class ColumnManager extends EventHandler {
     const datas = this.dataPerStratificaiton.get(colid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
-    cols.forEach((col) => {
-      this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
-    });
+    if (this.brushedStringIndices.length === 0) {
+      cols.forEach((col) => {
+        this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
+      });
+    }
+
   }
 
   /**
@@ -319,6 +339,7 @@ export default class ColumnManager extends EventHandler {
       col.updateMultiForms(r);
     });
 
+    console.log(this.colsWithRange, this.stratifiedRanges)
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
@@ -374,7 +395,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   private async calColHeight(height) {
-    let ranges = [];
     let minHeights = [];
     let maxHeights = [];
     let index = 0;
@@ -385,8 +405,8 @@ export default class ColumnManager extends EventHandler {
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for(let i =0; i< this.columns[0].multiformList.length; i++){
-        this.updateAggregationLevelForRow(i, EAggregationType.UNAGGREGATED);
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+      this.updateAggregationLevelForRow(i, EAggregationType.UNAGGREGATED);
     }
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
@@ -399,7 +419,7 @@ export default class ColumnManager extends EventHandler {
       minHeights.push(minSizes);
     }
 
-    if(!aggregationNeeded) {
+    if (!aggregationNeeded) {
       //choose minimal block height for each row of multiforms/stratification group
       for (let i = 0; i < this.columns[0].multiformList.length; i++) {
         let minSize = [];
@@ -412,7 +432,7 @@ export default class ColumnManager extends EventHandler {
         });
         totalMin = totalMin + min;
       }
-      if(totalMin > height){
+      if (totalMin > height) {
         aggregationNeeded = true;
       }
     }
@@ -423,12 +443,10 @@ export default class ColumnManager extends EventHandler {
     minHeights = [];
 
 
-    for(let i =0; i< this.columns[0].multiformList.length; i++){
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
       let aggMode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
       this.updateAggregationLevelForRow(i, aggMode);
     }
-
-
     //copute height requiremmts per column
     for (const col of this.columns) {
       const type = col.data.desc.type;
@@ -497,17 +515,17 @@ export default class ColumnManager extends EventHandler {
     }
 
     if (totalMin > height) {
-       return minHeights;
-     } else if (totalMax > height) {
-       return minHeights;
-     } else if (totalMax < height) {
-       return maxHeights;
-     } else {
-       return minHeights;
-     }
+      return minHeights;
+    } else if (totalMax > height) {
+      return minHeights;
+    } else if (totalMax < height) {
+      return maxHeights;
+    } else {
+      return minHeights;
+    }
   }
 
-  private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
     this.columns.forEach((col) => {
       VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
     });
