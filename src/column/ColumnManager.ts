@@ -36,6 +36,8 @@ import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
 
 import {List} from 'phovea_vis/src/list';
+import TaggleMultiform from "mothertable/src/column/TaggleMultiform";
+import MultiForm from "phovea_core/src/multiform/MultiForm";
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -112,7 +114,7 @@ export default class ColumnManager extends EventHandler {
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
 
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:EAggregationType, allGroups:EAggregationType[]) => {
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
       this.relayout();
       console.log(index, value, allGroups);
     });
@@ -322,6 +324,8 @@ export default class ColumnManager extends EventHandler {
       cols.forEach((col) => {
         this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
       });
+
+      this.rangeList = this.stratifiedRanges;
     }
 
   }
@@ -338,7 +342,6 @@ export default class ColumnManager extends EventHandler {
       col.updateMultiForms(r);
     });
 
-    //   console.log(this.colsWithRange, this.stratifiedRanges)
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
@@ -350,6 +353,8 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
     this.relayoutColStrats();
+    this.setGroupFlag();
+    this.correctGapBetwnMultiform();
     const header = 47;//TODO solve programatically
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
@@ -359,24 +364,17 @@ export default class ColumnManager extends EventHandler {
     if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(
         this.stratifiedRanges.map((d, i) => {
-          //   const m = d.intersect(this.brushedRange).size()[0];
-
-          // console.log(m,this.aggSwitcherColHeight);
           return rowHeight[i];
         })
       );
     }
 
+
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
-
+      console.log(col.multiformList);
       col.multiformList.forEach((multiform, index) => {
-        // let b = 0;
-        // if ((this.brushedRange !== undefined)) {
-        //   b = multiform.data.range.intersect(this.brushedRange).size()[0];
-        // }
-        // const f = (b > 0) ? 1.5 : 1;
-        this.visManager.assignVis(multiform, colWidths[i], rowHeight[index]);
+        this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
       });
 
@@ -404,9 +402,9 @@ export default class ColumnManager extends EventHandler {
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for(let i =0; i< this.columns[0].multiformList.length; i++){
-        let mode = VisManager.modePerGroup[i] ===EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
-        this.updateAggregationLevelForRow(i, mode);
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+      let mode = VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
+      this.updateAggregationLevelForRow(i, mode);
     }
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
@@ -443,11 +441,11 @@ export default class ColumnManager extends EventHandler {
     minHeights = [];
 
     //set the propper aggregation level
-    for(let i =0; i< this.columns[0].multiformList.length; i++){
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
       if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
         let mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
         this.updateAggregationLevelForRow(i, mode);
-      }else{
+      } else {
         this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
       }
     }
@@ -482,20 +480,21 @@ export default class ColumnManager extends EventHandler {
 
     let totalAggreg = 0;
     //choose minimal and maximal block height for each row of multiforms/stratification group
-    for(let i =0; i< this.columns[0].multiformList.length; i++){      let minSize = [];
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+      let minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
       });
       let min = Math.max(...minSize);
-      if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
-          min = 60;
-          totalAggreg = totalAggreg + min;
+      if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
+        min = 60;
+        totalAggreg = totalAggreg + min;
       }
       minHeights.forEach((m) => {
         m[i] = min;
       });
       maxHeights.forEach((m) => {
-        if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
+        if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
           m[i] = min;
         }
       });
@@ -512,7 +511,9 @@ export default class ColumnManager extends EventHandler {
       });
     });
 
-     minHeights = minHeights[0];
+    console.log(minHeights)
+
+    minHeights = minHeights[0];
     maxHeights = maxHeights[0];
     if (this.brushedStringIndices.length !== 0) {
       const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
@@ -526,18 +527,51 @@ export default class ColumnManager extends EventHandler {
     }
 
 
-
-
-
     return minHeights;
 
   }
 
-  private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
     this.columns.forEach((col) => {
       VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
     });
   }
+
+  private setGroupFlag() {
+    this.columns.forEach((col, i) => {
+      col.multiformList.forEach((multiform, index) => {
+        const m = this.stratifiedRanges
+          .map((s) => s.intersect(this.rangeList[index]).size()[0]);
+        const a = m.filter((d) => d > 0);
+        const sd = m.indexOf(a[0]);
+        console.log(sd, a, m);
+        (<any>multiform).groupId = sd;
+      });
+    });
+
+
+  }
+
+
+  private correctGapBetwnMultiform() {
+    this.columns.forEach((col, i) => {
+      col.multiformList.forEach((multiform, index) => {
+        if (index + 1 < col.multiformList.length) {
+          const nextM = (<any>col).multiformList[index + 1].groupId;
+          const now = (<any>col).multiformList[index].groupId;
+          if (nextM === now) {
+            d3.select(multiform.node).select('.content').classed('nonstratification', true);
+          } else {
+
+            d3.select(multiform.node).select('.content').classed('stratification', true);
+            return;
+          }
+        }
+      });
+    });
+
+  }
+
 
 }
 
