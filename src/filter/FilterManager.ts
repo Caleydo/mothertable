@@ -54,6 +54,7 @@ export default class FilterManager extends EventHandler {
     const filter = FilterManager.createFilter(data, this.$node);
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(filter);
+    this.updateStratifyIcon(findColumnTie(this.filters));
   }
 
 
@@ -61,6 +62,7 @@ export default class FilterManager extends EventHandler {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
+    this.updateStratifyIcon(findColumnTie(this.filters));
   }
 
   contains(data: IFilterAbleType) {
