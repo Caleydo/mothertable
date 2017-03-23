@@ -60,7 +60,7 @@ export default class ColumnManager extends EventHandler {
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
   private brushedRange: Range;
-  private brushedStringIndices: number[] = [];
+  private brushedItems: number[] = [];
   private rangeList;
   private rowCounter = 0;
 
@@ -199,8 +199,8 @@ export default class ColumnManager extends EventHandler {
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
-    this.brushedStringIndices = await this.getBrushIndices(brushIndices, multiformData);
-    this.brushedRange = makeRangeFromList(this.brushedStringIndices);
+    this.brushedItems = await this.getBrushIndices(brushIndices, multiformData);
+    this.brushedRange = makeRangeFromList(this.brushedItems);
     this.stratifyAndRelayout();
 
   }
@@ -260,11 +260,11 @@ export default class ColumnManager extends EventHandler {
   async stratifyAndRelayout() {
 
     await this.updateStratifyID(this.stratifyColid);
-    if (this.brushedStringIndices.length === 0) {
+    if (this.brushedItems.length === 0) {
       await this.stratifyColumns();
       this.relayout();
     }
-    await this.updateRangeList(this.brushedStringIndices);
+    await this.updateRangeList(this.brushedItems);
     await this.stratifyColumns();
     this.relayout();
   }
@@ -320,7 +320,7 @@ export default class ColumnManager extends EventHandler {
     const datas = this.dataPerStratificaiton.get(colid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
-    if (this.brushedStringIndices.length === 0) {
+    if (this.brushedItems.length === 0) {
       cols.forEach((col) => {
         this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
       });
@@ -398,7 +398,7 @@ export default class ColumnManager extends EventHandler {
     let totalMin = 0;
     let totalMax = 0;
     const heightPerBrushItems = 10;
-
+    height = height - this.brushedItems.length * heightPerBrushItems;
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
@@ -515,14 +515,12 @@ export default class ColumnManager extends EventHandler {
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
-    if (this.brushedStringIndices.length !== 0) {
-      const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
+    if (this.brushedItems.length !== 0) {
+      const heightForBrush = this.brushedItems.length * heightPerBrushItems;
       this.rangeList.forEach((r, i) => {
         const m = r.intersect(this.brushedRange).size()[0];
         minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
         maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : maxHeights[i];
-        totalMax = (m > 0) ? totalMax - heightForBrush : totalMax;
-        totalMin = (m > 0) ? totalMin - heightForBrush : totalMin;
       });
     }
 
