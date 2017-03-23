@@ -437,11 +437,10 @@ export default class ColumnManager extends EventHandler {
     }
 
     let totalMinUnaggregatedHeight = totalMin - totalAggreg;
-    let spaceForUnagreggated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
+    let spaceForUnaggregated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
 
     minHeights = minHeights.map((d, i) => {
-      const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnagreggated]);
-      let h = d3.sum(d.map((e) => minScale(e)));
+      const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnaggregated]);
       return d.map((e, j) => {
         return minScale(e) > maxHeights[i][j] || minScale(e) === 0 ? maxHeights[i][j] : minScale(e);
       });
@@ -449,23 +448,6 @@ export default class ColumnManager extends EventHandler {
 
     return minHeights;
 
-
-
-/*
-    maxHeights = maxHeights.map((d, i) => {
-      const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
-      return d.map((e) => maxScale(e));
-    });
-
-    if (totalMin > height) {
-       return minHeights;
-     } else if (totalMax > height) {
-       return minHeights;
-     } else if (totalMax < height) {
-       return maxHeights;
-     } else {
-       return minHeights;
-     }*/
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {
