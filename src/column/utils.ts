@@ -114,21 +114,26 @@ export function formatIdTypeName(name: string): string {
 export function updateRangeList(rangeList: Range[], brushedStringIndices: number[]) {
   rangeList.map((d) => console.log(makeListfromRange(d)));
   const dragRange = makeRangeFromList(brushedStringIndices);
-  const updateRange = rangeList.map((r) => {
+  const brushedStratification = [];
+  const updateRange = rangeList.map((r, index) => {
     const rSize = r.intersect(dragRange);
     if ((rSize.size()[0] > 0)) {
       const m = reArrangeRangeList(brushedStringIndices, makeListfromRange(r));
       const rlist = m.map((d) => makeRangeFromList(d));
-      rlist.map((r) => console.log(makeListfromRange(r)))
+      //  rlist.map((r) => console.log(makeListfromRange(r)))
+      // console.log(rlist)
       return rlist;
     } else {
+
       return [r];
     }
 
   });
+
+
+
   const m = reformatRangeList(updateRange);
-  m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
-  console.log(updateRange)
+  // m.map((d) => console.log(brushedStringIndices, makeListfromRange(d)));
   return reformatRangeList(updateRange);
 }
 
@@ -152,7 +157,7 @@ export function mergeRanges(ranges: Range[]) {
   return mergedRange;
 }
 
-export function makeArrayBetweenNumbers(range:number[]) {
+export function makeArrayBetweenNumbers(range: number[]) {
   const increments = 1;
   const arr = [];
   for (let val = range[0]; val <= range[1]; val += increments) {

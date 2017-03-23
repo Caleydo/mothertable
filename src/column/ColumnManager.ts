@@ -63,6 +63,7 @@ export default class ColumnManager extends EventHandler {
   private rowCounter = 0;
 
 
+
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
@@ -301,17 +302,18 @@ export default class ColumnManager extends EventHandler {
     const datas = this.dataPerStratificaiton.get(colid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
 
-    console.log(this.stratifiedRanges, this.colsWithRange);
+    console.log(this.stratifiedRanges, this.colsWithRange, colid);
     if ((this.brushedRange === undefined)) {
       this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
       cols.forEach((col) => {
         this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
       });
-    } else {
-      cols.forEach((col) => {
-        this.colsWithRange.set(col.data.desc.id, this.rangeList);
-      });
     }
+    // } else {
+    //   cols.forEach((col) => {
+    //     this.colsWithRange.set(col.data.desc.id, this.rangeList);
+    //   });
+    // }
 
 
   }
@@ -344,8 +346,16 @@ export default class ColumnManager extends EventHandler {
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
+    console.log(rowHeight)
     if (this.columns.length > 0) {
-      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
+      this.aggSwitcherCol.updateSwitcherBlocks(
+        this.stratifiedRanges.map((d, i) => {
+          //   const m = d.intersect(this.brushedRange).size()[0];
+
+          // console.log(m,this.aggSwitcherColHeight);
+          return rowHeight[i];
+        })
+      );
     }
 
     console.log(rowHeight)
@@ -353,13 +363,13 @@ export default class ColumnManager extends EventHandler {
       col.$node.style('width', colWidths[i] + 'px');
 
       col.multiformList.forEach((multiform, index) => {
-        let b = 0;
-        if ((this.brushedRange !== undefined)) {
-          b = multiform.data.range.intersect(this.brushedRange).size()[0];
-        }
-        const f = (b > 0) ? 1.5 : 1;
+        // let b = 0;
+        // if ((this.brushedRange !== undefined)) {
+        //   b = multiform.data.range.intersect(this.brushedRange).size()[0];
+        // }
+        // const f = (b > 0) ? 1.5 : 1;
         this.visManager.assignVis(multiform, colWidths[i], rowHeight[index]);
-        scaleTo(multiform, colWidths[i], f * rowHeight[index], col.orientation);
+        scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
       });
 
     });
@@ -488,27 +498,27 @@ export default class ColumnManager extends EventHandler {
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
-    console.log(minHeights, maxHeights)
-    const brushIndex = [];
-    // if (this.brushedStringIndices.length !== 0) {
-    //   const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
-    //   this.rangeList.forEach((r, i) => {
-    //     const m = r.intersect(this.brushedRange).size()[0];
-    //     console.log(m, minHeights[i], heightForBrush);
-    //     minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
-    //     maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : minHeights[i];
-    //   });
-    // }
-    //
 
+    if (this.brushedStringIndices.length !== 0) {
+      const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
+      this.rangeList.forEach((r, i) => {
+        const m = r.intersect(this.brushedRange).size()[0];
+        minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
+        maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : maxHeights[i];
+      });
+    }
 
     if (totalMin > height) {
+
       return minHeights;
     } else if (totalMax > height) {
+
       return minHeights;
     } else if (totalMax < height) {
+
       return maxHeights;
     } else {
+
       return minHeights;
     }
   }
