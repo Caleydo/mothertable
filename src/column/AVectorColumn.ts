@@ -12,6 +12,7 @@ import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
+import {superbag} from './utils';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -88,6 +89,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
       this.body.selectAll('.multiformList').remove();
       this.multiformList = [];
+      let isUserUnagregated  = [];
 
       views.forEach((view, id) => {
         const $multiformdivs = this.body.append('div').classed('multiformList', true);
@@ -110,39 +112,27 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
         VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
         this.multiformList.push(m);
         const r = (<any>m).data.range;
-        Array.from(idList.keys()).some((l) => {
+        let isSuccesor = Array.from(idList.keys()).some((l,index) => {
           let newRange = r.dims[0].asList();
           let originalRange = idList.get(l).dims[0].asList();
-          if (newRange.toString() === originalRange.toString()) {
+          if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange) ) {
             VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
+            isUserUnagregated[id] = VisManager.modePerGroup[index];
             return true;
-          } else {
-            if (this.superbag(originalRange, newRange)) {
-              VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
-              return true;
-            }
-            if (this.superbag(newRange, originalRange)) {
-              VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
-              return true;
-            }
           }
         });
+        if(!isSuccesor || Array.from(idList.keys()).length === 0){
+          isUserUnagregated[id] = VisManager.modePerGroup[id] || EAggregationType.AUTOMATIC;
+        }
       });
+      if(VisManager.modePerGroup.length !== isUserUnagregated.length){
+        VisManager.modePerGroup = isUserUnagregated;
+      }
       Array.from(idList.keys()).forEach((l) => {
         VisManager.multiformAggregationType.delete(l);
         VisManager.removeUserVisses(l);
       });
     });
-  }
-
-  /**
-   * Checks if one array contains all elements of another array
-   * @param sup the larger array
-   * @param sub the smaller array
-   * @returns {boolean}
-   */
-  private superbag(sup:any[], sub:any[]):boolean {
-    return sub.every(elem => sup.indexOf(elem) > -1);
   }
 
 

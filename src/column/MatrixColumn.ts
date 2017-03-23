@@ -8,7 +8,7 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP, superbag} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
@@ -16,11 +16,12 @@ import AColumnManager from './AColumnManager';
 import {AnyFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 
+
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
   maxWidth: number = 300;
   minHeight: number = 2;
-  maxHeight: number = 10;
+  maxHeight: number = 25;
 
   private rowRanges: Range[] = [];
   private colRange: Range;
@@ -60,6 +61,13 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 
+    let idList:Map<number, Range> = new Map<number, Range>();
+      this.multiformList.forEach((m) => {
+        idList.set(m.id, m.data.range);
+      });
+
+    let isUserUnagregated = [];
+
     if (!rowRanges) {
       rowRanges = this.rowRanges;
     }
@@ -68,6 +76,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
     }
+
+    let id = 0;
 
     for (const r of rowRanges) {
       const $multiformDivs = this.body.append('div').classed('multiformList', true);
@@ -80,7 +90,36 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
       const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
       this.multiformList.push(m);
+
+      if (this.selectedAggVis) {
+        VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
+      }
+      if (this.selectedUnaggVis) {
+        VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
+      }
+      VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+
+      let isSuccesor = Array.from(idList.keys()).some((l,index) => {
+        let newRange = r.dims[0].asList();
+        let originalRange = idList[l].dims[0].asList();
+        if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
+          VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
+          isUserUnagregated[id] = VisManager.modePerGroup[index];
+          return true;
+        }
+      });
+      if (!isSuccesor || Array.from(idList.keys()).length === 0) {
+        isUserUnagregated[id] = VisManager.modePerGroup[id] || EAggregationType.AUTOMATIC;
+      }
+      id = id +1;
     }
+    if (VisManager.modePerGroup.length !== isUserUnagregated.length) {
+      VisManager.modePerGroup = isUserUnagregated;
+    }
+    Array.from(idList.keys()).forEach((l) => {
+        VisManager.multiformAggregationType.delete(l);
+        VisManager.removeUserVisses(l);
+    });
   }
 
   async calculateDefaultRange() {

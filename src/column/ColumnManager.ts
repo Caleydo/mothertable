@@ -30,7 +30,6 @@ import min = d3.min;
 import {scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
-import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
@@ -62,7 +61,6 @@ export default class ColumnManager extends EventHandler {
   private brushedStringIndices: number[] = [];
   private rangeList;
   private rowCounter = 0;
-
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
@@ -114,7 +112,8 @@ export default class ColumnManager extends EventHandler {
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
 
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:EAggregationType, allGroups:EAggregationType[]) => {
+      this.relayout();
       console.log(index, value, allGroups);
     });
   }
@@ -405,8 +404,9 @@ export default class ColumnManager extends EventHandler {
 
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      this.updateAggregationLevelForRow(i, EAggregationType.UNAGGREGATED);
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
+        let mode = VisManager.modePerGroup[i] ===EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
+        this.updateAggregationLevelForRow(i, mode);
     }
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
@@ -442,10 +442,14 @@ export default class ColumnManager extends EventHandler {
     totalMin = 0;
     minHeights = [];
 
-
-    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      const aggMode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
-      this.updateAggregationLevelForRow(i, aggMode);
+    //set the propper aggregation level
+    for(let i =0; i< this.columns[0].multiformList.length; i++){
+      if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
+        let mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
+        this.updateAggregationLevelForRow(i, mode);
+      }else{
+        this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
+      }
     }
     //copute height requiremmts per column
     for (const col of this.columns) {
@@ -472,37 +476,43 @@ export default class ColumnManager extends EventHandler {
 
       totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
 
+
       index = index + 1;
     }
 
-    //choose minimal block height for each row of multiforms/stratification group
-    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      const minSize = [];
+    let totalAggreg = 0;
+    //choose minimal and maximal block height for each row of multiforms/stratification group
+    for(let i =0; i< this.columns[0].multiformList.length; i++){      let minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
       });
-      const min = Math.max(...minSize);
+      let min = Math.max(...minSize);
+      if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
+          min = 60;
+          totalAggreg = totalAggreg + min;
+      }
       minHeights.forEach((m) => {
         m[i] = min;
+      });
+      maxHeights.forEach((m) => {
+        if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
+          m[i] = min;
+        }
       });
       totalMin = totalMin + min;
     }
 
-    const totalHeight = height < totalMin ? totalMin : height;
+    let totalMinUnaggregatedHeight = totalMin - totalAggreg;
+    let spaceForUnaggregated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
 
     minHeights = minHeights.map((d, i) => {
-      const minScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalHeight]);
-      const h = d3.sum(d.map((e) => minScale(e)));
-      return d.map((e) => minScale(e));
+      const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnaggregated]);
+      return d.map((e, j) => {
+        return minScale(e) > maxHeights[i][j] || minScale(e) === 0 ? maxHeights[i][j] : minScale(e);
+      });
     });
 
-
-    maxHeights = maxHeights.map((d, i) => {
-      const maxScale = d3.scale.linear().domain([0, d3.sum(d)]).range([0, totalMax]);
-      return d.map((e) => maxScale(e));
-    });
-
-    minHeights = minHeights[0];
+     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
     if (this.brushedStringIndices.length !== 0) {
       const heightForBrush = this.brushedStringIndices.length * heightPerBrushItems;
@@ -515,18 +525,15 @@ export default class ColumnManager extends EventHandler {
       });
     }
 
-    if (totalMin > height) {
-      return minHeights;
-    } else if (totalMax > height) {
-      return minHeights;
-    } else if (totalMax < height) {
-      return maxHeights;
-    } else {
-      return minHeights;
-    }
+
+
+
+
+    return minHeights;
+
   }
 
-  private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {
     this.columns.forEach((col) => {
       VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
     });

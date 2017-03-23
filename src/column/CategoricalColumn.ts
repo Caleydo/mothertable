@@ -11,6 +11,7 @@ import VisManager from './VisManager';
 import {on, fire} from 'phovea_core/src/event';
 import {EAggregationType} from './VisManager';
 
+
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
 
   static readonly EVENT_STRATIFYME = 'stratifyByMe';
