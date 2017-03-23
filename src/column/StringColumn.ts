@@ -7,7 +7,7 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import VisManager from './VisManager';
-import {AggMode} from './VisManager';
+import {EAggregationType} from './VisManager';
 
 
 export default class StringColumn extends AVectorColumn<string, IStringVector> {
@@ -23,7 +23,7 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, AggMode.Unaggregated),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
       'list': {
         cssClass: 'taggle-vis-list'
       }

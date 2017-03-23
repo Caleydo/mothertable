@@ -11,11 +11,9 @@ import {SORT} from '../SortHandler/SortHandler';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {formatAttributeName} from './utils';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {IMultiForm} from 'phovea_core/src/multiform/IMultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
-import {AggMode} from './VisManager';
-import AggSwitcherColumn from './AggSwitcherColumn';
+import {EAggregationType} from './VisManager';
 
 
 export enum EOrientation {
@@ -28,7 +26,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix'};
-  private aggSwitcherCol: AggSwitcherColumn;
   $node: d3.Selection<any>;
 
   minWidth: number = 10;
@@ -43,7 +40,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
-  multiformList = [];
+  multiformList:MultiForm[] = [];
 
   selectedAggVis:IVisPluginDesc;
   selectedUnaggVis:IVisPluginDesc;
@@ -136,8 +133,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         return false;
       });
 
-    this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', AggMode.Unaggregated);
-    this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', AggMode.Aggregated);
+    this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
+    this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
   }
 
   private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm, aggregationType) {
@@ -149,11 +146,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     defVis.innerText = "--";
     defVis.onclick  = () => {
       this.multiformList.forEach((mul) => {
-        if(aggregationType === AggMode.Unaggregated){
-          delete VisManager.userSelectedUnaggregatedVisses[mul.id.toString()];
+        if(aggregationType === EAggregationType.UNAGGREGATED){
+          VisManager.userSelectedUnaggregatedVisses.delete(mul.id);
           this.selectedUnaggVis = null;
         }else{
-          delete VisManager.userSelectedAggregatedVisses[mul.id.toString()];
+          VisManager.userSelectedAggregatedVisses.delete(mul.id);
           this.selectedAggVis = null;
         }
       });
@@ -165,7 +162,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         const child = createNode(s, 'i');
         v.iconify(child);
         child.onclick = () => {
-          if(aggregationType === AggMode.Unaggregated){
+          if(aggregationType === EAggregationType.UNAGGREGATED){
             this.selectedUnaggVis = v;
           }else{
             this.selectedAggVis = v;
@@ -174,13 +171,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
             VisManager.setUserVis(mul.id, v, aggregationType);
           });
           this.fire(AColumn.VISUALIZATION_SWITCHED);
-          console.log('selected', v);
         }
       }
     });
   }
 
-  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):IMultiForm {
+  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):MultiForm {
     const $node = $toolbar.append('div').classed('visChooser', true);
 
     const m = new MultiForm(this.data, document.createElement('dummy-to-discard'), { initialVis: this.activeVis });

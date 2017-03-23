@@ -30,11 +30,10 @@ import min = d3.min;
 import {scaleTo, makeRangeFromList, makeListFromRange} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
-import {isNumber} from 'util';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
-import {AggMode} from './VisManager';
+import {EAggregationType} from './VisManager';
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -106,7 +105,7 @@ export default class ColumnManager extends EventHandler {
       this.stratifyAndRelayout();
     });
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:AggMode, allGroups:AggMode[]) => {
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:EAggregationType, allGroups:EAggregationType[]) => {
       this.relayout();
       console.log(index, value, allGroups);
     });
@@ -194,7 +193,7 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<void>}
    */
   async filterData(idRange: Range) {
-    if (isNumber(idRange.ndim) !== true || idRange.size()[0] === 0) {
+    if (((!isNaN(idRange.ndim) && isFinite(idRange.ndim)) !== true) || idRange.size()[0] === 0) {
       this.columns.forEach((col) => col.updateMultiForms([idRange]));
       return;
     }
@@ -338,7 +337,7 @@ export default class ColumnManager extends EventHandler {
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for(let i =0; i< this.columns[0].multiformList.length; i++){
-        let mode = AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic ? AggMode.Unaggregated : AggSwitcherColumn.modePerGroup[i];
+        let mode = VisManager.modePerGroup[i] ===EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
         this.updateAggregationLevelForRow(i, mode);
     }
 
@@ -377,11 +376,11 @@ export default class ColumnManager extends EventHandler {
 
     //set the propper aggregation level
     for(let i =0; i< this.columns[0].multiformList.length; i++){
-      if (AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic) {
-        let mode = aggregationNeeded ? AggMode.Aggregated : AggMode.Unaggregated;
+      if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
+        let mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
         this.updateAggregationLevelForRow(i, mode);
       }else{
-        this.updateAggregationLevelForRow(i, AggSwitcherColumn.modePerGroup[i]);
+        this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
       }
     }
 
@@ -422,7 +421,7 @@ export default class ColumnManager extends EventHandler {
         minSize.push(m[i]);
       });
       let min = Math.max(...minSize);
-      if(AggSwitcherColumn.modePerGroup[i] === AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic && aggregationNeeded)){
+      if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
           min = 60;
           totalAggreg = totalAggreg + min;
       }
@@ -430,7 +429,7 @@ export default class ColumnManager extends EventHandler {
         m[i] = min;
       });
       maxHeights.forEach((m) => {
-        if(AggSwitcherColumn.modePerGroup[i] === AggMode.Aggregated || (AggSwitcherColumn.modePerGroup[i] === AggMode.Automatic && aggregationNeeded)){
+        if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
           m[i] = min;
         }
       });
@@ -469,10 +468,10 @@ export default class ColumnManager extends EventHandler {
      }*/
   }
 
-  private updateAggregationLevelForRow(rowIndex: number, aggregationType) {
-    for (const col of this.columns) {
-        VisManager.setMultiformAggregationType(col.multiformList[rowIndex].id, aggregationType);
-    }
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {
+    this.columns.forEach((col) => {
+      VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
+    });
   }
 
 }

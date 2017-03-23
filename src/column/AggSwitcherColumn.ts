@@ -5,7 +5,8 @@
 import * as d3 from 'd3';
 import {EOrientation, default as AColumn} from './AColumn';
 import {IDataType} from 'phovea_core/src/datatype';
-import {AggMode} from './VisManager';
+import {EAggregationType, default as VisManager} from './VisManager';
+
 
 export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
@@ -16,7 +17,7 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
   private $main:d3.Selection<any>;
 
-  static modePerGroup:AggMode[] = [];
+  public
 
   constructor(data: any, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -41,9 +42,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
   }
 
   updateSwitcherBlocks(heights: number[]) {
-    //todo replace by inheritace from parent/children rows (code in AVectorColumn
-    if(heights.length !== AggSwitcherColumn.modePerGroup.length) {
-      AggSwitcherColumn.modePerGroup = heights.map((d) => AggMode.Automatic);
+    if(heights.length !== VisManager.modePerGroup.length) {
+      VisManager.modePerGroup = heights.map((d) => EAggregationType.AUTOMATIC);
     }
 
     const $blocks = this.$node.select(':scope > main')
@@ -60,8 +60,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         e.preventDefault();
         e.stopPropagation();
 
-        AggSwitcherColumn.modePerGroup[i] = AggMode.Aggregated;
-        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, AggSwitcherColumn.modePerGroup[i], AggSwitcherColumn.modePerGroup);
+        VisManager.modePerGroup[i] = EAggregationType.AGGREGATED;
+        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
     $enter.append('a')
@@ -72,8 +72,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         e.preventDefault();
         e.stopPropagation();
 
-        AggSwitcherColumn.modePerGroup[i] = AggMode.Unaggregated;
-        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, AggSwitcherColumn.modePerGroup[i], AggSwitcherColumn.modePerGroup);
+        VisManager.modePerGroup[i] = EAggregationType.UNAGGREGATED;
+        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
     $enter.append('a')
@@ -84,18 +84,18 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         e.preventDefault();
         e.stopPropagation();
 
-        AggSwitcherColumn.modePerGroup[i] = AggMode.Automatic;
-        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, AggSwitcherColumn.modePerGroup[i], AggSwitcherColumn.modePerGroup);
+        VisManager.modePerGroup[i] = EAggregationType.AUTOMATIC;
+        this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
     $blocks
       .attr('class', (d, i) => {
-        switch(AggSwitcherColumn.modePerGroup[i]) {
-          case AggMode.Aggregated:
+        switch(VisManager.modePerGroup[i]) {
+          case EAggregationType.AGGREGATED:
             return 'agg';
-          case AggMode.Unaggregated:
+          case EAggregationType.UNAGGREGATED:
             return 'unagg';
-          case AggMode.Automatic:
+          case EAggregationType.AUTOMATIC:
             return 'auto';
         }
       })
