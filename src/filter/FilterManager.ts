@@ -21,7 +21,7 @@ import {on, fire} from 'phovea_core/src/event';
 import * as $ from 'jquery';
 import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
-import {findColumnTie} from "mothertable/src/column/utils";
+import {findColumnTie} from '../column/utils';
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
