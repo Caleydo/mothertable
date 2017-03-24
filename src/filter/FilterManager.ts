@@ -21,6 +21,7 @@ import {on, fire} from 'phovea_core/src/event';
 import * as $ from 'jquery';
 import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
+import {findColumnTie} from '../column/utils';
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
@@ -53,6 +54,7 @@ export default class FilterManager extends EventHandler {
     const filter = FilterManager.createFilter(data, this.$node);
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     this.filters.push(filter);
+    this.updateStratifyIcon(findColumnTie(this.filters));
   }
 
 
@@ -60,6 +62,7 @@ export default class FilterManager extends EventHandler {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
+    this.updateStratifyIcon(findColumnTie(this.filters));
   }
 
   contains(data: IFilterAbleType) {
@@ -137,8 +140,30 @@ export default class FilterManager extends EventHandler {
     const temp = this.filters[posBefore];
     this.filters.splice(posBefore, 1);
     this.filters.splice(posAfter, 0, temp);
+    this.updateStratifyIcon(findColumnTie(this.filters));
     this.triggerSort();
   }
+
+  private updateStratifyIcon(columnIndexForTie: number) {
+
+
+    //Categorical Columns after the numerical or string
+    const catFiltersAfterTie = this.filters.filter((d, i) => i > columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    catFiltersAfterTie.forEach((col) => {
+      const s = col.$node.select('.toolbar').select('.fa.fa-bars.fa-fw');
+      s.classed('fa fa-bars fa-fw', false);
+    });
+
+    //Categorical Columns before the numerical or string
+    const catFilterBeforeTie = this.filters.filter((d, i) => i < columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    catFilterBeforeTie.forEach((col) => {
+      const s = col.$node.select('.toolbar').select('i');
+      s.classed('fa fa-bars fa-fw', true);
+    });
+  }
+
 
   private triggerSort() {
     const vectorColsOnly = this.filters.filter((col) => col.data.desc.type === 'vector');

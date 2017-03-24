@@ -27,7 +27,7 @@ import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
-import {scaleTo, makeRangeFromList, makeListFromRange} from './utils';
+import {scaleTo, makeRangeFromList, makeListFromRange, findColumnTie} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
@@ -289,9 +289,34 @@ export default class ColumnManager extends EventHandler {
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
 
+
     // update aggregation switcher column
     this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
+
+    //update the stratifyIcon
+    this.updateStratifyIcon(findColumnTie(this.filtersHierarchy));
   }
+
+  private updateStratifyIcon(columnIndexForTie: number) {
+
+    //Categorical Columns after the numerical or string
+    const catFiltersAfterTie = this.filtersHierarchy.filter((d, i) => i > columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    catFiltersAfterTie.forEach((col) => {
+      const s = col.$node.select('.toolbar').select('.fa.fa-bars.fa-fw');
+      s.classed('fa fa-bars fa-fw', false);
+    });
+
+
+    //Categorical Columns before the numerical or string
+    const catFilterBeforeTie = this.filtersHierarchy.filter((d, i) => i < columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    catFilterBeforeTie.forEach((col) => {
+      const s = col.$node.select('.toolbar').select('i');
+      s.classed('fa fa-bars fa-fw', true);
+    });
+  }
+
 
   async relayout() {
     await resolveIn(10);
@@ -301,7 +326,7 @@ export default class ColumnManager extends EventHandler {
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
-    if(this.columns.length > 0) {
+    if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
     }
 
