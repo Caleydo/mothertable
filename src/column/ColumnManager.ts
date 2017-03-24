@@ -203,22 +203,25 @@ export default class ColumnManager extends EventHandler {
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
     const a = await this.getBrushIndices(brushIndices, multiformData);
-    console.log(brushIndices, this.brushedItems)
-    this.brushedItems.push(a)
+    this.brushedItems.push(a);
+    this.totalbrushed = this.totalbrushed.concat(brushIndices);
     //console.log(this.brushedItems, a)
     //this.brushedRange = makeRangeFromList(this.brushedItems);
     this.stratifyAndRelayout();
 
   }
 
-  async updateRangeList(brushedStringIndices: number[][]) {
-    const newRange = updateRangeList(this.stratifiedRanges, brushedStringIndices);
+  async updateRangeList(brushedIndices: number[][]) {
+    const newRange = updateRangeList(this.stratifiedRanges, brushedIndices);
     //   console.log(newRange)
     // this.brushedRange = makeRangeFromList(brushedStringIndices);
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
     this.rangeList = newRange;
+    this.rangeList.map((r) => console.log(makeListFromRange(r)))
+    this.stratifiedRanges.map((r) => console.log(makeListFromRange(r)))
+
   }
 
 
@@ -269,6 +272,7 @@ export default class ColumnManager extends EventHandler {
     if (this.totalbrushed.length === 0) {
       await this.stratifyColumns();
       this.relayout();
+      return;
     }
 
     await this.updateRangeList(this.brushedItems);
@@ -327,7 +331,7 @@ export default class ColumnManager extends EventHandler {
     const datas = this.dataPerStratificaiton.get(colid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
-    if (this.brushedItems.length === 0) {
+    if (this.totalbrushed.length === 0) {
       cols.forEach((col) => {
         this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
       });
