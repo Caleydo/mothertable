@@ -37,7 +37,6 @@ import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
 
 
-
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
@@ -196,16 +195,13 @@ export default class ColumnManager extends EventHandler {
   }
 
   clearBrush(evt: any, brushIndices: any[]) {
-    console.log(brushIndices)
+    //console.log(brushIndices)
     this.brushedItems = [];
   }
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
-    const a = await this.getBrushIndices(brushIndices, multiformData);
-    console.log(brushIndices, this.brushedItems)
-    this.brushedItems = this.brushedItems.concat(a)
-    console.log(this.brushedItems, a)
+    this.brushedItems = await this.getBrushIndices(brushIndices, multiformData);
     this.brushedRange = makeRangeFromList(this.brushedItems);
     this.stratifyAndRelayout();
 
@@ -359,8 +355,8 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
     this.relayoutColStrats();
-    this.setGroupFlag();
-    this.correctGapBetwnMultiform();
+     this.setGroupFlag();
+     this.correctGapBetwnMultiform();
     const header = 47;//TODO solve programatically
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
@@ -539,10 +535,10 @@ export default class ColumnManager extends EventHandler {
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
 
-    //  console.log(rowIndex, aggregationType)
-    if (aggregationType === undefined) {
-      aggregationType = 1;
-    }
+     console.log(rowIndex, aggregationType)
+    // if (aggregationType === undefined) {
+    //   aggregationType = 1;
+    // }
     this.columns.forEach((col) => {
       VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
     });
