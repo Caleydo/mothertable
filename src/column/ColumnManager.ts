@@ -16,7 +16,7 @@ import StringColumn from './StringColumn';
 import NumberColumn from './NumberColumn';
 import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
-import {resolveIn} from 'phovea_core/src';
+import {resolveIn, mod} from 'phovea_core/src';
 import IDType from 'phovea_core/src/idtype/IDType';
 import SortHandler from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
@@ -34,10 +34,8 @@ import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
-
 import {List} from 'phovea_vis/src/list';
-import TaggleMultiform from "mothertable/src/column/TaggleMultiform";
-import MultiForm from "phovea_core/src/multiform/MultiForm";
+
 
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -112,6 +110,7 @@ export default class ColumnManager extends EventHandler {
       this.stratifyAndRelayout();
     });
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
+    on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
 
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
@@ -196,10 +195,17 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
+  clearBrush(evt: any, brushIndices: any[]) {
+    console.log(brushIndices)
+    this.brushedItems = [];
+  }
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
-    this.brushedItems = await this.getBrushIndices(brushIndices, multiformData);
+    const a = await this.getBrushIndices(brushIndices, multiformData);
+    console.log(brushIndices, this.brushedItems)
+    this.brushedItems = this.brushedItems.concat(a)
+    console.log(this.brushedItems, a)
     this.brushedRange = makeRangeFromList(this.brushedItems);
     this.stratifyAndRelayout();
 
@@ -360,7 +366,7 @@ export default class ColumnManager extends EventHandler {
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
-    console.log(rowHeight)
+    //  console.log(rowHeight)
     if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(
         this.stratifiedRanges.map((d, i) => {
@@ -372,7 +378,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
-      console.log(col.multiformList);
+      //   console.log(col.multiformList);
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
@@ -403,7 +409,9 @@ export default class ColumnManager extends EventHandler {
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+
       let mode = VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
+
       this.updateAggregationLevelForRow(i, mode);
     }
 
@@ -511,7 +519,7 @@ export default class ColumnManager extends EventHandler {
       });
     });
 
-    console.log(minHeights)
+    //console.log(minHeights)
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
@@ -530,6 +538,11 @@ export default class ColumnManager extends EventHandler {
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
+
+    //  console.log(rowIndex, aggregationType)
+    if (aggregationType === undefined) {
+      aggregationType = 1;
+    }
     this.columns.forEach((col) => {
       VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
     });
@@ -542,7 +555,7 @@ export default class ColumnManager extends EventHandler {
           .map((s) => s.intersect(this.rangeList[index]).size()[0]);
         const a = m.filter((d) => d > 0);
         const sd = m.indexOf(a[0]);
-        console.log(sd, a, m);
+        //   console.log(sd, a, m);
         (<any>multiform).groupId = sd;
       });
     });

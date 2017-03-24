@@ -262,7 +262,7 @@ export default class VisManager {
    */
   computeMinHeight(col: AnyColumn): number [] {
     let minColumnHeight: number[] = [];
-    console.log(col.multiformList)
+ //   console.log(col.multiformList)
     col.multiformList.forEach((multiform, index) => {
       let minHeight;
       if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
