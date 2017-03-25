@@ -215,6 +215,11 @@ export default class ColumnManager extends EventHandler {
     this.brushedItems = [];
     this.totalbrushed = [];
     this._brushedRanges = [];
+    for (const col of this.columns) {
+      col.multiformList.forEach((m) => {
+        m.brushed = false;
+      });
+    }
   }
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
@@ -344,7 +349,7 @@ export default class ColumnManager extends EventHandler {
           let newRange = newR.dims[0].asList();
           let originalRange = oldRanges.get(l).dims[0].asList();
           if (newRange.toString() === originalRange.toString() || checkArraySubset(originalRange, newRange) || checkArraySubset(newRange, originalRange)) {
-            if(VisManager.modePerGroup[oldId] != undefined){
+            if(VisManager.modePerGroup[oldId] !== undefined){
               newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
             } else {
               newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
@@ -491,9 +496,8 @@ export default class ColumnManager extends EventHandler {
     let totalMax = 0;
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+    for (let i = 0; i < VisManager.modePerGroup.length; i++) {
       let mode = VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
-
       this.updateAggregationLevelForRow(i, mode);
     }
 
@@ -508,8 +512,9 @@ export default class ColumnManager extends EventHandler {
     }
 
     if (!aggregationNeeded) {
+      const size = this._multiformRangeList.length;
       //choose minimal block height for each row of multiforms/stratification group
-      for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+      for (let i = 0; i < size; i++) {
         const minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[i]);
@@ -531,9 +536,9 @@ export default class ColumnManager extends EventHandler {
     minHeights = [];
 
     //set the propper aggregation level
-    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+    for (let i = 0; i < VisManager.modePerGroup.length; i++) {
       if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
-        let mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
+        let mode = aggregationNeeded && !this.checkIfGruopBrushed(i) ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
         this.updateAggregationLevelForRow(i, mode);
       } else {
         this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
@@ -542,7 +547,7 @@ export default class ColumnManager extends EventHandler {
     //copute height requiremmts per column
     for (const col of this.columns) {
       const type = col.data.desc.type;
-      let range = this.colsWithRange.get(col.data.desc.id);
+      let range = this._multiformRangeList;
       const temp = [];
 
       if (range === undefined) {
@@ -563,36 +568,53 @@ export default class ColumnManager extends EventHandler {
       maxHeights.push(max);
 
       totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
-
-
       index = index + 1;
     }
 
     let totalAggreg = 0;
+    let totalMinBrushed = 0;
+    let totalMaxBrushed = 0;
+    let brushedMultiforms = this.brushedMultiforms();
     //choose minimal and maximal block height for each row of multiforms/stratification group
-    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      let minSize = [];
-      minHeights.forEach((m) => {
-        minSize.push(m[i]);
-      });
-      let min = Math.max(...minSize);
-      if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
-        min = 60;
-        totalAggreg = totalAggreg + min;
-      }
-      minHeights.forEach((m) => {
-        m[i] = min;
-      });
-      maxHeights.forEach((m) => {
+    const size = VisManager.modePerGroup.length;
+    for (let i = 0; i < size; i++) {
+      this.multiformsInGroup(i).forEach((ind) =>{
+        let minSize = [];
+        minHeights.forEach((m) => {
+          minSize.push(m[ind]);
+        });
+        let min = Math.max(...minSize);
         if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
-          m[i] = min;
+          min = 60;
+          totalAggreg = totalAggreg + min;
+        } else if (brushedMultiforms.indexOf(ind) !== -1){
+          totalMinBrushed = totalMinBrushed + min;
         }
+        minHeights.forEach((m) => {
+          m[ind] = min;
+        });
+        let maxBrush = 0;
+        maxHeights.forEach((m) => {
+          if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
+            m[ind] = min;
+          }else if (brushedMultiforms.indexOf(ind) !== -1){
+            maxBrush = m[ind];
+          }
+        });
+        totalMaxBrushed = totalMaxBrushed + maxBrush;
+        totalMin = totalMin + min;
       });
-      totalMin = totalMin + min;
     }
 
     let totalMinUnaggregatedHeight = totalMin - totalAggreg;
     let spaceForUnaggregated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
+
+    const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnaggregated]);
+    const brushed = minScale(totalMinBrushed);
+    if (brushed > totalMaxBrushed) {
+      totalMinUnaggregatedHeight = totalMin - totalAggreg - totalMinBrushed;
+      spaceForUnaggregated = height - totalAggreg - totalMaxBrushed;
+    }
 
     minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnaggregated]);
@@ -601,19 +623,40 @@ export default class ColumnManager extends EventHandler {
       });
     });
 
-    console.log(this._brushedRanges)
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
-
 
     return minHeights;
 
   }
 
+  private brushedMultiforms () {
+    let brushedMultiforms: number[] = [];
+    this.columns.forEach((col) => {
+      col.multiformList.forEach((m, i) => {
+        if(m.brushed && brushedMultiforms.indexOf(i) === -1){
+          brushedMultiforms.push(i);
+        }
+      });
+    });
+    return brushedMultiforms;
+  }
+
+  private checkIfGruopBrushed (rowIndex: number){
+    let isBrushed = false;
+    this.columns.forEach((col) => {
+      this.multiformsInGroup(rowIndex).forEach((m) => {
+         isBrushed = col.multiformList[m].brushed ? true : false;
+       });
+    });
+    return isBrushed;
+  }
+
+
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((m) => {
-         VisManager.multiformAggregationType.set(col.multiformList[m].id, aggregationType);
+        VisManager.multiformAggregationType.set(col.multiformList[m].id, aggregationType);
        });
     });
   }

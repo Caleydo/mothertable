@@ -14,7 +14,7 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IVisPluginDesc, list as listVisses} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
-
+import TaggleMultiform from './TaggleMultiform';
 
 export enum EOrientation {
   Horizontal,
@@ -40,7 +40,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
-  multiformList: MultiForm[] = [];
+  multiformList = [];
 
   selectedAggVis: IVisPluginDesc;
   selectedUnaggVis: IVisPluginDesc;

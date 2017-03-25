@@ -27,7 +27,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private rowRanges: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
-  multiformList = [];
+  multiformList: TaggleMultiform[] = [];
 
   private $colStrat: d3.Selection<any>;
   private colStratManager: AColumnManager = new AColumnManager();
