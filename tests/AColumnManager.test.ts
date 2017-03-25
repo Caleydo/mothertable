@@ -22,11 +22,11 @@ describe('AColumnManager', () => {
   const vData = ['value1', 'value2', 'value3'];
   const vector:IVector<any, any> = asVector(vRows, vData);
 
-  const vectorColumn = new CategoricalColumn(vector, EOrientation.Horizontal, d3.select('#foo'));
+  const vectorColumn = new CategoricalColumn(vector, EOrientation.Vertical, d3.select('#foo'));
   colManager.add(vectorColumn);
 
   // add as duplicate with same data
-  const vectorColumnSameData = new CategoricalColumn(vector, EOrientation.Horizontal, d3.select('#foo'));
+  const vectorColumnSameData = new CategoricalColumn(vector, EOrientation.Vertical, d3.select('#foo'));
   colManager.add(vectorColumnSameData);
 
   const mRows = ['mRow1', 'mRow2', 'mRow3'];
@@ -34,7 +34,7 @@ describe('AColumnManager', () => {
   const mData = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
   const matrix:IMatrix<any, any> = asMatrix(mData, mRows, mCols);
 
-  const matrixColumn = new MatrixColumn(matrix, EOrientation.Horizontal, d3.select('#foo'));
+  const matrixColumn = new MatrixColumn(matrix, EOrientation.Vertical, d3.select('#foo'));
   colManager.add(matrixColumn);
 
   it('number of added columns', () => {

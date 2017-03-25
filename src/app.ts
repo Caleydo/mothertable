@@ -151,7 +151,7 @@ export default class App {
     this.hideSelection();
 
     // create a column manager
-    this.colManager = new ColumnManager(idtype, EOrientation.Horizontal, this.$node.select('main'));
+    this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);

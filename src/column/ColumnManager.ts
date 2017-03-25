@@ -102,7 +102,7 @@ export default class ColumnManager extends EventHandler {
         items: '> :not(.nodrag)'
       });
 
-    this.aggSwitcherCol = new AggSwitcherColumn(null, EOrientation.Horizontal, this.$node);
+    this.aggSwitcherCol = new AggSwitcherColumn(null, EOrientation.Vertical, this.$node);
   }
 
   private attachListener() {

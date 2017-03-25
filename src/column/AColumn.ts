@@ -17,8 +17,8 @@ import {EAggregationType} from './VisManager';
 
 
 export enum EOrientation {
-  Horizontal,
-  Vertical
+  Vertical,
+  Horizontal
 }
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
@@ -66,10 +66,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
-    if (this.orientation === EOrientation.Horizontal) {
-      return this.buildHorizontal($parent);
+    if (this.orientation === EOrientation.Vertical) {
+      return this.buildVertical($parent);
     }
-    return this.buildVertical($parent);
+    return this.buildHorizontal($parent);
   }
 
   /**
@@ -77,11 +77,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    * @param $parent
    * @returns {Selection<any>}
    */
-  protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
+  protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent.insert('li', 'li')
       .datum(this)
       .classed('column-strat', true)
-      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .html(`
         <header>
           <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
@@ -96,12 +96,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    * @param $parent
    * @returns {Selection<any>}
    */
-  protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
+  protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent
       .append('li')
       .datum(this)
       .classed('column', true)
-      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .style('min-width', this.minWidth + 'px')
       .style('width', this.maxWidth + 'px')
       .html(`

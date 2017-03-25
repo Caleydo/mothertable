@@ -112,7 +112,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<AnyColumn>}
    */
   pushColStratData(data: IMotherTableType) {
-    const col = createColumn(data, EOrientation.Vertical, this.$colStrat);
+    const col = createColumn(data, EOrientation.Horizontal, this.$colStrat);
     this.colStratManager.add(col);
     return Promise.resolve(col);
   }
@@ -124,11 +124,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   async updateColStrats() {
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
     //console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
-    //this.colStratManager.stratify(rangeListMap);
+    this.colStratManager.stratify(rangeListMap);
   }
 
   filterStratData(range: Range) {
-    //this.colStratManager.filter([range]);
+    this.colStratManager.filter([range]);
   }
 
   updateColStratsSorting(filterList: AnyFilter[]) {
