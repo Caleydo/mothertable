@@ -73,19 +73,19 @@ export default class VisManager {
     maxWidth: 100
   };
   private readonly barplotOptions: IVisOptions = {
-    rowMinHeight: 2,
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 40,
     maxWidth: 50
   };
   private readonly heatmap1DOptions: IVisOptions = {
-    rowMinHeight: 2,
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
   private readonly heatmapOptions: IVisOptions = {
-    rowMinHeight: 2,
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     columnMinWidth: 2,
     columnMaxWidth: 10
@@ -109,7 +109,7 @@ export default class VisManager {
     maxWidth: 20
   };
   private readonly mosaicOptions: IVisOptions = {
-    rowMinHeight: 2,
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
@@ -253,7 +253,7 @@ export default class VisManager {
     VisManager.userSelectedUnaggregatedVisses.delete(id);
   }
 
-  /*
+  /**
    * Compute minimum height of column depending on
    * minimal size of user-selected visualizations and
    * minimal size of visualizations available for given datatype
