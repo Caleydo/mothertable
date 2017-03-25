@@ -112,7 +112,13 @@ export function formatIdTypeName(name: string): string {
     .replace('TCGA_SAMPLE', 'Patient');
 }
 
-
+/**
+ * Split stratified ranges according to given brush.
+ * e.g., stratification [[1,2,3],[4,5,6,7,8]] and brush [5,6] will result in [[1,2,3],[4],[5,6],[7,8]]
+ * @param stratifiedRanges
+ * @param brushedArray
+ * @return {Range[]}
+ */
 export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[][]) {
   const m = new Map();
   const n = new Map();
@@ -126,7 +132,7 @@ export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[
   //Gives the group which it belongs to the brushing in the stratification.
   const groupid = [];
   Array.from(m.keys()).forEach((id) => {
-    if(m.get(id) === true){
+    if(m.get(id) === true) {
       groupid.push(id);
     }
   });
@@ -134,21 +140,19 @@ export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[
   const newRangeInList = [];
   stratifiedRanges.forEach((r, id) => {
     const currentRangeList = makeListFromRange(r);
-    if(groupid.indexOf(id) > -1){
+    if(groupid.indexOf(id) > -1) {
       const localArrayIndices = convertToLocalArrayIndices(brushedArray, currentRangeList);
       // Convert local sorted indices to the range Indices
       const newRangeIndices = revertBackToRangeIndices(currentRangeList, localArrayIndices);
       //Replace the array range which is brushed with new splitted range
       const newarr = reformatArray(currentRangeList, newRangeIndices);
       newarr.forEach((n) => newRangeInList.push(n));
-    }else{
+    } else {
       newRangeInList.push(currentRangeList);
     }
-
   });
 
   return newRangeInList.map((r) => makeRangeFromList(r));
-
 }
 
 function reformatArray(brushedRange: number[], brushedArray: number[][]) {
@@ -171,17 +175,14 @@ function reformatArray(brushedRange: number[], brushedArray: number[][]) {
   }
 
   return newarr;
-
 }
 
 function makeListfromRange(range: Range) {
   return (range.dim(0).asList());
-
 }
 
 function reformatRangeList(rearrangeRange: Range[][]) {
   return rearrangeRange.reduce((p, b) => p.concat(b));
-
 }
 
 export function mergeRanges(ranges: Range[]) {
@@ -214,8 +215,13 @@ export function checkArraySubset(parentArr, childArr) {
 }
 
 
-//Sort the array or array
-function sortArray(a, b) {
+/**
+ * Sort function for sorting arrays based on the first elment
+ * @param a
+ * @param b
+ * @return {number} 
+ */
+function sortArray(a: number[], b: number[]) {
   if (a[0] === b[0]) {
     return 0;
   } else {
@@ -223,7 +229,12 @@ function sortArray(a, b) {
   }
 }
 
-//Convert the brushed global range(range indices from stratified indices index to local array index to sort the array
+/**
+ * Convert the brushed global range(range indices from stratified indices index to local array index to sort the array
+ * @param brushedArray
+ * @param stratifiedRangeIndices
+ * @return {number[][]}
+ */
 function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeIndices: number[]) {
   const localArray = [];
   brushedArray.forEach((d) => {
@@ -236,7 +247,12 @@ function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeInd
   return localArray;
 }
 
-//First sort the array and give me back the global range indices from local indices
+/**
+ * First sort the array and give me back the global range indices from local indices
+ * @param stratifiedRangeIndices
+ * @param localArrayIndices
+ * @return {number[][]}
+ */
 function revertBackToRangeIndices(stratifiedRangeIndices: number[], localArrayIndices: number[][]) {
   const sortedLocalArray = localArrayIndices.slice().sort(sortArray);
   const rangeIndices = [];
