@@ -12,8 +12,9 @@ import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
+
   minWidth: number = 2;
-  maxWidth: number = 200;
+  maxWidth: number = 140;
   minHeight: number = 2;
   maxHeight: number = 25;
 
