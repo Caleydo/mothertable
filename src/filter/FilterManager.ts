@@ -9,7 +9,7 @@ import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
-import {IStringVector} from './AVectorFilter';
+import {IStringVector, AVectorFilter} from './AVectorFilter';
 import AFilter from './AFilter';
 import CategoricalFilter from './CategoricalFilter';
 import StringFilter from './StringFilter';
@@ -22,7 +22,7 @@ import * as $ from 'jquery';
 import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
-import AColumn from "mothertable/src/column/AColumn";
+import AColumn from '../column/AColumn';
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
@@ -36,11 +36,13 @@ export default class FilterManager extends EventHandler {
   readonly filters: AnyColumn[] = [];
 
   private onFilterChanged = () => this.refilter();
+  //private onFilterRemove = (evt: any, col) => this.removeMe(col);
 
   constructor(public readonly idType: IDType, readonly $node: d3.Selection<any>) {
     super();
     this.build();
     this.drag();
+
 
   }
 
@@ -54,6 +56,7 @@ export default class FilterManager extends EventHandler {
   push(data: IFilterAbleType) {
     const filter = FilterManager.createFilter(data, this.$node);
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
+    filter.on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
     this.filters.push(filter);
     this.updateStratifyIcon(findColumnTie(this.filters));
   }
@@ -70,19 +73,29 @@ export default class FilterManager extends EventHandler {
     return this.filters.some((d) => d.data === data);
   }
 
+
   /**
    * Removes the column from the filters by the given data parameter,
    * if the column has no filter applied.
    *
    * @param data
    */
-  remove(data: IFilterAbleType) {
+  remove(evt: any, data: IFilterAbleType) {
     const col = this.filters.find((d) => d.data === data);
-
     if (!col.activeFilter) {
       col.$node.remove();
       this.filters.splice(this.filters.indexOf(col), 1);
+      fire(AFilter.EVENT_REMOVE_ME, data);
+      this.fire(AFilter.EVENT_REMOVE_ME, data)
     }
+
+
+    if (data.desc.type === AColumn.DATATYPE.matrix) {
+
+      fire(AFilter.EVENT_MATRIX_REMOVE, col.data, col.idtype.id);
+
+    }
+
   }
 
   /**
@@ -109,6 +122,7 @@ export default class FilterManager extends EventHandler {
     this.filters.splice(index, 0, col);
     this.triggerSort();
   }
+
 
   /**
    * Filter Dragging  Event Listener

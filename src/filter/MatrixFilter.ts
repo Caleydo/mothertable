@@ -25,9 +25,11 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
       .classed('filter', true)
       .classed('nodrag', true);
 
-    $li.append('header');
+    const $header = $li.append('header');
     $li.append('main');
 
+    const $toolbar = $header.append('div').classed('toolbar', true);
+    this.addTrashIcon($toolbar);
     this.generateLabel($li, this.data.desc.name);
     this.generateMatrixHeatmap($li.select('main'), this.data.rowtype.id);
 

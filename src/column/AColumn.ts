@@ -129,8 +129,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .attr('title', 'Remove column')
       .html(`<i class="fa fa-trash fa-fw" aria-hidden="true"></i><span class="sr-only">Remove column</span>`)
       .on('click', () => {
-        this.fire(AColumn.EVENT_REMOVE_ME);
-        return false;
+        this.fire(AColumn.EVENT_REMOVE_ME, this.data);
+        // return false;
       });
 
     this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);

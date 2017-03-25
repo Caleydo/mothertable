@@ -71,7 +71,7 @@ export default class ColumnManager extends EventHandler {
   private _multiformRangeList;
   private rowCounter = 0;
 
-  private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
+  private onColumnRemoved = (event: IEvent, data: IDataType) => this.remove(null, data);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
@@ -120,6 +120,7 @@ export default class ColumnManager extends EventHandler {
     });
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
     on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
+    on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
 
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
@@ -183,9 +184,14 @@ export default class ColumnManager extends EventHandler {
     return col;
   }
 
-  remove(col: AnyColumn) {
-    this.columns.splice(this.columns.indexOf(col), 1);
+  remove(evt: any, data: IDataType) {
+    const col = this.columns.find((d) => d.data === data);
+    //IF column is already removed
+    if (col === undefined) {
+      return;
+    }
     col.$node.remove();
+    this.columns.splice(this.columns.indexOf(col), 1);
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
