@@ -13,13 +13,13 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {asVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
-import {IFilterAbleType} from 'mothertable/src/filter/FilterManager';
+import {IFilterAbleType} from './filter/FilterManager';
 import {AnyColumn} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
 import AColumn from './column/AColumn';
 import {formatAttributeName, formatIdTypeName} from './column/utils';
 import {IStratification} from 'phovea_core/src/stratification';
-import AFilter from "mothertable/src/filter/AFilter";
+import AFilter from './filter/AFilter';
 
 
 export interface IFuelBarDataSize {
