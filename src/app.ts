@@ -241,6 +241,7 @@ export default class App {
   }
 
   private triggerMatrix(colRange?, id?: number) {
+    console.log(this.colManager.stratifiedRanges, this.colManager)
     const matrixCol: MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
     const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
     if (uniqueMatrix === -1) {
@@ -258,7 +259,7 @@ export default class App {
       colRange = (indices.dim(1));
     }
 
-    matrixCol[uniqueMatrix - 1].updateMultiForms(null, null, null, colRange);
+    matrixCol[uniqueMatrix - 1].updateMultiForms(this.colManager.multiformRangeList, this.colManager.stratifiedRanges, this.colManager.brushedRanges, colRange);
   }
 
 }

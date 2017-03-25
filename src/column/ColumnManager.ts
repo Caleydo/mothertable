@@ -41,6 +41,8 @@ export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
 export default class ColumnManager extends EventHandler {
+
+
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
 
@@ -50,16 +52,16 @@ export default class ColumnManager extends EventHandler {
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
-  private stratifiedRanges: Range[]; // This is the rangelist used for stratification
+  private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
   private nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private visManager: VisManager;
   private colsWithRange = new Map();
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
-  private brushedRanges: Range[] = [];
+  private _brushedRanges: Range[] = [];
   private brushedItems = [];
   private totalbrushed: number[] = [];
-  private multiformRangeList;
+  private _multiformRangeList;
   private rowCounter = 0;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -121,6 +123,18 @@ export default class ColumnManager extends EventHandler {
 
   get length() {
     return this.columns.length;
+  }
+
+  get stratifiedRanges(): Range[] {
+    return this._stratifiedRanges;
+  }
+
+  get multiformRangeList() {
+    return this._multiformRangeList;
+  }
+
+  get brushedRanges(): Range[] {
+    return this._brushedRanges;
   }
 
   destroy() {
@@ -198,7 +212,7 @@ export default class ColumnManager extends EventHandler {
   clearBrush(evt: any, brushIndices: any[]) {
     this.brushedItems = [];
     this.totalbrushed = [];
-    this.brushedRanges = [];
+    this._brushedRanges = [];
   }
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
@@ -207,19 +221,19 @@ export default class ColumnManager extends EventHandler {
     this.brushedItems.push(a);
     this.totalbrushed = this.totalbrushed.concat(brushIndices);
     //console.log(this.brushedItems, a)
-    this.brushedRanges.push(makeRangeFromList(a));
+    this._brushedRanges.push(makeRangeFromList(a));
     this.stratifyAndRelayout();
 
   }
 
   async updateRangeList(brushedIndices: number[][]) {
-    const newRange = updateRangeList(this.stratifiedRanges, brushedIndices);
+    const newRange = updateRangeList(this._stratifiedRanges, brushedIndices);
     //   console.log(newRange)
     // this.brushedRange = makeRangeFromList(brushedStringIndices);
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
-    this.multiformRangeList = newRange;
+    this._multiformRangeList = newRange;
 
 
   }
@@ -289,7 +303,7 @@ export default class ColumnManager extends EventHandler {
     //special handling if matrix is added as first column
     if (cols.length === 0) {
       this.nonStratifiedRange = this.firstColumnRange;
-      this.stratifiedRanges = [this.firstColumnRange];
+      this._stratifiedRanges = [this.firstColumnRange];
       return;
     }
 
@@ -297,7 +311,7 @@ export default class ColumnManager extends EventHandler {
     const s = new SortHandler();
     const r = await s.sortColumns(cols);
     this.nonStratifiedRange = r.combined;
-    this.stratifiedRanges = [r.combined];
+    this._stratifiedRanges = [r.combined];
     this.dataPerStratificaiton = r.stratified;
     cols.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, [this.nonStratifiedRange]);
@@ -318,13 +332,13 @@ export default class ColumnManager extends EventHandler {
     const cols = this.filtersHierarchy;
     const datas = this.dataPerStratificaiton.get(colid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
-    this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
+    this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
     if (this.totalbrushed.length === 0) {
       cols.forEach((col) => {
-        this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
+        this.colsWithRange.set(col.data.desc.id, this._stratifiedRanges);
       });
 
-      this.multiformRangeList = this.stratifiedRanges;
+      this._multiformRangeList = this._stratifiedRanges;
     }
 
   }
@@ -338,15 +352,15 @@ export default class ColumnManager extends EventHandler {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
-      col.updateMultiForms(r, this.stratifiedRanges, this.brushedRanges);
+      col.updateMultiForms(r, this._stratifiedRanges, this._brushedRanges);
     });
 
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
-    matrixCols.map((col) => col.updateMultiForms(this.multiformRangeList, this.stratifiedRanges, this.brushedRanges));
+    matrixCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges));
 
     // update aggregation switcher column
-    this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
+    this.aggSwitcherCol.updateMultiForms(this._stratifiedRanges);
   }
 
   async relayout() {
@@ -362,7 +376,7 @@ export default class ColumnManager extends EventHandler {
     //  console.log(rowHeight)
     if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(
-        this.stratifiedRanges.map((d, i) => {
+        this._stratifiedRanges.map((d, i) => {
           return rowHeight[i];
         })
       );
@@ -454,7 +468,7 @@ export default class ColumnManager extends EventHandler {
       const temp = [];
 
       if (range === undefined) {
-        range = this.stratifiedRanges;
+        range = this._stratifiedRanges;
       }
       const minSizes = this.visManager.computeMinHeight(col);
 
@@ -509,7 +523,7 @@ export default class ColumnManager extends EventHandler {
       });
     });
 
-    console.log(this.brushedRanges)
+    console.log(this._brushedRanges)
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
@@ -521,7 +535,7 @@ export default class ColumnManager extends EventHandler {
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
 
-    //  console.log(rowIndex, aggregationType)
+    console.log(rowIndex, aggregationType)
     if (aggregationType === undefined) {
       aggregationType = 1;
     }

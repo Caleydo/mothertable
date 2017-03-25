@@ -90,6 +90,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       colView = (<INumericalMatrix>colView).t;
 
       const m = new TaggleMultiform(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
+      console.log(this, stratifiedRanges, id, rowRanges, rowRanges[id])
       m.groupId = this.setGroupFlag(stratifiedRanges, rowRanges[id]);
       m.brushed = this.setBrushFlag(brushedRanges, rowRanges[id]);
       this.multiformList.push(m);
