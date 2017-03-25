@@ -196,8 +196,9 @@ export default class ColumnManager extends EventHandler {
   }
 
   clearBrush(evt: any, brushIndices: any[]) {
-    console.log(brushIndices)
     this.brushedItems = [];
+    this.totalbrushed = [];
+    this.brushedRange = [];
   }
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
@@ -206,7 +207,7 @@ export default class ColumnManager extends EventHandler {
     this.brushedItems.push(a);
     this.totalbrushed = this.totalbrushed.concat(brushIndices);
     //console.log(this.brushedItems, a)
-    //this.brushedRange = makeRangeFromList(this.brushedItems);
+    this.brushedRange.push(makeRangeFromList(a));
     this.stratifyAndRelayout();
 
   }
@@ -219,8 +220,7 @@ export default class ColumnManager extends EventHandler {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
     this.rangeList = newRange;
-    this.rangeList.map((r) => console.log(makeListFromRange(r)))
-    this.stratifiedRanges.map((r) => console.log(makeListFromRange(r)))
+
 
   }
 
@@ -240,7 +240,6 @@ export default class ColumnManager extends EventHandler {
       this.columns.forEach((col) => col.updateMultiForms([idRange]));
       return;
     }
-
     for (const col of this.columns) {
       col.rangeView = idRange;
       col.dataView = await col.data.idView(idRange);
@@ -350,7 +349,7 @@ export default class ColumnManager extends EventHandler {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
-      col.updateMultiForms(r);
+      col.updateMultiForms(r, this.stratifiedRanges);
     });
 
     // update matrix column with last sorted range
@@ -365,7 +364,7 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
     this.relayoutColStrats();
     // this.setGroupFlag();
-    //this.correctGapBetwnMultiform();
+    this.correctGapBetwnMultiform();
     const header = 47;//TODO solve programatically
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
@@ -383,7 +382,7 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
-      //   console.log(col.multiformList);
+      console.log(col.multiformList);
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
@@ -528,14 +527,22 @@ export default class ColumnManager extends EventHandler {
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
-    // if (this.brushedItems.length !== 0) {
-    //   const heightForBrush = this.brushedItems.length * heightPerBrushItems;
-    //   this.rangeList.forEach((r, i) => {
-    //     const m = r.intersect(this.brushedRange).size()[0];
-    //     minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
-    //     maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : maxHeights[i];
-    //   });
-    // }
+
+
+    if (this.totalbrushed.length !== 0) {
+      const heightForBrush = this.totalbrushed.length * heightPerBrushItems;
+      this.rangeList.forEach((r, i) => {
+        const t = this.brushedRange.map((b) => {
+
+          return r.intersect(b).size()[0];
+
+        });
+        const m = Math.max(...t);
+
+        minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
+        maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : maxHeights[i];
+      });
+    }
 
 
     return minHeights;
@@ -553,20 +560,20 @@ export default class ColumnManager extends EventHandler {
     });
   }
 
-  private setGroupFlag() {
-    this.columns.forEach((col, i) => {
-      col.multiformList.forEach((multiform, index) => {
-        const m = this.stratifiedRanges
-          .map((s) => s.intersect(this.rangeList[index]).size()[0]);
-        const a = m.filter((d) => d > 0);
-        const sd = m.indexOf(a[0]);
-        //   console.log(sd, a, m);
-        (<any>multiform).groupId = sd;
-      });
-    });
-
-
-  }
+  // private setGroupFlag() {
+  //   this.columns.forEach((col, i) => {
+  //     col.multiformList.forEach((multiform, index) => {
+  //       const m = this.stratifiedRanges
+  //         .map((s) => s.intersect(this.rangeList[index]).size()[0]);
+  //       const a = m.filter((d) => d > 0);
+  //       const sd = m.indexOf(a[0]);
+  //       //   console.log(sd, a, m);
+  //       (<any>multiform).groupId = sd;
+  //     });
+  //   });
+  //
+  //
+  // }
 
 
   private correctGapBetwnMultiform() {

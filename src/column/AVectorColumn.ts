@@ -77,7 +77,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     }
   }
 
-  async updateMultiForms(idRanges: Range[]) {
+  async updateMultiForms(idRanges: Range[], stratifiedRanges?) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     const domain = d3.extent(v);
     const viewPromises = idRanges.map((r) => this.data.idView(r));
@@ -103,6 +103,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             d3.select(this).select('.vislist').style('display', 'none');
           });
         const m = new TaggleMultiform(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
+        m.groupId = this.setGroupFlag(stratifiedRanges, idRanges[id]);
+
         //assign visses
         if (this.selectedAggVis) {
           VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
