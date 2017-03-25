@@ -49,17 +49,6 @@ export function insertArrayAt(array, index, arrayToInsert) {
   Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
 }
 
-/**
- * Checks if one array contains all elements of another array
- * @param sup the larger array
- * @param sub the smaller array
- * @returns {boolean}
- */
-export function superbag(sup: any[], sub: any[]): boolean {
-  return sub.every(elem => sup.indexOf(elem) > -1);
-}
-
-
 export function reArrangeRangeListAfter(draggedArray, fullRangeList) {
   let indices = [];
   fullRangeList.map((d, i) => {
@@ -123,36 +112,43 @@ export function formatIdTypeName(name: string): string {
 
 export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[][]) {
   const m = new Map();
-  const updateRange = stratifiedRanges.map((r, index) => {
-    return brushedArray.map((s) => {
+  const n = new Map();
+  const updateRange = stratifiedRanges.forEach((r, index) => {
+    return brushedArray.forEach((s) => {
       const isSuperset = checkArraySubset(makeListfromRange(r), s);
-      if (isSuperset === true) {
-        return m.set(index, true);
-      } else {
-        return m.set(index, false);
-      }
+      m.set(index, isSuperset || m.get(index));
     });
   });
 
-
   //Gives the group which it belongs to the brushing in the stratification.
-  const groupid = Array.from(m.values()).indexOf(true);
-  const stratifiedRangeInList = stratifiedRanges.map((r) => (makeListFromRange(r)));
+  const groupid = [];
+  Array.from(m.keys()).forEach((id) => {
+    if(m.get(id) === true){
+      groupid.push(id);
+    }
+  });
 
-  // Convert range indices to local array indices for sorting purpose
-  const localArrayIndices = convertToLocalArrayIndices(brushedArray, stratifiedRangeInList[groupid]);
+  const newRangeInList = [];
+  stratifiedRanges.forEach((r, id) => {
+    const currentRangeList = makeListFromRange(r);
+    if(groupid.indexOf(id) > -1){
+      const localArrayIndices = convertToLocalArrayIndices(brushedArray, currentRangeList);
+      // Convert local sorted indices to the range Indices
+      const newRangeIndices = revertBackToRangeIndices(currentRangeList, localArrayIndices);
+      //Replace the array range which is brushed with new splitted range
+      const newarr = reformatArray(currentRangeList, newRangeIndices);
+      newarr.forEach((n) => newRangeInList.push(n));
+    }else{
+      newRangeInList.push(currentRangeList);
+    }
 
-  // Convert local sorted indices to the range Indices
-  const newRangeIndices = revertBackToRangeIndices(stratifiedRangeInList[groupid], localArrayIndices);
+  });
 
-  //Replace the array range which is brushed with new splitted range
-  const result = reformatArray(stratifiedRangeInList, newRangeIndices, groupid);
-  return result.map((r) => makeRangeFromList(r));
+  return newRangeInList.map((r) => makeRangeFromList(r));
+
 }
 
-
-function reformatArray(stratifiedRangeInList: number[][], brushedArray: number[][], id: number) {
-  const brushedRange = stratifiedRangeInList[id];
+function reformatArray(brushedRange: number[], brushedArray: number[][]) {
   let lastIndex = 0;
   const newarr = [];
 
@@ -171,10 +167,7 @@ function reformatArray(stratifiedRangeInList: number[][], brushedArray: number[]
     newarr.push(brushedRange.slice(lastIndex, brushedRange.length));
   }
 
-  //First remove 1 element at id and replace that with newarr and append others at it is;
-  stratifiedRangeInList.splice(id, 1, ...newarr);
-  console.log(stratifiedRangeInList)
-  return stratifiedRangeInList;
+  return newarr;
 
 }
 
@@ -206,13 +199,15 @@ export function makeArrayBetweenNumbers(range: number[]) {
   return arr;
 }
 
-// Check is Arr2 is child of Array1
-function checkArraySubset(parentArr, childArr) {
-  const isSuperset = childArr.every(function (val) {
-    return parentArr.indexOf(val) >= 0;
-  });
 
-  return isSuperset;
+/**
+ * Checks if one array contains all elements of another array
+ * @param sup the larger array
+ * @param sub the smaller array
+ * @returns {boolean}
+ */
+export function checkArraySubset(parentArr, childArr) {
+  return childArr.every(elem => parentArr.indexOf(elem) > -1);
 }
 
 
@@ -231,7 +226,9 @@ function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeInd
   brushedArray.forEach((d) => {
     const firstElem = stratifiedRangeIndices.indexOf(d[0]);
     const lastElem = stratifiedRangeIndices.indexOf(d[d.length - 1]);
-    localArray.push([firstElem, lastElem]);
+    if(firstElem >- 1 &&  lastElem >- 1){
+      localArray.push([firstElem, lastElem]);
+    }
   });
   return localArray;
 }

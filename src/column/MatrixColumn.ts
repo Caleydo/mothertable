@@ -8,7 +8,7 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP, superbag} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';

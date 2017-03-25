@@ -28,8 +28,7 @@ import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
 import {
-  scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers,
-  superbag
+  scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers, checkArraySubset
 } from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
@@ -38,7 +37,6 @@ import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
-
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -345,7 +343,7 @@ export default class ColumnManager extends EventHandler {
       let isSuccesor = Array.from(oldRanges.keys()).some((l, oldId) => {
           let newRange = newR.dims[0].asList();
           let originalRange = oldRanges.get(l).dims[0].asList();
-          if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
+          if (newRange.toString() === originalRange.toString() || checkArraySubset(originalRange, newRange) || checkArraySubset(newRange, originalRange)) {
             if(VisManager.modePerGroup[oldId] != undefined){
               newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
             } else {

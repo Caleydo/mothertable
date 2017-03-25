@@ -13,7 +13,6 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import TaggleMultiform from './TaggleMultiform';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
-import {superbag} from './utils';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
