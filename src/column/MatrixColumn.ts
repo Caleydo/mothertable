@@ -15,6 +15,7 @@ import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import {AnyFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
+import TaggleMultiform from "mothertable/src/column/TaggleMultiform";
 
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
@@ -88,7 +89,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       let colView = await rowView.idView(colRange);
       colView = (<INumericalMatrix>colView).t;
 
-      const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
+      const m = new TaggleMultiform(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
+      m.groupId = this.setGroupFlag(stratifiedRanges, rowRanges[id]);
+      m.brushed = this.setBrushFlag(brushedRanges, rowRanges[id]);
       this.multiformList.push(m);
 
       if (this.selectedAggVis) {

@@ -104,7 +104,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           });
         const m = new TaggleMultiform(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
         m.groupId = this.setGroupFlag(stratifiedRanges, idRanges[id]);
-        m.brushed = this.setBrushFlag(brushedRanges, idRanges[id])
+        m.brushed = this.setBrushFlag(brushedRanges, idRanges[id]);
 
         //assign visses
         if (this.selectedAggVis) {
