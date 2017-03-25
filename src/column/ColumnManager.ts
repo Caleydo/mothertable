@@ -72,8 +72,7 @@ export default class ColumnManager extends EventHandler {
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
     this.stratifyAndRelayout();
-  };
-
+  }
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
@@ -119,7 +118,7 @@ export default class ColumnManager extends EventHandler {
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
       this.relayout();
-      console.log(index, value, allGroups);
+      //console.log(index, value, allGroups);
     });
   }
 
@@ -277,8 +276,7 @@ export default class ColumnManager extends EventHandler {
    * Sort, stratify and render all columns
    */
   async updateColumns() {
-
-    let oldRanges: Map<number, Range> = new Map<number, Range>();
+    const oldRanges: Map<number, Range> = new Map<number, Range>();
     if(this._stratifiedRanges) {
       this._stratifiedRanges.forEach((r, index) => {
         oldRanges.set(index, r);
@@ -337,14 +335,14 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  private updateAggModePerGroupAfterNewStrat(oldRanges){
-    let newAggModePergroup = [];
+  private updateAggModePerGroupAfterNewStrat(oldRanges) {
+    const newAggModePergroup = [];
     this._stratifiedRanges.forEach((newR, newId) => {
-      let isSuccesor = Array.from(oldRanges.keys()).some((l, oldId) => {
-          let newRange = newR.dims[0].asList();
-          let originalRange = oldRanges.get(l).dims[0].asList();
+      const isSuccesor = Array.from(oldRanges.keys()).some((l, oldId) => {
+          const newRange = newR.dims[0].asList();
+          const originalRange = oldRanges.get(l).dims[0].asList();
           if (newRange.toString() === originalRange.toString() || checkArraySubset(originalRange, newRange) || checkArraySubset(newRange, originalRange)) {
-            if(VisManager.modePerGroup[oldId] != undefined){
+            if(VisManager.modePerGroup[oldId] !== undefined) {
               newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
             } else {
               newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
@@ -353,7 +351,7 @@ export default class ColumnManager extends EventHandler {
             return true;
           }
       });
-      if(!isSuccesor){
+      if(!isSuccesor) {
         newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
       }
     });
@@ -441,7 +439,7 @@ export default class ColumnManager extends EventHandler {
       this.aggSwitcherCol.updateSwitcherBlocks(
         this._stratifiedRanges.map((d, i) => {
           let height = 0;
-          this.multiformsInGroup(i).forEach((m) =>{
+          this.multiformsInGroup(i).forEach((m) => {
             height = height + rowHeight[m];
           });
           return height;
@@ -451,7 +449,6 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
-      console.log(col.multiformList);
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
@@ -460,13 +457,13 @@ export default class ColumnManager extends EventHandler {
   }
 
   private multiformsInGroup(groupIndex: number) {
-    let multiformList = [];
+    const multiformList = [];
     this._multiformRangeList.forEach((r, index) => {
       const m = this._stratifiedRanges
         .map((s) => s.intersect(r).size()[0]);
       const a = m.filter((d) => d > 0);
       const sd = m.indexOf(a[0]);
-      if(groupIndex === sd){
+      if(groupIndex === sd) {
         multiformList.push(index);
       }
     });
@@ -492,7 +489,7 @@ export default class ColumnManager extends EventHandler {
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      let mode = VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
+      const mode = VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
 
       this.updateAggregationLevelForRow(i, mode);
     }
@@ -533,7 +530,7 @@ export default class ColumnManager extends EventHandler {
     //set the propper aggregation level
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
       if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
-        let mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
+        const mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
         this.updateAggregationLevelForRow(i, mode);
       } else {
         this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
@@ -571,7 +568,7 @@ export default class ColumnManager extends EventHandler {
     let totalAggreg = 0;
     //choose minimal and maximal block height for each row of multiforms/stratification group
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-      let minSize = [];
+      const minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
       });
@@ -591,8 +588,8 @@ export default class ColumnManager extends EventHandler {
       totalMin = totalMin + min;
     }
 
-    let totalMinUnaggregatedHeight = totalMin - totalAggreg;
-    let spaceForUnaggregated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
+    const totalMinUnaggregatedHeight = totalMin - totalAggreg;
+    const spaceForUnaggregated = (height - totalAggreg) > totalMinUnaggregatedHeight ? (height - totalAggreg) : totalMinUnaggregatedHeight;
 
     minHeights = minHeights.map((d, i) => {
       const minScale = d3.scale.linear().domain([0, totalMinUnaggregatedHeight]).range([0, spaceForUnaggregated]);
@@ -601,13 +598,10 @@ export default class ColumnManager extends EventHandler {
       });
     });
 
-    console.log(this._brushedRanges)
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
 
-
     return minHeights;
-
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
