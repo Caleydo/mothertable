@@ -195,7 +195,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     // hook
   }
 
-  protected setGroupFlag(stratifiedRanges: Range[], multiformRange: Range) {
+  protected findGroupId(stratifiedRanges: Range[], multiformRange: Range) {
     const m = stratifiedRanges
       .map((s) => s.intersect(multiformRange).size()[0]);
     const a = m.filter((d) => d > 0);
@@ -205,7 +205,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
 
-  protected setBrushFlag(brushedRanges: Range[], multiformRange: Range) {
+  protected checkBrushed(brushedRanges: Range[], multiformRange: Range) {
     const checkMe = brushedRanges.map((b) => multiformRange.intersect(b).size()[0]);
     const f = Math.max(...checkMe);
     return (f > 0) ? true : false;

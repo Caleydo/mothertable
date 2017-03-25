@@ -186,6 +186,7 @@ export default class ColumnManager extends EventHandler {
 
   remove(evt: any, data: IDataType) {
     const col = this.columns.find((d) => d.data === data);
+
     //IF column is already removed
     if (col === undefined) {
       return;
@@ -440,7 +441,7 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
     this.relayoutColStrats();
-    // this.setGroupFlag();
+    // this.findGroupId();
     this.correctGapBetwnMultiform();
     const header = 47;//TODO solve programatically
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));

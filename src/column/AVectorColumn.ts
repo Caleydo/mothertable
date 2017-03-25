@@ -97,8 +97,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             d3.select(this).select('.vislist').style('display', 'none');
           });
         const m = new TaggleMultiform(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
-        m.groupId = this.setGroupFlag(stratifiedRanges, multiformRanges[id]);
-        m.brushed = this.setBrushFlag(brushedRanges, multiformRanges[id]);
+        m.groupId = this.findGroupId(stratifiedRanges, multiformRanges[id]);
+        m.brushed = this.checkBrushed(brushedRanges, multiformRanges[id]);
 
         //assign visses
         if (this.selectedAggVis) {
