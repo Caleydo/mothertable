@@ -16,7 +16,7 @@ import StringColumn from './StringColumn';
 import NumberColumn from './NumberColumn';
 import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
-import {resolveIn} from 'phovea_core/src';
+import {resolveIn, mod} from 'phovea_core/src';
 import IDType from 'phovea_core/src/idtype/IDType';
 import SortHandler from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
@@ -27,19 +27,23 @@ import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
-import {scaleTo, makeRangeFromList, makeListFromRange, findColumnTie} from './utils';
+import {
+  scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers, checkArraySubset, findColumnTie
+} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
-
+import {List} from 'phovea_vis/src/list';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
 
 export default class ColumnManager extends EventHandler {
+
+
   static readonly EVENT_COLUMN_REMOVED = 'removed';
   static readonly EVENT_DATA_REMOVED = 'removedData';
 
@@ -49,12 +53,16 @@ export default class ColumnManager extends EventHandler {
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
-  private stratifiedRanges: Range[]; // This is the rangelist used for stratification
+  private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
   private nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private visManager: VisManager;
   private colsWithRange = new Map();
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
+  private _brushedRanges: Range[] = [];
+  private brushedItems = [];
+  private totalbrushed: number[] = [];
+  private _multiformRangeList;
   private rowCounter = 0;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -104,8 +112,12 @@ export default class ColumnManager extends EventHandler {
       this.stratifyColid = col[0].data.desc.id;
       this.stratifyAndRelayout();
     });
+    on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
+    on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:EAggregationType, allGroups:EAggregationType[]) => {
+
+
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
       this.relayout();
       console.log(index, value, allGroups);
     });
@@ -113,6 +125,18 @@ export default class ColumnManager extends EventHandler {
 
   get length() {
     return this.columns.length;
+  }
+
+  get stratifiedRanges(): Range[] {
+    return this._stratifiedRanges;
+  }
+
+  get multiformRangeList() {
+    return this._multiformRangeList;
+  }
+
+  get brushedRanges(): Range[] {
+    return this._brushedRanges;
   }
 
   destroy() {
@@ -187,6 +211,41 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
+  clearBrush(evt: any, brushIndices: any[]) {
+    this.brushedItems = [];
+    this.totalbrushed = [];
+    this._brushedRanges = [];
+  }
+
+  async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
+
+    const a = await this.getBrushIndices(brushIndices, multiformData);
+    this.brushedItems.push(a);
+    this.totalbrushed = this.totalbrushed.concat(brushIndices);
+    //console.log(this.brushedItems, a)
+    this._brushedRanges.push(makeRangeFromList(a));
+    this.stratifyAndRelayout();
+
+  }
+
+  async updateRangeList(brushedIndices: number[][]) {
+    const newRange = updateRangeList(this._stratifiedRanges, brushedIndices);
+    //   console.log(newRange)
+    // this.brushedRange = makeRangeFromList(brushedStringIndices);
+    this.filtersHierarchy.forEach((col) => {
+      this.colsWithRange.set(col.data.desc.id, newRange);
+    });
+    this._multiformRangeList = newRange;
+
+
+  }
+
+
+  async getBrushIndices(stringList: number[], multiformData: IAnyVector) {
+    const m = (await multiformData.ids()).dim(0).asList();
+    return m.slice(stringList[0], stringList[1] + 1);
+  }
+
   /**
    * Apply a filtered range to all columns
    * @param idRange
@@ -197,7 +256,6 @@ export default class ColumnManager extends EventHandler {
       this.columns.forEach((col) => col.updateMultiForms([idRange]));
       return;
     }
-
     for (const col of this.columns) {
       col.rangeView = idRange;
       col.dataView = await col.data.idView(idRange);
@@ -219,26 +277,45 @@ export default class ColumnManager extends EventHandler {
    * Sort, stratify and render all columns
    */
   async updateColumns() {
+
+    let oldRanges: Map<number, Range> = new Map<number, Range>();
+    if(this._stratifiedRanges) {
+      this._stratifiedRanges.forEach((r, index) => {
+        oldRanges.set(index, r);
+      });
+    }
+
     await this.sortColumns();
     await this.stratifyAndRelayout();
+
+    this.updateAggModePerGroupAfterNewStrat(oldRanges);
   }
 
   async stratifyAndRelayout() {
-    this.updateStratifyID(this.stratifyColid);
+    await this.updateStratifyID(this.stratifyColid);
+    if (this.totalbrushed.length === 0) {
+      await this.stratifyColumns();
+      this.relayout();
+      return;
+    }
+
+    await this.updateRangeList(this.brushedItems);
     await this.stratifyColumns();
+
     this.relayout();
   }
+
 
   /**
    * Sorting the ranges based on the filter hierarchy
    */
   private async sortColumns() {
-    const cols = this.filtersHierarchy;
+      const cols = this.filtersHierarchy;
 
     //special handling if matrix is added as first column
     if (cols.length === 0) {
       this.nonStratifiedRange = this.firstColumnRange;
-      this.stratifiedRanges = [this.firstColumnRange];
+      this._stratifiedRanges = [this.firstColumnRange];
       return;
     }
 
@@ -246,7 +323,7 @@ export default class ColumnManager extends EventHandler {
     const s = new SortHandler();
     const r = await s.sortColumns(cols);
     this.nonStratifiedRange = r.combined;
-    this.stratifiedRanges = [r.combined];
+    this._stratifiedRanges = [r.combined];
     this.dataPerStratificaiton = r.stratified;
     cols.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, [this.nonStratifiedRange]);
@@ -256,6 +333,32 @@ export default class ColumnManager extends EventHandler {
     if (categoricalCol.length > 0 && this.stratifyColid === undefined) {
       this.stratifyColid = categoricalCol[0].data.desc.id;
     }
+
+
+  }
+
+  private updateAggModePerGroupAfterNewStrat(oldRanges){
+    let newAggModePergroup = [];
+    this._stratifiedRanges.forEach((newR, newId) => {
+      let isSuccesor = Array.from(oldRanges.keys()).some((l, oldId) => {
+          let newRange = newR.dims[0].asList();
+          let originalRange = oldRanges.get(l).dims[0].asList();
+          if (newRange.toString() === originalRange.toString() || checkArraySubset(originalRange, newRange) || checkArraySubset(newRange, originalRange)) {
+            if(VisManager.modePerGroup[oldId] != undefined){
+              newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
+            } else {
+              newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+            }
+
+            return true;
+          }
+      });
+      if(!isSuccesor){
+        newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+      }
+    });
+    VisManager.modePerGroup = newAggModePergroup;
+
   }
 
   private async updateStratifyID(colid) {
@@ -267,10 +370,15 @@ export default class ColumnManager extends EventHandler {
     const cols = this.filtersHierarchy;
     const datas = this.dataPerStratificaiton.get(colid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
-    this.stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
-    cols.forEach((col) => {
-      this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
-    });
+    this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
+    if (this.totalbrushed.length === 0) {
+      cols.forEach((col) => {
+        this.colsWithRange.set(col.data.desc.id, this._stratifiedRanges);
+      });
+
+      this._multiformRangeList = this._stratifiedRanges;
+    }
+
   }
 
   /**
@@ -282,12 +390,12 @@ export default class ColumnManager extends EventHandler {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
-      col.updateMultiForms(r);
+      col.updateMultiForms(r, this._stratifiedRanges, this._brushedRanges);
     });
 
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
-    matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
+    matrixCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges));
 
 
     // update aggregation switcher column
@@ -321,24 +429,49 @@ export default class ColumnManager extends EventHandler {
   async relayout() {
     await resolveIn(10);
     this.relayoutColStrats();
+    // this.setGroupFlag();
+    this.correctGapBetwnMultiform();
     const header = 47;//TODO solve programatically
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
+    //  console.log(rowHeight)
     if (this.columns.length > 0) {
-      this.aggSwitcherCol.updateSwitcherBlocks(this.columns[0].multiformList.map((d, i) => rowHeight[0][i]));
+      this.aggSwitcherCol.updateSwitcherBlocks(
+        this._stratifiedRanges.map((d, i) => {
+          let height = 0;
+          this.multiformsInGroup(i).forEach((m) =>{
+            height = height + rowHeight[m];
+          });
+          return height;
+        })
+      );
     }
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
-
+      console.log(col.multiformList);
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform);
-        scaleTo(multiform, colWidths[i], rowHeight[i][index], col.orientation);
+        scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
       });
     });
   }
+
+  private multiformsInGroup(groupIndex: number) {
+    let multiformList = [];
+    this._multiformRangeList.forEach((r, index) => {
+      const m = this._stratifiedRanges
+        .map((s) => s.intersect(r).size()[0]);
+      const a = m.filter((d) => d > 0);
+      const sd = m.indexOf(a[0]);
+      if(groupIndex === sd){
+        multiformList.push(index);
+      }
+    });
+  return multiformList;
+}
 
   /**
    * Calculate the maximum height of all column stratification areas and set it for every column
@@ -351,19 +484,17 @@ export default class ColumnManager extends EventHandler {
   }
 
   private async calColHeight(height) {
-    let ranges = [];
     let minHeights = [];
     let maxHeights = [];
     let index = 0;
     let totalMin = 0;
     let totalMax = 0;
-
-
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
-    for(let i =0; i< this.columns[0].multiformList.length; i++){
-        let mode = VisManager.modePerGroup[i] ===EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
-        this.updateAggregationLevelForRow(i, mode);
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+      let mode = VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
+
+      this.updateAggregationLevelForRow(i, mode);
     }
 
     //first run - check if the unagregatted columns fit and if not, switch all non-user-unaggregated rows to aggregated
@@ -376,20 +507,20 @@ export default class ColumnManager extends EventHandler {
       minHeights.push(minSizes);
     }
 
-    if(!aggregationNeeded) {
+    if (!aggregationNeeded) {
       //choose minimal block height for each row of multiforms/stratification group
       for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-        let minSize = [];
+        const minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[i]);
         });
-        let min = Math.max(...minSize);
+        const min = Math.max(...minSize);
         minHeights.forEach((m) => {
           m[i] = min;
         });
         totalMin = totalMin + min;
       }
-      if(totalMin > height){
+      if (totalMin > height) {
         aggregationNeeded = true;
       }
     }
@@ -400,16 +531,14 @@ export default class ColumnManager extends EventHandler {
     minHeights = [];
 
     //set the propper aggregation level
-    for(let i =0; i< this.columns[0].multiformList.length; i++){
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
       if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
         let mode = aggregationNeeded ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
         this.updateAggregationLevelForRow(i, mode);
-      }else{
+      } else {
         this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
       }
     }
-
-
     //copute height requiremmts per column
     for (const col of this.columns) {
       const type = col.data.desc.type;
@@ -417,13 +546,13 @@ export default class ColumnManager extends EventHandler {
       const temp = [];
 
       if (range === undefined) {
-        range = this.stratifiedRanges;
+        range = this._stratifiedRanges;
       }
       const minSizes = this.visManager.computeMinHeight(col);
 
       for (const r of range) {
         const view = await
-        col.data.idView(r);
+          col.data.idView(r);
         (type === AColumn.DATATYPE.matrix) ? temp.push(await(<IAnyMatrix>view).nrow) : temp.push(await(<IAnyVector>view).length);
       }
 
@@ -441,20 +570,21 @@ export default class ColumnManager extends EventHandler {
 
     let totalAggreg = 0;
     //choose minimal and maximal block height for each row of multiforms/stratification group
-    for(let i =0; i< this.columns[0].multiformList.length; i++){      let minSize = [];
+    for (let i = 0; i < this.columns[0].multiformList.length; i++) {
+      let minSize = [];
       minHeights.forEach((m) => {
         minSize.push(m[i]);
       });
       let min = Math.max(...minSize);
-      if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
-          min = 60;
-          totalAggreg = totalAggreg + min;
+      if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
+        min = 60;
+        totalAggreg = totalAggreg + min;
       }
       minHeights.forEach((m) => {
         m[i] = min;
       });
       maxHeights.forEach((m) => {
-        if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)){
+        if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
           m[i] = min;
         }
       });
@@ -471,15 +601,43 @@ export default class ColumnManager extends EventHandler {
       });
     });
 
+    console.log(this._brushedRanges)
+    minHeights = minHeights[0];
+    maxHeights = maxHeights[0];
+
+
     return minHeights;
 
   }
 
-  private updateAggregationLevelForRow(rowIndex: number, aggregationType:EAggregationType) {
+  private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
     this.columns.forEach((col) => {
-      VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
+      this.multiformsInGroup(rowIndex).forEach((m) => {
+         VisManager.multiformAggregationType.set(col.multiformList[m].id, aggregationType);
+       });
     });
   }
+
+
+
+  private correctGapBetwnMultiform() {
+    this.columns.forEach((col, i) => {
+      col.multiformList.forEach((multiform, index) => {
+        if (index + 1 < col.multiformList.length) {
+          const nextM = (<any>col).multiformList[index + 1].groupId;
+          const now = (<any>col).multiformList[index].groupId;
+          if (nextM === now) {
+            d3.select(multiform.node).select('.content').classed('nonstratification', true);
+          } else {
+            d3.select(multiform.node).select('.content').classed('stratification', true);
+            return;
+          }
+        }
+      });
+    });
+
+  }
+
 
 }
 
