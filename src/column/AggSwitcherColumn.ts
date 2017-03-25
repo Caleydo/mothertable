@@ -85,6 +85,7 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
         VisManager.modePerGroup[i] = EAggregationType.AGGREGATED;
         d.selectByUser = EAggregationType.AGGREGATED;
+        d.selectByAutomatic = EAggregationType.AGGREGATED;
 
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
@@ -105,6 +106,7 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
         VisManager.modePerGroup[i] = EAggregationType.UNAGGREGATED;
         d.selectByUser = EAggregationType.UNAGGREGATED;
+        d.selectByAutomatic = EAggregationType.UNAGGREGATED;
 
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
@@ -125,6 +127,7 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
         VisManager.modePerGroup[i] = EAggregationType.AUTOMATIC;
         d.selectByUser = EAggregationType.AUTOMATIC;
+        d.selectByAutomatic = EAggregationType.AUTOMATIC;
 
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
@@ -145,22 +148,19 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
       this.aggTypesPerGroup[rowIndex].selectByAutomatic = aggregationType;
     }
 
+    const $toolbar = this.$node.select(':scope > main')
+      .selectAll(`.toolbar:nth-child(${rowIndex+1})`); // +1 because nth-child starts counting from 1
+
     // deselect everyting
-    this.$node.select(':scope > main')
-      .selectAll(`.toolbar:nth-child(${rowIndex+1})`) // +1 because nth-child starts counting from 1
-      .selectAll('a')
+    $toolbar.selectAll('a')
       .classed('active', false);
 
     // highlight automatic mode
-    this.$node.select(':scope > main')
-      .selectAll(`.toolbar:nth-child(${rowIndex+1})`)
-      .selectAll(`a:nth-child(${this.aggTypesPerGroup[rowIndex].selectByAutomatic+1})`)
+    $toolbar.selectAll(`a:nth-child(${this.aggTypesPerGroup[rowIndex].selectByAutomatic+1})`)
       .classed('active', true);
 
     // highlight user mode
-    this.$node.select(':scope > main')
-      .selectAll(`.toolbar:nth-child(${rowIndex+1})`)
-      .selectAll(`a:nth-child(${this.aggTypesPerGroup[rowIndex].selectByUser+1})`)
+    $toolbar.selectAll(`a:nth-child(${this.aggTypesPerGroup[rowIndex].selectByUser+1})`)
       .classed('active', true);
   }
 }
