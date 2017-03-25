@@ -191,7 +191,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
 
-  async updateMultiForms(rowRanges: Range[], stratifiedRanges?) {
+  async updateMultiForms(rowRanges: Range[], stratifiedRanges?, brushedRanges?) {
     // hook
   }
 
@@ -201,6 +201,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     const a = m.filter((d) => d > 0);
     const groupId = m.indexOf(a[0]);
     return groupId;
+
+  }
+
+
+  protected setBrushFlag(brushedRanges: Range[], multiformRange: Range) {
+    const checkMe = brushedRanges.map((b) => multiformRange.intersect(b).size()[0]);
+    const f = Math.max(...checkMe);
+    return (f > 0) ? true : false;
 
   }
 

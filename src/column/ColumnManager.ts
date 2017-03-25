@@ -56,10 +56,10 @@ export default class ColumnManager extends EventHandler {
   private colsWithRange = new Map();
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
-  private brushedRange: Range[] = [];
+  private brushedRanges: Range[] = [];
   private brushedItems = [];
   private totalbrushed: number[] = [];
-  private rangeList;
+  private multiformRangeList;
   private rowCounter = 0;
 
   private onColumnRemoved = (event: IEvent) => this.remove(<AnyColumn>event.currentTarget);
@@ -198,7 +198,7 @@ export default class ColumnManager extends EventHandler {
   clearBrush(evt: any, brushIndices: any[]) {
     this.brushedItems = [];
     this.totalbrushed = [];
-    this.brushedRange = [];
+    this.brushedRanges = [];
   }
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
@@ -207,7 +207,7 @@ export default class ColumnManager extends EventHandler {
     this.brushedItems.push(a);
     this.totalbrushed = this.totalbrushed.concat(brushIndices);
     //console.log(this.brushedItems, a)
-    this.brushedRange.push(makeRangeFromList(a));
+    this.brushedRanges.push(makeRangeFromList(a));
     this.stratifyAndRelayout();
 
   }
@@ -219,7 +219,7 @@ export default class ColumnManager extends EventHandler {
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
-    this.rangeList = newRange;
+    this.multiformRangeList = newRange;
 
 
   }
@@ -279,17 +279,6 @@ export default class ColumnManager extends EventHandler {
     this.relayout();
   }
 
-  //
-  // async updateBrushingAndRelayout() {
-  //   if (this.brushedStringIndices.length === 0) {
-  //     await this.stratifyColumns();
-  //     this.relayout();
-  //   }
-  //   await this.updateRangeList(this.brushedStringIndices);
-  //
-  //
-  // }
-
 
   /**
    * Sorting the ranges based on the filter hierarchy
@@ -335,7 +324,7 @@ export default class ColumnManager extends EventHandler {
         this.colsWithRange.set(col.data.desc.id, this.stratifiedRanges);
       });
 
-      this.rangeList = this.stratifiedRanges;
+      this.multiformRangeList = this.stratifiedRanges;
     }
 
   }
@@ -349,12 +338,12 @@ export default class ColumnManager extends EventHandler {
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
       const r = this.colsWithRange.get(col.data.desc.id);
-      col.updateMultiForms(r, this.stratifiedRanges);
+      col.updateMultiForms(r, this.stratifiedRanges, this.brushedRanges);
     });
 
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
-    matrixCols.map((col) => col.updateMultiForms(this.stratifiedRanges));
+    matrixCols.map((col) => col.updateMultiForms(this.multiformRangeList, this.stratifiedRanges, this.brushedRanges));
 
     // update aggregation switcher column
     this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
@@ -407,9 +396,6 @@ export default class ColumnManager extends EventHandler {
     let index = 0;
     let totalMin = 0;
     let totalMax = 0;
-    const heightPerBrushItems = 10;
-    height = height - this.totalbrushed.length * heightPerBrushItems;
-
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
@@ -523,26 +509,10 @@ export default class ColumnManager extends EventHandler {
       });
     });
 
-    //console.log(minHeights)
+    console.log(this.brushedRanges)
 
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
-
-
-    if (this.totalbrushed.length !== 0) {
-      const heightForBrush = this.totalbrushed.length * heightPerBrushItems;
-      this.rangeList.forEach((r, i) => {
-        const t = this.brushedRange.map((b) => {
-
-          return r.intersect(b).size()[0];
-
-        });
-        const m = Math.max(...t);
-
-        minHeights[i] = (m > 0) ? minHeights[i] + heightForBrush : minHeights[i];
-        maxHeights[i] = (m > 0) ? maxHeights[i] + heightForBrush : maxHeights[i];
-      });
-    }
 
 
     return minHeights;
@@ -585,7 +555,6 @@ export default class ColumnManager extends EventHandler {
           if (nextM === now) {
             d3.select(multiform.node).select('.content').classed('nonstratification', true);
           } else {
-
             d3.select(multiform.node).select('.content').classed('stratification', true);
             return;
           }

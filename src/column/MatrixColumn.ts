@@ -28,8 +28,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   dataView: IDataType;
   multiformList = [];
 
-  private $colStrat:d3.Selection<any>;
-  private colStratManager:AColumnManager = new AColumnManager();
+  private $colStrat: d3.Selection<any>;
+  private colStratManager: AColumnManager = new AColumnManager();
 
   constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
     super(data, orientation);
@@ -50,21 +50,21 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }
     };
   }
 
-  async updateMultiForms(rowRanges?:Range[], colRange?:Range) {
+  async updateMultiForms(rowRanges?: Range[], stratifiedRanges?, brushedRanges?, colRange?: Range) {
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 
-    let idList:Map<number, Range> = new Map<number, Range>();
-      this.multiformList.forEach((m) => {
-        idList.set(m.id, m.data.range);
-      });
+    let idList: Map<number, Range> = new Map<number, Range>();
+    this.multiformList.forEach((m) => {
+      idList.set(m.id, m.data.range);
+    });
 
     let isUserUnagregated = [];
 
@@ -99,7 +99,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       }
       VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
 
-      let isSuccesor = Array.from(idList.keys()).some((l,index) => {
+      let isSuccesor = Array.from(idList.keys()).some((l, index) => {
         let newRange = r.dims[0].asList();
         let originalRange = idList[l].dims[0].asList();
         if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
@@ -111,14 +111,14 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       if (!isSuccesor || Array.from(idList.keys()).length === 0) {
         isUserUnagregated[id] = VisManager.modePerGroup[id] || EAggregationType.AUTOMATIC;
       }
-      id = id +1;
+      id = id + 1;
     }
     if (VisManager.modePerGroup.length !== isUserUnagregated.length) {
       VisManager.modePerGroup = isUserUnagregated;
     }
     Array.from(idList.keys()).forEach((l) => {
-        VisManager.multiformAggregationType.delete(l);
-        VisManager.removeUserVisses(l);
+      VisManager.multiformAggregationType.delete(l);
+      VisManager.removeUserVisses(l);
     });
   }
 
@@ -146,7 +146,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<void>}
    */
   async updateColStrats() {
-    const rangeListMap:Map<string, Range[]> = await this.colStratManager.sort();
+    const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
     //console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
     //this.colStratManager.stratify(rangeListMap);
   }

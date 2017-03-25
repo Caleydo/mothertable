@@ -41,9 +41,9 @@ export default class App {
     this.attachListener();
     await this.loadIdtypes();
 
-    if(hash.has('idtype')) {
+    if (hash.has('idtype')) {
       const idtype = this.idtypes.filter((d) => d.id === hash.getProp('idtype'));
-      if(idtype.length > 0) {
+      if (idtype.length > 0) {
         this.setPrimaryIDType(idtype[0]);
         return; // exit function -> do not build start selection
       }
@@ -163,7 +163,7 @@ export default class App {
       });
       // ... when all columns are pushed -> sort and render them
       Promise.all(addedColumnsPromise)
-        .then((columns:AnyColumn[]) => {
+        .then((columns: AnyColumn[]) => {
           // add new support views for matrix column
           columns
             .filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix)
@@ -201,7 +201,7 @@ export default class App {
     });
   }
 
-  private addMatrixColSupportManger(col:MatrixColumn) {
+  private addMatrixColSupportManger(col: MatrixColumn) {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
     this.supportView.push(supportView);
@@ -241,7 +241,7 @@ export default class App {
   }
 
   private triggerMatrix(colRange?, id?: number) {
-    const matrixCol:MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
+    const matrixCol: MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
     const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
     if (uniqueMatrix === -1) {
       return;
@@ -258,7 +258,7 @@ export default class App {
       colRange = (indices.dim(1));
     }
 
-    matrixCol[uniqueMatrix - 1].updateMultiForms(null, colRange);
+    matrixCol[uniqueMatrix - 1].updateMultiForms(null, null, null, colRange);
   }
 
 }
