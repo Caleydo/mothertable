@@ -228,8 +228,6 @@ export default class ColumnManager extends EventHandler {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
     this._multiformRangeList = newRange;
-
-
   }
 
 
@@ -324,12 +322,11 @@ export default class ColumnManager extends EventHandler {
     if (categoricalCol.length > 0 && this.stratifyColid === undefined) {
       this.stratifyColid = categoricalCol[0].data.desc.id;
     }
-
-
   }
 
   private updateAggModePerGroupAfterNewStrat(oldRanges) {
     const newAggModePergroup = [];
+
     this._stratifiedRanges.forEach((newR, newId) => {
       const isSuccesor = Array.from(oldRanges.keys()).some((l, oldId) => {
           const newRange = newR.dims[0].asList();
@@ -348,8 +345,8 @@ export default class ColumnManager extends EventHandler {
         newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
       }
     });
-    VisManager.modePerGroup = newAggModePergroup;
 
+    VisManager.modePerGroup = newAggModePergroup;
   }
 
   private async updateStratifyID(colid) {
@@ -598,6 +595,8 @@ export default class ColumnManager extends EventHandler {
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
+    this.aggSwitcherCol.setAggregationType(rowIndex, aggregationType);
+
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((m) => {
          VisManager.multiformAggregationType.set(col.multiformList[m].id, aggregationType);
