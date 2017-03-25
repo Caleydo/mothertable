@@ -98,13 +98,6 @@ export default class ColumnManager extends EventHandler {
       this.updateColumns();
     });
 
-    on(CategoricalColumn.EVENT_STRATIFYME, (evt: any, colid) => {
-
-      const col = this.filtersHierarchy.filter((d) => d.data.desc.id === colid.data.desc.id);
-      this.stratifyColid = col[0].data.desc.id;
-      this.stratifyAndRelayout();
-    });
-
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt:any, index:number, value:EAggregationType, allGroups:EAggregationType[]) => {
       this.relayout();
       console.log(index, value, allGroups);
