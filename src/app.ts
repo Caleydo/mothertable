@@ -258,7 +258,7 @@ export default class App {
       colRange = (indices.dim(1));
     }
 
-    matrixCol[uniqueMatrix - 1].updateMultiForms(null, colRange);
+    matrixCol[uniqueMatrix - 1].updateMultiForms(this.colManager.multiformRangeList, this.colManager.stratifiedRanges, this.colManager.brushedRanges, colRange);
   }
 
 }

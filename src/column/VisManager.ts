@@ -4,6 +4,7 @@
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import {AnyColumn} from './ColumnManager';
+import Range from 'phovea_core/src/range/Range';
 
 import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
@@ -208,6 +209,8 @@ export default class VisManager {
 
           case AColumn.DATATYPE.matrix:
             return VisManager.unaggregatedNumMatVisses;
+          default:
+            return
         }
         return; // default value
 
@@ -226,6 +229,8 @@ export default class VisManager {
 
           case AColumn.DATATYPE.matrix:
             return VisManager.unaggregatedNumMatVisses;
+          default:
+            return
         }
         return; // default value
     }
@@ -259,7 +264,7 @@ export default class VisManager {
    * minimal size of visualizations available for given datatype
    */
   computeMinHeight(col: AnyColumn): number [] {
-    const minColumnHeight: number[] = [];
+    let minColumnHeight: number[] = [];
     col.multiformList.forEach((multiform, index) => {
       let minHeight;
       if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
