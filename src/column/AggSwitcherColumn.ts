@@ -12,12 +12,10 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
   static readonly EVENT_GROUP_AGG_CHANGED = 'groupAggChanged';
 
-  minWidth: number = 40;
-  maxWidth: number = 40;
+  minWidth: number = 25;
+  maxWidth: number = 25;
 
   private $main:d3.Selection<any>;
-
-  public
 
   constructor(data: any, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -50,15 +48,21 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
       .selectAll('div')
       .data(heights);
 
-    const $enter = $blocks.enter().append('div');
+    const $enter = $blocks.enter().append('div').classed('toolbar', true);
 
     $enter.append('a')
       .attr('href', '#')
-      .text('Agg')
+      .attr('title', 'Switch to aggregated visualization')
+      .attr('class', (d, i) => (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) ? 'active': null)
+      .html(`<i class="fa fa-window-minimize fa-fw fa-rotate-90" aria-hidden="true"></i>`)
       .on('click', (d,i) => {
         const e = <Event>d3.event;
         e.preventDefault();
         e.stopPropagation();
+
+        const curr = <HTMLElement>(<MouseEvent>d3.event).currentTarget;
+        d3.select(curr.parentNode).selectAll('a').classed('active', false);
+        d3.select(curr).classed('active', true);
 
         VisManager.modePerGroup[i] = EAggregationType.AGGREGATED;
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
@@ -66,11 +70,17 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
     $enter.append('a')
       .attr('href', '#')
-      .text('Unagg')
+      .attr('title', 'Switch to unaggregated visualization')
+      .attr('class', (d, i) => (VisManager.modePerGroup[i] === EAggregationType.UNAGGREGATED) ? 'active': null)
+      .html(`<i class="fa fa-ellipsis-v fa-fw" aria-hidden="true"></i>`)
       .on('click', (d,i) => {
         const e = <Event>d3.event;
         e.preventDefault();
         e.stopPropagation();
+
+        const curr = <HTMLElement>(<MouseEvent>d3.event).currentTarget;
+        d3.select(curr.parentNode).selectAll('a').classed('active', false);
+        d3.select(curr).classed('active', true);
 
         VisManager.modePerGroup[i] = EAggregationType.UNAGGREGATED;
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
@@ -78,28 +88,23 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
     $enter.append('a')
       .attr('href', '#')
-      .text('Auto')
+      .attr('title', 'Switch to automatic mode')
+      .attr('class', (d, i) => (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) ? 'active': null)
+      .html(`<i class="fa fa-magic fa-fw" aria-hidden="true"></i>`)
       .on('click', (d,i) => {
         const e = <Event>d3.event;
         e.preventDefault();
         e.stopPropagation();
 
+        const curr = <HTMLElement>(<MouseEvent>d3.event).currentTarget;
+        d3.select(curr.parentNode).selectAll('a').classed('active', false);
+        d3.select(curr).classed('active', true);
+
         VisManager.modePerGroup[i] = EAggregationType.AUTOMATIC;
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
-    $blocks
-      .attr('class', (d, i) => {
-        switch(VisManager.modePerGroup[i]) {
-          case EAggregationType.AGGREGATED:
-            return 'agg';
-          case EAggregationType.UNAGGREGATED:
-            return 'unagg';
-          case EAggregationType.AUTOMATIC:
-            return 'auto';
-        }
-      })
-      .style('height', (d) => d + 'px');
+    $blocks.style('height', (d) => d + 'px');
 
     $blocks.exit().remove();
   }
