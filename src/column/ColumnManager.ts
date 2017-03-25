@@ -28,7 +28,7 @@ import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
 import {
-  scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers, checkArraySubset
+  scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers, checkArraySubset, findColumnTie
 } from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
@@ -397,9 +397,34 @@ export default class ColumnManager extends EventHandler {
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges));
 
+
     // update aggregation switcher column
-    this.aggSwitcherCol.updateMultiForms(this._stratifiedRanges);
+    this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
+
+    //update the stratifyIcon
+    this.updateStratifyIcon(findColumnTie(this.filtersHierarchy));
   }
+
+  private updateStratifyIcon(columnIndexForTie: number) {
+
+    //Categorical Columns after the numerical or string
+    const catFiltersAfterTie = this.filtersHierarchy.filter((d, i) => i > columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    catFiltersAfterTie.forEach((col) => {
+      const s = col.$node.select('.toolbar').select('.fa.fa-bars.fa-fw');
+      s.classed('fa fa-bars fa-fw', false);
+    });
+
+
+    //Categorical Columns before the numerical or string
+    const catFilterBeforeTie = this.filtersHierarchy.filter((d, i) => i < columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    catFilterBeforeTie.forEach((col) => {
+      const s = col.$node.select('.toolbar').select('i');
+      s.classed('fa fa-bars fa-fw', true);
+    });
+  }
+
 
   async relayout() {
     await resolveIn(10);

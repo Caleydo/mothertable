@@ -12,8 +12,9 @@ import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
+
   minWidth: number = 2;
-  maxWidth: number = 200;
+  maxWidth: number = 140;
   minHeight: number = 2;
   maxHeight: number = 25;
 
@@ -24,7 +25,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams($body: d3.Selection<any>, domain?: number[]): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP
       },
@@ -32,6 +33,9 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
         cssClass: 'taggle-vis-barplot',
         min: domain[0],
         max: domain[1]
+      },
+      'phovea-vis-histogram': {
+        color: 'grey'
       }
     });
   }

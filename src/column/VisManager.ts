@@ -19,7 +19,7 @@ export enum EAggregationType {
   AUTOMATIC
 }
 
-export interface VisOptions {
+export interface IVisOptions {
   /**
    * Minimal Width
    * @default 20
@@ -65,7 +65,7 @@ export interface VisOptions {
 
 export default class VisManager {
 
-  private readonly stringOptions: VisOptions = {
+  private readonly stringOptions: IVisOptions = {
     rowMinHeight: 19,
     rowMaxHeight: 25,
     columnMinWidth: 10,
@@ -73,50 +73,50 @@ export default class VisManager {
     minWidth: 20,
     maxWidth: 100
   };
-  private readonly barplotOptions: VisOptions = {
+  private readonly barplotOptions: IVisOptions = {
     rowMinHeight: 2,
     rowMaxHeight: 25,
     minWidth: 40,
     maxWidth: 50
   };
-  private readonly heatmap1DOptions: VisOptions = {
+  private readonly heatmap1DOptions: IVisOptions = {
     rowMinHeight: 2,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly heatmapOptions: VisOptions = {
+  private readonly heatmapOptions: IVisOptions = {
     rowMinHeight: 2,
     rowMaxHeight: 25,
     columnMinWidth: 2,
     columnMaxWidth: 10
   };
-  private readonly boxplotOptions: VisOptions = {
+  private readonly boxplotOptions: IVisOptions = {
     minHeight: 10,
     maxHeight: 50,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly propSymbolOptions: VisOptions = {
+  private readonly propSymbolOptions: IVisOptions = {
     rowMinHeight: 10,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly histogramOptions: VisOptions = {
+  private readonly histogramOptions: IVisOptions = {
     minHeight: 20,
     maxHeight: 50,
     minWidth: 20,
     maxWidth: 20
   };
-  private readonly mosaicOptions: VisOptions = {
+  private readonly mosaicOptions: IVisOptions = {
     rowMinHeight: 2,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
 
-  private readonly vissesOptions: {[id: string]: VisOptions};
+  private readonly vissesOptions: {[id: string]: IVisOptions};
 
   public static aggregatedNumVisses = ['phovea-vis-histogram', 'phovea-vis-box'];
   public static unaggregatedNumVisses = ['barplot', 'proportionalSymbol', 'phovea-vis-heatmap1d', 'list'];
@@ -130,7 +130,7 @@ export default class VisManager {
 
 
   /**
-   *User selected visualization for multiform with given id
+   * User selected visualization for multiform with given id
    */
   public static userSelectedAggregatedVisses: Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
   public static userSelectedUnaggregatedVisses: Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
@@ -164,14 +164,14 @@ export default class VisManager {
                 return 'phovea-vis-histogram';
               case VALUE_TYPE_CATEGORICAL:
                 return 'phovea-vis-histogram';
-              default:
-                return 'list';
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
             return 'phovea-vis-heatmap';
-          default:
-            return 'list'
         }
+        return 'list'; // default value
+
       case EAggregationType.UNAGGREGATED:
         switch (columnType) {
           case AColumn.DATATYPE.vector:
@@ -182,14 +182,13 @@ export default class VisManager {
                 return 'barplot';
               case VALUE_TYPE_CATEGORICAL:
                 return 'phovea-vis-heatmap1d';
-              default:
-                return 'list';
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
             return 'phovea-vis-heatmap';
-          default:
-            return 'list'
         }
+        return 'list'; // default value
     }
   }
 
@@ -205,14 +204,16 @@ export default class VisManager {
                 return VisManager.aggregatedNumVisses;
               case VALUE_TYPE_CATEGORICAL:
                 return VisManager.aggregatedCatVisses;
-              default:
-                return;
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
             return VisManager.unaggregatedNumMatVisses;
           default:
             return
         }
+        return; // default value
+
       case EAggregationType.UNAGGREGATED:
         switch (columnType) {
           case AColumn.DATATYPE.vector:
@@ -223,19 +224,20 @@ export default class VisManager {
                 return VisManager.unaggregatedNumVisses;
               case VALUE_TYPE_CATEGORICAL:
                 return VisManager.unaggregatedCatVisses;
-              default:
-                return;
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
             return VisManager.unaggregatedNumMatVisses;
           default:
             return
         }
+        return; // default value
     }
   }
 
   static setUserVis(id: number, vis: IVisPluginDesc, aggregationType) {
-    if (aggregationType == EAggregationType.AGGREGATED) {
+    if (aggregationType === EAggregationType.AGGREGATED) {
       VisManager.userSelectedAggregatedVisses.set(id, vis);
     } else {
       VisManager.userSelectedUnaggregatedVisses.set(id, vis);
@@ -263,7 +265,6 @@ export default class VisManager {
    */
   computeMinHeight(col: AnyColumn): number [] {
     let minColumnHeight: number[] = [];
- //   console.log(col.multiformList)
     col.multiformList.forEach((multiform, index) => {
       let minHeight;
       if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
@@ -274,9 +275,9 @@ export default class VisManager {
         minHeight = this.minVisSize(VisManager.userSelectedUnaggregatedVisses.get(multiform.id).id, multiform.data.dim)[1];
       } else {
         minHeight = Number.POSITIVE_INFINITY;
-        let visses = VisManager.getPossibleVisses(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
+        const visses = VisManager.getPossibleVisses(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
         visses.forEach((v) => {
-          let minHeightTmp = this.minVisSize(v, multiform.data.dim)[1];
+          const minHeightTmp = this.minVisSize(v, multiform.data.dim)[1];
           minHeight = (minHeight > minHeightTmp) ? minHeightTmp : minHeight;
         });
       }
@@ -342,7 +343,7 @@ export default class VisManager {
       && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.UNAGGREGATED) {
       multiform.switchTo(VisManager.userSelectedUnaggregatedVisses.get(multiform.id));
     } else {
-      let preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
+      const preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
       multiform.switchTo(preferredVis);
     }
   }

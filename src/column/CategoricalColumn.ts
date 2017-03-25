@@ -17,7 +17,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   static readonly EVENT_STRATIFYME = 'stratifyByMe';
 
   minWidth: number = 2;
-  maxWidth: number = 200; //80
+  maxWidth: number = 140;
   minHeight: number = 2;
   maxHeight: number = 25;
 

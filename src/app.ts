@@ -241,7 +241,6 @@ export default class App {
   }
 
   private triggerMatrix(colRange?, id?: number) {
-    console.log(this.colManager.stratifiedRanges, this.colManager)
     const matrixCol: MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
     const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
     if (uniqueMatrix === -1) {
