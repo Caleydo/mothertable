@@ -115,7 +115,8 @@ export default class ColumnManager extends EventHandler {
       this.stratifyAndRelayout();
     });
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
-  //  on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
+    on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
+
 
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
@@ -578,7 +579,6 @@ export default class ColumnManager extends EventHandler {
     });
 
     console.log(this._brushedRanges)
-
     minHeights = minHeights[0];
     maxHeights = maxHeights[0];
 
