@@ -15,7 +15,7 @@ import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import {AnyFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
-import TaggleMultiform from "mothertable/src/column/TaggleMultiform";
+import TaggleMultiform from './TaggleMultiform';
 
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
