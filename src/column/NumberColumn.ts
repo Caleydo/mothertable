@@ -15,7 +15,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   minWidth: number = 2;
   maxWidth: number = 140;
-  minHeight: number = 2;
+  minHeight: number = 1;
   maxHeight: number = 25;
 
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
