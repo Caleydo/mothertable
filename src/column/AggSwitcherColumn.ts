@@ -7,6 +7,11 @@ import {EOrientation, default as AColumn} from './AColumn';
 import {IDataType} from 'phovea_core/src/datatype';
 import {EAggregationType, default as VisManager} from './VisManager';
 
+interface IAggSwitcherType {
+  selectByUser: EAggregationType;
+  selectByAutomatic: EAggregationType;
+  height: number;
+}
 
 export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
@@ -16,6 +21,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
   maxWidth: number = 25;
 
   private $main:d3.Selection<any>;
+
+  private aggTypesPerGroup:IAggSwitcherType[] = [];
 
   constructor(data: any, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -40,20 +47,32 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
   }
 
   updateSwitcherBlocks(heights: number[]) {
-    if(heights.length !== VisManager.modePerGroup.length) {
-      VisManager.modePerGroup = heights.map((d) => EAggregationType.AUTOMATIC);
+    if(heights.length !== this.aggTypesPerGroup.length) {
+      this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
+        return {
+          selectByUser: EAggregationType.AUTOMATIC,
+          selectByAutomatic: EAggregationType.AUTOMATIC,
+          height: d
+        };
+      });
+      VisManager.modePerGroup = this.aggTypesPerGroup.map((d) => d.selectByAutomatic);
     }
+
+    this.aggTypesPerGroup.forEach((d, i) => {
+      d.height = heights[i];
+    });
 
     const $blocks = this.$node.select(':scope > main')
       .selectAll('div')
-      .data(heights);
+      .data(this.aggTypesPerGroup);
 
     const $enter = $blocks.enter().append('div').classed('toolbar', true);
 
+    // Note: appending order matters when using :nth-child in the setAggregationType()
     $enter.append('a')
       .attr('href', '#')
       .attr('title', 'Switch to aggregated visualization')
-      .attr('class', (d, i) => (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) ? 'active': null)
+      .attr('class', (d, i) => (d.selectByUser === EAggregationType.AGGREGATED || d.selectByAutomatic === EAggregationType.AGGREGATED) ? 'active': null)
       .html(`<i class="fa fa-window-minimize fa-fw fa-rotate-90" aria-hidden="true"></i>`)
       .on('click', (d,i) => {
         const e = <Event>d3.event;
@@ -65,13 +84,15 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         d3.select(curr).classed('active', true);
 
         VisManager.modePerGroup[i] = EAggregationType.AGGREGATED;
+        d.selectByUser = EAggregationType.AGGREGATED;
+
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
     $enter.append('a')
       .attr('href', '#')
       .attr('title', 'Switch to unaggregated visualization')
-      .attr('class', (d, i) => (VisManager.modePerGroup[i] === EAggregationType.UNAGGREGATED) ? 'active': null)
+      .attr('class', (d, i) => (d.selectByUser === EAggregationType.UNAGGREGATED || d.selectByAutomatic === EAggregationType.UNAGGREGATED) ? 'active': null)
       .html(`<i class="fa fa-ellipsis-v fa-fw" aria-hidden="true"></i>`)
       .on('click', (d,i) => {
         const e = <Event>d3.event;
@@ -83,13 +104,15 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         d3.select(curr).classed('active', true);
 
         VisManager.modePerGroup[i] = EAggregationType.UNAGGREGATED;
+        d.selectByUser = EAggregationType.UNAGGREGATED;
+
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
     $enter.append('a')
       .attr('href', '#')
       .attr('title', 'Switch to automatic mode')
-      .attr('class', (d, i) => (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) ? 'active': null)
+      .attr('class', (d, i) => (d.selectByUser === EAggregationType.AUTOMATIC || d.selectByAutomatic === EAggregationType.AUTOMATIC) ? 'active': null)
       .html(`<i class="fa fa-magic fa-fw" aria-hidden="true"></i>`)
       .on('click', (d,i) => {
         const e = <Event>d3.event;
@@ -101,11 +124,43 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         d3.select(curr).classed('active', true);
 
         VisManager.modePerGroup[i] = EAggregationType.AUTOMATIC;
+        d.selectByUser = EAggregationType.AUTOMATIC;
+
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
-    $blocks.style('height', (d) => d + 'px');
+    $blocks.style('height', (d) => d.height + 'px');
 
     $blocks.exit().remove();
+  }
+
+  setAggregationType(rowIndex:number, aggregationType:EAggregationType) {
+    if(!this.aggTypesPerGroup[rowIndex]) {
+      this.aggTypesPerGroup[rowIndex] = {
+        selectByUser: EAggregationType.AUTOMATIC,
+        selectByAutomatic: aggregationType,
+        height: 0
+      };
+    } else {
+      this.aggTypesPerGroup[rowIndex].selectByAutomatic = aggregationType;
+    }
+
+    // deselect everyting
+    this.$node.select(':scope > main')
+      .selectAll(`.toolbar:nth-child(${rowIndex+1})`) // +1 because nth-child starts counting from 1
+      .selectAll('a')
+      .classed('active', false);
+
+    // highlight automatic mode
+    this.$node.select(':scope > main')
+      .selectAll(`.toolbar:nth-child(${rowIndex+1})`)
+      .selectAll(`a:nth-child(${this.aggTypesPerGroup[rowIndex].selectByAutomatic+1})`)
+      .classed('active', true);
+
+    // highlight user mode
+    this.$node.select(':scope > main')
+      .selectAll(`.toolbar:nth-child(${rowIndex+1})`)
+      .selectAll(`a:nth-child(${this.aggTypesPerGroup[rowIndex].selectByUser+1})`)
+      .classed('active', true);
   }
 }
