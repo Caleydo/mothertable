@@ -6,13 +6,11 @@ import {IDataType} from 'phovea_core/src/datatype';
 import {IMultiFormOptions} from 'phovea_core/src/multiform/IMultiForm';
 
 export default class TaggleMultiform extends MultiForm {
-  public groupId: number;
-  public brushed: boolean;
+  public groupId: number = NaN;
+  public brushed: boolean = false;
 
   constructor(public readonly data: IDataType, parent: HTMLElement, public options: IMultiFormOptions = {}) {
     super(data, parent, options);
-    this.groupId = NaN;
-    this.brushed = false;
   }
 
 
