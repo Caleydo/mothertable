@@ -191,7 +191,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
 
-  async updateMultiForms(rowRanges: Range[], stratifiedRanges?, brushedRanges?) {
+  async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
     // hook
   }
 

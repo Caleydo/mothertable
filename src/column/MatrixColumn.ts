@@ -58,7 +58,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
-  async updateMultiForms(rowRanges?: Range[], stratifiedRanges?, brushedRanges?, colRange?: Range) {
+  async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 

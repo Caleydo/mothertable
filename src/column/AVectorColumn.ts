@@ -77,10 +77,10 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     }
   }
 
-  async updateMultiForms(idRanges: Range[], stratifiedRanges?, brushedRanges?) {
+  async updateMultiForms(multiformRanges: Range[], stratifiedRanges?:Range[], brushedRanges?:Range[]) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     const domain = d3.extent(v);
-    const viewPromises = idRanges.map((r) => this.data.idView(r));
+    const viewPromises = multiformRanges.map((r) => this.data.idView(r));
     Promise.all(viewPromises).then((views) => {
       this.updateSortIcon();
       let idList: Map<number, Range> = new Map<number, Range>();
@@ -103,8 +103,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             d3.select(this).select('.vislist').style('display', 'none');
           });
         const m = new TaggleMultiform(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
-        m.groupId = this.setGroupFlag(stratifiedRanges, idRanges[id]);
-        m.brushed = this.setBrushFlag(brushedRanges, idRanges[id]);
+        m.groupId = this.setGroupFlag(stratifiedRanges, multiformRanges[id]);
+        m.brushed = this.setBrushFlag(brushedRanges, multiformRanges[id]);
 
         //assign visses
         if (this.selectedAggVis) {
