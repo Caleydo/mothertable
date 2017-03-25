@@ -22,6 +22,7 @@ import * as $ from 'jquery';
 import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
+import AColumn from "mothertable/src/column/AColumn";
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
@@ -146,7 +147,6 @@ export default class FilterManager extends EventHandler {
 
   private updateStratifyIcon(columnIndexForTie: number) {
 
-
     //Categorical Columns after the numerical or string
     const catFiltersAfterTie = this.filters.filter((d, i) => i > columnIndexForTie)
       .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
@@ -166,7 +166,7 @@ export default class FilterManager extends EventHandler {
 
 
   private triggerSort() {
-    const vectorColsOnly = this.filters.filter((col) => col.data.desc.type === 'vector');
+    const vectorColsOnly = this.filters.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     this.fire(FilterManager.EVENT_SORT_DRAGGING, vectorColsOnly);
   }
 
@@ -191,7 +191,7 @@ export default class FilterManager extends EventHandler {
   private static createFilter(data: IFilterAbleType, $parent: d3.Selection<any>): AnyColumn {
 
     switch (data.desc.type) {
-      case 'vector':
+      case AColumn.DATATYPE.vector:
         const v = <IStringVector|ICategoricalVector|INumericalVector>data;
         switch (v.desc.value.type) {
           case VALUE_TYPE_STRING:
@@ -203,7 +203,7 @@ export default class FilterManager extends EventHandler {
             return new NumberFilter(<INumericalVector>v, $parent);
         }
         throw new Error('invalid vector type');
-      case 'matrix':
+      case AColumn.DATATYPE.matrix:
         return new MatrixFilter(<INumericalMatrix>data, $parent);
       default:
         throw new Error('invalid data type');
