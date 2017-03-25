@@ -4,6 +4,7 @@
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import {AnyColumn} from './ColumnManager';
+import Range from 'phovea_core/src/range/Range';
 
 import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,

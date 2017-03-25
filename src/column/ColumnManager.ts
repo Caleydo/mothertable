@@ -27,7 +27,10 @@ import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
-import {scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers} from './utils';
+import {
+  scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers,
+  superbag
+} from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
 import {prepareRangeFromList} from '../SortHandler/SortHandler';
@@ -112,7 +115,7 @@ export default class ColumnManager extends EventHandler {
       this.stratifyAndRelayout();
     });
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
-    on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
+  //  on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
 
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
@@ -275,12 +278,21 @@ export default class ColumnManager extends EventHandler {
    * Sort, stratify and render all columns
    */
   async updateColumns() {
+
+    let oldRanges: Map<number, Range> = new Map<number, Range>();
+    if(this._stratifiedRanges) {
+      this._stratifiedRanges.forEach((r, index) => {
+        oldRanges.set(index, r);
+      });
+    }
+
     await this.sortColumns();
     await this.stratifyAndRelayout();
+
+    this.updateAggModePerGroupAfterNewStrat(oldRanges);
   }
 
   async stratifyAndRelayout() {
-
     await this.updateStratifyID(this.stratifyColid);
     if (this.totalbrushed.length === 0) {
       await this.stratifyColumns();
@@ -290,6 +302,7 @@ export default class ColumnManager extends EventHandler {
 
     await this.updateRangeList(this.brushedItems);
     await this.stratifyColumns();
+
     this.relayout();
   }
 
@@ -298,7 +311,7 @@ export default class ColumnManager extends EventHandler {
    * Sorting the ranges based on the filter hierarchy
    */
   private async sortColumns() {
-    const cols = this.filtersHierarchy;
+      const cols = this.filtersHierarchy;
 
     //special handling if matrix is added as first column
     if (cols.length === 0) {
@@ -321,6 +334,32 @@ export default class ColumnManager extends EventHandler {
     if (categoricalCol.length > 0 && this.stratifyColid === undefined) {
       this.stratifyColid = categoricalCol[0].data.desc.id;
     }
+
+
+  }
+
+  private updateAggModePerGroupAfterNewStrat(oldRanges){
+    let newAggModePergroup = [];
+    this._stratifiedRanges.forEach((newR, newId) => {
+      let isSuccesor = Array.from(oldRanges.keys()).some((l, oldId) => {
+          let newRange = newR.dims[0].asList();
+          let originalRange = oldRanges.get(l).dims[0].asList();
+          if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
+            if(VisManager.modePerGroup[oldId] != undefined){
+              newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
+            } else {
+              newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+            }
+
+            return true;
+          }
+      });
+      if(!isSuccesor){
+        newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+      }
+    });
+    VisManager.modePerGroup = newAggModePergroup;
+
   }
 
   private async updateStratifyID(colid) {
@@ -377,11 +416,14 @@ export default class ColumnManager extends EventHandler {
     if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(
         this._stratifiedRanges.map((d, i) => {
-          return rowHeight[i];
+          let height = 0;
+          this.multiformsInGroup(i).forEach((m) =>{
+            height = height + rowHeight[m];
+          });
+          return height;
         })
       );
     }
-
 
     this.columns.forEach((col, i) => {
       col.$node.style('width', colWidths[i] + 'px');
@@ -390,9 +432,22 @@ export default class ColumnManager extends EventHandler {
         this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
       });
-
     });
   }
+
+  private multiformsInGroup(groupIndex: number) {
+    let multiformList = [];
+    this._multiformRangeList.forEach((r, index) => {
+      const m = this._stratifiedRanges
+        .map((s) => s.intersect(r).size()[0]);
+      const a = m.filter((d) => d > 0);
+      const sd = m.indexOf(a[0]);
+      if(groupIndex === sd){
+        multiformList.push(index);
+      }
+    });
+  return multiformList;
+}
 
   /**
    * Calculate the maximum height of all column stratification areas and set it for every column
@@ -413,7 +468,6 @@ export default class ColumnManager extends EventHandler {
     //switch all visses that can be switched to unaggregated and test if they can be shown as unaggregated
     /****************************************************************************************/
     for (let i = 0; i < this.columns[0].multiformList.length; i++) {
-
       let mode = VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC ? EAggregationType.UNAGGREGATED : VisManager.modePerGroup[i];
 
       this.updateAggregationLevelForRow(i, mode);
@@ -534,30 +588,13 @@ export default class ColumnManager extends EventHandler {
   }
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
-
-    console.log(rowIndex, aggregationType)
-    if (aggregationType === undefined) {
-      aggregationType = 1;
-    }
     this.columns.forEach((col) => {
-      VisManager.multiformAggregationType.set(col.multiformList[rowIndex].id, aggregationType);
+      this.multiformsInGroup(rowIndex).forEach((m) => {
+         VisManager.multiformAggregationType.set(col.multiformList[m].id, aggregationType);
+       });
     });
   }
 
-  // private setGroupFlag() {
-  //   this.columns.forEach((col, i) => {
-  //     col.multiformList.forEach((multiform, index) => {
-  //       const m = this.stratifiedRanges
-  //         .map((s) => s.intersect(this.rangeList[index]).size()[0]);
-  //       const a = m.filter((d) => d > 0);
-  //       const sd = m.indexOf(a[0]);
-  //       //   console.log(sd, a, m);
-  //       (<any>multiform).groupId = sd;
-  //     });
-  //   });
-  //
-  //
-  // }
 
 
   private correctGapBetwnMultiform() {

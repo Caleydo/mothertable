@@ -62,13 +62,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 
-    let idList: Map<number, Range> = new Map<number, Range>();
-    this.multiformList.forEach((m) => {
-      idList.set(m.id, m.data.range);
-    });
-
-    let isUserUnagregated = [];
-
     if (!rowRanges) {
       rowRanges = this.rowRanges;
     }
@@ -79,7 +72,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     }
 
     let id = 0;
-
     for (const r of rowRanges) {
       const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
@@ -90,7 +82,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       colView = (<INumericalMatrix>colView).t;
 
       const m = new TaggleMultiform(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
-      console.log(this, stratifiedRanges, id, rowRanges, rowRanges[id])
       m.groupId = this.setGroupFlag(stratifiedRanges, rowRanges[id]);
       m.brushed = this.setBrushFlag(brushedRanges, rowRanges[id]);
       this.multiformList.push(m);
@@ -103,27 +94,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       }
       VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
 
-      let isSuccesor = Array.from(idList.keys()).some((l, index) => {
-        let newRange = r.dims[0].asList();
-        let originalRange = idList[l].dims[0].asList();
-        if (newRange.toString() === originalRange.toString() || superbag(originalRange, newRange) || superbag(newRange, originalRange)) {
-          VisManager.multiformAggregationType.set(m.id, VisManager.multiformAggregationType.get(l));
-          isUserUnagregated[id] = VisManager.modePerGroup[index];
-          return true;
-        }
-      });
-      if (!isSuccesor || Array.from(idList.keys()).length === 0) {
-        isUserUnagregated[id] = VisManager.modePerGroup[id] || EAggregationType.AUTOMATIC;
-      }
       id = id + 1;
     }
-    if (VisManager.modePerGroup.length !== isUserUnagregated.length) {
-      VisManager.modePerGroup = isUserUnagregated;
-    }
-    Array.from(idList.keys()).forEach((l) => {
-      VisManager.multiformAggregationType.delete(l);
-      VisManager.removeUserVisses(l);
-    });
   }
 
   async calculateDefaultRange() {
