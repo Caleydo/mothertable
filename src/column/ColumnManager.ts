@@ -561,7 +561,7 @@ export default class ColumnManager extends EventHandler {
       maxHeights.push(max);
 
       totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
-      
+
       index = index + 1;
     }
 
@@ -759,5 +759,63 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
 
     default:
       throw new Error('invalid data type');
+  }
+}
+
+
+enum EDataValueType {
+  Categorical,
+  Matrix,
+  Numerical,
+  String,
+  Stratification
+}
+
+export function dataValueType(data: IDataType): EDataValueType {
+  switch (data.desc.type) {
+    case AColumn.DATATYPE.vector:
+      const v = <IStringVector|ICategoricalVector|INumericalVector>data;
+      switch (v.desc.value.type) {
+        case VALUE_TYPE_STRING:
+          return EDataValueType.String;
+        case VALUE_TYPE_CATEGORICAL:
+          return EDataValueType.Categorical;
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return EDataValueType.Numerical;
+      }
+      throw new Error('invalid vector type');
+
+    case AColumn.DATATYPE.matrix:
+      const m = <INumericalMatrix>data;
+      switch (m.desc.value.type) {
+        case VALUE_TYPE_INT:
+        case VALUE_TYPE_REAL:
+          return EDataValueType.Matrix;
+      }
+      throw new Error('invalid matrix type');
+
+    case AColumn.DATATYPE.stratification:
+      return EDataValueType.Stratification;
+
+    default:
+      throw new Error('invalid data type');
+  }
+}
+
+export function dataValueTypeCSSClass(valueType: EDataValueType) {
+  switch (valueType) {
+    case EDataValueType.Categorical:
+      return 'taggle-type-categorical';
+    case EDataValueType.Matrix:
+      return 'taggle-type-matrix';
+    case EDataValueType.Numerical:
+      return 'taggle-type-numerical';
+    case EDataValueType.String:
+      return 'taggle-type-string';
+    case EDataValueType.Stratification:
+      return 'taggle-type-categorical'; // no icon available => same as categorical
+    default:
+      return '';
   }
 }

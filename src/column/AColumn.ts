@@ -25,7 +25,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly VISUALIZATION_SWITCHED = 'switched';
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
-  static readonly DATATYPE = {vector: 'vector', matrix: 'matrix'};
+  static readonly DATATYPE = {vector: 'vector', matrix: 'matrix', stratification: 'stratification'};
   $node: d3.Selection<any>;
 
   minWidth: number = 10;

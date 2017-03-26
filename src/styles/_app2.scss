@@ -18,3 +18,42 @@
     text-align: center;
   }
 }
+
+/**
+ * Render icons for each data value type in the :before pseudo-element
+ */
+.taggle-type-categorical,
+.taggle-type-matrix,
+.taggle-type-numerical,
+.taggle-type-string {
+  &:before {
+    content: ' ';
+    background: transparent center left no-repeat;
+    padding-left: 20px;
+  }
+}
+
+.taggle-type-categorical {
+
+  &:before {
+    background-image: url('#{$taggleAssetDir}/icon_categorical.svg')
+  }
+}
+.taggle-type-matrix {
+
+  &:before {
+    background-image: url('#{$taggleAssetDir}/icon_matrix.svg')
+  }
+}
+.taggle-type-numerical {
+
+  &:before {
+    background-image: url('#{$taggleAssetDir}/icon_numerical.svg')
+  }
+}
+.taggle-type-string {
+
+  &:before {
+    background-image: url('#{$taggleAssetDir}/icon_string.svg')
+  }
+}

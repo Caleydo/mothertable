@@ -17,7 +17,7 @@ import {IAnyVector} from 'phovea_core/src/vector';
 import {asVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
 import {IFilterAbleType} from './filter/FilterManager';
-import {AnyColumn} from './column/ColumnManager';
+import {AnyColumn, dataValueTypeCSSClass, dataValueType} from './column/ColumnManager';
 import {hash} from 'phovea_core/src/index';
 import AColumn from './column/AColumn';
 import {formatAttributeName, formatIdTypeName} from './column/utils';
@@ -179,14 +179,15 @@ export default class SupportView extends EventHandler {
           return {
             id: d.desc.id,
             text: formatAttributeName(d.desc.name),
-            type: d.desc.type,
+            dataType: d.desc.type,
+            valueType: dataValueType(d),
             data: d
           };
         });
 
       return {
         text: type,
-        type,
+        dataType: type,
         children
       };
     });
@@ -199,11 +200,17 @@ export default class SupportView extends EventHandler {
       //selectOnClose: true,
       //escapeMarkup: (markup) => markup,
       templateResult: (item:any) => {
-        return $(`<span class="taggle-datatype-${item.type}">${item.text}</span>`);
+        if(!item.id) {
+          return $(`<span>${item.text}</span>`);
+        }
+        return $(`<span class="${dataValueTypeCSSClass(item.valueType)}">${item.text}</span>`);
       },
       templateSelection: (item:any) => {
-        return $(`<span class="taggle-datatype-${item.type}">${item.text}</span>`);
-      }
+        if(!item.id) {
+          return $(`<span>${item.text}</span>`);
+        }
+        return $(`<span class="${dataValueTypeCSSClass(item.valueType)}">${item.text}</span>`);
+      },
     };
 
     return (<any>$($select.node())).select2(defaultOptions);
