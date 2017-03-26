@@ -71,7 +71,10 @@
     "phovea_ui": "github:phovea/phovea_ui#mothertable",
     "@types/d3": "3.5.36",
     "d3": "3.5.17",
-    "jquery-ui": "1.12.1"
+    "jquery-ui": "1.12.1",
+    "@types/select2": "4.0.30",
+    "select2": "4.0.3",
+    "select2-bootstrap-theme": "0.1.0-beta.9"
   },
   "name": "mothertable",
   "description": "Mother Table Project @ JKU",
