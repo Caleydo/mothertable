@@ -82,8 +82,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       colView = (<INumericalMatrix>colView).t;
 
       const m = new TaggleMultiform(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
-      m.groupId = this.setGroupFlag(stratifiedRanges, rowRanges[id]);
-      m.brushed = this.setBrushFlag(brushedRanges, rowRanges[id]);
+      m.groupId = this.findGroupId(stratifiedRanges, rowRanges[id]);
+      m.brushed = this.checkBrushed(brushedRanges, rowRanges[id]);
       this.multiformList.push(m);
 
       if (this.selectedAggVis) {
@@ -112,7 +112,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<AnyColumn>}
    */
   pushColStratData(data: IMotherTableType) {
-    const col = createColumn(data, EOrientation.Vertical, this.$colStrat);
+    const col = createColumn(data, EOrientation.Horizontal, this.$colStrat);
     this.colStratManager.add(col);
     return Promise.resolve(col);
   }
@@ -124,11 +124,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   async updateColStrats() {
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
     //console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
-    //this.colStratManager.stratify(rangeListMap);
+    this.colStratManager.stratify(rangeListMap);
   }
 
   filterStratData(range: Range) {
-    //this.colStratManager.filter([range]);
+    this.colStratManager.filter([range]);
   }
 
   updateColStratsSorting(filterList: AnyFilter[]) {

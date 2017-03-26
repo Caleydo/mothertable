@@ -17,8 +17,9 @@ import {hash} from 'phovea_core/src/index';
 import {IDataType} from 'phovea_core/src/datatype';
 import {IFuelBarDataSize} from './SupportView';
 import Range1D from 'phovea_core/src/range/Range1D';
-import {AnyFilter} from './filter/AFilter';
+import {AnyFilter, default as AFilter} from './filter/AFilter';
 import {formatIdTypeName} from './column/utils';
+import {on, fire} from 'phovea_core/src/event';
 
 /**
  * The main class for the App app
@@ -116,6 +117,16 @@ export default class App {
         this.colManager.relayout();
       }
     }, 300));
+
+    on(AFilter.EVENT_MATRIX_REMOVE, this.removeSupportView.bind(this));
+  }
+
+  private removeSupportView(evt: any, idType: IDataType, currentIDType: string) {
+    const otherIdType = this.findType(idType, currentIDType);
+    const sView = this.supportView.filter((d) => d.idType.id === otherIdType.id);
+    d3.selectAll(`.support-view-${otherIdType.id}.support-view`).remove();
+    this.supportView.splice(this.supportView.indexOf(sView[0]), 1);
+
   }
 
   private findType(data: IDataType, currentIDType: string) {
@@ -140,13 +151,11 @@ export default class App {
     this.hideSelection();
 
     // create a column manager
-    this.colManager = new ColumnManager(idtype, EOrientation.Horizontal, this.$node.select('main'));
+    this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
-
     this.supportView.push(supportView);
-
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
     });

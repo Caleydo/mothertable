@@ -12,13 +12,15 @@ export declare type AnyFilter = AFilter<any, IDataType>;
 
 abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
-
+  static EVENT_REMOVE_ME = 'removeFilter';
+  static EVENT_MATRIX_REMOVE = 'matrixRemove';
   abstract readonly $node: d3.Selection<any>;
   activeFilter: boolean;
 
   constructor(public readonly data: DATATYPE) {
     super();
     this.activeFilter = false;
+
   }
 
   get idtype() {
@@ -55,6 +57,16 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
 
   protected checkFilterApplied(fullRange: number, vectorViewRange: number) {
     return (fullRange !== vectorViewRange);
+  }
+
+  protected addTrashIcon($node: d3.Selection<any>) {
+    const $trashIcon = $node.append('a')
+      .attr('title', 'Remove column')
+      .html(`<i class="fa fa-trash fa-fw" aria-hidden="true"></i><span class="sr-only">Remove Filter</span>`)
+      .on('click', () => {
+        this.fire(AFilter.EVENT_REMOVE_ME, this.data);
+      });
+
   }
 
 
