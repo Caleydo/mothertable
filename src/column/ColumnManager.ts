@@ -574,7 +574,7 @@ export default class ColumnManager extends EventHandler {
           minSize.push(m[ind]);
         });
         let min = Math.max(...minSize);
-        if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
+        if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGruopBrushed(i))) {
           min = 60;
           totalAggreg = totalAggreg + min;
         } else if (brushedMultiforms.indexOf(ind) !== -1){
@@ -585,7 +585,7 @@ export default class ColumnManager extends EventHandler {
         });
         let maxBrush = 0;
         maxHeights.forEach((m) => {
-          if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded)) {
+          if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGruopBrushed(i))) {
             m[ind] = min;
           }else if (brushedMultiforms.indexOf(ind) !== -1){
             maxBrush = m[ind];
@@ -635,7 +635,7 @@ export default class ColumnManager extends EventHandler {
     let isBrushed = false;
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((m) => {
-         isBrushed = col.multiformList[m].brushed ? true : false;
+         isBrushed = col.multiformList[m].brushed || isBrushed ? true : false;
        });
     });
     return isBrushed;
