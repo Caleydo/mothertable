@@ -28,7 +28,13 @@ import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
 import min = d3.min;
 import {
-  scaleTo, updateRangeList, makeRangeFromList, makeListFromRange, makeArrayBetweenNumbers, checkArraySubset, findColumnTie
+  scaleTo,
+  updateRangeList,
+  makeRangeFromList,
+  makeListFromRange,
+  makeArrayBetweenNumbers,
+  checkArraySubset,
+  findColumnTie
 } from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
@@ -279,7 +285,7 @@ export default class ColumnManager extends EventHandler {
    */
   async updateColumns() {
     const oldRanges: Map<number, Range> = new Map<number, Range>();
-    if(this._stratifiedRanges) {
+    if (this._stratifiedRanges) {
       this._stratifiedRanges.forEach((r, index) => {
         oldRanges.set(index, r);
       });
@@ -340,19 +346,19 @@ export default class ColumnManager extends EventHandler {
 
     this._stratifiedRanges.forEach((newR, newId) => {
       const isSuccesor = Array.from(oldRanges.keys()).some((l, oldId) => {
-          const newRange = newR.dims[0].asList();
-          const originalRange = oldRanges.get(l).dims[0].asList();
-          if (newRange.toString() === originalRange.toString() || checkArraySubset(originalRange, newRange) || checkArraySubset(newRange, originalRange)) {
-            if(VisManager.modePerGroup[oldId] !== undefined) {
-              newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
-            } else {
-              newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
-            }
-
-            return true;
+        const newRange = newR.dims[0].asList();
+        const originalRange = oldRanges.get(l).dims[0].asList();
+        if (newRange.toString() === originalRange.toString() || checkArraySubset(originalRange, newRange) || checkArraySubset(newRange, originalRange)) {
+          if (VisManager.modePerGroup[oldId] !== undefined) {
+            newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
+          } else {
+            newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
           }
+
+          return true;
+        }
       });
-      if(!isSuccesor) {
+      if (!isSuccesor) {
         newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
       }
     });
@@ -464,12 +470,12 @@ export default class ColumnManager extends EventHandler {
         .map((s) => s.intersect(r).size()[0]);
       const a = m.filter((d) => d > 0);
       const sd = m.indexOf(a[0]);
-      if(groupIndex === sd) {
+      if (groupIndex === sd) {
         multiformList.push(index);
       }
     });
-  return multiformList;
-}
+    return multiformList;
+  }
 
   /**
    * Calculate the maximum height of all column stratification areas and set it for every column
@@ -561,7 +567,7 @@ export default class ColumnManager extends EventHandler {
       maxHeights.push(max);
 
       totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
-      
+
       index = index + 1;
     }
 
@@ -572,7 +578,7 @@ export default class ColumnManager extends EventHandler {
     //choose minimal and maximal block height for each row of multiforms/stratification group
     const size = VisManager.modePerGroup.length;
     for (let i = 0; i < size; i++) {
-      this.multiformsInGroup(i).forEach((ind) =>{
+      this.multiformsInGroup(i).forEach((ind) => {
         let minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[ind]);
@@ -581,7 +587,7 @@ export default class ColumnManager extends EventHandler {
         if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGruopBrushed(i))) {
           min = 72;
           totalAggreg = totalAggreg + min;
-        } else if (brushedMultiforms.indexOf(ind) !== -1){
+        } else if (brushedMultiforms.indexOf(ind) !== -1) {
           totalMinBrushed = totalMinBrushed + min;
         }
         minHeights.forEach((m) => {
@@ -591,7 +597,7 @@ export default class ColumnManager extends EventHandler {
         maxHeights.forEach((m) => {
           if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGruopBrushed(i))) {
             m[ind] = min;
-          }else if (brushedMultiforms.indexOf(ind) !== -1){
+          } else if (brushedMultiforms.indexOf(ind) !== -1) {
             maxBrush = m[ind];
           }
         });
@@ -623,11 +629,11 @@ export default class ColumnManager extends EventHandler {
     return minHeights;
   }
 
-  private brushedMultiforms () {
+  private brushedMultiforms() {
     let brushedMultiforms: number[] = [];
     this.columns.forEach((col) => {
       col.multiformList.forEach((m, i) => {
-        if(m.brushed && brushedMultiforms.indexOf(i) === -1){
+        if (m.brushed && brushedMultiforms.indexOf(i) === -1) {
           brushedMultiforms.push(i);
         }
       });
@@ -635,12 +641,12 @@ export default class ColumnManager extends EventHandler {
     return brushedMultiforms;
   }
 
-  private checkIfGruopBrushed (rowIndex: number){
+  private checkIfGruopBrushed(rowIndex: number) {
     let isBrushed = false;
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((m) => {
-         isBrushed = col.multiformList[m].brushed || isBrushed ? true : false;
-       });
+        isBrushed = col.multiformList[m].brushed || isBrushed ? true : false;
+      });
     });
     return isBrushed;
   }
@@ -652,10 +658,9 @@ export default class ColumnManager extends EventHandler {
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((m) => {
         VisManager.multiformAggregationType.set(col.multiformList[m].id, aggregationType);
-       });
+      });
     });
   }
-
 
 
   private correctGapBetwnMultiform() {
