@@ -129,7 +129,7 @@
     aside {
       ol, li {
         list-style-type: none;
-        margin: 0;
+        margin-top: 5px;
         padding: 0;
       }
     }
@@ -155,7 +155,7 @@
     aside .labelName {
       position: absolute;
       right: 0;
-      margin-right: 105%;
+      margin-right: 101%;
       margin-top: 5%;
       white-space: nowrap;
     }
@@ -164,7 +164,7 @@
       aside .labelName {
         position: absolute;
         left: 0;
-        margin-left: 105%;
+        margin-left: 101%;
         white-space: nowrap;
       }
     }
