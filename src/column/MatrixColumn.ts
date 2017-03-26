@@ -123,7 +123,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    */
   async updateColStrats() {
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
-    //console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
+    console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
     this.colStratManager.stratify(rangeListMap);
   }
 
