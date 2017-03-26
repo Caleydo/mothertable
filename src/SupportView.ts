@@ -211,13 +211,13 @@ export default class SupportView extends EventHandler {
         if(!item.id) {
           return $(`<span>${item.text}</span>`);
         }
-        return $(`<span class="${dataValueTypeCSSClass(item.valueType)}">${item.text}</span>`);
+        return $(`<span><i class="${dataValueTypeCSSClass(item.valueType)}" aria-hidden="true"></i> ${item.text}</span>`);
       },
       templateSelection: (item:any) => {
         if(!item.id) {
           return $(`<span>${item.text}</span>`);
         }
-        return $(`<span class="${dataValueTypeCSSClass(item.valueType)}">${item.text}</span>`);
+        return $(`<span><i class="${dataValueTypeCSSClass(item.valueType)}" aria-hidden="true"></i> ${item.text}</span>`);
       },
     };
 

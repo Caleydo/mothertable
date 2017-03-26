@@ -7,6 +7,7 @@ import {EventHandler} from 'phovea_core/src/event';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import {formatAttributeName} from '../column/utils';
+import {dataValueType, dataValueTypeCSSClass} from '../column/ColumnManager';
 
 export declare type AnyFilter = AFilter<any, IDataType>;
 
@@ -44,11 +45,11 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     return tooltipDiv;
   }
 
-  protected generateLabel($node: d3.Selection<any>, labelname) {
+  protected generateLabel($node: d3.Selection<any>) {
     $node.select('header')
       .append('h2')
       .classed('filterlabel', true)
-      .text(formatAttributeName(labelname));
+      .html(`<i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> ${formatAttributeName(this.data.desc.name)}`);
   }
 
   protected triggerFilterChanged() {

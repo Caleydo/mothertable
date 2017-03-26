@@ -30,7 +30,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const $toolbar = $header.append('div').classed('toolbar', true);
     this.addTrashIcon($toolbar);
-    this.generateLabel($li, this.data.desc.name);
+    this.generateLabel($li);
     this.generateMatrixHeatmap($li.select('main'), this.data.rowtype.id);
 
     return $li;

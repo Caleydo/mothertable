@@ -25,7 +25,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
   protected build($parent: d3.Selection<any>) {
     const $node = super.build($parent);
-    this.generateLabel($node, this.data.desc.name);
+    this.generateLabel($node);
     const dispHistogram: boolean = true;
     this.generateCategories($node.select('main'), dispHistogram);
     return $node;

@@ -26,34 +26,23 @@
 .taggle-type-matrix,
 .taggle-type-numerical,
 .taggle-type-string {
-  &:before {
-    content: ' ';
-    background: transparent center left no-repeat;
-    padding-left: 20px;
-  }
+  display: inline-block;
+  background: transparent top left no-repeat;
+  background-size: 100% auto;
+  width: 16px;
+  min-width: 16px;
+  margin-right: 5px;
 }
 
 .taggle-type-categorical {
-
-  &:before {
-    background-image: url('#{$taggleAssetDir}/icon_categorical.svg')
-  }
+  background-image: url('#{$taggleAssetDir}/icon_categorical.svg')
 }
 .taggle-type-matrix {
-
-  &:before {
-    background-image: url('#{$taggleAssetDir}/icon_matrix.svg')
-  }
+  background-image: url('#{$taggleAssetDir}/icon_matrix.svg')
 }
 .taggle-type-numerical {
-
-  &:before {
-    background-image: url('#{$taggleAssetDir}/icon_numerical.svg')
-  }
+  background-image: url('#{$taggleAssetDir}/icon_numerical.svg')
 }
 .taggle-type-string {
-
-  &:before {
-    background-image: url('#{$taggleAssetDir}/icon_string.svg')
-  }
+  background-image: url('#{$taggleAssetDir}/icon_string.svg')
 }

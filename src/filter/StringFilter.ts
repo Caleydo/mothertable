@@ -19,7 +19,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   protected build($parent: d3.Selection<any>) {
     const $node = super.build($parent);
 
-    this.generateLabel($node, this.data.desc.name);
+    this.generateLabel($node);
     this.generateSearchInput($node.select('main'));
 
     return $node;
