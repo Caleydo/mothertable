@@ -21,7 +21,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   multiform: MultiForm;
   dataView: IDataType;
-  multiformList = [];
+  multiformList: TaggleMultiform[] = [];
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
@@ -59,7 +59,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
             .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
         }
       });
-
     super.buildToolbar($toolbar);
   }
 
