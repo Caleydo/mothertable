@@ -233,8 +233,6 @@ export default class App {
 
     // add columns if we add one or multiple datasets
     supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
-
-      console.log(datasets)
       // first push all the new stratifications ...
       const promises = datasets.map((d) => {
         return col.pushColStratData(d);

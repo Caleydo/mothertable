@@ -37,6 +37,11 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       },
       'phovea-vis-histogram': {
         color: 'grey'
+      },
+      'list': {
+        cssClass: 'taggle-vis-list'
+      }, all: {
+        heightTo: this.orientation === EOrientation.Horizontal ? 50 : $body.property('clientHeight'),
       }
     });
   }

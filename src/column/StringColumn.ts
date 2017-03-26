@@ -23,9 +23,11 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'list': {
         cssClass: 'taggle-vis-list'
+      }, all: {
+        heightTo: this.orientation === EOrientation.Horizontal ? 50 : $body.property('clientHeight'),
       }
     });
   }
