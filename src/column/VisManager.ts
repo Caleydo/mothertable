@@ -65,7 +65,7 @@ export interface IVisOptions {
 
 export default class VisManager {
 
-  private readonly stringOptions: IVisOptions = {
+  public static readonly stringOptions: IVisOptions = {
     rowMinHeight: 19,
     rowMaxHeight: 25,
     columnMinWidth: 10,
@@ -73,43 +73,43 @@ export default class VisManager {
     minWidth: 20,
     maxWidth: 100
   };
-  private readonly barplotOptions: IVisOptions = {
+  public static readonly barplotOptions: IVisOptions = {
     rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 40,
     maxWidth: 50
   };
-  private readonly heatmap1DOptions: IVisOptions = {
+  public static readonly heatmap1DOptions: IVisOptions = {
     rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly heatmapOptions: IVisOptions = {
+  public static readonly heatmapOptions: IVisOptions = {
     rowMinHeight: 1,
     rowMaxHeight: 25,
     columnMinWidth: 2,
     columnMaxWidth: 10
   };
-  private readonly boxplotOptions: IVisOptions = {
+  public static readonly boxplotOptions: IVisOptions = {
     minHeight: 10,
     maxHeight: 50,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly propSymbolOptions: IVisOptions = {
+  public static readonly propSymbolOptions: IVisOptions = {
     rowMinHeight: 10,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly histogramOptions: IVisOptions = {
+  public static readonly histogramOptions: IVisOptions = {
     minHeight: 20,
     maxHeight: 50,
     minWidth: 20,
     maxWidth: 20
   };
-  private readonly mosaicOptions: IVisOptions = {
+  public static readonly mosaicOptions: IVisOptions = {
     rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 20,
@@ -140,15 +140,15 @@ export default class VisManager {
 
   constructor() {
     this.vissesOptions = {
-      'table': this.stringOptions,
-      'barplot': this.barplotOptions,
-      'list': this.stringOptions,
-      'phovea-vis-heatmap1d': this.heatmap1DOptions,
-      'phovea-vis-heatmap': this.heatmapOptions,
-      'phovea-vis-histogram': this.histogramOptions,
-      'phovea-vis-mosaic': this.mosaicOptions,
-      'phovea-vis-box': this.boxplotOptions,
-      'proportionalSymbol': this.propSymbolOptions
+      'table': VisManager.stringOptions,
+      'barplot': VisManager.barplotOptions,
+      'list': VisManager.stringOptions,
+      'phovea-vis-heatmap1d': VisManager.heatmap1DOptions,
+      'phovea-vis-heatmap': VisManager.heatmapOptions,
+      'phovea-vis-histogram': VisManager.histogramOptions,
+      'phovea-vis-mosaic': VisManager.mosaicOptions,
+      'phovea-vis-box': VisManager.boxplotOptions,
+      'proportionalSymbol': VisManager.propSymbolOptions
     };
   }
 
@@ -267,7 +267,7 @@ export default class VisManager {
     const minColumnHeight: number[] = [];
     col.multiformList.forEach((multiform, index) => {
       let minHeight;
-      if (multiform.brushed && VisManager.modePerGroup[index] !== EAggregationType.AGGREGATED){
+      if (multiform.brushed && VisManager.modePerGroup[index] !== EAggregationType.AGGREGATED) {
         minHeight = multiform.data.dim[0] * 20;
       }
       else if (VisManager.userSelectedAggregatedVisses.has(multiform.id)

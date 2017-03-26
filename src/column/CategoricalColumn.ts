@@ -31,7 +31,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
     return mixin(super.multiFormParams($body), {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       all: {
-        heightTo: this.orientation === EOrientation.Horizontal ? 50 : $body.property('clientHeight'),
+        heightTo: this.orientation === EOrientation.Horizontal ? VisManager.heatmap1DOptions.rowMaxHeight : $body.property('clientHeight'),
       }
     });
   }
