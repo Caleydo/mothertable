@@ -2,6 +2,9 @@
  * Created by Samuel Gratzl on 01.02.2017.
  */
 
+import 'select2';
+import * as d3 from 'd3';
+import * as $ from 'jquery';
 import IDType from 'phovea_core/src/idtype/IDType';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
@@ -74,7 +77,7 @@ export default class SupportView extends EventHandler {
     this.setupFilterManager();
 
     await this.loadDatasets();
-    this.buildSelectionBox(this.$node);
+    this.buildSelect2(this.$node);
     this.addInitialFilters();
   }
 
@@ -156,45 +159,79 @@ export default class SupportView extends EventHandler {
     }
   }
 
-  private buildSelectionBox($parent: d3.Selection<any>) {
-
+  private buildSelect2($parent: d3.Selection<any>) {
     (<HTMLElement>$parent.node()).insertAdjacentHTML('afterbegin', `<div class="selection"> 
-       <select class="form-control">
-       <option value="attribute">Select Attribute</option>             
+      <select class="form-control">
+        <option></option>
       </select>
     </div>`);
 
-    const $select = $parent.select('select');
+    const $select = $parent.select('select').property('selectedIndex', -1);
 
     this.addExplicitColors(this.datasets);
 
-    // list all data, filter to the matching ones, and prepare them
-    // const datasets = convertTableToVectors(await listData())
-    //   .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
-    // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
+    const availableDataTypes = this.datasets
+      .map((d) => d.desc.type)
+      .sort()
+      .filter((el, i, a) => {
+        if(i === a.indexOf(el)) {
+          return 1;
+        }
+        return 0;
+      });
 
-    this.datasets.forEach((d) => {
-      $select.append('option')
-        .text(formatAttributeName(d.desc.name))
-        .attr('value', d.desc.id);
+    const defaultData = availableDataTypes.map((type) => {
+      const children = this.datasets
+        .filter((d) => d.desc.type === type)
+        .map((d, i) => {
+          return {
+            id: d.desc.id,
+            text: formatAttributeName(d.desc.name),
+            type: d.desc.type,
+            data: d
+          };
+        });
+
+      return {
+        text: type,
+        type,
+        children
+      };
     });
 
-    $select.on('change', async(evt) => {
-      const index = $select.property('selectedIndex');
-      if (index === 0) { // empty selection
-        return false;
+    const defaultOptions = {
+      data: defaultData,
+      placeholder: 'Select Attribute',
+      allowClear: true,
+      theme: 'bootstrap',
+      //selectOnClose: true,
+      //escapeMarkup: (markup) => markup,
+      templateResult: (item:any) => {
+        return $(`<span class="taggle-datatype-${item.type}">${item.text}</span>`);
+      },
+      templateSelection: (item:any) => {
+        return $(`<span class="taggle-datatype-${item.type}">${item.text}</span>`);
       }
-      // -1 because of empty option
-      let data = this.datasets[index - 1];
+    };
 
-      data = await this.addDataset(data);
-      this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
+    const $jqSelect2 = (<any>$($select.node()))
+      .select2(defaultOptions)
+      .on('select2:select', async(evt) => {
+        const dataset = evt.params.data.data;
 
-      this.updateURLHash();
-      // reset selection
-      $select.property('selectedIndex', 0);
-      return false;
-    });
+        // reset selection
+        $jqSelect2.val(null).trigger('change');
+
+        // load data and add columns
+        const data = await this.addDataset(dataset);
+        this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
+
+        this.updateURLHash();
+
+        return false;
+      });
+
+    return $jqSelect2;
   }
 
   /**
