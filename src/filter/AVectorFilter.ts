@@ -15,6 +15,7 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends AFilter<T, DATATYPE> {
   static EVENT_SORTBY_FILTER_ICON = 'sortFilter';
 
+
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
     const $ol = $parent.select('.filterlist');
     const $li = $ol.append('li').classed('filter', true);
@@ -22,6 +23,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
     $li.append('main');
     const $toolbar = $header.append('div').classed('toolbar', true);
     this.addSortIcon($toolbar);
+    this.addTrashIcon($toolbar);
     return $li;
   }
 

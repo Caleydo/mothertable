@@ -17,8 +17,8 @@ import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
 
 export enum EOrientation {
-  Horizontal,
-  Vertical
+  Vertical,
+  Horizontal
 }
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
@@ -66,10 +66,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
-    if (this.orientation === EOrientation.Horizontal) {
-      return this.buildHorizontal($parent);
+    if (this.orientation === EOrientation.Vertical) {
+      return this.buildVertical($parent);
     }
-    return this.buildVertical($parent);
+    return this.buildHorizontal($parent);
   }
 
   /**
@@ -77,11 +77,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    * @param $parent
    * @returns {Selection<any>}
    */
-  protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
+  protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent.insert('li', 'li')
       .datum(this)
       .classed('column-strat', true)
-      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .html(`
         <header>
           <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
@@ -96,12 +96,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    * @param $parent
    * @returns {Selection<any>}
    */
-  protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
+  protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent
       .append('li')
       .datum(this)
       .classed('column', true)
-      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .style('min-width', this.minWidth + 'px')
       .style('width', this.maxWidth + 'px')
       .html(`
@@ -129,8 +129,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .attr('title', 'Remove column')
       .html(`<i class="fa fa-trash fa-fw" aria-hidden="true"></i><span class="sr-only">Remove column</span>`)
       .on('click', () => {
-        this.fire(AColumn.EVENT_REMOVE_ME);
-        return false;
+        this.fire(AColumn.EVENT_REMOVE_ME, this.data);
+        // return false;
       });
 
     this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
@@ -195,7 +195,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     // hook
   }
 
-  protected setGroupFlag(stratifiedRanges: Range[], multiformRange: Range) {
+  protected findGroupId(stratifiedRanges: Range[], multiformRange: Range) {
     const m = stratifiedRanges
       .map((s) => s.intersect(multiformRange).size()[0]);
     const a = m.filter((d) => d > 0);
@@ -205,7 +205,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
 
-  protected setBrushFlag(brushedRanges: Range[], multiformRange: Range) {
+  protected checkBrushed(brushedRanges: Range[], multiformRange: Range) {
     const checkMe = brushedRanges.map((b) => multiformRange.intersect(b).size()[0]);
     const f = Math.max(...checkMe);
     return (f > 0) ? true : false;
