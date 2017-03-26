@@ -15,20 +15,22 @@ import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
 import {AnyFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
+import TaggleMultiform from './TaggleMultiform';
+
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
   maxWidth: number = 300;
   minHeight: number = 2;
-  maxHeight: number = 10;
+  maxHeight: number = 25;
 
   private rowRanges: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
-  multiformList = [];
+  multiformList: TaggleMultiform[] = [];
 
-  private $colStrat:d3.Selection<any>;
-  private colStratManager:AColumnManager = new AColumnManager();
+  private $colStrat: d3.Selection<any>;
+  private colStratManager: AColumnManager = new AColumnManager();
 
   constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
     super(data, orientation);
@@ -49,14 +51,14 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected multiFormParams(): IMultiFormOptions {
     return {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       }
     };
   }
 
-  async updateMultiForms(rowRanges?:Range[], colRange?:Range) {
+  async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
     this.body.selectAll('.multiformList').remove();
     this.multiformList = [];
 
@@ -69,6 +71,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       colRange = (await this.calculateDefaultRange());
     }
 
+    let id = 0;
     for (const r of rowRanges) {
       const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
@@ -78,8 +81,20 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       let colView = await rowView.idView(colRange);
       colView = (<INumericalMatrix>colView).t;
 
-      const m = new MultiForm(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
+      const m = new TaggleMultiform(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
+      m.groupId = this.findGroupId(stratifiedRanges, rowRanges[id]);
+      m.brushed = this.checkBrushed(brushedRanges, rowRanges[id]);
       this.multiformList.push(m);
+
+      if (this.selectedAggVis) {
+        VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
+      }
+      if (this.selectedUnaggVis) {
+        VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
+      }
+      VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+
+      id = id + 1;
     }
   }
 
@@ -97,7 +112,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<AnyColumn>}
    */
   pushColStratData(data: IMotherTableType) {
-    const col = createColumn(data, EOrientation.Vertical, this.$colStrat);
+    const col = createColumn(data, EOrientation.Horizontal, this.$colStrat);
     this.colStratManager.add(col);
     return Promise.resolve(col);
   }
@@ -107,13 +122,13 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<void>}
    */
   async updateColStrats() {
-    const rangeListMap:Map<string, Range[]> = await this.colStratManager.sort();
+    const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
     //console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
-    //this.colStratManager.stratify(rangeListMap);
+    this.colStratManager.stratify(rangeListMap);
   }
 
   filterStratData(range: Range) {
-    //this.colStratManager.filter([range]);
+    this.colStratManager.filter([range]);
   }
 
   updateColStratsSorting(filterList: AnyFilter[]) {

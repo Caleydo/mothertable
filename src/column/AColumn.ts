@@ -11,14 +11,14 @@ import {SORT} from '../SortHandler/SortHandler';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {formatAttributeName} from './utils';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
-import {IVisPluginDesc} from 'phovea_core/src/vis';
+import {IVisPluginDesc, list as listVisses} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
-
+import TaggleMultiform from './TaggleMultiform';
 
 export enum EOrientation {
-  Horizontal,
-  Vertical
+  Vertical,
+  Horizontal
 }
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
@@ -40,10 +40,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
-  multiformList:MultiForm[] = [];
+  multiformList = [];
 
-  selectedAggVis:IVisPluginDesc;
-  selectedUnaggVis:IVisPluginDesc;
+  selectedAggVis: IVisPluginDesc;
+  selectedUnaggVis: IVisPluginDesc;
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
@@ -66,10 +66,10 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
-    if (this.orientation === EOrientation.Horizontal) {
-      return this.buildHorizontal($parent);
+    if (this.orientation === EOrientation.Vertical) {
+      return this.buildVertical($parent);
     }
-    return this.buildVertical($parent);
+    return this.buildHorizontal($parent);
   }
 
   /**
@@ -77,11 +77,11 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    * @param $parent
    * @returns {Selection<any>}
    */
-  protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
+  protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent.insert('li', 'li')
       .datum(this)
       .classed('column-strat', true)
-      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .html(`
         <header>
           <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
@@ -96,12 +96,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    * @param $parent
    * @returns {Selection<any>}
    */
-  protected buildHorizontal($parent: d3.Selection<any>): d3.Selection<any> {
+  protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = $parent
       .append('li')
       .datum(this)
       .classed('column', true)
-      .classed('column-' + (this.orientation === EOrientation.Horizontal ? 'hor' : 'ver'), true)
+      .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .style('min-width', this.minWidth + 'px')
       .style('width', this.maxWidth + 'px')
       .html(`
@@ -129,27 +129,26 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .attr('title', 'Remove column')
       .html(`<i class="fa fa-trash fa-fw" aria-hidden="true"></i><span class="sr-only">Remove column</span>`)
       .on('click', () => {
-        this.fire(AColumn.EVENT_REMOVE_ME);
-        return false;
+        this.fire(AColumn.EVENT_REMOVE_ME, this.data);
+        // return false;
       });
 
     this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
     this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
   }
 
-  private addIconVisChooser(toolbar: HTMLElement, multiform: MultiForm, aggregationType) {
+  private addIconVisChooser(toolbar: HTMLElement, visses: IVisPluginDesc[], aggregationType: EAggregationType) {
     const s = toolbar.ownerDocument.createElement('div');
     toolbar.insertBefore(s, toolbar.firstChild);
-    const visses = multiform.visses;
     const visIds = VisManager.getPossibleVisses(this.data.desc.type, this.data.desc.value.type, aggregationType);
     const defVis = createNode(s, 'i');
-    defVis.innerText = "--";
-    defVis.onclick  = () => {
+    defVis.innerText = '--';
+    defVis.onclick = () => {
       this.multiformList.forEach((mul) => {
-        if(aggregationType === EAggregationType.UNAGGREGATED){
+        if (aggregationType === EAggregationType.UNAGGREGATED) {
           VisManager.userSelectedUnaggregatedVisses.delete(mul.id);
           this.selectedUnaggVis = null;
-        }else{
+        } else {
           VisManager.userSelectedAggregatedVisses.delete(mul.id);
           this.selectedAggVis = null;
         }
@@ -158,29 +157,28 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     };
 
     visses.forEach((v) => {
-      if(visIds.indexOf(v.id) !== -1){
+      if (visIds.indexOf(v.id) !== -1) {
         const child = createNode(s, 'i');
         v.iconify(child);
         child.onclick = () => {
-          if(aggregationType === EAggregationType.UNAGGREGATED){
+          if (aggregationType === EAggregationType.UNAGGREGATED) {
             this.selectedUnaggVis = v;
-          }else{
+          } else {
             this.selectedAggVis = v;
-           }
+          }
           this.multiformList.forEach((mul) => {
             VisManager.setUserVis(mul.id, v, aggregationType);
           });
           this.fire(AColumn.VISUALIZATION_SWITCHED);
-        }
+        };
       }
     });
   }
 
-  private appendVisChooser($toolbar:d3.Selection<any>, faIcon:string, title:string, aggregationType):MultiForm {
+  private appendVisChooser($toolbar: d3.Selection<any>, faIcon: string, title: string, aggregationType) {
     const $node = $toolbar.append('div').classed('visChooser', true);
 
-    const m = new MultiForm(this.data, document.createElement('dummy-to-discard'), { initialVis: this.activeVis });
-    this.addIconVisChooser(<HTMLElement>$node.node(), m, aggregationType);
+    this.addIconVisChooser(<HTMLElement>$node.node(), listVisses(this.data), aggregationType);
     $node.insert('i', ':first-child')
       .attr('title', title)
       .attr('class', faIcon)
@@ -190,14 +188,30 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .append('span')
       .attr('class', 'sr-only')
       .text(title);
-
-    return m;
   }
 
 
-  async updateMultiForms(rowRanges: Range[]) {
+  async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
     // hook
   }
+
+  protected findGroupId(stratifiedRanges: Range[], multiformRange: Range) {
+    const m = stratifiedRanges
+      .map((s) => s.intersect(multiformRange).size()[0]);
+    const a = m.filter((d) => d > 0);
+    const groupId = m.indexOf(a[0]);
+    return groupId;
+
+  }
+
+
+  protected checkBrushed(brushedRanges: Range[], multiformRange: Range) {
+    const checkMe = brushedRanges.map((b) => multiformRange.intersect(b).size()[0]);
+    const f = Math.max(...checkMe);
+    return (f > 0) ? true : false;
+
+  }
+
 
   protected lockColumnWidth($lockButton) {
     if ($lockButton.select('i').classed('fa-lock')) {

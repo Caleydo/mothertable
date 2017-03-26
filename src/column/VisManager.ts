@@ -4,6 +4,7 @@
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IVisPluginDesc} from 'phovea_core/src/vis';
 import {AnyColumn} from './ColumnManager';
+import Range from 'phovea_core/src/range/Range';
 
 import {
   VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
@@ -18,7 +19,7 @@ export enum EAggregationType {
   AUTOMATIC
 }
 
-export interface VisOptions {
+export interface IVisOptions {
   /**
    * Minimal Width
    * @default 20
@@ -64,7 +65,7 @@ export interface VisOptions {
 
 export default class VisManager {
 
-  private readonly stringOptions: VisOptions = {
+  private readonly stringOptions: IVisOptions = {
     rowMinHeight: 19,
     rowMaxHeight: 25,
     columnMinWidth: 10,
@@ -72,53 +73,53 @@ export default class VisManager {
     minWidth: 20,
     maxWidth: 100
   };
-  private readonly barplotOptions: VisOptions = {
-    rowMinHeight: 2,
+  private readonly barplotOptions: IVisOptions = {
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 40,
     maxWidth: 50
   };
-  private readonly heatmap1DOptions: VisOptions = {
-    rowMinHeight: 2,
+  private readonly heatmap1DOptions: IVisOptions = {
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly heatmapOptions: VisOptions = {
-    rowMinHeight: 2,
+  private readonly heatmapOptions: IVisOptions = {
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     columnMinWidth: 2,
     columnMaxWidth: 10
   };
-  private readonly boxplotOptions: VisOptions = {
+  private readonly boxplotOptions: IVisOptions = {
     minHeight: 10,
     maxHeight: 50,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly propSymbolOptions: VisOptions = {
+  private readonly propSymbolOptions: IVisOptions = {
     rowMinHeight: 10,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
-  private readonly histogramOptions: VisOptions = {
+  private readonly histogramOptions: IVisOptions = {
     minHeight: 20,
     maxHeight: 50,
     minWidth: 20,
     maxWidth: 20
   };
-  private readonly mosaicOptions: VisOptions = {
-    rowMinHeight: 2,
+  private readonly mosaicOptions: IVisOptions = {
+    rowMinHeight: 1,
     rowMaxHeight: 25,
     minWidth: 20,
     maxWidth: 50
   };
 
-  private readonly vissesOptions: {[id: string]: VisOptions};
+  private readonly vissesOptions: {[id: string]: IVisOptions};
 
   public static aggregatedNumVisses = ['phovea-vis-histogram', 'phovea-vis-box'];
-  public static unaggregatedNumVisses = ['barplot','proportionalSymbol','phovea-vis-heatmap1d','list'];
+  public static unaggregatedNumVisses = ['barplot', 'proportionalSymbol', 'phovea-vis-heatmap1d', 'list'];
   public static aggregatedCatVisses = ['phovea-vis-histogram'];
   public static unaggregatedCatVisses = ['phovea-vis-heatmap1d'];
   public static aggregatedStrVisses = ['list'];//TODO change to empty vis
@@ -129,11 +130,13 @@ export default class VisManager {
 
 
   /**
-   *User selected visualization for multiform with given id
+   * User selected visualization for multiform with given id
    */
-  public static userSelectedAggregatedVisses:Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
-  public static userSelectedUnaggregatedVisses:Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
-  public static multiformAggregationType:Map<number, EAggregationType> = new Map<number, EAggregationType>();
+  public static userSelectedAggregatedVisses: Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
+  public static userSelectedUnaggregatedVisses: Map<number, IVisPluginDesc> = new Map<number, IVisPluginDesc>();
+  public static multiformAggregationType: Map<number, EAggregationType> = new Map<number, EAggregationType>();
+  public static modePerGroup: EAggregationType[] = [];
+
 
   constructor() {
     this.vissesOptions = {
@@ -145,14 +148,14 @@ export default class VisManager {
       'phovea-vis-histogram': this.histogramOptions,
       'phovea-vis-mosaic': this.mosaicOptions,
       'phovea-vis-box': this.boxplotOptions,
-      'proportionalSymbol' : this.propSymbolOptions
+      'proportionalSymbol': this.propSymbolOptions
     };
   }
 
-  static getDefaultVis(columnType: string, dataType: string, aggregationType ) {
-    switch(aggregationType){
+  static getDefaultVis(columnType: string, dataType: string, aggregationType) {
+    switch (aggregationType) {
       case EAggregationType.AGGREGATED:
-        switch(columnType){
+        switch (columnType) {
           case AColumn.DATATYPE.vector:
             switch (dataType) {
               case VALUE_TYPE_STRING:
@@ -161,16 +164,16 @@ export default class VisManager {
                 return 'phovea-vis-histogram';
               case VALUE_TYPE_CATEGORICAL:
                 return 'phovea-vis-histogram';
-              default:
-                return 'list';
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
             return 'phovea-vis-heatmap';
-          default:
-            return 'list'
         }
+        return 'list'; // default value
+
       case EAggregationType.UNAGGREGATED:
-        switch(columnType){
+        switch (columnType) {
           case AColumn.DATATYPE.vector:
             switch (dataType) {
               case VALUE_TYPE_STRING:
@@ -179,21 +182,20 @@ export default class VisManager {
                 return 'barplot';
               case VALUE_TYPE_CATEGORICAL:
                 return 'phovea-vis-heatmap1d';
-              default:
-                return 'list';
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
             return 'phovea-vis-heatmap';
-          default:
-            return 'list'
         }
+        return 'list'; // default value
     }
   }
 
-  static getPossibleVisses(columnType: string, dataType: string, aggregationType ) {
-    switch(aggregationType){
+  static getPossibleVisses(columnType: string, dataType: string, aggregationType) {
+    switch (aggregationType) {
       case EAggregationType.AGGREGATED:
-        switch(columnType){
+        switch (columnType) {
           case AColumn.DATATYPE.vector:
             switch (dataType) {
               case VALUE_TYPE_STRING:
@@ -203,16 +205,18 @@ export default class VisManager {
                 return VisManager.aggregatedNumVisses;
               case VALUE_TYPE_CATEGORICAL:
                 return VisManager.aggregatedCatVisses;
-              default:
-                return;
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
-            return  VisManager.unaggregatedNumMatVisses;
+            return VisManager.unaggregatedNumMatVisses;
           default:
-            return
+            return;
         }
+        return; // default value
+
       case EAggregationType.UNAGGREGATED:
-        switch(columnType){
+        switch (columnType) {
           case AColumn.DATATYPE.vector:
             switch (dataType) {
               case VALUE_TYPE_STRING:
@@ -222,59 +226,63 @@ export default class VisManager {
                 return VisManager.unaggregatedNumVisses;
               case VALUE_TYPE_CATEGORICAL:
                 return VisManager.unaggregatedCatVisses;
-              default:
-                return;
             }
+            break;
+
           case AColumn.DATATYPE.matrix:
-            return  VisManager.unaggregatedNumMatVisses;
+            return VisManager.unaggregatedNumMatVisses;
           default:
-            return
+            return;
         }
+        return; // default value
     }
   }
 
-  static setUserVis(id:number, vis:IVisPluginDesc, aggregationType) {
-    if(aggregationType == EAggregationType.AGGREGATED){
+  static setUserVis(id: number, vis: IVisPluginDesc, aggregationType) {
+    if (aggregationType === EAggregationType.AGGREGATED) {
       VisManager.userSelectedAggregatedVisses.set(id, vis);
-    }else{
+    } else {
       VisManager.userSelectedUnaggregatedVisses.set(id, vis);
     }
   }
 
-  static updateUserVis(idOld:number, idNew:number) {
-    if(VisManager.userSelectedAggregatedVisses.has(idOld)) {
+  static updateUserVis(idOld: number, idNew: number) {
+    if (VisManager.userSelectedAggregatedVisses.has(idOld)) {
       VisManager.userSelectedAggregatedVisses.set(idNew, VisManager.userSelectedAggregatedVisses.get(idOld));
     }
-    if(VisManager.userSelectedUnaggregatedVisses.has(idOld)) {
+    if (VisManager.userSelectedUnaggregatedVisses.has(idOld)) {
       VisManager.userSelectedUnaggregatedVisses.set(idNew, VisManager.userSelectedUnaggregatedVisses.get(idOld));
     }
   }
 
-  static removeUserVisses(id:number) {
+  static removeUserVisses(id: number) {
     VisManager.userSelectedAggregatedVisses.delete(id);
     VisManager.userSelectedUnaggregatedVisses.delete(id);
   }
 
-  /*
+  /**
    * Compute minimum height of column depending on
    * minimal size of user-selected visualizations and
    * minimal size of visualizations available for given datatype
    */
   computeMinHeight(col: AnyColumn): number [] {
-    let minColumnHeight: number[] = [];
+    const minColumnHeight: number[] = [];
     col.multiformList.forEach((multiform, index) => {
       let minHeight;
-      if(VisManager.userSelectedAggregatedVisses.has(multiform.id)
+      if (multiform.brushed && VisManager.modePerGroup[index] !== EAggregationType.AGGREGATED){
+        minHeight = multiform.data.dim[0] * 20;
+      }
+      else if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
         && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.AGGREGATED) {
         minHeight = this.minVisSize(VisManager.userSelectedAggregatedVisses.get(multiform.id).id, multiform.data.dim)[1];
-      }else if(VisManager.userSelectedUnaggregatedVisses.has(multiform.id)
+      } else if (VisManager.userSelectedUnaggregatedVisses.has(multiform.id)
         && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.UNAGGREGATED) {
         minHeight = this.minVisSize(VisManager.userSelectedUnaggregatedVisses.get(multiform.id).id, multiform.data.dim)[1];
-      }else{
+      } else {
         minHeight = Number.POSITIVE_INFINITY;
-        let visses = VisManager.getPossibleVisses(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
+        const visses = VisManager.getPossibleVisses(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
         visses.forEach((v) => {
-          let minHeightTmp = this.minVisSize(v, multiform.data.dim)[1];
+          const minHeightTmp = this.minVisSize(v, multiform.data.dim)[1];
           minHeight = (minHeight > minHeightTmp) ? minHeightTmp : minHeight;
         });
       }
@@ -332,16 +340,19 @@ export default class VisManager {
     return [minVisWidth, minVisHeight];
   }
 
+  assignVis(multiform: MultiForm) {
+    if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
+      && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.AGGREGATED) {
 
-  assignVis(multiform: MultiForm, width: number, height: number) {
-    if(VisManager.userSelectedAggregatedVisses.has(multiform.id)
-        && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.AGGREGATED) {
       multiform.switchTo(VisManager.userSelectedAggregatedVisses.get(multiform.id));
-    }else if(VisManager.userSelectedUnaggregatedVisses.has(multiform.id)
-        && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.UNAGGREGATED) {
-       multiform.switchTo(VisManager.userSelectedUnaggregatedVisses.get(multiform.id));
-    }else{
-      let preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type,VisManager.multiformAggregationType.get(multiform.id));
+
+    } else if (VisManager.userSelectedUnaggregatedVisses.has(multiform.id)
+      && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.UNAGGREGATED) {
+
+      multiform.switchTo(VisManager.userSelectedUnaggregatedVisses.get(multiform.id));
+
+    } else {
+      const preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
       multiform.switchTo(preferredVis);
     }
   }
