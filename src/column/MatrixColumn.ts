@@ -25,6 +25,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   maxHeight: number = 25;
 
   private rowRanges: Range[] = [];
+  private stratifiedRanges: Range[] = [];
+  private brushedRanges: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
   multiformList: TaggleMultiform[] = [];
@@ -69,8 +71,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
+      this.colRange = colRange;
     }
 
+    this.stratifiedRanges = stratifiedRanges;
+    this.brushedRanges = brushedRanges;
     let id = 0;
     for (const r of rowRanges) {
       const $multiformDivs = this.body.append('div').classed('multiformList', true);
@@ -124,6 +129,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   async updateColStrats() {
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
     console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
+    this.colRange = this.colStratManager.nonStratifiedRange;
+    this.updateMultiForms(this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange)
     this.colStratManager.stratify(rangeListMap);
   }
 

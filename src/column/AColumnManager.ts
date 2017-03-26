@@ -13,7 +13,7 @@ export default class AColumnManager {
 
   columns: AnyColumn[] = [];
   private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
-  private nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
+  private _nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private dataPerStratificaiton; //The number of data elements per stratification
   private stratifyColid: string; // This is column Name used for stratification
   constructor() {
@@ -26,6 +26,10 @@ export default class AColumnManager {
 
   get matrixCols(): AnyColumn[] {
     return this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
+  }
+
+  get nonStratifiedRange(): Range {
+    return this._nonStratifiedRange;
   }
 
   /**
@@ -57,11 +61,11 @@ export default class AColumnManager {
     const s = new SortHandler();
     const r = await s.sortColumns(uniqueVectorCols);
 
-    this.nonStratifiedRange = r.combined;
+    this._nonStratifiedRange = r.combined;
     this._stratifiedRanges = [r.combined];
     this.dataPerStratificaiton = r.stratified;
     uniqueVectorCols.forEach((col) => {
-      colsWithRange.set(col.data.desc.id, [this.nonStratifiedRange]);
+      colsWithRange.set(col.data.desc.id, [this._nonStratifiedRange]);
     });
 
     return colsWithRange;
