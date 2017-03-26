@@ -110,8 +110,9 @@ export default class ColumnManager extends EventHandler {
     on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
+      this.updateRangeList(this.brushedItems);
+      this.stratifyColumns();
       this.relayout();
-      //console.log(index, value, allGroups);
     });
   }
 
@@ -387,12 +388,34 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<void>}
    */
   private async stratifyColumns() {
+    let brushedRages = [];
+    const r = this._multiformRangeList;
+    if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0){
+      this._stratifiedRanges.forEach((sr,i) =>{
+        r.some((br) => {
+          const stratRange = sr.dims[0].asList();
+          const brushedRange = br.dims[0].asList();
+          const isSubrange = checkArraySubset(stratRange, brushedRange);
+          if(isSubrange){
+            if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) {
+              brushedRages.push(sr);
+              return true;
+            } else {
+              brushedRages.push(br);
+            }
+          }
+        });
+      });
+    } else {
+      brushedRages = r;
+    }
+
+    this._multiformRangeList = brushedRages;
+
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     vectorCols.forEach((col) => {
-      const r = this.colsWithRange.get(col.data.desc.id);
-      col.updateMultiForms(r, this._stratifiedRanges, this._brushedRanges);
+      col.updateMultiForms(brushedRages, this._stratifiedRanges, this._brushedRanges);
     });
-
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
     matrixCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges));
@@ -562,7 +585,7 @@ export default class ColumnManager extends EventHandler {
       maxHeights.push(max);
 
       totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
-      
+
       index = index + 1;
     }
 
