@@ -278,6 +278,11 @@ export default class ColumnManager extends EventHandler {
    * Sort, stratify and render all columns
    */
   async updateColumns() {
+    await this.sortColumns();
+    await this.stratifyAndRelayout();
+  }
+
+  async stratifyAndRelayout() {
     const oldRanges: Map<number, Range> = new Map<number, Range>();
     if(this._stratifiedRanges) {
       this._stratifiedRanges.forEach((r, index) => {
@@ -285,22 +290,18 @@ export default class ColumnManager extends EventHandler {
       });
     }
 
-    await this.sortColumns();
-    await this.stratifyAndRelayout();
-
-    this.updateAggModePerGroupAfterNewStrat(oldRanges);
-  }
-
-  async stratifyAndRelayout() {
     await this.updateStratifyID(this.stratifyColid);
     if (this.totalbrushed.length === 0) {
       await this.stratifyColumns();
+      this.updateAggModePerGroupAfterNewStrat(oldRanges);
       this.relayout();
       return;
     }
 
     await this.updateRangeList(this.brushedItems);
     await this.stratifyColumns();
+    this.updateAggModePerGroupAfterNewStrat(oldRanges);
+
 
     this.relayout();
   }
