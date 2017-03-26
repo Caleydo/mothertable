@@ -160,7 +160,15 @@ export default class SupportView extends EventHandler {
   }
 
   private buildSelect2($parent: d3.Selection<any>) {
-    const $select = this.buildSelectionBox($parent);
+    (<HTMLElement>$parent.node()).insertAdjacentHTML('afterbegin', `<div class="selection"> 
+      <select class="form-control">
+        <option></option>
+      </select>
+    </div>`);
+
+    const $select = $parent.select('select').property('selectedIndex', -1);
+
+    this.addExplicitColors(this.datasets);
 
     const availableDataTypes = this.datasets
       .map((d) => d.desc.type)
@@ -206,50 +214,24 @@ export default class SupportView extends EventHandler {
       }
     };
 
-    return (<any>$($select.node())).select2(defaultOptions);
-  }
+    const $jqSelect2 = (<any>$($select.node()))
+      .select2(defaultOptions)
+      .on('select2:select', async(evt) => {
+        const dataset = evt.params.data.data;
 
-  private buildSelectionBox($parent: d3.Selection<any>) {
+        // reset selection
+        $jqSelect2.val(null).trigger('change');
 
-    (<HTMLElement>$parent.node()).insertAdjacentHTML('afterbegin', `<div class="selection"> 
-      <select class="form-control">
-        <option></option>
-      </select>
-    </div>`);
+        // load data and add columns
+        const data = await this.addDataset(dataset);
+        this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
 
-    const $select = $parent.select('select').property('selectedIndex', -1);
+        this.updateURLHash();
 
-    this.addExplicitColors(this.datasets);
-
-    // list all data, filter to the matching ones, and prepare them
-    // const datasets = convertTableToVectors(await listData())
-    //   .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d))
-    // datasets.map((d) => transposeMatrixIfNeeded(this.idType, d));
-
-    /*this.datasets.forEach((d) => {
-      $select.append('option')
-        .text(formatAttributeName(d.desc.name))
-        .attr('value', d.desc.id);
-    });*/
-
-    $select.on('change', async(evt) => {
-      const index = $select.property('selectedIndex');
-      if (index === 0) { // empty selection
         return false;
-      }
-      // -1 because of empty option
-      let data = this.datasets[index - 1];
+      });
 
-      data = await this.addDataset(data);
-      this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
-
-      this.updateURLHash();
-      // reset selection
-      $select.property('selectedIndex', 0);
-      return false;
-    });
-
-    return $select;
+    return $jqSelect2;
   }
 
   /**
