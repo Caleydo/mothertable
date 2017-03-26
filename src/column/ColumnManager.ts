@@ -222,7 +222,7 @@ export default class ColumnManager extends EventHandler {
 
   async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
 
-    const a = await this.getBrushIndices(brushIndices, multiformData);
+    const a = await this.getBrushIndices(brushIndices.sort(), multiformData);
     this.brushedItems.push(a);
     this.totalbrushed = this.totalbrushed.concat(brushIndices);
     //console.log(this.brushedItems, a)
