@@ -219,7 +219,6 @@ export default class App {
     new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
 
     supportView.updateFuelBar(this.dataSize);
-
     supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
       col.filterStratData(filter);
       this.triggerMatrix(filter, supportView.id);

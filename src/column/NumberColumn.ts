@@ -25,7 +25,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams($body: d3.Selection<any>, domain?: number[]): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
+      //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
+      initialVis: 'barplot',
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP
       },
@@ -36,6 +37,11 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       },
       'phovea-vis-histogram': {
         color: 'grey'
+      },
+      'list': {
+        cssClass: 'taggle-vis-list'
+      }, all: {
+        heightTo: this.orientation === EOrientation.Horizontal ? 50 : $body.property('clientHeight'),
       }
     });
   }

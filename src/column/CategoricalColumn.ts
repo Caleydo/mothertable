@@ -30,6 +30,9 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
+      all: {
+        heightTo: this.orientation === EOrientation.Horizontal ? VisManager.heatmap1DOptions.rowMaxHeight : $body.property('clientHeight'),
+      }
     });
   }
 

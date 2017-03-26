@@ -13,9 +13,11 @@ import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
-import {AnyFilter} from '../filter/AFilter';
+import {AnyFilter, default as AFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
+import {AVectorFilter} from '../filter/AVectorFilter';
+import {on} from 'phovea_core/src/event';
 
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
@@ -25,6 +27,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   maxHeight: number = 25;
 
   private rowRanges: Range[] = [];
+  private stratifiedRanges: Range[] = [];
+  private brushedRanges: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
   multiformList: TaggleMultiform[] = [];
@@ -37,11 +41,13 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.dataView = data;
     this.calculateDefaultRange();
     this.$node = this.build($columnParent);
+    this.attachListener();
+
   }
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = super.build($parent);
-
+    $node.classed('column-matrix', true);
     this.$colStrat = $node.select('aside')
       .append('ol')
       .attr('reversed', 'reversed');
@@ -69,8 +75,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
+      this.colRange = colRange;
     }
 
+    this.stratifiedRanges = stratifiedRanges;
+    this.brushedRanges = brushedRanges;
     let id = 0;
     for (const r of rowRanges) {
       const $multiformDivs = this.body.append('div').classed('multiformList', true);
@@ -123,7 +132,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    */
   async updateColStrats() {
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
-    //console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
+    console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
+    this.colRange = this.colStratManager.nonStratifiedRange;
+    this.updateMultiForms(this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange)
     this.colStratManager.stratify(rangeListMap);
   }
 
@@ -135,6 +146,20 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.colStratManager.sortByFilters(filterList);
     this.updateColStrats();
     // TODO still need to update the DOM order in `this.$colStrat`
+  }
+
+
+  private attachListener() {
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData) => {
+      const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+      if (col.length === 0) {
+        return;
+      }
+      col[0].sortCriteria = sortData.sortMethod;
+      this.updateColStrats();
+    });
+
+
   }
 
 }
