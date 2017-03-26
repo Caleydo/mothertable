@@ -7,12 +7,17 @@
 @import "~select2-bootstrap-theme/dist/select2-bootstrap.min.css";
 
 
+.select2-container--bootstrap .select2-results > .select2-results__options {
+  max-height: 600px;
+}
+
 .select2-results__group {
   text-transform: capitalize;
   background: $header-bg-color;
   color: black !important;
 }
 
-.select2-container--bootstrap .select2-results > .select2-results__options {
-  max-height: 600px;
+.select2-results__option[role="treeitem"] span {
+  display: flex;
+  flex-direction: row;
 }

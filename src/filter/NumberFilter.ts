@@ -27,7 +27,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   protected build($parent: d3.Selection<any>) {
     const $node = super.build($parent);
-    this.generateLabel($node, this.data.desc.name);
+    this.generateLabel($node);
     this._toolTip = this.generateTooltip($node);
     this.generateDensityPlot($node.select('main'));
     return $node;

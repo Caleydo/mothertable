@@ -15,6 +15,7 @@ import {IVisPluginDesc, list as listVisses} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
+import {dataValueTypeCSSClass, dataValueType} from './ColumnManager';
 
 export enum EOrientation {
   Vertical,
@@ -25,7 +26,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly VISUALIZATION_SWITCHED = 'switched';
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
-  static readonly DATATYPE = {vector: 'vector', matrix: 'matrix'};
+  static readonly DATATYPE = {vector: 'vector', matrix: 'matrix', stratification: 'stratification'};
   $node: d3.Selection<any>;
 
   minWidth: number = 10;
@@ -107,7 +108,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .html(`
         <aside></aside>
         <header class="columnHeader">
-          <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
+          <div class="labelName"><i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> <span>${formatAttributeName(this.data.desc.name)}</span></div>
           <div class="toolbar"></div>
         </header>
         <main></main>`);

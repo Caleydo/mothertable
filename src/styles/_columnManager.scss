@@ -97,13 +97,17 @@
 
       .labelName {
         cursor: move;
-        align-items: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-align: center;
-        font-weight: 500;
+        display: flex;
+        justify-content: center;
         padding: 0 2px 3px;
+
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          text-align: center;
+          font-weight: 500;
+        }
       }
 
       .toolbar {
