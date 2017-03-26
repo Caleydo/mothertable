@@ -562,6 +562,7 @@ export default class ColumnManager extends EventHandler {
       maxHeights.push(max);
 
       totalMax = totalMax > d3.sum(max) ? totalMax : d3.sum(max);//TODO compute properly based on visses!
+      
       index = index + 1;
     }
 
@@ -579,7 +580,7 @@ export default class ColumnManager extends EventHandler {
         });
         let min = Math.max(...minSize);
         if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGruopBrushed(i))) {
-          min = 60;
+          min = 72;
           totalAggreg = totalAggreg + min;
         } else if (brushedMultiforms.indexOf(ind) !== -1){
           totalMinBrushed = totalMinBrushed + min;
