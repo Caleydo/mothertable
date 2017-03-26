@@ -16,7 +16,7 @@ import AColumnManager from './AColumnManager';
 import {AnyFilter, default as AFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
-import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
+import {AVectorFilter} from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 
 
