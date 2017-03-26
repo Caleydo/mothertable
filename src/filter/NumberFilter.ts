@@ -126,6 +126,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .attr('width', cellDimension)
       .attr('height', (d, i) => binScale(d))
       .style('opacity', 1)
+
       .attr('stroke', 'grey')
       .attr('stroke-width', 0.5)
       .attr('fill', (d, i) => colorScale(cellDimension * i))

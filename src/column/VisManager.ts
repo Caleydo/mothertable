@@ -341,10 +341,14 @@ export default class VisManager {
   assignVis(multiform: MultiForm) {
     if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
       && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.AGGREGATED) {
+
       multiform.switchTo(VisManager.userSelectedAggregatedVisses.get(multiform.id));
+
     } else if (VisManager.userSelectedUnaggregatedVisses.has(multiform.id)
       && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.UNAGGREGATED) {
+
       multiform.switchTo(VisManager.userSelectedUnaggregatedVisses.get(multiform.id));
+
     } else {
       const preferredVis = VisManager.getDefaultVis(multiform.data.desc.type, multiform.data.desc.value.type, VisManager.multiformAggregationType.get(multiform.id));
       multiform.switchTo(preferredVis);
