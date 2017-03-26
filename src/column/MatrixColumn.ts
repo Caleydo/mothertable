@@ -13,9 +13,11 @@ import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
-import {AnyFilter} from '../filter/AFilter';
+import {AnyFilter, default as AFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
+import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
+import {on} from 'phovea_core/src/event';
 
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
@@ -39,6 +41,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.dataView = data;
     this.calculateDefaultRange();
     this.$node = this.build($columnParent);
+    this.attachListener();
+
   }
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
@@ -142,6 +146,20 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.colStratManager.sortByFilters(filterList);
     this.updateColStrats();
     // TODO still need to update the DOM order in `this.$colStrat`
+  }
+
+
+  private attachListener() {
+    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData) => {
+      const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+      if (col.length === 0) {
+        return;
+      }
+      col[0].sortCriteria = sortData.sortMethod;
+      this.updateColStrats();
+    });
+
+
   }
 
 }

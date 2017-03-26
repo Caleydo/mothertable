@@ -15,9 +15,9 @@ export default class AColumnManager {
   private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
   private _nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private dataPerStratificaiton; //The number of data elements per stratification
-  private stratifyColid: string; // This is column Name used for stratification
   constructor() {
     //
+
   }
 
   get vectorCols(): AnyColumn[] {
@@ -114,4 +114,6 @@ export default class AColumnManager {
 
     return rangeListMap.get(uniqueVectorCols[uniqueVectorCols.length - 1].data.desc.id);
   }
+
+
 }

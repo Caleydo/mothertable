@@ -128,8 +128,9 @@
     // column stratification
     aside {
       ol, li {
-        list-style-type: decimal;
+        list-style-type: none;
         margin: 0;
+        padding: 0;
       }
     }
   }

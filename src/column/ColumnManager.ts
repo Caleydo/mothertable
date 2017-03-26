@@ -107,6 +107,9 @@ export default class ColumnManager extends EventHandler {
   private attachListener() {
     on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+      if (col.length === 0) {
+        return;
+      }
       col[0].sortCriteria = sortData.sortMethod;
       this.updateColumns();
     });
