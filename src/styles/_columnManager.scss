@@ -149,6 +149,26 @@
       }
     }
   }
+
+  .column.column-matrix {
+    position: relative;
+    aside .labelName {
+      position: absolute;
+      right: 0;
+      margin-right: 105%;
+      margin-top: 5%;
+      white-space: nowrap;
+    }
+
+    & ~ .column.column-matrix {
+      aside .labelName {
+        position: absolute;
+        left: 0;
+        margin-left: 105%;
+        white-space: nowrap;
+      }
+    }
+  }
 }
 
 .itemWidth {

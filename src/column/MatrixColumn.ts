@@ -47,7 +47,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = super.build($parent);
-
+    $node.classed('column-matrix', true);
     this.$colStrat = $node.select('aside')
       .append('ol')
       .attr('reversed', 'reversed');
