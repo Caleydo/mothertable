@@ -35,7 +35,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       all: {
         width: $body.property('clientWidth'),
         heightTo: $body.property('clientHeight'),
-        sort: this.sortCriteria
+        sort: this.sortCriteria,
+        orientation: this.orientation
       }
     };
   }
@@ -75,7 +76,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     }
   }
 
-  async updateMultiForms(multiformRanges: Range[], stratifiedRanges?:Range[], brushedRanges?:Range[]) {
+  async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     const domain = d3.extent(v);
     const viewPromises = multiformRanges.map((r) => this.data.idView(r));
