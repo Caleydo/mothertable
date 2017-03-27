@@ -398,15 +398,16 @@ export default class ColumnManager extends EventHandler {
    */
   private async stratifyColumns() {
     let brushedRages = [];
-    const r = this._multiformRangeList;
-    if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0){
-      this._stratifiedRanges.forEach((sr,i) =>{
+
+    let r = this._multiformRangeList;
+    if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0) {
+      this._stratifiedRanges.forEach((sr, i) => {
         r.some((br) => {
           const stratRange = sr.dims[0].asList();
           const brushedRange = br.dims[0].asList();
           const isSubrange = checkArraySubset(stratRange, brushedRange);
-          if(isSubrange){
-            if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) {
+          if (isSubrange) {
+            if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) {
               brushedRages.push(sr);
               return true;
             } else {
@@ -415,6 +416,9 @@ export default class ColumnManager extends EventHandler {
           }
         });
       });
+    } else if (r === undefined) {
+
+      brushedRages = [this.nonStratifiedRange];
     } else {
       brushedRages = r;
     }
