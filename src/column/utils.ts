@@ -28,7 +28,7 @@ export function scaleTo(multiform: MultiForm, width: number, height: number, ori
 }
 
 
-export const NUMERICAL_COLOR_MAP: string[] = ['#fff5f0', '#67000d'];
+export const NUMERICAL_COLOR_MAP: string[] = ['white', 'black'];
 
 
 export function reArrangeRangeList(draggedArray, fullRangeasList) {
@@ -219,7 +219,7 @@ export function checkArraySubset(parentArr, childArr) {
  * Sort function for sorting arrays based on the first elment
  * @param a
  * @param b
- * @return {number} 
+ * @return {number}
  */
 function sortArray(a: number[], b: number[]) {
   if (a[0] === b[0]) {
