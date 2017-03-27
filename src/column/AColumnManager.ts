@@ -91,9 +91,7 @@ export default class AColumnManager {
   }
 
   private stratifyVectorCols(rangeListMap: Map<string, Range[]>) {
-    console.log(rangeListMap)
     this.vectorCols.forEach((col) => {
-
       col.updateMultiForms(rangeListMap.get(col.data.desc.id));
     });
   }

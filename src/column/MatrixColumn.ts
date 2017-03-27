@@ -132,9 +132,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    */
   async updateColStrats() {
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
-    console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
     this.colRange = this.colStratManager.nonStratifiedRange;
-    this.updateMultiForms(this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange)
+    this.updateMultiForms(this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange);
     this.colStratManager.stratify(rangeListMap);
   }
 
