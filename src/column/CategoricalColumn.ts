@@ -42,12 +42,15 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
       .attr('title', 'Stratify table by this column')
       .html(`<i class="fa fa-columns fa-rotate-270 fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
       .on('click', () => {
-        this.fire(CategoricalColumn.EVENT_STRATIFYME, this); // for stratifying in the ColumnManager
         fire(CategoricalColumn.EVENT_STRATIFYME, this); // for updating the filter and other columns
       });
 
     on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
       $stratifyButton.classed('active', ref.data.desc.id === this.data.desc.id);
+
+      if(ref.data.desc.id === this.data.desc.id) {
+        this.fire(CategoricalColumn.EVENT_STRATIFYME, this); // for stratifying in the ColumnManager
+      }
     });
   }
 
