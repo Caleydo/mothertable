@@ -41,7 +41,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
-  multiformList = [];
+  multiformList:TaggleMultiform[] = [];
 
   selectedAggVis: IVisPluginDesc;
   selectedUnaggVis: IVisPluginDesc;
@@ -192,8 +192,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
 
-  async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
+  async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]):Promise<TaggleMultiform[]> {
     // hook
+    return Promise.resolve(this.multiformList);
   }
 
   protected findGroupId(stratifiedRanges: Range[], multiformRange: Range) {

@@ -55,18 +55,22 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return $node;
   }
 
-  protected multiFormParams(): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
+      },
+      all: {
+        heightTo: $body.property('clientHeight')
       }
     };
   }
 
+
   async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
-    this.body.selectAll('.multiformList').remove();
-    this.multiformList = [];
+    this.stratifiedRanges = stratifiedRanges;
+    this.brushedRanges = brushedRanges;
 
     if (!rowRanges) {
       rowRanges = this.rowRanges;
@@ -78,33 +82,38 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       this.colRange = colRange;
     }
 
-    this.stratifiedRanges = stratifiedRanges;
-    this.brushedRanges = brushedRanges;
-    let id = 0;
-    for (const r of rowRanges) {
-      const $multiformDivs = this.body.append('div').classed('multiformList', true);
+    const viewPromises = rowRanges.map((r) => {
+      return this.data.idView(r)
+        .then((rowView) => (<INumericalMatrix>rowView).t)
+        .then((rowViewMatrix) => rowViewMatrix.idView(colRange))
+        .then((colView) => (<INumericalMatrix>colView).t);
+    });
 
-      let rowView = await this.data.idView(r);
-      rowView = (<INumericalMatrix>rowView).t;
+    return Promise.all(viewPromises).then((views) => {
+      this.body.selectAll('.multiformList').remove();
+      this.multiformList = [];
 
-      let colView = await rowView.idView(colRange);
-      colView = (<INumericalMatrix>colView).t;
+      views.forEach((view, id) => {
+        const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
-      const m = new TaggleMultiform(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
-      m.groupId = this.findGroupId(stratifiedRanges, rowRanges[id]);
-      m.brushed = this.checkBrushed(brushedRanges, rowRanges[id]);
-      this.multiformList.push(m);
+        const m = new TaggleMultiform(view, <HTMLElement>$multiformDivs.node(), this.multiFormParams($multiformDivs));
+        m.groupId = this.findGroupId(stratifiedRanges, rowRanges[id]);
+        m.brushed = this.checkBrushed(brushedRanges, rowRanges[id]);
 
-      if (this.selectedAggVis) {
-        VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
-      }
-      if (this.selectedUnaggVis) {
-        VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
-      }
-      VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+        //assign visses
+        if (this.selectedAggVis) {
+          VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
+        }
+        if (this.selectedUnaggVis) {
+          VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
+        }
+        VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
 
-      id = id + 1;
-    }
+        this.multiformList.push(m);
+      });
+
+      return this.multiformList;
+    });
   }
 
   async calculateDefaultRange() {
