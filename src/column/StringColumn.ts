@@ -14,7 +14,7 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
   minWidth: number = 20;
   maxWidth: number = 300;
   minHeight: number = 19;
-  maxHeight: number = 25;
+  maxHeight: number = 20;
 
   constructor(data: IStringVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);

@@ -67,27 +67,27 @@ export default class VisManager {
 
   public static readonly stringOptions: IVisOptions = {
     rowMinHeight: 19,
-    rowMaxHeight: 25,
+    rowMaxHeight: 20,
     columnMinWidth: 10,
     columnMaxWidth: 100,
     minWidth: 20,
     maxWidth: 100
   };
   public static readonly barplotOptions: IVisOptions = {
-    rowMinHeight: 1,
-    rowMaxHeight: 25,
+    rowMinHeight: 4,
+    rowMaxHeight: 20,
     minWidth: 40,
     maxWidth: 50
   };
   public static readonly heatmap1DOptions: IVisOptions = {
-    rowMinHeight: 1,
-    rowMaxHeight: 25,
+    rowMinHeight: 4,
+    rowMaxHeight: 20,
     minWidth: 20,
     maxWidth: 50
   };
   public static readonly heatmapOptions: IVisOptions = {
-    rowMinHeight: 1,
-    rowMaxHeight: 25,
+    rowMinHeight: 4,
+    rowMaxHeight: 20,
     columnMinWidth: 2,
     columnMaxWidth: 10
   };
@@ -99,7 +99,7 @@ export default class VisManager {
   };
   public static readonly propSymbolOptions: IVisOptions = {
     rowMinHeight: 10,
-    rowMaxHeight: 25,
+    rowMaxHeight: 20,
     minWidth: 20,
     maxWidth: 50
   };
@@ -110,8 +110,8 @@ export default class VisManager {
     maxWidth: 20
   };
   public static readonly mosaicOptions: IVisOptions = {
-    rowMinHeight: 1,
-    rowMaxHeight: 25,
+    rowMinHeight: 4,
+    rowMaxHeight: 20,
     minWidth: 20,
     maxWidth: 50
   };
