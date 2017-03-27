@@ -124,8 +124,7 @@ export default class VisManager {
   public static unaggregatedCatVisses = ['phovea-vis-heatmap1d'];
   public static aggregatedStrVisses = ['list'];//TODO change to empty vis
   public static unaggregatedStrVisses = ['list'];
-  public static aggregatedNumMatRowVisses = ['phovea-vis-heatmap'];
-  public static aggregatedNumMatColumnVisses = ['phovea-vis-heatmap'];
+  public static aggregatedNumMatVisses = ['phovea-vis-histogram'];
   public static unaggregatedNumMatVisses = ['phovea-vis-heatmap'];
 
 
@@ -168,7 +167,7 @@ export default class VisManager {
             break;
 
           case AColumn.DATATYPE.matrix:
-            return 'phovea-vis-heatmap';
+            return 'phovea-vis-histogram';
         }
         return 'list'; // default value
 
@@ -208,7 +207,7 @@ export default class VisManager {
             break;
 
           case AColumn.DATATYPE.matrix:
-            return VisManager.unaggregatedNumMatVisses;
+            return VisManager.aggregatedNumMatVisses;
           default:
             return;
         }

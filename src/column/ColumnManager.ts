@@ -43,6 +43,7 @@ import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
+import TaggleMultiform from './TaggleMultiform';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
@@ -301,18 +302,13 @@ export default class ColumnManager extends EventHandler {
     }
 
     await this.updateStratifyID(this.stratifyColid);
-    if (this.totalbrushed.length === 0) {
-      await this.stratifyColumns();
-      this.updateAggModePerGroupAfterNewStrat(oldRanges);
-      this.relayout();
-      return;
+
+    if (this.totalbrushed.length > 0) {
+      await this.updateRangeList(this.brushedItems);
     }
 
-    await this.updateRangeList(this.brushedItems);
     await this.stratifyColumns();
     this.updateAggModePerGroupAfterNewStrat(oldRanges);
-
-
     this.relayout();
   }
 
@@ -393,10 +389,9 @@ export default class ColumnManager extends EventHandler {
 
   /**
    *
-   * @param idRange
-   * @returns {Promise<void>}
+   * @returns {Promise<[TaggleMultiform[][],TaggleMultiform[][],TaggleMultiform[]]>}
    */
-  private async stratifyColumns() {
+  private stratifyColumns() {
     let brushedRages = [];
     const r = this._multiformRangeList;
     if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0) {
@@ -425,39 +420,31 @@ export default class ColumnManager extends EventHandler {
     this._multiformRangeList = brushedRages;
 
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    vectorCols.forEach((col) => {
-      col.updateMultiForms(brushedRages, this._stratifiedRanges, this._brushedRanges);
-    });
+    const vectorUpdatePromise = Promise.all(vectorCols.map((col) => col.updateMultiForms(brushedRages, this._stratifiedRanges, this._brushedRanges)));
+
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
-    matrixCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges));
-
+    const matrixUpdatePromise = Promise.all(matrixCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges)));
 
     // update aggregation switcher column
     this.aggSwitcherCol.updateMultiForms(this.stratifiedRanges);
 
     //update the stratifyIcon
     this.updateStratifyIcon(findColumnTie(this.filtersHierarchy));
+
+    return Promise.all([vectorUpdatePromise, matrixUpdatePromise]);
   }
 
   private updateStratifyIcon(columnIndexForTie: number) {
-
     //Categorical Columns after the numerical or string
-    const catFiltersAfterTie = this.filtersHierarchy.filter((d, i) => i > columnIndexForTie)
-      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
-    catFiltersAfterTie.forEach((col) => {
-      const s = col.$node.select('.toolbar').select('.fa.fa-bars.fa-fw');
-      s.classed('fa fa-bars fa-fw', false);
-    });
-
+    this.filtersHierarchy.filter((d, i) => i > columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL)
+      .forEach((col) => (<CategoricalColumn>col).showStratIcon(false));
 
     //Categorical Columns before the numerical or string
-    const catFilterBeforeTie = this.filtersHierarchy.filter((d, i) => i < columnIndexForTie)
-      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
-    catFilterBeforeTie.forEach((col) => {
-      const s = col.$node.select('.toolbar').select('i');
-      s.classed('fa fa-bars fa-fw', true);
-    });
+    this.filtersHierarchy.filter((d, i) => i < columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL)
+      .forEach((col) => (<CategoricalColumn>col).showStratIcon(true));
   }
 
 

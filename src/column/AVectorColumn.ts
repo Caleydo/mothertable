@@ -108,24 +108,19 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
     const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
     const domain = d3.extent(v);
+
     const viewPromises = multiformRanges.map((r) => this.data.idView(r));
-    // this.updateSortIcon();
-    Promise.all(viewPromises).then((views) => {
+
+    return Promise.all(viewPromises).then((views) => {
+   //   this.updateSortIcon();
+
       this.body.selectAll('.multiformList').remove();
       this.multiformList = [];
 
       views.forEach((view, id) => {
-        const $multiformdivs = this.body.append('div').classed('multiformList', true);
-        const $header = $multiformdivs.append('div').classed('vislist', true);
+        const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
-        this.body.selectAll('.multiformList')
-          .on('mouseover', function () {
-            d3.select(this).select('.vislist').style('display', 'block');
-          })
-          .on('mouseleave', function () {
-            d3.select(this).select('.vislist').style('display', 'none');
-          });
-        const m = new TaggleMultiform(view, <HTMLElement>$multiformdivs.node(), this.multiFormParams($multiformdivs, domain));
+        const m = new TaggleMultiform(view, <HTMLElement>$multiformDivs.node(), this.multiFormParams($multiformDivs, domain));
         m.groupId = this.findGroupId(stratifiedRanges, multiformRanges[id]);
         m.brushed = this.checkBrushed(brushedRanges, multiformRanges[id]);
 
@@ -137,8 +132,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
           VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
         }
         VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+
         this.multiformList.push(m);
       });
+
+      return this.multiformList;
     });
   }
 
