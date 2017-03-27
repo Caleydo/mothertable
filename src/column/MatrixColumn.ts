@@ -24,7 +24,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
   maxWidth: number = 300;
   minHeight: number = 2;
-  maxHeight: number = 25;
+  maxHeight: number = 20;
 
   private rowRanges: Range[] = [];
   private stratifiedRanges: Range[] = [];
