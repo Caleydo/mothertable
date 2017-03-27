@@ -14,7 +14,14 @@ import TaggleMultiform from './TaggleMultiform';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 import {on, fire} from 'phovea_core/src/event';
+import {IHistogram} from 'phovea_core/src/math';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
+
+export interface ITaggleHistogramData {
+  domain: number[];
+  maxValue: number;
+  nbins: number;
+}
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
 
@@ -32,7 +39,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   }
 
-  protected multiFormParams($body: d3.Selection<any>, domain?): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return {
       all: {
         width: $body.property('clientWidth'),
@@ -84,35 +91,20 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     super.buildToolbar($toolbar);
   }
 
-  private updateSortIcon() {
-
-
-    if (this.sortCriteria === SORT.desc) {
-      console.log(this.sortCriteria, 'desc')
-      this.$node.select('i').classed('fa fa-sort-amount-asc fa-fw', false);
-      this.$node.select('i').classed('fa fa-sort-amount-desc fa-fw', true)
-        .attr('title', 'Sort ascending')
-        .html(`<i class="sort fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
-
-
-    } else if (this.sortCriteria === SORT.asc) {
-      console.log(this.sortCriteria, 'asc')
-      this.$node.select('i').classed('fa fa-sort-amount-desc fa-fw', false)
-      this.$node.select('i').classed('fa fa-sort-amount-asc fa-fw', true)
-        .attr('title', 'Sort descending')
-        .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
-
-    }
-  }
-
   async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
-    const v: any = await this.data.data(); // wait first for data and then continue with removing old forms
-    const domain = d3.extent(v);
+    const data: any = await this.data.data(); // wait first for data and then continue with removing old  forms
+    const histData:IHistogram = await this.data.hist();
 
     const viewPromises = multiformRanges.map((r) => this.data.idView(r));
 
+    // get common histogram data for all multiforms
+    const histogramData = {
+      domain: d3.extent(data),
+      maxValue: histData.largestBin,
+      nbins: histData.bins
+    };
+
     return Promise.all(viewPromises).then((views) => {
-   //   this.updateSortIcon();
 
       this.body.selectAll('.multiformList').remove();
       this.multiformList = [];
@@ -120,7 +112,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       views.forEach((view, id) => {
         const $multiformDivs = this.body.append('div').classed('multiformList', true);
 
-        const m = new TaggleMultiform(view, <HTMLElement>$multiformDivs.node(), this.multiFormParams($multiformDivs, domain));
+        const m = new TaggleMultiform(view, <HTMLElement>$multiformDivs.node(), this.multiFormParams($multiformDivs, histogramData));
         m.groupId = this.findGroupId(stratifiedRanges, multiformRanges[id]);
         m.brushed = this.checkBrushed(brushedRanges, multiformRanges[id]);
 
