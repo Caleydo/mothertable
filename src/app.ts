@@ -280,3 +280,4 @@ export default class App {
 export function create(parent: HTMLElement) {
   return new App(parent);
 }
+
