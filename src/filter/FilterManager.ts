@@ -160,22 +160,15 @@ export default class FilterManager extends EventHandler {
   }
 
   private updateStratifyIcon(columnIndexForTie: number) {
-
     //Categorical Columns after the numerical or string
-    const catFiltersAfterTie = this.filters.filter((d, i) => i > columnIndexForTie)
-      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
-    catFiltersAfterTie.forEach((col) => {
-      const s = col.$node.select('.toolbar').select('.fa.fa-bars.fa-fw');
-      s.classed('fa fa-bars fa-fw', false);
-    });
+    this.filters.filter((d, i) => i > columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL)
+      .forEach((col) => (<CategoricalFilter>col).showStratIcon(false));
 
     //Categorical Columns before the numerical or string
-    const catFilterBeforeTie = this.filters.filter((d, i) => i < columnIndexForTie)
-      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
-    catFilterBeforeTie.forEach((col) => {
-      const s = col.$node.select('.toolbar').select('i');
-      s.classed('fa fa-bars fa-fw', true);
-    });
+    this.filters.filter((d, i) => i < columnIndexForTie)
+      .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL)
+      .forEach((col) => (<CategoricalFilter>col).showStratIcon(true));
   }
 
 

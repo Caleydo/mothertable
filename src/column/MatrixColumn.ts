@@ -61,6 +61,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP
       },
+      'phovea-vis-histogram': {
+        nbins: Math.min(25, Math.floor(Math.sqrt(this.data.length))),
+        color: 'grey'
+      },
       all: {
         heightTo: $body.property('clientHeight')
       }

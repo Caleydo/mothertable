@@ -46,6 +46,9 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     super.addSortIcon($node);
   }
 
+  showStratIcon(isVisible:boolean) {
+    this.$node.select('.fa-columns').classed('hidden', !isVisible);
+  }
 
   sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
     if (sortData.col !== this) {

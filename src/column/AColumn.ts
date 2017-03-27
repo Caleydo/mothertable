@@ -143,7 +143,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     toolbar.insertBefore(s, toolbar.firstChild);
     const visIds = VisManager.getPossibleVisses(this.data.desc.type, this.data.desc.value.type, aggregationType);
     const defVis = createNode(s, 'i');
-    defVis.innerText = '--';
+    defVis.classList.add('fa');
+    defVis.classList.add('fa-magic');
     defVis.onclick = () => {
       this.multiformList.forEach((mul) => {
         if (aggregationType === EAggregationType.UNAGGREGATED) {

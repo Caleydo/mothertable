@@ -54,4 +54,8 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
     });
   }
 
+  showStratIcon(isVisible:boolean) {
+    this.toolbar.select('.fa-columns').classed('hidden', !isVisible);
+  }
+
 }
