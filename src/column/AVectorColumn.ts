@@ -13,6 +13,7 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import TaggleMultiform from './TaggleMultiform';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
+import {on, fire} from 'phovea_core/src/event';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends AColumn<T, DATATYPE> {
@@ -27,6 +28,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     super(data, orientation);
     this.dataView = data;
     this.rangeView = (<any>data).indices;
+
 
   }
 
@@ -44,35 +46,62 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   protected buildToolbar($toolbar: d3.Selection<any>) {
     const $sortButton = $toolbar.append('a')
       .attr('title', 'Sort descending')
-      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`)
-      .on('click', () => {
-        if ($sortButton.select('i').classed('fa-sort-amount-asc')) {
-          this.sortCriteria = SORT.desc;
-          this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-          $sortButton
-            .attr('title', 'Sort ascending')
-            .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
-        } else {
-          this.sortCriteria = SORT.asc;
-          this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-          $sortButton
-            .attr('title', 'Sort descending')
-            .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
-        }
-      });
+      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+
+    const onClick = (sort: string) => {
+      if (sort === SORT.desc) {
+        $sortButton
+          .attr('title', 'Sort ascending')
+          .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+
+      } else {
+        $sortButton
+          .attr('title', 'Sort descending')
+          .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+
+      }
+    };
+
+    $sortButton.on('click', () => {
+      this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
+      if ($sortButton.select('i').classed('fa-sort-amount-asc')) {
+        const sortData = {sortMethod: SORT.desc, col: this};
+        fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+
+      } else {
+        const sortData = {sortMethod: SORT.asc, col: this};
+        fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+      }
+    });
+
+    on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData) => {
+      if (this.data.desc.id === sortData.col.data.desc.id) {
+        onClick(sortData.sortMethod);
+      }
+    });
+
+
     super.buildToolbar($toolbar);
   }
 
   private updateSortIcon() {
+
+
     if (this.sortCriteria === SORT.desc) {
-      this.$node.select('button.sort')
+      console.log(this.sortCriteria, 'desc')
+      this.$node.select('i').classed('fa fa-sort-amount-asc fa-fw', false);
+      this.$node.select('i').classed('fa fa-sort-amount-desc fa-fw', true)
         .attr('title', 'Sort ascending')
-        .html(`<i class="sort fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+        .html(`<i class="sort fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+
 
     } else if (this.sortCriteria === SORT.asc) {
-      this.$node.select('button.sort')
+      console.log(this.sortCriteria, 'asc')
+      this.$node.select('i').classed('fa fa-sort-amount-desc fa-fw', false)
+      this.$node.select('i').classed('fa fa-sort-amount-asc fa-fw', true)
         .attr('title', 'Sort descending')
-        .html(`<i class="sort fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+        .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+
     }
   }
 
@@ -83,7 +112,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const viewPromises = multiformRanges.map((r) => this.data.idView(r));
 
     return Promise.all(viewPromises).then((views) => {
-      this.updateSortIcon();
+   //   this.updateSortIcon();
 
       this.body.selectAll('.multiformList').remove();
       this.multiformList = [];
