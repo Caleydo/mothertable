@@ -398,8 +398,7 @@ export default class ColumnManager extends EventHandler {
    */
   private async stratifyColumns() {
     let brushedRages = [];
-
-    let r = this._multiformRangeList;
+    const r = this._multiformRangeList;
     if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0) {
       this._stratifiedRanges.forEach((sr, i) => {
         r.some((br) => {
@@ -605,12 +604,12 @@ export default class ColumnManager extends EventHandler {
     let totalAggreg = 0;
     let totalMinBrushed = 0;
     let totalMaxBrushed = 0;
-    let brushedMultiforms = this.brushedMultiforms();
+    const brushedMultiforms = this.brushedMultiforms();
     //choose minimal and maximal block height for each row of multiforms/stratification group
     const size = VisManager.modePerGroup.length;
     for (let i = 0; i < size; i++) {
       this.multiformsInGroup(i).forEach((ind) => {
-        let minSize = [];
+        const minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[ind]);
         });
@@ -661,7 +660,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   private brushedMultiforms() {
-    let brushedMultiforms: number[] = [];
+    const brushedMultiforms: number[] = [];
     this.columns.forEach((col) => {
       col.multiformList.forEach((m, i) => {
         if (m.brushed && brushedMultiforms.indexOf(i) === -1) {
