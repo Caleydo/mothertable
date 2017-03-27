@@ -12,7 +12,7 @@ import {NUMERICAL_COLOR_MAP} from '../column/utils';
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
 
   readonly $node: d3.Selection<any>;
-  private _filterDim: {width: number, height: number};
+  private _filterDim: { width: number, height: number };
   private _numericalFilterRange: number[];
   private _toolTip: d3.Selection<SVGElement>;
   private _SVG: d3.Selection<SVGElement>;
@@ -33,12 +33,12 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     return $node;
   }
 
-  get filterDim(): {width: number; height: number} {
+  get filterDim(): { width: number; height: number } {
     this._filterDim = {width: 205, height: 35};
     return this._filterDim;
   }
 
-  set filterDim(value: {width: number; height: number}) {
+  set filterDim(value: { width: number; height: number }) {
     this._filterDim = value;
   }
 
@@ -94,9 +94,16 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const toolTip = (this._toolTip);
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
-    const colorScale = d3.scale.linear<string,number>().domain([0, cellWidth]).range(NUMERICAL_COLOR_MAP);
+    const colorScale = d3.scale.linear<string, number>().domain([0, cellWidth]).range(NUMERICAL_COLOR_MAP);
     const binScale = d3.scale.linear()
       .domain([0, d3.max(histData)]).range([0, this._filterDim.height]);
+
+
+    const pattern = $svg.append('defs')
+      .append('pattern')
+      .attr({id: 'hash', width: '6', height: '5', patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(60)'});
+    pattern.append('rect').classed('hatchGrey', true);
+    pattern.append('rect').classed('hatchWhite', true);
 
 
     const binsBackgroundRect = $svg.append('g')
@@ -109,10 +116,24 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .attr('y', (d, i) => cellHeight - binScale(d))
       .attr('width', cellDimension)
       .attr('height', (d, i) => binScale(d))
-      .style('opacity', 1)
-      .attr('stroke', 'grey')
-      .attr('stroke-width', 0.5)
-      .attr('fill', 'lightgrey');
+      .attr('fill', (d, i) => colorScale(cellDimension * i));
+
+    const hatchLeft = $svg.append('rect').classed('hatchLeft', true)
+      .attr('transform', 'translate(5,0)')
+      .attr('x', (d, i) => (i * cellDimension))
+      .attr('y', (d, i) => 0)
+      .attr('width', 0)
+      .attr('height', this._filterDim.height)
+      .attr('fill', 'url(#hash)');
+
+
+    const hatchRight = $svg.append('rect').classed('hatchRight', true)
+      .attr('transform', 'translate(5,0)')
+      .attr('x', (d, i) => (i * cellDimension))
+      .attr('y', (d, i) => 0)
+      .attr('width', 0)
+      .attr('height', this._filterDim.height)
+      .attr('fill', 'url(#hash)');
 
     const binsForegroundRect = $svg.append('g')
       .classed('binsEntries', true)
@@ -125,10 +146,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
       .attr('y', (d, i) => cellHeight - binScale(d))
       .attr('width', cellDimension)
       .attr('height', (d, i) => binScale(d))
-      .style('opacity', 1)
-
-      .attr('stroke', 'grey')
-      .attr('stroke-width', 0.5)
       .attr('fill', (d, i) => colorScale(cellDimension * i))
       .on('mouseover', function (d, i) {
         toolTip.transition()
@@ -251,6 +268,15 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     $node.select('.rightText')
       .attr('x', brushScaledVal[1] - margin * 2)
       .text(`${Math.floor(windowScaledVal[1])}`);
+
+
+    $node.select('.hatchLeft')
+      .attr('width', brushScaledVal[0] - margin);
+
+    $node.select('.hatchRight')
+      .attr('x', brushScaledVal[1] - margin * 2)
+      .attr('width', c.windowSize[1] - brushScaledVal[1]);
+
 
   }
 

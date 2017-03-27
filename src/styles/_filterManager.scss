@@ -92,7 +92,7 @@
           color: $toolbar-link-active-color;
         }
       }
-      a + a{
+      a + a {
         margin-left: 5px;
       }
     }
@@ -219,6 +219,34 @@ li {
   font-size: 12px;
   fill: black
 
+}
+
+.hatchPattern {
+  width: 6px;
+  height: 5px,
+}
+
+.hatchGrey {
+  width: 3px;
+  height: 5px;
+  transform: translate(0, 0);
+  fill: lightgrey;
+  opacity: 0.8;
+}
+
+.hatchWhite {
+  width: 3px;
+  height: 5px;
+  transform: translate(3px, 0);
+  fill: white;
+  opacity: 0.8;
+
+}
+
+.bins {
+  opacity: 1;
+  stroke: grey;
+  stroke-width: 0.5px
 }
 
 .fa.fa-bars.active {
