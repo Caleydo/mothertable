@@ -41,11 +41,6 @@
         }
       }
 
-      // correct y-position for rotated icon
-      i.fa-window-minimize {
-        transform: rotate(90deg) translateY(-3px);
-      }
-
       div.visChooser {
         position: relative;
 
@@ -100,6 +95,10 @@
         display: flex;
         justify-content: center;
         padding: 0 2px 3px;
+
+        i {
+          margin-right: 3px;
+        }
 
         span {
           white-space: nowrap;

@@ -34,7 +34,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   protected addSortIcon($node: d3.Selection<any>) {
     const $stratifyButton = $node.append('a')
       .attr('title', 'Stratify table by this column')
-      .html(`<i class="fa fa-bars fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
+      .html(`<i class="fa fa-columns fa-rotate-270 fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
       .on('click', () => {
         fire(CategoricalColumn.EVENT_STRATIFYME, this);
       });

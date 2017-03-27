@@ -838,15 +838,14 @@ export function dataValueType(data: IDataType): EDataValueType {
 export function dataValueTypeCSSClass(valueType: EDataValueType) {
   switch (valueType) {
     case EDataValueType.Categorical:
-      return 'taggle-type-categorical';
+    case EDataValueType.Stratification: // no icon available => same as categorical
+      return 'fa fa-fw fa-bars';
     case EDataValueType.Matrix:
-      return 'taggle-type-matrix';
+      return 'fa fa-fw fa-th';
     case EDataValueType.Numerical:
-      return 'taggle-type-numerical';
+      return 'fa fa-fw fa-signal fa-rotate-270 fa-flip-vertical';
     case EDataValueType.String:
-      return 'taggle-type-string';
-    case EDataValueType.Stratification:
-      return 'taggle-type-categorical'; // no icon available => same as categorical
+      return 'fa fa-fw fa-align-center';
     default:
       return '';
   }
