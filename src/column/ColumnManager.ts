@@ -399,14 +399,14 @@ export default class ColumnManager extends EventHandler {
   private async stratifyColumns() {
     let brushedRages = [];
     const r = this._multiformRangeList;
-    if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0){
-      this._stratifiedRanges.forEach((sr,i) =>{
+    if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0) {
+      this._stratifiedRanges.forEach((sr, i) => {
         r.some((br) => {
           const stratRange = sr.dims[0].asList();
           const brushedRange = br.dims[0].asList();
           const isSubrange = checkArraySubset(stratRange, brushedRange);
-          if(isSubrange){
-            if(VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) {
+          if (isSubrange) {
+            if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) {
               brushedRages.push(sr);
               return true;
             } else {
@@ -415,6 +415,9 @@ export default class ColumnManager extends EventHandler {
           }
         });
       });
+    } else if (r === undefined) {
+
+      brushedRages = [this.nonStratifiedRange];
     } else {
       brushedRages = r;
     }
@@ -601,12 +604,12 @@ export default class ColumnManager extends EventHandler {
     let totalAggreg = 0;
     let totalMinBrushed = 0;
     let totalMaxBrushed = 0;
-    let brushedMultiforms = this.brushedMultiforms();
+    const brushedMultiforms = this.brushedMultiforms();
     //choose minimal and maximal block height for each row of multiforms/stratification group
     const size = VisManager.modePerGroup.length;
     for (let i = 0; i < size; i++) {
       this.multiformsInGroup(i).forEach((ind) => {
-        let minSize = [];
+        const minSize = [];
         minHeights.forEach((m) => {
           minSize.push(m[ind]);
         });
@@ -657,7 +660,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   private brushedMultiforms() {
-    let brushedMultiforms: number[] = [];
+    const brushedMultiforms: number[] = [];
     this.columns.forEach((col) => {
       col.multiformList.forEach((m, i) => {
         if (m.brushed && brushedMultiforms.indexOf(i) === -1) {
