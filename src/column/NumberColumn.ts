@@ -28,7 +28,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       initialVis: 'barplot',
       'phovea-vis-heatmap1d': {
-        color: NUMERICAL_COLOR_MAP
+        color: NUMERICAL_COLOR_MAP,
+        domain: this.data.valuetype.range
       },
       'barplot': {
         cssClass: 'taggle-vis-barplot',

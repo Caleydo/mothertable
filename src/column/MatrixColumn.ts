@@ -59,7 +59,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
-        color: NUMERICAL_COLOR_MAP
+        color: NUMERICAL_COLOR_MAP,
+        domain: this.data.valuetype.range
       },
       'phovea-vis-histogram': {
         nbins: Math.min(25, Math.floor(Math.sqrt(this.data.length))),
