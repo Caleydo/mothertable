@@ -238,11 +238,30 @@ function sortArray(a: number[], b: number[]) {
 function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeIndices: number[]) {
   const localArray = [];
   brushedArray.forEach((d) => {
-    const firstElem = stratifiedRangeIndices.indexOf(d[0]);
-    const lastElem = stratifiedRangeIndices.indexOf(d[d.length - 1]);
-    if(firstElem >- 1 &&  lastElem >- 1){
-      localArray.push([firstElem, lastElem]);
-    }
+    let indices = [];
+    d.forEach((item) => {
+      indices.push(stratifiedRangeIndices.indexOf(item));
+    });
+    indices.sort();
+    let firstElem = indices[0];
+    let lastElem = indices[0];
+    indices.forEach((elem, i) => {
+      if (((elem - lastElem) === 1 || (elem - lastElem) === 0) && i !== indices.length - 1) {
+        lastElem = elem;
+      }else if(i === indices.length - 1){
+        if(firstElem >- 1 &&  lastElem >- 1){
+          localArray.push([firstElem, elem]);
+        }
+      }
+        else {
+        if(firstElem >- 1 &&  lastElem >- 1){
+          localArray.push([firstElem, lastElem]);
+        }
+        firstElem = elem;
+        lastElem = elem;
+      }
+    });
+
   });
   return localArray;
 }
