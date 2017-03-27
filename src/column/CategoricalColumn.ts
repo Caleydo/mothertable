@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 19.01.2017.
  */
 
-import AVectorColumn from './AVectorColumn';
+import AVectorColumn, {ITaggleHistogramData} from './AVectorColumn';
 import {ICategoricalVector} from 'phovea_core/src/vector';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {EOrientation} from './AColumn';
@@ -27,9 +27,13 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
     this.attachListener();
   }
 
-  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
+      'phovea-vis-histogram': {
+        nbins: histogramData.nbins,
+        maxValue: histogramData.maxValue
+      },
       all: {
         heightTo: this.orientation === EOrientation.Horizontal ? VisManager.heatmap1DOptions.rowMaxHeight : $body.property('clientHeight'),
       }
