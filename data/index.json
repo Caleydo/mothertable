@@ -6,15 +6,15 @@
         "value": {
           "categories": [
             {
-              "color": "red",
+              "color": "#d7b5d8",
               "name": "1990s"
             },
             {
-              "color": "red",
+              "color": "#df65b0",
               "name": "2000s"
             },
             {
-              "color": "red",
+              "color": "#dd1c77",
               "name": "2010s"
             }
           ],
@@ -26,15 +26,15 @@
         "value": {
           "categories": [
             {
-              "color": "red",
+              "color": "#fbb4ae",
               "name": "pre HAART period"
             },
             {
-              "color": "red",
+              "color": "#b3cde3",
               "name": "A Decade of HAART"
             },
             {
-              "color": "red",
+              "color": "#ccebc5",
               "name": "multiple medications available"
             }
           ],
@@ -134,27 +134,27 @@
         "value": {
           "categories": [
             {
-              "color": "red",
+              "color": "#bdc9e1",
               "name": "Unknown"
             },
             {
-              "color": "red",
+              "color": "#c51b8a",
               "name": "Predominant"
             },
             {
-              "color": "red",
+              "color": "#f768a1",
               "name": "Medium"
             },
             {
-              "color": "red",
+              "color": "#fbb4b9",
               "name": "Slight"
             },
             {
-              "color": "red",
+              "color": "#feebe2",
               "name": "Low"
             },
             {
-              "color": "red",
+              "color": "#7a0177",
               "name": "High"
             }
           ],
@@ -166,20 +166,20 @@
         "value": {
           "categories": [
             {
-              "color": "red",
+              "color": "#d7191c",
               "name": "Low human development"
             },
             {
-              "color": "red",
+              "color": "#fdae61",
+              "name": "Medium human development"
+            },
+            {
+              "color": "#a6d96a",
               "name": "High human development"
             },
             {
-              "color": "red",
+              "color": "#1a9641",
               "name": "Very high human development"
-            },
-            {
-              "color": "red",
-              "name": "Medium human development"
             }
           ],
           "type": "categorical"
@@ -190,27 +190,27 @@
         "value": {
           "categories": [
             {
-              "color": "red",
+              "color": "#a6cee3",
               "name": "Asia"
             },
             {
-              "color": "red",
+              "color": "#1f78b4",
               "name": "Europe"
             },
             {
-              "color": "red",
+              "color": "#b2df8a",
               "name": "Africa"
             },
             {
-              "color": "red",
+              "color": "#33a02c",
               "name": "South America"
             },
             {
-              "color": "red",
+              "color": "#fb9a99",
               "name": "Oceania"
             },
             {
-              "color": "red",
+              "color": "#e31a1c",
               "name": "North America"
             }
           ],
@@ -222,27 +222,27 @@
         "value": {
           "categories": [
             {
-              "color": "red",
+              "color": "#d8daeb",
               "name": "No information provided"
             },
             {
-              "color": "red",
+              "color": "#542788",
               "name": "No restriction"
             },
             {
-              "color": "red",
+              "color": "#998ec3",
               "name": "Some restriction"
             },
             {
-              "color": "red",
+              "color": "#f1a340",
               "name": "Complete bar"
             },
             {
-              "color": "red",
+              "color": "#b35806",
               "name": "Deportation"
             },
             {
-              "color": "red",
+              "color": "#fee0b6",
               "name": "Require proof"
             }
           ],
@@ -364,6 +364,101 @@
       21
     ],
     "type": "table"
+  },
+  {
+    "name": "N. ppl. living with HIV",
+    "type": "matrix",
+    "path": "AIDS_living_HIV.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        100.0,
+        7000000.0
+      ]
+    }
+  },
+  {
+    "name": "N. new HIV infections",
+    "type": "matrix",
+    "path": "AIDS_new_HIV_infections.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        100.0,
+        850000.0
+      ]
+    }
+  },
+  {
+    "name": "AIDS related deaths",
+    "type": "matrix",
+    "path": "AIDS_related_deaths.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        100.0,
+        410000.0
+      ]
+    }
+  },
+  {
+    "name": "N. ppl. on ART",
+    "type": "matrix",
+    "path": "AIDS_on_ART.csv",
+    "separator": ",",
+    "size": [
+      160,
+      7
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        9.0,
+        3710130.0
+      ]
+    }
+  },
+  {
+    "name": "AIDS orphans",
+    "type": "matrix",
+    "path": "AIDS_orphans.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        100.0,
+        2200000.0
+      ]
+    }
   },
   {
     "name": "Artists",
