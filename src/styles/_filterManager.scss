@@ -42,7 +42,6 @@
     header:before,
     h2 {
       cursor: move;
-      display: flex;
     }
   }
 
@@ -66,9 +65,9 @@
       font-size: 1em;
       margin: 0 1em 0 0;
       padding: 0 0 0 20px;
-        white-space: nowrap;
-        overflow: hidden !important;
-        text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden !important;
+      text-overflow: ellipsis;
       width: 200px;
     }
 
