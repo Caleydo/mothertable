@@ -163,7 +163,7 @@
       position: absolute;
       right: 0;
       margin-right: 101%;
-      margin-top: 5%;
+      //margin-top: 5%; // doesn't work for smaller heights like heat map
       white-space: nowrap;
     }
 
