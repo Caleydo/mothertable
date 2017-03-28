@@ -240,6 +240,13 @@ export default class ColumnManager extends EventHandler {
     this._brushedRanges.push(makeRangeFromList(a));
     this.stratifyAndRelayout();
 
+    for (const col of this.columns) {
+        if (col instanceof NumberColumn){
+          (<NumberColumn>col).updateAxis(this.brushedItems);
+        }
+
+    };
+
   }
 
   async updateRangeList(brushedIndices: number[][]) {
@@ -500,11 +507,9 @@ export default class ColumnManager extends EventHandler {
     if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(
         this._stratifiedRanges.map((d, i) => {
-          let height = 0;
-          this.multiformsInGroup(i).forEach((m) => {
-            height = height + rowHeight[m];
-          });
-          return height;
+          return this.multiformsInGroup(i)
+            .map((m) => rowHeight[m])
+            .reduce((a,b) => a + b, 0);
         })
       );
     }

@@ -26,6 +26,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minHeight: number = 2;
   maxHeight: number = 20;
 
+  maxNumBins: number = 25;
+
   private rowRanges: Range[] = [];
   private stratifiedRanges: Range[] = [];
   private brushedRanges: Range[] = [];
@@ -63,7 +65,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
         domain: this.data.valuetype.range
       },
       'phovea-vis-histogram': {
-        nbins: Math.min(25, Math.floor(Math.sqrt(this.data.length))),
+        nbins: Math.min(this.maxNumBins, Math.floor(Math.sqrt(this.data.length))),
         color: 'grey'
       },
       all: {
