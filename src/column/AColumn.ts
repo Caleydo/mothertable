@@ -139,7 +139,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     $toolbar.append('div').append('svg')
       .attr({
-        height: 17,
+        height: 20,
       'class': 'taggle-axis'
     });
   }
@@ -248,7 +248,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
     }
   }
-
 
 }
 

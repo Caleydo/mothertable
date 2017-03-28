@@ -17,6 +17,9 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   minHeight: number = 4;
   maxHeight: number = 20;
 
+  private $points:d3.Selection<any>;
+  private scale;
+
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
     this.$node = this.build($parent);
@@ -25,19 +28,42 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   protected buildToolbar($toolbar: d3.Selection<any>) {
     super.buildToolbar($toolbar);
     const $svg = $toolbar.select('svg').append('g');
+    this.$points = $toolbar.select('svg').append('g');
     const width = parseInt($toolbar.style("width"));
     $svg.attr({
+      'transform': 'translate(0, 3)',
       'class': 'taggle-axis'
     });
 
-    const s = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
+    this.scale = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
     const axis =  d3.svg.axis()
       .ticks(3)
       .orient('bottom')
-      .scale(s);
+      .scale(this.scale);
 
     $svg.call(axis);
   }
+
+  public updateAxis(brushedItems) {
+    const axis = this.$node.selectAll('taggle-axis')[0];
+    let brushedData  = [];
+
+    this.$points.selectAll('circle').remove();
+
+    this.data.forEach((d,i) => {
+      brushedItems.forEach(brush => {
+        if(brush.indexOf(i) > -1) {
+          brushedData.push(d);
+          this.$points.append('circle').attr({
+            'r': 3,
+            'cx': this.scale(d),
+            'cy': 3
+          });
+        }
+      });
+    });
+  }
+
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
