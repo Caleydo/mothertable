@@ -132,8 +132,12 @@
     aside {
       ol, li {
         list-style-type: none;
-        margin-top: 5px;
         padding: 0;
+        margin-top: 5px;
+
+        &:empty {
+          margin-top: 0;
+        }
       }
     }
   }
