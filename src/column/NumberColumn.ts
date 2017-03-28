@@ -22,6 +22,23 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$node = this.build($parent);
   }
 
+  protected buildToolbar($toolbar: d3.Selection<any>) {
+    super.buildToolbar($toolbar);
+    const $svg = $toolbar.select('svg').append('g');
+    const width = parseInt($toolbar.style("width"));
+    $svg.attr({
+      'class': 'taggle-axis'
+    });
+
+    const s = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
+    const axis =  d3.svg.axis()
+      .ticks(3)
+      .orient('bottom')
+      .scale(s);
+
+    $svg.call(axis);
+  }
+
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
       //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
