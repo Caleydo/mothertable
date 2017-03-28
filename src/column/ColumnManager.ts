@@ -46,7 +46,7 @@ import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
-export declare type IMotherTableType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
+export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
 export default class ColumnManager extends EventHandler {
 
@@ -65,7 +65,7 @@ export default class ColumnManager extends EventHandler {
   private visManager: VisManager;
   private colsWithRange = new Map();
   private dataPerStratificaiton; //The number of data elements per stratification
-  private stratifyColid: string; // This is column Name used for stratification
+  private stratifyColid: string = null; // This is column Name used for stratification
   private _brushedRanges: Range[] = [];
   private brushedItems = [];
   private totalbrushed: number[] = [];
@@ -106,7 +106,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   private attachListener() {
-    on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData: {sortMethod: string, col: AFilter<string,IMotherTableType>}) => {
+    on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData: { sortMethod: string, col: AFilter<string, IMotherTableType> }) => {
       const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
       if (col.length === 0) {
         return;
@@ -301,8 +301,8 @@ export default class ColumnManager extends EventHandler {
       });
     }
 
-    await this.updateStratifyID(this.stratifyColid);
-
+    this.stratifyColumnsByMe();
+    this.updateStratifiedRanges();
     if (this.totalbrushed.length > 0) {
       await this.updateRangeList(this.brushedItems);
     }
@@ -336,10 +336,7 @@ export default class ColumnManager extends EventHandler {
       this.colsWithRange.set(col.data.desc.id, [this.nonStratifiedRange]);
     });
 
-    const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
-    if (categoricalCol.length > 0 && this.stratifyColid === undefined) {
-      this.stratifyColid = categoricalCol[0].data.desc.id;
-    }
+
   }
 
   private updateAggModePerGroupAfterNewStrat(oldRanges) {
@@ -367,21 +364,21 @@ export default class ColumnManager extends EventHandler {
     VisManager.modePerGroup = newAggModePergroup;
   }
 
-  private async updateStratifyID(colid) {
-    if (colid === undefined) {
+  private updateStratifiedRanges() {
+
+    //Return nothing if there is no stratification column
+    if (this.stratifyColid === null) {
       return;
     }
 
-    this.stratifyColid = colid;
     const cols = this.filtersHierarchy;
-    const datas = this.dataPerStratificaiton.get(colid);
+    const datas = this.dataPerStratificaiton.get(this.stratifyColid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
     if (this.totalbrushed.length === 0) {
       cols.forEach((col) => {
         this.colsWithRange.set(col.data.desc.id, this._stratifiedRanges);
       });
-
       this._multiformRangeList = this._stratifiedRanges;
     }
 
@@ -418,9 +415,10 @@ export default class ColumnManager extends EventHandler {
     }
 
     this._multiformRangeList = brushedRages;
-
+    console.log(this._multiformRangeList, this.stratifyColid);
+    // this.stratifyColumnsByMe();
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    const vectorUpdatePromise = Promise.all(vectorCols.map((col) => col.updateMultiForms(brushedRages, this._stratifiedRanges, this._brushedRanges)));
+    const vectorUpdatePromise = Promise.all(vectorCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges)));
 
     // update matrix column with last sorted range
     const matrixCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
@@ -447,6 +445,46 @@ export default class ColumnManager extends EventHandler {
       .forEach((col) => (<CategoricalColumn>col).showStratIcon(true));
   }
 
+
+  private stratifyColumnsByMe() {
+
+    const cols = this.filtersHierarchy;
+    const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    const checkColumnTie = findColumnTie(cols); // Find the index of numerical column or String
+    console.log(cols.indexOf(categoricalCol[0]), 'cat', checkColumnTie, 'num');
+
+    // If there is zero number of categorical column then the stratification is null
+    if (categoricalCol.length === 0) {
+      this.stratifyColid = null;
+      return;
+    }
+    // If there is either  number or string or matrix in the first sort hierarchy the stratification is null
+    if (checkColumnTie === 0) {
+      this.stratifyColid = null;
+      return;
+    }
+
+    // If there is categorical column above the numerical or string and the stratification is null then set first categorical column as stratification
+    if (categoricalCol.length > 0 && this.stratifyColid === null) {
+      this.stratifyColid = categoricalCol[0].data.desc.id;
+      return;
+    }
+
+    //If there are both categorical and numerical column
+    //This is to check when stratified column is moved below the numerical column
+    //If current stratified column is moved below the numerical column
+    // then the stratificaiton is reset to the first categorical column above the numerical column
+
+    const sid = cols.filter((c) => c.data.desc.id === this.stratifyColid);
+    const id = cols.indexOf(sid[0]);
+    if (checkColumnTie > 0 && categoricalCol.length > 0 && id > checkColumnTie) {
+      this.stratifyColid = categoricalCol[0].data.desc.id;
+      return;
+
+    }
+
+
+  }
 
   async relayout() {
     await resolveIn(10);
@@ -714,7 +752,7 @@ export default class ColumnManager extends EventHandler {
  * @param containerWidth
  * @returns {number[]}
  */
-export function distributeColWidths(columns: {lockedWidth: number, minWidth: number, maxWidth: number}[], containerWidth: number): number[] {
+export function distributeColWidths(columns: { lockedWidth: number, minWidth: number, maxWidth: number }[], containerWidth: number): number[] {
   // set minimum width or locked width for all columns
   const cols = columns.map((d) => {
     const newWidth = (d.lockedWidth > 0) ? d.lockedWidth : d.minWidth;
@@ -758,7 +796,7 @@ export function distributeColWidths(columns: {lockedWidth: number, minWidth: num
 export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
   switch (data.desc.type) {
     case AColumn.DATATYPE.vector:
-      const v = <IStringVector|ICategoricalVector|INumericalVector>data;
+      const v = <IStringVector | ICategoricalVector | INumericalVector>data;
       switch (v.desc.value.type) {
         case VALUE_TYPE_STRING:
           return new StringColumn(<IStringVector>v, orientation, $parent);
@@ -796,7 +834,7 @@ enum EDataValueType {
 export function dataValueType(data: IDataType): EDataValueType {
   switch (data.desc.type) {
     case AColumn.DATATYPE.vector:
-      const v = <IStringVector|ICategoricalVector|INumericalVector>data;
+      const v = <IStringVector | ICategoricalVector | INumericalVector>data;
       switch (v.desc.value.type) {
         case VALUE_TYPE_STRING:
           return EDataValueType.String;
