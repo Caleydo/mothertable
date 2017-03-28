@@ -469,11 +469,9 @@ export default class ColumnManager extends EventHandler {
     if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(
         this._stratifiedRanges.map((d, i) => {
-          let height = 0;
-          this.multiformsInGroup(i).forEach((m) => {
-            height = height + rowHeight[m];
-          });
-          return height;
+          return this.multiformsInGroup(i)
+            .map((m) => rowHeight[m])
+            .reduce((a,b) => a + b, 0);
         })
       );
     }

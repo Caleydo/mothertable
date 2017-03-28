@@ -35,6 +35,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
       .style('max-width', this.maxWidth + 'px')
       .style('min-width', this.minWidth + 'px');
 
+    $node.append('aside');
+
     const $header = $node.append('header')
       .classed('columnHeader', true);
 
@@ -132,7 +134,9 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
-    $blocks.style('height', (d) => d.height + 'px');
+    $blocks
+      .style('min-height', (d) => d.height + 'px')
+      .style('height', (d) => d.height + 'px');
 
     $blocks.exit().remove();
   }
