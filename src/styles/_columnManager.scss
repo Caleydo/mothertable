@@ -144,7 +144,7 @@
 
   .column.aggSwitcher {
     main > div {
-      margin-bottom: 2px;
+      margin-bottom: $gap-between-stratifications;
       display: flex;
       flex-direction: column;
 
