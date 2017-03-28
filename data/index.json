@@ -60,70 +60,70 @@
   {
     "columns": [
       {
-        "name": "Sex before 15 (15-24, , 2015)",
+        "name": "Sex before 15 (15-24, p, 2015)",
         "value": {
           "range": [
-            0,
+            0.5,
             29.3
-          ],
-          "type": "real"
-        }
-      },
-      {
-        "name": "Condom use at last sex (, 2015)",
-        "value": {
-          "range": [
-            0,
-            72.3
-          ],
-          "type": "real"
-        }
-      },
-      {
-        "name": "N. ppl on ART (2015)",
-        "value": {
-          "range": [
-            0,
-            3384160.0
           ],
           "type": "int"
         }
       },
       {
-        "name": " ppl. on ART ( 2015)",
+        "name": "Condom use at last sex (p, 2015)",
         "value": {
           "range": [
             0,
+            72.3
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": "N. ppl on ART (net, 2015)",
+        "value": {
+          "range": [
+            9,
+            3384160
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": " ppl. on ART (p, 2015)",
+        "value": {
+          "range": [
+            3.0,
             90.0
           ],
           "type": "int"
         }
       },
       {
-        "name": "Ppl knowing they have HIV (, 2015)",
+        "name": "Ppl knowing they have HIV (p, 2015)",
         "value": {
           "range": [
-            0,
+            4.0,
             95.0
           ],
           "type": "int"
         }
       },
       {
-        "name": "HIV prevention knowledge (age 15-24, , 2015)",
+        "name": "HIV prevention knowledge (age 15-24, p, 2015)",
         "value": {
           "range": [
-            0,
+            4.3,
             76.4
           ],
           "type": "int"
         }
       },
       {
-        "name": "Discriminatory attitude ()",
+        "name": "Discriminatory attitude (p)",
         "value": {
           "range": [
-            0,
+            11.9,
             80.1
           ],
           "type": "int"
@@ -253,38 +253,38 @@
         "name": "Population (2017)",
         "value": {
           "range": [
-            0,
-            1388232693.0
+            285744,
+            1388232693
           ],
           "type": "int"
         }
       },
       {
-        "name": "Yearly change ()",
+        "name": "Yearly change (p)",
         "value": {
           "range": [
-            0,
+            -0.74,
             4.1
           ],
-          "type": "real"
+          "type": "int"
         }
       },
       {
         "name": "Net change",
         "value": {
           "range": [
-            0,
-            15711130.0
+            -278504,
+            115711130
           ],
           "type": "int"
         }
       },
       {
-        "name": "Density (P/SqKm)",
+        "name": "Density (PpSqKm)",
         "value": {
           "range": [
-            0,
-            8264.0
+            2,
+            8264
           ],
           "type": "int"
         }
@@ -293,8 +293,8 @@
         "name": "Land Area (SqKm)",
         "value": {
           "range": [
-            0,
-            16292614.0
+            300,
+            16292614
           ],
           "type": "int"
         }
@@ -303,8 +303,8 @@
         "name": "Migrants (net)",
         "value": {
           "range": [
-            0,
-            1001577.0
+            -519644,
+            1001577
           ],
           "type": "int"
         }
@@ -313,40 +313,40 @@
         "name": "Fert. Rate",
         "value": {
           "range": [
-            0,
+            1.23,
             7.63
           ],
-          "type": "real"
+          "type": "int"
         }
       },
       {
         "name": "Med. Age",
         "value": {
           "range": [
-            0,
-            47.0
+            15,
+            47
           ],
           "type": "int"
         }
       },
       {
-        "name": "Urban Pop ()",
+        "name": "Urban Pop (p)",
         "value": {
           "range": [
-            0,
+            8.2,
             98.2
           ],
           "type": "int"
         }
       },
       {
-        "name": "World Share ()",
+        "name": "World Share (p)",
         "value": {
           "range": [
             0,
             18.5
           ],
-          "type": "real"
+          "type": "int"
         }
       }
     ],

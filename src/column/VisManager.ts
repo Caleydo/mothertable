@@ -159,7 +159,8 @@ export default class VisManager {
             switch (dataType) {
               case VALUE_TYPE_STRING:
                 return 'list';
-              case VALUE_TYPE_INT || VALUE_TYPE_REAL:
+              case VALUE_TYPE_INT:
+              case VALUE_TYPE_REAL:
                 return 'phovea-vis-histogram';
               case VALUE_TYPE_CATEGORICAL:
                 return 'phovea-vis-histogram';
@@ -177,7 +178,8 @@ export default class VisManager {
             switch (dataType) {
               case VALUE_TYPE_STRING:
                 return 'list';
-              case VALUE_TYPE_INT || VALUE_TYPE_REAL:
+              case VALUE_TYPE_INT:
+              case VALUE_TYPE_REAL:
                 return 'barplot';
               case VALUE_TYPE_CATEGORICAL:
                 return 'phovea-vis-heatmap1d';
@@ -199,7 +201,8 @@ export default class VisManager {
             switch (dataType) {
               case VALUE_TYPE_STRING:
                 return VisManager.aggregatedStrVisses;
-              case VALUE_TYPE_INT || VALUE_TYPE_REAL:
+              case VALUE_TYPE_INT:
+              case VALUE_TYPE_REAL:
                 return VisManager.aggregatedNumVisses;
               case VALUE_TYPE_CATEGORICAL:
                 return VisManager.aggregatedCatVisses;
@@ -219,7 +222,8 @@ export default class VisManager {
             switch (dataType) {
               case VALUE_TYPE_STRING:
                 return VisManager.unaggregatedStrVisses;
-              case VALUE_TYPE_INT || VALUE_TYPE_REAL:
+              case VALUE_TYPE_INT:
+              case VALUE_TYPE_REAL:
                 return VisManager.unaggregatedNumVisses;
               case VALUE_TYPE_CATEGORICAL:
                 return VisManager.unaggregatedCatVisses;
