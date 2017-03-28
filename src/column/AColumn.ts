@@ -137,11 +137,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
     this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
 
-    $toolbar.append('div').append('svg')
-      .attr({
-        height: 20,
-      'class': 'taggle-axis'
-    });
+    $toolbar.append('div').classed('axis', true).append('svg').classed('taggle-axis', true);
   }
 
   private addIconVisChooser(toolbar: HTMLElement, visses: IVisPluginDesc[], aggregationType: EAggregationType) {

@@ -42,6 +42,7 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
     $header.append('div').classed('labelName', true).html('&nbsp;');
     $header.append('div').classed('toolbar', true).html('&nbsp;');
+    $header.append('div').classed('axis', true).html('&nbsp;');
 
     this.$main = $node.append('main');
 
