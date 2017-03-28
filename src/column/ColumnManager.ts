@@ -398,6 +398,7 @@ export default class ColumnManager extends EventHandler {
    */
   private stratifyColumns() {
     let brushedRages = [];
+
     const r = this._multiformRangeList;
     if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0) {
       this._stratifiedRanges.forEach((sr, i) => {
@@ -421,9 +422,7 @@ export default class ColumnManager extends EventHandler {
     } else {
       brushedRages = r;
     }
-
     this._multiformRangeList = brushedRages;
-    // this.stratifyColumnsByMe();
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     const vectorUpdatePromise = Promise.all(vectorCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges)));
 
@@ -462,11 +461,13 @@ export default class ColumnManager extends EventHandler {
     // If there is zero number of categorical column then the stratification is null
     if (categoricalCol.length === 0) {
       this.stratifyColid = null;
+      this._multiformRangeList = [this.nonStratifiedRange];
       return;
     }
     // If there is either  number or string or matrix in the first sort hierarchy the stratification is null
     if (checkColumnTie === 0) {
       this.stratifyColid = null;
+      this._multiformRangeList = [this.nonStratifiedRange];
       return;
     }
 
