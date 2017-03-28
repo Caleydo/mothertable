@@ -2,14 +2,13 @@
  * Created by Samuel Gratzl on 19.01.2017.
  */
 
-import {AVectorColumn} from './AVectorColumn';
+import {AVectorColumn, ITaggleHistogramData} from './AVectorColumn';
 import {INumericalVector} from 'phovea_core/src/vector';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import {NUMERICAL_COLOR_MAP} from './utils';
-import VisManager from './VisManager';
-import {EAggregationType} from './VisManager';
+import * as d3 from 'd3';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
@@ -23,7 +22,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$node = this.build($parent);
   }
 
-  protected multiFormParams($body: d3.Selection<any>, domain?: number[]): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
       //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       initialVis: 'barplot',
@@ -33,11 +32,13 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       },
       'barplot': {
         cssClass: 'taggle-vis-barplot',
-        min: domain[0],
-        max: domain[1]
+        min: histogramData.domain[0],
+        max: histogramData.domain[1]
       },
       'phovea-vis-histogram': {
-        color: 'grey'
+        color: 'grey',
+        nbins: histogramData.nbins,
+        maxValue: histogramData.maxValue
       },
       'list': {
         cssClass: 'taggle-vis-list'
