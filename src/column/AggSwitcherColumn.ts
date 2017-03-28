@@ -35,6 +35,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
       .style('max-width', this.maxWidth + 'px')
       .style('min-width', this.minWidth + 'px');
 
+    $node.append('aside');
+
     const $header = $node.append('header')
       .classed('columnHeader', true);
 
