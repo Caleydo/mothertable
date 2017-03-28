@@ -27,18 +27,58 @@
           "categories": [
             {
               "color": "#fbb4ae",
-              "name": "pre HAART period"
+              "name": "1 pre HAART period"
             },
             {
               "color": "#b3cde3",
-              "name": "A Decade of HAART"
+              "name": "2 A Decade of HAART"
             },
             {
               "color": "#ccebc5",
-              "name": "multiple medications available"
+              "name": "3 multiple medications available"
             }
           ],
           "type": "categorical"
+        }
+      },
+      {
+        "name": "Ppl. with HIV",
+        "value": {
+          "range": [
+            28900000,
+            36700000
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": "New infections",
+        "value": {
+          "range": [
+            2100000,
+            3200000
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": "AIDS-related deaths",
+        "value": {
+          "range": [
+            1100000,
+            2000000
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": "Ppl. accessing treatment",
+        "value": {
+          "range": [
+            770000,
+            17000000
+          ],
+          "type": "int"
         }
       }
     ],
@@ -167,19 +207,19 @@
           "categories": [
             {
               "color": "#d7191c",
-              "name": "Low human development"
+              "name": "1 Low human development"
             },
             {
               "color": "#fdae61",
-              "name": "Medium human development"
+              "name": "2 Medium human development"
             },
             {
               "color": "#a6d96a",
-              "name": "High human development"
+              "name": "3 High human development"
             },
             {
               "color": "#1a9641",
-              "name": "Very high human development"
+              "name": "4 Very high human development"
             }
           ],
           "type": "categorical"
@@ -385,6 +425,25 @@
     }
   },
   {
+    "name": "N. ppl. living with HIV norm.",
+    "type": "matrix",
+    "path": "AIDS_living_HIV_normalized.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        0.000379492,
+        166.6217293
+      ]
+    }
+  },
+  {
     "name": "N. new HIV infections",
     "type": "matrix",
     "path": "AIDS_new_HIV_infections.csv",
@@ -400,6 +459,25 @@
       "range": [
         100.0,
         850000.0
+      ]
+    }
+  },
+  {
+    "name": "N. new HIV infections norm.",
+    "type": "matrix",
+    "path": "AIDS_new_HIV_infections_normalized.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        0.000379492,
+        15.33289704
       ]
     }
   },
@@ -423,6 +501,25 @@
     }
   },
   {
+    "name": "AIDS related deaths norm.",
+    "type": "matrix",
+    "path": "AIDS_related_deaths_normalized.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        0.000379492,
+        7.395867983
+      ]
+    }
+  },
+  {
     "name": "N. ppl. on ART",
     "type": "matrix",
     "path": "AIDS_on_ART.csv",
@@ -442,6 +539,25 @@
     }
   },
   {
+    "name": "N. ppl. on ART norm.",
+    "type": "matrix",
+    "path": "AIDS_on_ART_normalized.csv",
+    "separator": ",",
+    "size": [
+      160,
+      7
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        0.001755969,
+        122.7684049
+      ]
+    }
+  },
+  {
     "name": "AIDS orphans",
     "type": "matrix",
     "path": "AIDS_orphans.csv",
@@ -457,6 +573,25 @@
       "range": [
         100.0,
         2200000.0
+      ]
+    }
+  },
+  {
+    "name": "AIDS orphans norm.",
+    "type": "matrix",
+    "path": "AIDS_orphans_normalized.csv",
+    "separator": ",",
+    "size": [
+      160,
+      26
+    ],
+    "coltype": "AIDS_Years",
+    "rowtype": "AIDS_Countries",
+    "value": {
+      "type": "int",
+      "range": [
+        0.000379492,
+        47.13008393
       ]
     }
   },
