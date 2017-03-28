@@ -94,15 +94,18 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
     const data: any = await this.data.data(); // wait first for data and then continue with removing old  forms
     const histData:IHistogram = await this.data.hist();
+    let histogramData;
+
+    if(histData !== null) {
+      // get common histogram data for all multiforms
+      histogramData = {
+        domain: d3.extent(data),
+        maxValue: histData.largestBin,
+        nbins: histData.bins
+      };
+    }
 
     const viewPromises = multiformRanges.map((r) => this.data.idView(r));
-
-    // get common histogram data for all multiforms
-    const histogramData = {
-      domain: d3.extent(data),
-      maxValue: histData.largestBin,
-      nbins: histData.bins
-    };
 
     return Promise.all(viewPromises).then((views) => {
 
