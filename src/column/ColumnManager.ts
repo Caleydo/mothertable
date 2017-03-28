@@ -241,11 +241,12 @@ export default class ColumnManager extends EventHandler {
     this.stratifyAndRelayout();
 
     for (const col of this.columns) {
-        if (col instanceof NumberColumn){
-          (<NumberColumn>col).updateAxis(this.brushedItems);
-        }
+      if (col instanceof NumberColumn) {
+        (<NumberColumn>col).updateAxis(this.brushedItems);
+      }
 
-    };
+    }
+    ;
 
   }
 
@@ -422,7 +423,6 @@ export default class ColumnManager extends EventHandler {
     }
 
     this._multiformRangeList = brushedRages;
-    console.log(this._multiformRangeList, this.stratifyColid);
     // this.stratifyColumnsByMe();
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     const vectorUpdatePromise = Promise.all(vectorCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges)));
@@ -458,7 +458,6 @@ export default class ColumnManager extends EventHandler {
     const cols = this.filtersHierarchy;
     const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
     const checkColumnTie = findColumnTie(cols); // Find the index of numerical column or String
-    console.log(cols.indexOf(categoricalCol[0]), 'cat', checkColumnTie, 'num');
 
     // If there is zero number of categorical column then the stratification is null
     if (categoricalCol.length === 0) {
@@ -509,7 +508,7 @@ export default class ColumnManager extends EventHandler {
         this._stratifiedRanges.map((d, i) => {
           return this.multiformsInGroup(i)
             .map((m) => rowHeight[m])
-            .reduce((a,b) => a + b, 0);
+            .reduce((a, b) => a + b, 0);
         })
       );
     }
