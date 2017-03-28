@@ -48,16 +48,17 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     const axis = this.$node.selectAll('taggle-axis')[0];
     let brushedData  = [];
 
-    this.$points.selectAll('circle').remove();
+    this.$points.selectAll('line').remove();
 
     this.data.forEach((d,i) => {
       brushedItems.forEach(brush => {
         if(brush.indexOf(i) > -1) {
           brushedData.push(d);
-          this.$points.append('circle').attr({
-            'r': 3,
-            'cx': this.scale(d),
-            'cy': 3
+          this.$points.append('line').attr({
+            'x1': this.scale(d),
+            'x2': this.scale(d),
+            'y1': 0,
+            'y2': 3
           });
         }
       });

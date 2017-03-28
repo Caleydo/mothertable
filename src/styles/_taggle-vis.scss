@@ -18,6 +18,12 @@
 
 .taggle-axis{
   font-size: 10px;
+
+
+  line{
+      stroke: #aaa;
+  }
+
   .tick line, path {
     fill: none;
     stroke: black;
