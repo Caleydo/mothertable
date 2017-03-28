@@ -253,17 +253,17 @@
         "name": "Population (2017)",
         "value": {
           "range": [
-            0,
-            1388232693.0
+            285744,
+            1388232693
           ],
           "type": "int"
         }
       },
       {
-        "name": "Yearly change ()",
+        "name": "Yearly change (p)",
         "value": {
           "range": [
-            0,
+            -0.74,
             4.1
           ],
           "type": "real"
@@ -330,7 +330,7 @@
         }
       },
       {
-        "name": "Urban Pop ()",
+        "name": "Urban Pop (p)",
         "value": {
           "range": [
             0,
@@ -340,7 +340,7 @@
         }
       },
       {
-        "name": "World Share ()",
+        "name": "World Share (p)",
         "value": {
           "range": [
             0,
