@@ -30,15 +30,11 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$points = $toolbar.select('svg').append('g');
     const $svg = $toolbar.select('svg').append('g');
     const width = parseInt($toolbar.style("width"));
-    $svg.attr({
-      'transform': 'translate(0, 18)',
-      'class': 'taggle-axis'
-    });
 
     this.scale = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
     const axis =  d3.svg.axis()
       .ticks(3)
-      .orient('top')
+      .orient('bottom')
       .scale(this.scale);
 
     $svg.call(axis);
@@ -58,7 +54,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
             'x1': this.scale(d),
             'x2': this.scale(d),
             'y1': 0,
-            'y2': 18
+            'y2': 6
           });
         }
       });
