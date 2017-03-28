@@ -240,6 +240,13 @@ export default class ColumnManager extends EventHandler {
     this._brushedRanges.push(makeRangeFromList(a));
     this.stratifyAndRelayout();
 
+    for (const col of this.columns) {
+        if (col instanceof NumberColumn){
+          (<NumberColumn>col).updateAxis(this.brushedItems);
+        }
+
+    };
+
   }
 
   async updateRangeList(brushedIndices: number[][]) {

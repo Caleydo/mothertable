@@ -17,10 +17,50 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   minHeight: number = 4;
   maxHeight: number = 20;
 
+  private $points:d3.Selection<any>;
+  private scale;
+
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
     this.$node = this.build($parent);
   }
+
+  protected buildToolbar($toolbar: d3.Selection<any>) {
+    super.buildToolbar($toolbar);
+    this.$points = $toolbar.select('svg').append('g');
+    const $svg = $toolbar.select('svg').append('g');
+    const width = parseInt($toolbar.style("width"));
+
+    this.scale = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
+    const axis =  d3.svg.axis()
+      .ticks(3)
+      .orient('bottom')
+      .scale(this.scale);
+
+    $svg.call(axis);
+  }
+
+  public updateAxis(brushedItems) {
+    const axis = this.$node.selectAll('taggle-axis')[0];
+    let brushedData  = [];
+
+    this.$points.selectAll('line').remove();
+
+    this.data.forEach((d,i) => {
+      brushedItems.forEach(brush => {
+        if(brush.indexOf(i) > -1) {
+          brushedData.push(d);
+          this.$points.append('line').attr({
+            'x1': this.scale(d),
+            'x2': this.scale(d),
+            'y1': 0,
+            'y2': 6
+          });
+        }
+      });
+    });
+  }
+
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {

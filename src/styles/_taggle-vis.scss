@@ -18,6 +18,22 @@
   }
 }
 
+.taggle-axis{
+  font-size: 10px;
+
+
+  line{
+      stroke: $select-color;
+  }
+
+  .tick line, path {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+  }
+
+}
+
 /* overrides phovea-barplot */
 .taggle-vis-barplot {
   background-color: #fff;
