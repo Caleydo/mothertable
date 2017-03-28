@@ -7,6 +7,7 @@ import AColumn from './AColumn';
 import SortHandler from '../SortHandler/SortHandler';
 import Range from 'phovea_core/src/range/Range';
 import {AnyFilter} from '../filter/AFilter';
+import {makeListFromRange} from './utils';
 
 
 export default class AColumnManager {
@@ -76,14 +77,13 @@ export default class AColumnManager {
     this.stratifyMatrixCols(rangeListMap);
   }
 
-  filter(range: Range[]) {
-    this.vectorCols.forEach((col) => {
-      col.updateMultiForms(range);
-    });
-    // TODO might be wrong
-    this.matrixCols.forEach((col) => {
-      col.updateMultiForms(range);
-    });
+  async filter(range: Range) {
+
+    for (const col of this.columns) {
+      col.rangeView = range;
+      col.dataView = await col.data.idView(range);
+    }
+
   }
 
   sortByFilters(filterList: AnyFilter[]) {
@@ -91,6 +91,7 @@ export default class AColumnManager {
   }
 
   private stratifyVectorCols(rangeListMap: Map<string, Range[]>) {
+
     this.vectorCols.forEach((col) => {
       col.updateMultiForms(rangeListMap.get(col.data.desc.id));
     });

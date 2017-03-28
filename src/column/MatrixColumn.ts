@@ -8,7 +8,7 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
@@ -88,7 +88,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       colRange = (await this.calculateDefaultRange());
       this.colRange = colRange;
     }
-
+    this.colRange = colRange;
     const viewPromises = rowRanges.map((r) => {
       return this.data.idView(r)
         .then((rowView) => (<INumericalMatrix>rowView).t)
@@ -154,11 +154,13 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   filterStratData(range: Range) {
-    this.colStratManager.filter([range]);
+    this.colStratManager.filter(range);
+    this.updateColStrats();
   }
 
   updateColStratsSorting(filterList: AnyFilter[]) {
     this.colStratManager.sortByFilters(filterList);
+
     this.updateColStrats();
     // TODO still need to update the DOM order in `this.$colStrat`
   }

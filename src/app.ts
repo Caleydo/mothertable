@@ -177,7 +177,6 @@ export default class App {
           columns
             .filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix)
             .forEach((col) => {
-              this.triggerMatrix();
               this.addMatrixColSupportManger(<MatrixColumn>col);
             });
 
@@ -190,9 +189,7 @@ export default class App {
 
     supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
       this.colManager.filterData(filter);
-      // this.manager.update(filter);
       this.rowRange = filter;
-      this.triggerMatrix();
       this.dataSize.filtered = filter.size()[0];
       supportView.updateFuelBar(this.dataSize);
     });
@@ -221,7 +218,6 @@ export default class App {
     supportView.updateFuelBar(this.dataSize);
     supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
       col.filterStratData(filter);
-      this.triggerMatrix(filter, supportView.id);
       this.dataSize.filtered = filter.size()[0];
       supportView.updateFuelBar(this.dataSize);
     });
@@ -248,26 +244,6 @@ export default class App {
     });
   }
 
-  private triggerMatrix(colRange?, id?: number) {
-    const matrixCol: MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
-    const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
-    if (uniqueMatrix === -1) {
-      return;
-    }
-    if (matrixCol.length === 0) {
-      return;
-    }
-    const indices = (<any>matrixCol[0]).data.indices;
-    if (this.rowRange === undefined) {
-      this.rowRange = (indices.dim(0));
-    }
-
-    if (colRange === undefined) {
-      colRange = (indices.dim(1));
-    }
-
-    matrixCol[uniqueMatrix - 1].updateMultiForms(this.colManager.multiformRangeList, this.colManager.stratifiedRanges, this.colManager.brushedRanges, colRange);
-  }
 
 }
 
