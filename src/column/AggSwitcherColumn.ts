@@ -134,7 +134,9 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
-    $blocks.style('height', (d) => d.height + 'px');
+    $blocks
+      .style('min-height', (d) => d.height + 'px')
+      .style('height', (d) => d.height + 'px');
 
     $blocks.exit().remove();
   }
