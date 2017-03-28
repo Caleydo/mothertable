@@ -27,18 +27,58 @@
           "categories": [
             {
               "color": "#fbb4ae",
-              "name": "pre HAART period"
+              "name": "1 pre HAART period"
             },
             {
               "color": "#b3cde3",
-              "name": "A Decade of HAART"
+              "name": "2 A Decade of HAART"
             },
             {
               "color": "#ccebc5",
-              "name": "multiple medications available"
+              "name": "3 multiple medications available"
             }
           ],
           "type": "categorical"
+        }
+      },
+      {
+        "name": "Ppl. with HIV",
+        "value": {
+          "range": [
+            28900000,
+            36700000
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": "New infections",
+        "value": {
+          "range": [
+            2100000,
+            3200000
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": "AIDS-related deaths",
+        "value": {
+          "range": [
+            1100000,
+            2000000
+          ],
+          "type": "int"
+        }
+      },
+      {
+        "name": "Ppl. accessing treatment",
+        "value": {
+          "range": [
+            770000,
+            17000000
+          ],
+          "type": "int"
         }
       }
     ],
