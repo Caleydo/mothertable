@@ -44,7 +44,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.dataView = data;
     this.calculateDefaultRange();
     this.$node = this.build($columnParent);
-    this.attachListener();
 
   }
 
@@ -159,26 +158,21 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.updateColStrats();
   }
 
+  sortByFilterHeader(sortData) {
+    const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+    if (col.length === 0) {
+      return;
+    }
+    col[0].sortCriteria = sortData.sortMethod;
+    this.updateColStrats();
+
+  }
+
   updateColStratsSorting(filterList: AnyFilter[]) {
     this.colStratManager.sortByFilters(filterList);
 
     this.updateColStrats();
     // TODO still need to update the DOM order in `this.$colStrat`
-  }
-
-
-  private attachListener() {
-    on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData) => {
-      console.log(sortData);
-      const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
-      if (col.length === 0) {
-        return;
-      }
-      col[0].sortCriteria = sortData.sortMethod;
-      this.updateColStrats();
-    });
-
-
   }
 
 }

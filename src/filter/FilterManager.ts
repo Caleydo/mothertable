@@ -23,7 +23,7 @@ import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
-import {AVectorColumn} from "mothertable/src/column/AVectorColumn";
+
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
@@ -81,7 +81,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateSortIcon(sortColdata) {
+  updateSortIcon(sortColdata: { sortMethod: string, col: AnyColumn }) {
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
     (<any>col).updateSortIcon(sortColdata.sortMethod);
   }
@@ -99,7 +99,7 @@ export default class FilterManager extends EventHandler {
       col.$node.remove();
       this.filters.splice(this.filters.indexOf(col), 1);
       fire(AFilter.EVENT_REMOVE_ME, data);
-      this.fire(AFilter.EVENT_REMOVE_ME, data)
+      this.fire(AFilter.EVENT_REMOVE_ME, data);
     }
 
 

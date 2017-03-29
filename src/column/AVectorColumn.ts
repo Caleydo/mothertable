@@ -15,7 +15,7 @@ import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 import {on, fire} from 'phovea_core/src/event';
 import {IHistogram} from 'phovea_core/src/math';
-import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
+import {AVectorFilter} from '../filter/AVectorFilter';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export interface ITaggleHistogramData {

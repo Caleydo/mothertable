@@ -145,7 +145,7 @@ export default class App {
   }
 
   private primarySortCol(evt: any, sortColdata: IAnyVector) {
-    this.supportView[0].primarySortColumn(sortColdata);
+    this.supportView[0].sortByColumnHeader(sortColdata);
 
   }
 
@@ -157,12 +157,12 @@ export default class App {
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
     this.colManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       this.supportView[0].sortFilterByHeader(data);
-    })
+    });
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
     supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
-      this.colManager.sortColumnByIcon(data);
-    })
+      this.colManager.sortByFilterHeader(data);
+    });
     this.supportView.push(supportView);
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
@@ -222,6 +222,10 @@ export default class App {
 
     const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
     new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
+    supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      col.sortByFilterHeader(data);
+    });
+
 
     supportView.updateFuelBar(this.dataSize);
     supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
