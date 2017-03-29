@@ -23,6 +23,8 @@ import AColumn from './column/AColumn';
 import {formatAttributeName, formatIdTypeName} from './column/utils';
 import {IStratification} from 'phovea_core/src/stratification';
 import AFilter from './filter/AFilter';
+import {AVectorColumn} from "mothertable/src/column/AVectorColumn";
+import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
 
 
 export interface IFuelBarDataSize {
@@ -108,6 +110,10 @@ export default class SupportView extends EventHandler {
       this.updateURLHash();
     });
 
+
+    this.filterManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
+    })
     this.propagate(this.filterManager, FilterManager.EVENT_FILTER_CHANGED);
   }
 
@@ -143,6 +149,11 @@ export default class SupportView extends EventHandler {
     this.filterManager.primarySortColumn(sortColdata);
   }
 
+  sortFilterByHeader(sortColdata) {
+    this.filterManager.updateSortIcon(sortColdata);
+  }
+
+
   /**
    * Returns the matrix data for a given dataset id
    * @param datasetId
@@ -174,7 +185,7 @@ export default class SupportView extends EventHandler {
       .map((d) => d.desc.type)
       .sort()
       .filter((el, i, a) => {
-        if(i === a.indexOf(el)) {
+        if (i === a.indexOf(el)) {
           return 1;
         }
         return 0;
@@ -207,14 +218,14 @@ export default class SupportView extends EventHandler {
       theme: 'bootstrap',
       //selectOnClose: true,
       //escapeMarkup: (markup) => markup,
-      templateResult: (item:any) => {
-        if(!item.id) {
+      templateResult: (item: any) => {
+        if (!item.id) {
           return $(`<span>${item.text}</span>`);
         }
         return $(`<span><i class="${dataValueTypeCSSClass(item.valueType)}" aria-hidden="true"></i> ${item.text}</span>`);
       },
-      templateSelection: (item:any) => {
-        if(!item.id) {
+      templateSelection: (item: any) => {
+        if (!item.id) {
           return $(`<span>${item.text}</span>`);
         }
         return $(`<span><i class="${dataValueTypeCSSClass(item.valueType)}" aria-hidden="true"></i> ${item.text}</span>`);
@@ -223,7 +234,7 @@ export default class SupportView extends EventHandler {
 
     const $jqSelect2 = (<any>$($select.node()))
       .select2(defaultOptions)
-      .on('select2:select', async(evt) => {
+      .on('select2:select', async (evt) => {
         const dataset = evt.params.data.data;
 
         // reset selection

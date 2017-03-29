@@ -20,6 +20,8 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter, default as AFilter} from './filter/AFilter';
 import {formatIdTypeName} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
+import any = jasmine.any;
+import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
 
 /**
  * The main class for the App app
@@ -153,8 +155,14 @@ export default class App {
     // create a column manager
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+    this.colManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      this.supportView[0].sortFilterByHeader(data);
+    })
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
+    supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      this.colManager.sortColumnByIcon(data);
+    })
     this.supportView.push(supportView);
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);

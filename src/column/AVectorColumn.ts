@@ -15,6 +15,7 @@ import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 import {on, fire} from 'phovea_core/src/event';
 import {IHistogram} from 'phovea_core/src/math';
+import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export interface ITaggleHistogramData {
@@ -30,6 +31,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   multiform: MultiForm;
   dataView: IDataType;
   multiformList: TaggleMultiform[] = [];
+  private $sortButton;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
@@ -51,52 +53,54 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    const $sortButton = $toolbar.append('a')
-      .attr('title', 'Sort descending')
-      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+    this.$sortButton = $toolbar.append('a')
+      .attr('title', 'Sort ascending')
+      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
 
-    const onClick = (sort: string) => {
-      if (sort === SORT.desc) {
-        $sortButton
-          .attr('title', 'Sort ascending')
-          .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+    this.$sortButton.on('click', () => {
 
-      } else {
-        $sortButton
-          .attr('title', 'Sort descending')
-          .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
-
-      }
-    };
-
-    $sortButton.on('click', () => {
       this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-      if ($sortButton.select('i').classed('fa-sort-amount-asc')) {
+      if (this.$sortButton.select('i').classed('fa-sort-amount-asc')) {
         const sortData = {sortMethod: SORT.desc, col: this};
-        fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+        this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+        this.$sortButton
+          .attr('title', 'Sort descending')
+          .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
 
       } else {
         const sortData = {sortMethod: SORT.asc, col: this};
-        fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+        this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+        this.$sortButton
+          .attr('title', 'Sort ascending')
+          .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
       }
     });
-
-    on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData) => {
-      if (this.data.desc.id === sortData.col.data.desc.id) {
-        onClick(sortData.sortMethod);
-      }
-    });
-
 
     super.buildToolbar($toolbar);
   }
 
+  changeSortIcon(sortMethod) {
+    if (sortMethod === SORT.desc) {
+      this.$sortButton
+        .attr('title', 'Sort ascending')
+        .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+
+    } else {
+      this.$sortButton
+        .attr('title', 'Sort descending')
+        .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+
+
+    }
+  }
+
+
   async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
     const data: any = await this.data.data(); // wait first for data and then continue with removing old  forms
-    const histData:IHistogram = await this.data.hist();
+    const histData: IHistogram = await this.data.hist();
     let histogramData;
 
-    if(histData !== null) {
+    if (histData !== null) {
       // get common histogram data for all multiforms
       histogramData = {
         domain: d3.extent(data),

@@ -23,10 +23,11 @@ import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
+import {AVectorColumn} from "mothertable/src/column/AVectorColumn";
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
-export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
+export declare type IFilterAbleType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
 export default class FilterManager extends EventHandler {
 
@@ -59,6 +60,12 @@ export default class FilterManager extends EventHandler {
     filter.on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
     this.filters.push(filter);
     this.updateStratifyIcon(findColumnTie(this.filters));
+    filter.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      if (filter instanceof CategoricalFilter) {
+        filter.sortByFilterIcon(data);
+      }
+      this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
+    });
   }
 
 
@@ -71,6 +78,13 @@ export default class FilterManager extends EventHandler {
 
   contains(data: IFilterAbleType) {
     return this.filters.some((d) => d.data === data);
+  }
+
+
+  updateSortIcon(sortColdata) {
+    console.log(sortColdata)
+    const col = this.filters.find((d) => d.data === sortColdata.col.data);
+    (<any>col).changeSortIcon(sortColdata);
   }
 
 
@@ -199,7 +213,7 @@ export default class FilterManager extends EventHandler {
 
     switch (data.desc.type) {
       case AColumn.DATATYPE.vector:
-        const v = <IStringVector|ICategoricalVector|INumericalVector>data;
+        const v = <IStringVector | ICategoricalVector | INumericalVector>data;
         switch (v.desc.value.type) {
           case VALUE_TYPE_STRING:
             return new StringFilter(<IStringVector>v, $parent);
