@@ -36,29 +36,21 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
 
     this.$sortButton.on('click', () => {
       if (this.$sortButton.select('i').classed('fa-sort-amount-asc')) {
-
         const sortData = {sortMethod: SORT.desc, col: this};
-        console.log(sortData, 'asc')
         this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        this.$sortButton
-          .attr('title', 'Sort descending')
-          .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+        this.updateSortIcon(SORT.desc);
       } else {
         const sortData = {sortMethod: SORT.asc, col: this};
-        console.log(sortData, 'desc')
         this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        this.$sortButton
-          .attr('title', 'Sort ascending')
-          .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+        this.updateSortIcon(SORT.asc);
       }
     });
 
   }
 
 
-  changeSortIcon(sortColdata) {
-    console.log(this.$node, sortColdata);
-    if (sortColdata.sortMethod === SORT.desc) {
+  updateSortIcon(sortMethod) {
+    if (sortMethod === SORT.desc) {
       this.$sortButton
         .attr('title', 'Sort ascending')
         .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);

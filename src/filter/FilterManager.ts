@@ -82,9 +82,8 @@ export default class FilterManager extends EventHandler {
 
 
   updateSortIcon(sortColdata) {
-    console.log(sortColdata)
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
-    (<any>col).changeSortIcon(sortColdata);
+    (<any>col).updateSortIcon(sortColdata.sortMethod);
   }
 
 

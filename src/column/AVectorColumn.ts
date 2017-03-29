@@ -63,23 +63,20 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       if (this.$sortButton.select('i').classed('fa-sort-amount-asc')) {
         const sortData = {sortMethod: SORT.desc, col: this};
         this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        this.$sortButton
-          .attr('title', 'Sort descending')
-          .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
-
+        this.updateSortIcon(SORT.desc);
+        this.sortCriteria = SORT.desc;
       } else {
         const sortData = {sortMethod: SORT.asc, col: this};
         this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        this.$sortButton
-          .attr('title', 'Sort ascending')
-          .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+        this.updateSortIcon(SORT.asc);
+        this.sortCriteria = SORT.asc;
       }
     });
 
     super.buildToolbar($toolbar);
   }
 
-  changeSortIcon(sortMethod) {
+  updateSortIcon(sortMethod) {
     if (sortMethod === SORT.desc) {
       this.$sortButton
         .attr('title', 'Sort ascending')

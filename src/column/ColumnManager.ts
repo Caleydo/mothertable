@@ -107,10 +107,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   private attachListener() {
-    // on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData: { sortMethod: string, col: AFilter<string, IMotherTableType> }) => {
-    //
-    // });
-
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
     on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
     on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
@@ -139,7 +135,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   sortColumnByIcon(sortData) {
-    console.log(sortData)
     const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
@@ -147,7 +142,7 @@ export default class ColumnManager extends EventHandler {
     col[0].sortCriteria = sortData.sortMethod;
     this.updateColumns();
 
-    (<any>col[0]).changeSortIcon(sortData.sortMethod);
+    (<any>col[0]).updateSortIcon(sortData.sortMethod);
 
   }
 
