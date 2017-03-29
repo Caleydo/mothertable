@@ -23,8 +23,7 @@ import AColumn from './column/AColumn';
 import {formatAttributeName, formatIdTypeName} from './column/utils';
 import {IStratification} from 'phovea_core/src/stratification';
 import AFilter from './filter/AFilter';
-import {AVectorColumn} from "mothertable/src/column/AVectorColumn";
-import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
+import {AVectorFilter} from './filter/AVectorFilter';
 
 
 export interface IFuelBarDataSize {

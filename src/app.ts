@@ -21,7 +21,7 @@ import {AnyFilter, default as AFilter} from './filter/AFilter';
 import {formatIdTypeName} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import any = jasmine.any;
-import {AVectorFilter} from "mothertable/src/filter/AVectorFilter";
+import {AVectorFilter} from './filter/AVectorFilter';
 
 /**
  * The main class for the App app
