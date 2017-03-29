@@ -74,7 +74,10 @@ export default class ColumnManager extends EventHandler {
 
   private onColumnRemoved = (event: IEvent, data: IDataType) => this.remove(null, data);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
-  private onSortByFilterHeader = (event: IEvent, sortData) => this.updateSortByColumnHeader(sortData);
+  private onSortByFilterHeader = (event: IEvent, sortData) => {
+    this.updateSortByIcons(sortData);
+    this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+  }
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
   private stratifyMe = (event: IEvent, colid) => {
@@ -134,27 +137,14 @@ export default class ColumnManager extends EventHandler {
     return this._brushedRanges;
   }
 
-  sortByFilterHeader(sortData) {
+  updateSortByIcons(sortData) {
     const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
     }
     col[0].sortCriteria = sortData.sortMethod;
     this.updateColumns();
-
-    (<any>col[0]).updateSortIcon(sortData.sortMethod);
-
-  }
-
-  updateSortByColumnHeader(sortData) {
-    const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
-    if (col.length === 0) {
-      return;
-    }
-    col[0].sortCriteria = sortData.sortMethod;
-    this.updateColumns();
-    this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-
+    return col[0];
   }
 
 

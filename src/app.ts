@@ -161,7 +161,8 @@ export default class App {
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
     supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
-      this.colManager.sortByFilterHeader(data);
+      const col = this.colManager.updateSortByIcons(data);
+      (<AVectorColumn<any, any>>col).updateSortIcon(data.sortMethod);
     });
     this.supportView.push(supportView);
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {

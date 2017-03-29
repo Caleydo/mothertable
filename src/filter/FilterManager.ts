@@ -25,7 +25,6 @@ import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
 
 
-
 declare type AnyColumn = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
@@ -83,7 +82,7 @@ export default class FilterManager extends EventHandler {
 
   updateSortIcon(sortColdata: { sortMethod: string, col: AnyColumn }) {
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
-    (<any>col).updateSortIcon(sortColdata.sortMethod);
+    (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
   }
 
 
