@@ -18,6 +18,7 @@ import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
 import {AVectorFilter} from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
+import {AVectorColumn} from './AVectorColumn';
 
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
@@ -167,7 +168,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   private attachListener() {
-    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData) => {
+    on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData) => {
+      console.log(sortData);
       const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
       if (col.length === 0) {
         return;

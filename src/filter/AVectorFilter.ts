@@ -34,7 +34,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
       .attr('title', 'Sort descending')
       .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
 
-    const onClick = (sort:string) => {
+    const onClick = (sort: string) => {
       if (sort === SORT.desc) {
         $sortButton
           .attr('title', 'Sort ascending')
@@ -61,7 +61,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
 
 
     on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData) => {
-      if(this.data.desc.id === sortData.col.data.desc.id) {
+      if (this.data.desc.id === sortData.col.data.desc.id) {
         onClick(sortData.sortMethod);
       }
     });
