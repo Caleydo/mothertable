@@ -76,6 +76,7 @@ export default class ColumnManager extends EventHandler {
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
+  private onMatrixConvert = (event: IEvent, data: IDataType) => this.convertToVector(data);
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -158,6 +159,10 @@ export default class ColumnManager extends EventHandler {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
+
+
+    //
+    // console.log(f.desc.type)
     const col = createColumn(data, this.orientation, this.$node);
 
     if (this.firstColumnRange === undefined) {
@@ -169,6 +174,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
     col.on(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
+    col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixConvert);
 
     this.columns.push(col);
 
@@ -194,6 +200,7 @@ export default class ColumnManager extends EventHandler {
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
+    col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixConvert);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.updateColumns();
@@ -219,6 +226,16 @@ export default class ColumnManager extends EventHandler {
     this.columns.splice(index, 0, col);
     this.relayout();
   }
+
+
+  private  convertToVector(col) {
+    const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
+    const flattenedMatrix = createColumn(flattenedData, col.orientation, col.$node);
+    flattenedMatrix.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges);
+    col.$node.node().replaceWith(flattenedMatrix.$node.node());
+
+  }
+
 
   clearBrush(evt: any, brushIndices: any[]) {
     this.brushedItems = [];

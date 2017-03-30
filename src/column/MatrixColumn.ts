@@ -18,6 +18,7 @@ import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
 import {AVectorFilter} from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
+import {INumericalVector} from "phovea_core/src/vector/IVector";
 
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
@@ -37,6 +38,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   private $colStrat: d3.Selection<any>;
   private colStratManager: AColumnManager = new AColumnManager();
+  public static EVENT_CONVERT_TO_VECTOR = 'converMatrix';
 
   constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
     super(data, orientation);
@@ -165,16 +167,16 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   private attachListener() {
-    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, sortData) => {
-      const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
-      if (col.length === 0) {
-        return;
-      }
-      col[0].sortCriteria = sortData.sortMethod;
-      this.updateColStrats();
+    const $vectorChange = this.toolbar.insert('a', ':first-child')
+      .attr('title', 'Aggregated Me')
+      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+
+    $vectorChange.on('click', () => {
+      this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this);
     });
 
 
   }
+
 
 }
