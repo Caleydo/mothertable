@@ -32,6 +32,7 @@ export interface IFuelBarDataSize {
 
 export default class SupportView extends EventHandler {
 
+
   static EVENT_DATASETS_ADDED = 'datasetAdded';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
@@ -40,7 +41,7 @@ export default class SupportView extends EventHandler {
   $node: d3.Selection<any>;
   private $fuelBar: d3.Selection<any>;
 
-  private filterManager: FilterManager;
+  private _filterManager: FilterManager;
   private _matrixData: Map<string, INumericalMatrix> = new Map();
   private datasets: IDataType[];
 
@@ -52,6 +53,10 @@ export default class SupportView extends EventHandler {
 
   private get idTypeHash() {
     return this.idType.id + '_' + this.id;
+  }
+
+  get filterManager(): FilterManager {
+    return this._filterManager;
   }
 
   private build($parent) {
@@ -99,16 +104,16 @@ export default class SupportView extends EventHandler {
   }
 
   private setupFilterManager() {
-    this.filterManager = new FilterManager(this.idType, this.$node);
-    this.filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+    this._filterManager = new FilterManager(this.idType, this.$node);
+    this._filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
       this.updateURLHash();
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
-    this.filterManager.on(AFilter.EVENT_REMOVE_ME, (evt: any, data: IDataType) => {
+    this._filterManager.on(AFilter.EVENT_REMOVE_ME, (evt: any, data: IDataType) => {
       this.updateURLHash();
     });
 
-    this.propagate(this.filterManager, FilterManager.EVENT_FILTER_CHANGED);
+    this.propagate(this._filterManager, FilterManager.EVENT_FILTER_CHANGED);
   }
 
   private async addInitialFilters() {
@@ -121,6 +126,7 @@ export default class SupportView extends EventHandler {
           return this.addDataset(data);
         }));
 
+      console.log(datasets)
       this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
   }
@@ -128,19 +134,24 @@ export default class SupportView extends EventHandler {
   private updateURLHash() {
     // add random id to hash
     hash.setProp(this.idTypeHash,
-      this.filterManager.filters
+      this._filterManager.filters
         .map((d) => d.data.desc.name)
         .join(SupportView.HASH_FILTER_DELIMITER)
     );
   }
 
+  convertToVector(col) {
+
+    this._filterManager.convertToVector(col);
+  }
+
   destroy() {
-    this.filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
+    this._filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.$node.remove();
   }
 
   primarySortColumn(sortColdata) {
-    this.filterManager.primarySortColumn(sortColdata);
+    this._filterManager.primarySortColumn(sortColdata);
   }
 
   /**
@@ -153,8 +164,8 @@ export default class SupportView extends EventHandler {
   }
 
   public remove(data: IDataType) {
-    if (this.filterManager.contains(<IFilterAbleType>data)) {
-      this.filterManager.remove(null, <IFilterAbleType>data);
+    if (this._filterManager.contains(<IFilterAbleType>data)) {
+      this._filterManager.remove(null, <IFilterAbleType>data);
       this.updateURLHash();
     }
   }
@@ -174,7 +185,7 @@ export default class SupportView extends EventHandler {
       .map((d) => d.desc.type)
       .sort()
       .filter((el, i, a) => {
-        if(i === a.indexOf(el)) {
+        if (i === a.indexOf(el)) {
           return 1;
         }
         return 0;
@@ -207,14 +218,14 @@ export default class SupportView extends EventHandler {
       theme: 'bootstrap',
       //selectOnClose: true,
       //escapeMarkup: (markup) => markup,
-      templateResult: (item:any) => {
-        if(!item.id) {
+      templateResult: (item: any) => {
+        if (!item.id) {
           return $(`<span>${item.text}</span>`);
         }
         return $(`<span><i class="${dataValueTypeCSSClass(item.valueType)}" aria-hidden="true"></i> ${item.text}</span>`);
       },
-      templateSelection: (item:any) => {
-        if(!item.id) {
+      templateSelection: (item: any) => {
+        if (!item.id) {
           return $(`<span>${item.text}</span>`);
         }
         return $(`<span><i class="${dataValueTypeCSSClass(item.valueType)}" aria-hidden="true"></i> ${item.text}</span>`);
@@ -223,7 +234,7 @@ export default class SupportView extends EventHandler {
 
     const $jqSelect2 = (<any>$($select.node()))
       .select2(defaultOptions)
-      .on('select2:select', async(evt) => {
+      .on('select2:select', async (evt) => {
         const dataset = evt.params.data.data;
 
         // reset selection
@@ -231,6 +242,7 @@ export default class SupportView extends EventHandler {
 
         // load data and add columns
         const data = await this.addDataset(dataset);
+        console.log(data);
         this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
 
         this.updateURLHash();
@@ -275,8 +287,9 @@ export default class SupportView extends EventHandler {
     if (data.desc.type === 'stratification') {
       data = await (<IStratification>data).asVector();
     }
-    if (!this.filterManager.contains(<IFilterAbleType>data)) {
-      this.filterManager.push(<IFilterAbleType>data);
+    if (!this._filterManager.contains(<IFilterAbleType>data)) {
+      console.log(data)
+      this._filterManager.push(<IFilterAbleType>data);
     }
     if (data.desc.type === AColumn.DATATYPE.matrix) {
       this._matrixData.set(data.desc.id, <INumericalMatrix>data);

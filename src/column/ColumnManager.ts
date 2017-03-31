@@ -9,6 +9,7 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
+import {list} from 'phovea_core/src/range';
 import {IStringVector, AVectorColumn} from './AVectorColumn';
 import AColumn, {EOrientation} from './AColumn';
 import CategoricalColumn from './CategoricalColumn';
@@ -76,7 +77,7 @@ export default class ColumnManager extends EventHandler {
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
-  private onMatrixConvert = (event: IEvent, data: IDataType) => this.convertToVector(data);
+  private onMatrixConvert = (event: IEvent, data: IDataType) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data);
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -228,12 +229,9 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  private  convertToVector(col) {
+  convertToVector(col) {
     const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
-    const flattenedMatrix = createColumn(flattenedData, col.orientation, col.$node);
-    flattenedMatrix.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges);
-    col.$node.node().replaceWith(flattenedMatrix.$node.node());
-
+    return flattenedData;
   }
 
 
@@ -306,7 +304,7 @@ export default class ColumnManager extends EventHandler {
    * @param filterList
    */
   mapFiltersAndSort(filterList: AnyFilter[]) {
-    this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
+    this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data.desc.id === d.data.desc.id)[0]);
     this.updateColumns();
   }
 
@@ -816,6 +814,7 @@ export function distributeColWidths(columns: { lockedWidth: number, minWidth: nu
 
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
+  console.log(data.desc.type)
   switch (data.desc.type) {
     case AColumn.DATATYPE.vector:
       const v = <IStringVector | ICategoricalVector | INumericalVector>data;
@@ -899,4 +898,9 @@ export function dataValueTypeCSSClass(valueType: EDataValueType) {
     default:
       return '';
   }
+}
+
+function findMyIndexInColumns(col) {
+
+
 }

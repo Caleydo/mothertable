@@ -26,7 +26,7 @@ import AColumn from '../column/AColumn';
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
-export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
+export declare type IFilterAbleType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
 export default class FilterManager extends EventHandler {
 
@@ -54,6 +54,7 @@ export default class FilterManager extends EventHandler {
   }
 
   push(data: IFilterAbleType) {
+    console.log(data)
     const filter = FilterManager.createFilter(data, this.$node);
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     filter.on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
@@ -123,6 +124,25 @@ export default class FilterManager extends EventHandler {
     this.triggerSort();
   }
 
+  convertToVector(col) {
+
+    // console.log(col.data.desc.id, this.filters)
+    // const matrixFilters = this.filters.filter((c) => c.data.desc.id === col.data.desc.id)
+    //  const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
+    // const flattenedMatrix = FilterManager.createFilter(flattenedData, this.$node);
+    //matrixFilters[0].$node.remove()
+    //const index = this.filters.indexOf(matrixFilters[0]);
+    // this.push(flattenedData)
+    //console.log(flattenedMatrix, matrixFilters[0].$node.remove(),index,this.filters)
+
+
+    // flattenedMatrix.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges);
+    // const index = this.columns.indexOf(col);
+    // this.columns.splice(index, 1, flattenedMatrix);
+    // console.log(this.columns)
+
+    //matrixFilters[0].$node.node().replaceWith(flattenedMatrix.$node.node());
+  }
 
   /**
    * Filter Dragging  Event Listener
@@ -199,7 +219,7 @@ export default class FilterManager extends EventHandler {
 
     switch (data.desc.type) {
       case AColumn.DATATYPE.vector:
-        const v = <IStringVector|ICategoricalVector|INumericalVector>data;
+        const v = <IStringVector | ICategoricalVector | INumericalVector>data;
         switch (v.desc.value.type) {
           case VALUE_TYPE_STRING:
             return new StringFilter(<IStringVector>v, $parent);
