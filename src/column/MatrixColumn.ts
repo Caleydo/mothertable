@@ -175,7 +175,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this);
     });
 
-
   }
 
 

@@ -9,6 +9,7 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import * as d3 from 'd3';
+import ProjectedVector from "phovea_core/src/matrix/internal/ProjectedVector";
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
@@ -16,23 +17,26 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   maxWidth: number = 140;
   minHeight: number = 4;
   maxHeight: number = 20;
+  projectedMatrix: boolean = false;
 
-  private $points:d3.Selection<any>;
+  private $points: d3.Selection<any>;
   private scale;
+  public static EVENT_CONVERT_TO_MATRIX = 'convertToMatrix';
 
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
     this.$node = this.build($parent);
+    this.attachListener();
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
     super.buildToolbar($toolbar);
     this.$points = $toolbar.select('svg').append('g');
     const $svg = $toolbar.select('svg').append('g');
-    const width = parseInt($toolbar.style("width"));
+    const width = parseInt($toolbar.style('width'));
 
     this.scale = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
-    const axis =  d3.svg.axis()
+    const axis = d3.svg.axis()
       .ticks(3)
       .orient('bottom')
       .scale(this.scale);
@@ -42,13 +46,13 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   public updateAxis(brushedItems) {
     const axis = this.$node.selectAll('taggle-axis')[0];
-    let brushedData  = [];
+    let brushedData = [];
 
     this.$points.selectAll('line').remove();
 
-    this.data.forEach((d,i) => {
+    this.data.forEach((d, i) => {
       brushedItems.forEach(brush => {
-        if(brush.indexOf(i) > -1) {
+        if (brush.indexOf(i) > -1) {
           brushedData.push(d);
           this.$points.append('line').attr({
             'x1': this.scale(d),
@@ -88,4 +92,22 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       }
     });
   }
+
+
+  private attachListener() {
+    if ((<any>this).data.m !== undefined) {
+      const $matrixChange = this.toolbar.insert('a', ':first-child')
+        .attr('title', 'Aggregated Me')
+        .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+
+      $matrixChange.on('click', () => {
+        this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, this);
+      });
+
+    }
+
+
+  }
+
+
 }

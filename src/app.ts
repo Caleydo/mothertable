@@ -20,6 +20,7 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter, default as AFilter} from './filter/AFilter';
 import {formatIdTypeName} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
+import NumberColumn from "mothertable/src/column/NumberColumn";
 
 /**
  * The main class for the App app
@@ -161,6 +162,17 @@ export default class App {
       this.colManager.updateTableView(flattenedMatrix);
       this.supportView[0].filterManager.updateFilterView(flattenedMatrix);
     });
+
+
+    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, (evt: any, data) => {
+      const matrixData = data.data.m;
+      //  const flattenedMatrix = this.colManager.convertMatrixToVector(data);
+      this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [matrixData]);
+      this.supportView[0].filterManager.push(matrixData);
+      this.colManager.updateTableView(matrixData);
+      this.supportView[0].filterManager.updateFilterView(matrixData);
+    });
+
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
     this.supportView.push(supportView);

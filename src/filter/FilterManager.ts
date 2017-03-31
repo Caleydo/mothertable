@@ -75,9 +75,16 @@ export default class FilterManager extends EventHandler {
 
 
   updateFilterView(flattenedMatrix) {
-    const matrixColumn = this.filters.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
-    const index = this.filters.indexOf(matrixColumn);
-    matrixColumn.$node.remove();
+    let column = null;
+    if (flattenedMatrix.desc.type === AColumn.DATATYPE.vector) {
+      column = this.filters.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
+    } else if (flattenedMatrix.desc.type === AColumn.DATATYPE.matrix) {
+
+      column = this.filters.filter((col) => col.data.m !== undefined)
+        .filter((c) => c.data.m.desc.id === flattenedMatrix.desc.id)[0];
+    }
+    const index = this.filters.indexOf(column);
+    column.$node.remove();
     this.filters.splice(index, 1); // Remove Matrix Filter column
 
   }

@@ -77,7 +77,8 @@ export default class ColumnManager extends EventHandler {
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
-  private onMatrixConvert = (event: IEvent, data: IDataType) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data);
+  private onMatrixToVector = (event: IEvent, data: IDataType) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data);
+  private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -175,7 +176,8 @@ export default class ColumnManager extends EventHandler {
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
     col.on(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
-    col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixConvert);
+    col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
+    col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
 
     this.columns.push(col);
 
@@ -201,7 +203,8 @@ export default class ColumnManager extends EventHandler {
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
-    col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixConvert);
+    col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
+    col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.updateColumns();
@@ -236,12 +239,19 @@ export default class ColumnManager extends EventHandler {
 
   updateTableView(flattenedMatrix) {
 
-    const matrixColumn = this.columns.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
-    const index = this.columns.indexOf(matrixColumn);
-    const projectedcolumn = this.columns.filter((col) => col.data === flattenedMatrix)[0];
-    (<any>matrixColumn).$node.node().replaceWith(projectedcolumn.$node.node());
-    this.columns.splice(index, 1); // Remove matrix column
+    let column = null;
+    if (flattenedMatrix.desc.type === AColumn.DATATYPE.vector) {
+      column = this.columns.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
+    } else if (flattenedMatrix.desc.type === AColumn.DATATYPE.matrix) {
 
+      column = this.columns.filter((col) => col.data.m !== undefined)
+        .filter((c) => c.data.m.desc.id === flattenedMatrix.desc.id)[0];
+    }
+    const index = this.columns.indexOf(column);
+    const projectedcolumn = this.columns.filter((col) => col.data === flattenedMatrix)[0];
+    (<any>column).$node.node().replaceWith(projectedcolumn.$node.node());
+    this.columns.splice(index, 1); // Remove matrix column
+    console.log(this.columns, flattenedMatrix)
   }
 
 
