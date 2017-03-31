@@ -229,9 +229,19 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  convertToVector(col) {
-    const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
+  convertMatrixToVector(col) {
+    const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => Math.round(d3.mean(row)));
     return flattenedData;
+  }
+
+  updateTableView(flattenedMatrix) {
+
+    const matrixColumn = this.columns.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
+    const index = this.columns.indexOf(matrixColumn);
+    const projectedcolumn = this.columns.filter((col) => col.data === flattenedMatrix)[0];
+    (<any>matrixColumn).$node.node().replaceWith(projectedcolumn.$node.node());
+    this.columns.splice(index, 1); // Remove matrix column
+
   }
 
 
@@ -814,7 +824,6 @@ export function distributeColWidths(columns: { lockedWidth: number, minWidth: nu
 
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
-  console.log(data.desc.type)
   switch (data.desc.type) {
     case AColumn.DATATYPE.vector:
       const v = <IStringVector | ICategoricalVector | INumericalVector>data;

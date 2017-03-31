@@ -126,7 +126,6 @@ export default class SupportView extends EventHandler {
           return this.addDataset(data);
         }));
 
-      console.log(datasets)
       this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
   }
@@ -288,7 +287,6 @@ export default class SupportView extends EventHandler {
       data = await (<IStratification>data).asVector();
     }
     if (!this._filterManager.contains(<IFilterAbleType>data)) {
-      console.log(data)
       this._filterManager.push(<IFilterAbleType>data);
     }
     if (data.desc.type === AColumn.DATATYPE.matrix) {

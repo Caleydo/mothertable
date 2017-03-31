@@ -155,13 +155,12 @@ export default class App {
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
     this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, data) => {
-
-      const d = this.colManager.convertToVector(data);
-      //  this.supportView[0].convertToVector(data);
-      this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [d]);
-      this.supportView[0].filterManager.push(d)
-
-    })
+      const flattenedMatrix = this.colManager.convertMatrixToVector(data);
+      this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
+      this.supportView[0].filterManager.push(flattenedMatrix);
+      this.colManager.updateTableView(flattenedMatrix);
+      this.supportView[0].filterManager.updateFilterView(flattenedMatrix);
+    });
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
     this.supportView.push(supportView);
@@ -171,7 +170,6 @@ export default class App {
 
     // add columns if we add one or multiple datasets
     supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
-      console.log(datasets);
       // first push all the new columns ...
       const addedColumnsPromise = datasets.map((data) => {
         if (this.dataSize === undefined) {

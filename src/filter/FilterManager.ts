@@ -54,7 +54,6 @@ export default class FilterManager extends EventHandler {
   }
 
   push(data: IFilterAbleType) {
-    console.log(data)
     const filter = FilterManager.createFilter(data, this.$node);
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     filter.on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
@@ -74,6 +73,14 @@ export default class FilterManager extends EventHandler {
     return this.filters.some((d) => d.data === data);
   }
 
+
+  updateFilterView(flattenedMatrix) {
+    const matrixColumn = this.filters.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
+    const index = this.filters.indexOf(matrixColumn);
+    matrixColumn.$node.remove();
+    this.filters.splice(index, 1); // Remove Matrix Filter column
+
+  }
 
   /**
    * Removes the column from the filters by the given data parameter,
