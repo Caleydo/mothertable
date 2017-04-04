@@ -155,26 +155,30 @@ export default class App {
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
-    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, data) => {
-      const flattenedMatrix = this.colManager.convertMatrixToVector(data);
+    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col) => {
+      const flattenedMatrix = this.colManager.convertMatrixToVector(col);
       this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
       this.supportView[0].filterManager.push(flattenedMatrix);
-      this.colManager.updateTableView(flattenedMatrix);
-      this.supportView[0].filterManager.updateFilterView(flattenedMatrix);
+      this.colManager.updateTableView(flattenedMatrix, col);
+      this.supportView[0].filterManager.updateFilterView(flattenedMatrix, col);
+      this.supportView[1].destroy();
+      this.supportView.splice(1, 1);
+
     });
 
 
-    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, (evt: any, data) => {
-      const matrixData = data.data.m;
+    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, (evt: any, col) => {
+      const matrixData = col.data.m;
       //  const flattenedMatrix = this.colManager.convertMatrixToVector(data);
       this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [matrixData]);
       this.supportView[0].filterManager.push(matrixData);
-      this.colManager.updateTableView(matrixData);
-      this.supportView[0].filterManager.updateFilterView(matrixData);
+      this.colManager.updateTableView(matrixData, col);
+      this.supportView[0].filterManager.updateFilterView(matrixData, col);
     });
 
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
+
     this.supportView.push(supportView);
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
@@ -234,7 +238,6 @@ export default class App {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
     this.supportView.push(supportView);
-
     const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
     new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
 

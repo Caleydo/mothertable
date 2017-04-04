@@ -38,7 +38,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   private $colStrat: d3.Selection<any>;
   private colStratManager: AColumnManager = new AColumnManager();
-  public static EVENT_CONVERT_TO_VECTOR = 'converMatrix';
+  public static EVENT_CONVERT_TO_VECTOR = 'convertMatrix';
 
   constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
     super(data, orientation);

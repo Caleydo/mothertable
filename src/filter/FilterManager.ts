@@ -74,19 +74,11 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateFilterView(flattenedMatrix) {
-    let column = null;
-    if (flattenedMatrix.desc.type === AColumn.DATATYPE.vector) {
-      column = this.filters.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
-    } else if (flattenedMatrix.desc.type === AColumn.DATATYPE.matrix) {
-
-      column = this.filters.filter((col) => col.data.m !== undefined)
-        .filter((c) => c.data.m.desc.id === flattenedMatrix.desc.id)[0];
-    }
-    const index = this.filters.indexOf(column);
-    column.$node.remove();
-    this.filters.splice(index, 1); // Remove Matrix Filter column
-
+  updateFilterView(flattenedMatrix, col) {
+    const matrixFilter = this.filters.find((f) => f.data === col.data);
+    const index = (this.filters.indexOf(matrixFilter));
+    matrixFilter.$node.remove();
+    this.filters.splice(index, 1);
   }
 
   /**
@@ -101,7 +93,7 @@ export default class FilterManager extends EventHandler {
       col.$node.remove();
       this.filters.splice(this.filters.indexOf(col), 1);
       fire(AFilter.EVENT_REMOVE_ME, data);
-      this.fire(AFilter.EVENT_REMOVE_ME, data)
+      this.fire(AFilter.EVENT_REMOVE_ME, data);
     }
 
 

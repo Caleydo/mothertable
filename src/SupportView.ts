@@ -44,6 +44,7 @@ export default class SupportView extends EventHandler {
   private _filterManager: FilterManager;
   private _matrixData: Map<string, INumericalMatrix> = new Map();
   private datasets: IDataType[];
+  private supportViewNode;
 
   constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
@@ -76,6 +77,7 @@ export default class SupportView extends EventHandler {
     this.$fuelBar.append('div').classed('filteredData', true);
 
     this.$node = $wrapper.append('div').classed(this.idType.id, true);
+    this.supportViewNode = $wrapper;
   }
 
   private async init() {
@@ -147,6 +149,7 @@ export default class SupportView extends EventHandler {
   destroy() {
     this._filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.$node.remove();
+    this.supportViewNode.remove();
   }
 
   primarySortColumn(sortColdata) {

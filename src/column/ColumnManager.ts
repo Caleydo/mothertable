@@ -234,24 +234,17 @@ export default class ColumnManager extends EventHandler {
 
   convertMatrixToVector(col) {
     const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => Math.round(d3.mean(row)));
+
     return flattenedData;
   }
 
-  updateTableView(flattenedMatrix) {
+  updateTableView(flattenedMatrix, col) {
 
-    let column = null;
-    if (flattenedMatrix.desc.type === AColumn.DATATYPE.vector) {
-      column = this.columns.filter((col) => col.data.desc.id === flattenedMatrix.m.desc.id)[0];
-    } else if (flattenedMatrix.desc.type === AColumn.DATATYPE.matrix) {
-
-      column = this.columns.filter((col) => col.data.m !== undefined)
-        .filter((c) => c.data.m.desc.id === flattenedMatrix.desc.id)[0];
-    }
-    const index = this.columns.indexOf(column);
-    const projectedcolumn = this.columns.filter((col) => col.data === flattenedMatrix)[0];
-    (<any>column).$node.node().replaceWith(projectedcolumn.$node.node());
+    const index = this.columns.indexOf(col);
+    const projectedcolumn = this.columns.find((c) => c.data === flattenedMatrix);
+    (<any>col).$node.node().replaceWith(projectedcolumn.$node.node());
     this.columns.splice(index, 1); // Remove matrix column
-    console.log(this.columns, flattenedMatrix)
+
   }
 
 
