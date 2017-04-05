@@ -21,6 +21,8 @@ import {AnyFilter, default as AFilter} from './filter/AFilter';
 import {formatIdTypeName} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import NumberColumn from "mothertable/src/column/NumberColumn";
+import any = jasmine.any;
+import {AVectorFilter} from './filter/AVectorFilter';
 
 /**
  * The main class for the App app
@@ -144,7 +146,7 @@ export default class App {
   }
 
   private primarySortCol(evt: any, sortColdata: IAnyVector) {
-    this.supportView[0].primarySortColumn(sortColdata);
+    this.supportView[0].sortByColumnHeader(sortColdata);
 
   }
 
@@ -154,6 +156,9 @@ export default class App {
     // create a column manager
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+    this.colManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      this.supportView[0].sortFilterByHeader(data);
+    });
 
     this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col: AnyColumn) => {
       const flattenedMatrix = this.colManager.convertMatrixToVector(col);
@@ -178,6 +183,10 @@ export default class App {
 
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
+    supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      const col = this.colManager.updateSortByIcons(data);
+      (<AVectorColumn<any, any>>col).updateSortIcon(data.sortMethod);
+    });
 
     this.supportView.push(supportView);
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
@@ -201,7 +210,6 @@ export default class App {
           columns
             .filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix)
             .forEach((col) => {
-              this.triggerMatrix();
               this.addMatrixColSupportManger(<MatrixColumn>col);
             });
 
@@ -214,9 +222,7 @@ export default class App {
 
     supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
       this.colManager.filterData(filter);
-      // this.manager.update(filter);
       this.rowRange = filter;
-      this.triggerMatrix();
       this.dataSize.filtered = filter.size()[0];
       supportView.updateFuelBar(this.dataSize);
     });
@@ -240,11 +246,14 @@ export default class App {
     this.supportView.push(supportView);
     const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
     new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
+    supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      col.sortByFilterHeader(data);
+    });
+
 
     supportView.updateFuelBar(this.dataSize);
     supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
       col.filterStratData(filter);
-      this.triggerMatrix(filter, supportView.id);
       this.dataSize.filtered = filter.size()[0];
       supportView.updateFuelBar(this.dataSize);
     });
@@ -271,26 +280,6 @@ export default class App {
     });
   }
 
-  private triggerMatrix(colRange?, id?: number) {
-    const matrixCol: MatrixColumn[] = <MatrixColumn[]>this.colManager.columns.filter((d) => d instanceof MatrixColumn);
-    const uniqueMatrix = this.supportView.findIndex((d) => d.id === id);
-    if (uniqueMatrix === -1) {
-      return;
-    }
-    if (matrixCol.length === 0) {
-      return;
-    }
-    const indices = (<any>matrixCol[0]).data.indices;
-    if (this.rowRange === undefined) {
-      this.rowRange = (indices.dim(0));
-    }
-
-    if (colRange === undefined) {
-      colRange = (indices.dim(1));
-    }
-
-    matrixCol[uniqueMatrix - 1].updateMultiForms(this.colManager.multiformRangeList, this.colManager.stratifiedRanges, this.colManager.brushedRanges, colRange);
-  }
 
 }
 

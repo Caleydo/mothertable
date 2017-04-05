@@ -12,7 +12,7 @@ import {on, fire} from 'phovea_core/src/event';
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly $node: d3.Selection<any>;
-  private _filterDim: {width: number, height: number};
+  private _filterDim: { width: number, height: number };
   private _activeCategories: string[];
   private _sortCriteria: string = SORT.asc;
 
@@ -20,7 +20,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   constructor(data: ICategoricalVector, $parent: d3.Selection<any>) {
     super(data);
     this.$node = this.build($parent);
-    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
+    // on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
   }
 
   protected build($parent: d3.Selection<any>) {
@@ -46,11 +46,11 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     super.addSortIcon($node);
   }
 
-  showStratIcon(isVisible:boolean) {
+  showStratIcon(isVisible: boolean) {
     this.$node.select('.fa-columns').classed('hidden', !isVisible);
   }
 
-  sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
+  sortByFilterIcon(sortData: { sortMethod: string, col }) {
     if (sortData.col !== this) {
       return;
     }
@@ -61,12 +61,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     this.generateCategories(this.$node.select('main'), true);
   }
 
-  get filterDim(): {width: number; height: number} {
+  get filterDim(): { width: number; height: number } {
     this._filterDim = {width: 205, height: 35};
     return this._filterDim;
   }
 
-  set filterDim(value: {width: number; height: number}) {
+  set filterDim(value: { width: number; height: number }) {
     this._filterDim = value;
   }
 

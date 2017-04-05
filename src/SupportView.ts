@@ -23,6 +23,7 @@ import AColumn from './column/AColumn';
 import {formatAttributeName, formatIdTypeName} from './column/utils';
 import {IStratification} from 'phovea_core/src/stratification';
 import AFilter from './filter/AFilter';
+import {AVectorFilter} from './filter/AVectorFilter';
 
 
 export interface IFuelBarDataSize {
@@ -115,6 +116,11 @@ export default class SupportView extends EventHandler {
       this.updateURLHash();
     });
 
+
+    this.filterManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
+    });
+
     this.propagate(this._filterManager, FilterManager.EVENT_FILTER_CHANGED);
   }
 
@@ -152,9 +158,14 @@ export default class SupportView extends EventHandler {
     this.supportViewNode.remove();
   }
 
-  primarySortColumn(sortColdata) {
-    this._filterManager.primarySortColumn(sortColdata);
+  sortByColumnHeader(sortColdata) {
+    this.filterManager.primarySortColumn(sortColdata);
   }
+
+  sortFilterByHeader(sortColdata) {
+    this.filterManager.updateSortIcon(sortColdata);
+  }
+
 
   /**
    * Returns the matrix data for a given dataset id
