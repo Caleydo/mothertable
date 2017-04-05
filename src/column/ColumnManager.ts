@@ -45,6 +45,7 @@ import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
+import {AGGREGATE} from './MatrixColumn';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
@@ -81,7 +82,7 @@ export default class ColumnManager extends EventHandler {
   }
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
-  private onMatrixToVector = (event: IEvent, data: IDataType) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data);
+  private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
@@ -239,13 +240,12 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  convertMatrixToVector(col:AnyColumn) {
-    const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => Math.round(d3.mean(row)));
-
+  convertMatrixToVector(col: AnyColumn, aggfunction) {
+    const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => aggregatorFunction(aggfunction, row));
     return flattenedData;
   }
 
-  updateTableView(flattenedMatrix:IAnyVector, col:AnyColumn) {
+  updateTableView(flattenedMatrix: IAnyVector, col: AnyColumn) {
 
     const index = this.columns.indexOf(col);
     const projectedcolumn = this.columns.find((c) => c.data === flattenedMatrix);
@@ -914,6 +914,26 @@ export function dataValueTypeCSSClass(valueType: EDataValueType) {
       return 'fa fa-fw fa-signal fa-rotate-270 fa-flip-vertical';
     case EDataValueType.String:
       return 'fa fa-fw fa-align-center';
+    default:
+      return '';
+  }
+}
+
+export function aggregatorFunction(value: string, arr: number[]) {
+  console.log(value, arr);
+  switch (value) {
+    case AGGREGATE.min:
+      return Math.round(d3.min(arr));
+    case AGGREGATE.max:
+      return Math.round(d3.max(arr));
+    case AGGREGATE.mean:
+      return Math.round(d3.mean(arr));
+    case AGGREGATE.median:
+      return Math.round(d3.median(arr));
+    case AGGREGATE.q1:
+      return Math.round(d3.quantile(arr, 0.25));
+    case AGGREGATE.q3:
+      return Math.round(d3.quantile(arr, 0.75));
     default:
       return '';
   }

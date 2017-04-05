@@ -188,15 +188,27 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
 
-
   private attachListener() {
-    const $vectorChange = this.toolbar.insert('a', ':first-child')
-      .attr('title', 'Aggregated Me')
-      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+    const options = [' ', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
 
-    $vectorChange.on('click', () => {
-      this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this);
-    });
+    const $vectorChange = this.toolbar.append('select')
+      .attr('class', 'select')
+      .on('change', (d, i) => {
+        const v = this.toolbar.select('select').property('value');
+        this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this, v);
+      })
+
+    $vectorChange
+      .selectAll('option')
+      .data(options).enter()
+      .append('option')
+      .text((d) => d);
+    // .attr('title', 'Aggregated Me')
+    //.html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+
+    // $vectorChange.on('click', () => {
+    //   this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this);
+    // });
 
   }
 

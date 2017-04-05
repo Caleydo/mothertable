@@ -160,8 +160,8 @@ export default class App {
       this.supportView[0].sortFilterByHeader(data);
     });
 
-    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col: AnyColumn) => {
-      const flattenedMatrix = this.colManager.convertMatrixToVector(col);
+    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col: AnyColumn,aggfunction:string) => {
+      const flattenedMatrix = this.colManager.convertMatrixToVector(col,aggfunction);
       this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
       this.supportView[0].filterManager.push(flattenedMatrix);
       this.colManager.updateTableView(flattenedMatrix, col);

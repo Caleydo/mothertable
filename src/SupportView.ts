@@ -141,7 +141,7 @@ export default class SupportView extends EventHandler {
   private updateURLHash() {
     // add random id to hash
     hash.setProp(this.idTypeHash,
-      this._filterManager.filters
+      this._filterManager.vectorFilters
         .map((d) => d.data.desc.name)
         .join(SupportView.HASH_FILTER_DELIMITER)
     );

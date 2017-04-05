@@ -33,8 +33,8 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
 
+  readonly vectorFilters: AnyColumn[] = [];
   readonly filters: AnyColumn[] = [];
-
 
   private onFilterChanged = () => this.refilter();
   //private onFilterRemove = (evt: any, col) => this.removeMe(col);
@@ -59,11 +59,11 @@ export default class FilterManager extends EventHandler {
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     filter.on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
     if (data.desc.type !== AColumn.DATATYPE.matrix) {
-      this.filters.push(filter);
+      this.vectorFilters.push(filter);
     }
 
-
-    this.updateStratifyIcon(findColumnTie(this.filters));
+    this.filters.push(filter);
+    this.updateStratifyIcon(findColumnTie(this.vectorFilters));
     filter.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       if (filter instanceof CategoricalFilter) {
         filter.sortByFilterIcon(data);
@@ -75,40 +75,43 @@ export default class FilterManager extends EventHandler {
 
   primarySortColumn(sortColdata) {
     const dataid = sortColdata.data.desc.id;
-    const col = this.filters.filter((d) => d.data.desc.id === dataid);
+    const col = this.vectorFilters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
-    this.updateStratifyIcon(findColumnTie(this.filters));
+    this.updateStratifyIcon(findColumnTie(this.vectorFilters));
   }
 
   contains(data: IFilterAbleType) {
-    return this.filters.some((d) => d.data === data);
+    return this.vectorFilters.some((d) => d.data === data);
   }
 
 
   updateSortIcon(sortColdata: { sortMethod: string, col: AnyColumn }) {
-    const col = this.filters.find((d) => d.data === sortColdata.col.data);
+    const col = this.vectorFilters.find((d) => d.data === sortColdata.col.data);
     (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
   }
 
 
   updateFilterView(flattenedMatrix, col) {
+    console.log(this.vectorFilters)
     const matrixFilter = this.filters.find((f) => f.data === col.data);
     const index = (this.filters.indexOf(matrixFilter));
     matrixFilter.$node.remove();
+    this.vectorFilters.splice(index, 1);
     this.filters.splice(index, 1);
+
   }
 
   /**
-   * Removes the column from the filters by the given data parameter,
+   * Removes the column from the vectorFilters by the given data parameter,
    * if the column has no filter applied.
    *
    * @param data
    */
   remove(evt: any, data: IFilterAbleType) {
-    const col = this.filters.find((d) => d.data === data);
+    const col = this.vectorFilters.find((d) => d.data === data);
     if (!col.activeFilter) {
       col.$node.remove();
-      this.filters.splice(this.filters.indexOf(col), 1);
+      this.vectorFilters.splice(this.vectorFilters.indexOf(col), 1);
       fire(AFilter.EVENT_REMOVE_ME, data);
       this.fire(AFilter.EVENT_REMOVE_ME, data);
     }
@@ -128,7 +131,7 @@ export default class FilterManager extends EventHandler {
    * @param index
    */
   move(col: AnyColumn, index: number) {
-    const old = this.filters.indexOf(col);
+    const old = this.vectorFilters.indexOf(col);
     if (old === index) {
       this.triggerSort();
       return;
@@ -139,24 +142,24 @@ export default class FilterManager extends EventHandler {
     // this.node.insertBefore(col.node, this.node.childNodes[index + 1]);
     filterListNode.node().insertBefore(col.$node.node(), filterListNode.node().childNodes[index]);
 
-    this.filters.splice(old, 1);
+    this.vectorFilters.splice(old, 1);
     if (old < index) {
       index -= 1; //shifted because of deletion
     }
-    this.filters.splice(index, 0, col);
+    this.vectorFilters.splice(index, 0, col);
     this.triggerSort();
   }
 
   convertToVector(col) {
 
-    // console.log(col.data.desc.id, this.filters)
-    // const matrixFilters = this.filters.filter((c) => c.data.desc.id === col.data.desc.id)
+    // console.log(col.data.desc.id, this.vectorFilters)
+    // const matrixFilters = this.vectorFilters.filter((c) => c.data.desc.id === col.data.desc.id)
     //  const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
     // const flattenedMatrix = FilterManager.createFilter(flattenedData, this.$node);
     //matrixFilters[0].$node.remove()
-    //const index = this.filters.indexOf(matrixFilters[0]);
+    //const index = this.vectorFilters.indexOf(matrixFilters[0]);
     // this.push(flattenedData)
-    //console.log(flattenedMatrix, matrixFilters[0].$node.remove(),index,this.filters)
+    //console.log(flattenedMatrix, matrixFilters[0].$node.remove(),index,this.vectorFilters)
 
 
     // flattenedMatrix.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges);
@@ -182,8 +185,9 @@ export default class FilterManager extends EventHandler {
       posBefore = ui.item.index();
     });
 
-    $('ol.filterlist', this.$node.node()).on('sortupdate', function (event, ui) {
+     $('ol.filterlist', this.$node.node()).on('sortupdate', function (event, ui) {
       //  console.log('update: ' + ui.item.index())
+
       posAfter = ui.item.index();
       that.updateFilterOrder(posBefore, posAfter);
     });
@@ -195,28 +199,28 @@ export default class FilterManager extends EventHandler {
    * @param posAfter  position of element after dragging
    */
   private updateFilterOrder(posBefore: number, posAfter: number) {
-    const temp = this.filters[posBefore];
-    this.filters.splice(posBefore, 1);
-    this.filters.splice(posAfter, 0, temp);
-    this.updateStratifyIcon(findColumnTie(this.filters));
+    const temp = this.vectorFilters[posBefore];
+    this.vectorFilters.splice(posBefore, 1);
+    this.vectorFilters.splice(posAfter, 0, temp);
+    this.updateStratifyIcon(findColumnTie(this.vectorFilters));
     this.triggerSort();
   }
 
   private updateStratifyIcon(columnIndexForTie: number) {
     //Categorical Columns after the numerical or string
-    this.filters.filter((d, i) => i > columnIndexForTie)
+    this.vectorFilters.filter((d, i) => i > columnIndexForTie)
       .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL)
       .forEach((col) => (<CategoricalFilter>col).showStratIcon(false));
 
     //Categorical Columns before the numerical or string
-    this.filters.filter((d, i) => i < columnIndexForTie)
+    this.vectorFilters.filter((d, i) => i < columnIndexForTie)
       .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL)
       .forEach((col) => (<CategoricalFilter>col).showStratIcon(true));
   }
 
 
   private triggerSort() {
-    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.filters);
+    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.vectorFilters);
   }
 
   /**
@@ -225,7 +229,7 @@ export default class FilterManager extends EventHandler {
    */
   private async currentFilter() {
     let filtered = Range1D.all();
-    for (const f of this.filters) {
+    for (const f of this.vectorFilters) {
       filtered = await f.filter(filtered);
     }
     return filtered;
