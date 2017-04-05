@@ -255,7 +255,6 @@ export default class SupportView extends EventHandler {
 
         // load data and add columns
         const data = await this.addDataset(dataset);
-        console.log(data);
         this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
 
         this.updateURLHash();

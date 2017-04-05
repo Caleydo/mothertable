@@ -191,12 +191,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private attachListener() {
     const options = [' ', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
 
-    const $vectorChange = this.toolbar.append('select')
-      .attr('class', 'select')
+    const $vectorChange = this.toolbar.insert('select', ':first-child')
+      .attr('class', 'aggSelect')
       .on('change', (d, i) => {
         const v = this.toolbar.select('select').property('value');
         this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this, v);
-      })
+      });
 
     $vectorChange
       .selectAll('option')

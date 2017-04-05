@@ -919,9 +919,8 @@ export function dataValueTypeCSSClass(valueType: EDataValueType) {
   }
 }
 
-export function aggregatorFunction(value: string, arr: number[]) {
-  console.log(value, arr);
-  switch (value) {
+export function aggregatorFunction(aggType: string, arr: number[]) {
+  switch (aggType) {
     case AGGREGATE.min:
       return Math.round(d3.min(arr));
     case AGGREGATE.max:

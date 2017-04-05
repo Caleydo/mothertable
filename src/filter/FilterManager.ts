@@ -92,7 +92,6 @@ export default class FilterManager extends EventHandler {
 
 
   updateFilterView(flattenedMatrix, col) {
-    console.log(this.vectorFilters)
     const matrixFilter = this.filters.find((f) => f.data === col.data);
     const index = (this.filters.indexOf(matrixFilter));
     matrixFilter.$node.remove();
@@ -185,7 +184,7 @@ export default class FilterManager extends EventHandler {
       posBefore = ui.item.index();
     });
 
-     $('ol.filterlist', this.$node.node()).on('sortupdate', function (event, ui) {
+    $('ol.filterlist', this.$node.node()).on('sortupdate', function (event, ui) {
       //  console.log('update: ' + ui.item.index())
 
       posAfter = ui.item.index();

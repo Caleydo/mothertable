@@ -114,7 +114,7 @@
         }
       }
 
-      .axis{
+      .axis {
         height: 20px
       }
 
@@ -182,4 +182,9 @@
   position: absolute;
   z-index: 1000;
   background: #fff;
+}
+
+.aggSelect {
+  height: 18px;
+  font-size: 10px;
 }
