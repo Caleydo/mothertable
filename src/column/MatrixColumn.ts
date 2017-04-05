@@ -20,6 +20,15 @@ import {AVectorFilter} from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import {INumericalVector} from "phovea_core/src/vector/IVector";
 
+export const AGGREGATE = {
+  min: 'min',
+  max: 'max',
+  mean: 'mean',
+  median: 'median',
+  q1: 'q1',
+  q3: 'q3'
+
+};
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;

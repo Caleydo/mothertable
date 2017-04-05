@@ -232,13 +232,13 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  convertMatrixToVector(col) {
+  convertMatrixToVector(col:AnyColumn) {
     const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => Math.round(d3.mean(row)));
 
     return flattenedData;
   }
 
-  updateTableView(flattenedMatrix, col) {
+  updateTableView(flattenedMatrix:IAnyVector, col:AnyColumn) {
 
     const index = this.columns.indexOf(col);
     const projectedcolumn = this.columns.find((c) => c.data === flattenedMatrix);

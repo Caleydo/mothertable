@@ -155,7 +155,7 @@ export default class App {
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
 
-    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col) => {
+    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col: AnyColumn) => {
       const flattenedMatrix = this.colManager.convertMatrixToVector(col);
       this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
       this.supportView[0].filterManager.push(flattenedMatrix);
@@ -167,8 +167,8 @@ export default class App {
     });
 
 
-    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, (evt: any, col) => {
-      const matrixData = col.data.m;
+    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, (evt: any, col: AnyColumn) => {
+      const matrixData = (<any>col).data.m;
       //  const flattenedMatrix = this.colManager.convertMatrixToVector(data);
       this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [matrixData]);
       this.supportView[0].filterManager.push(matrixData);
