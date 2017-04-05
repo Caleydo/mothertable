@@ -74,6 +74,10 @@ export default class ColumnManager extends EventHandler {
 
   private onColumnRemoved = (event: IEvent, data: IDataType) => this.remove(null, data);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
+  private onSortByFilterHeader = (event: IEvent, sortData) => {
+    this.updateSortByIcons(sortData);
+    this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+  }
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
   private stratifyMe = (event: IEvent, colid) => {
@@ -106,15 +110,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   private attachListener() {
-    on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, (evt: any, sortData: { sortMethod: string, col: AFilter<string, IMotherTableType> }) => {
-      const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
-      if (col.length === 0) {
-        return;
-      }
-      col[0].sortCriteria = sortData.sortMethod;
-      this.updateColumns();
-    });
-
     on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
     on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
     on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
@@ -141,6 +136,17 @@ export default class ColumnManager extends EventHandler {
   get brushedRanges(): Range[] {
     return this._brushedRanges;
   }
+
+  updateSortByIcons(sortData) {
+    const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+    if (col.length === 0) {
+      return;
+    }
+    col[0].sortCriteria = sortData.sortMethod;
+    this.updateColumns();
+    return col[0];
+  }
+
 
   destroy() {
     // delete all columns, can't remove myself, since I'm using the parent
@@ -169,6 +175,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
     col.on(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
+    col.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.onSortByFilterHeader);
 
     this.columns.push(col);
 

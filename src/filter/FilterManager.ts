@@ -26,7 +26,7 @@ import AColumn from '../column/AColumn';
 
 
 declare type AnyColumn = AFilter<any, IDataType>;
-export declare type IFilterAbleType = IStringVector|ICategoricalVector|INumericalVector|INumericalMatrix;
+export declare type IFilterAbleType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
 export default class FilterManager extends EventHandler {
 
@@ -34,6 +34,7 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
 
   readonly filters: AnyColumn[] = [];
+
 
   private onFilterChanged = () => this.refilter();
   //private onFilterRemove = (evt: any, col) => this.removeMe(col);
@@ -57,8 +58,18 @@ export default class FilterManager extends EventHandler {
     const filter = FilterManager.createFilter(data, this.$node);
     filter.on(AFilter.EVENT_FILTER_CHANGED, this.onFilterChanged);
     filter.on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
-    this.filters.push(filter);
+    if (data.desc.type !== AColumn.DATATYPE.matrix) {
+      this.filters.push(filter);
+    }
+
+
     this.updateStratifyIcon(findColumnTie(this.filters));
+    filter.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      if (filter instanceof CategoricalFilter) {
+        filter.sortByFilterIcon(data);
+      }
+      this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
+    });
   }
 
 
@@ -74,6 +85,12 @@ export default class FilterManager extends EventHandler {
   }
 
 
+  updateSortIcon(sortColdata: { sortMethod: string, col: AnyColumn }) {
+    const col = this.filters.find((d) => d.data === sortColdata.col.data);
+    (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
+  }
+
+
   /**
    * Removes the column from the filters by the given data parameter,
    * if the column has no filter applied.
@@ -86,7 +103,7 @@ export default class FilterManager extends EventHandler {
       col.$node.remove();
       this.filters.splice(this.filters.indexOf(col), 1);
       fire(AFilter.EVENT_REMOVE_ME, data);
-      this.fire(AFilter.EVENT_REMOVE_ME, data)
+      this.fire(AFilter.EVENT_REMOVE_ME, data);
     }
 
 
@@ -155,6 +172,7 @@ export default class FilterManager extends EventHandler {
     const temp = this.filters[posBefore];
     this.filters.splice(posBefore, 1);
     this.filters.splice(posAfter, 0, temp);
+    //this.filters.map((c) => console.log(c.data.desc.id, 'filters updatesort Step 1'))
     this.updateStratifyIcon(findColumnTie(this.filters));
     this.triggerSort();
   }
@@ -173,8 +191,7 @@ export default class FilterManager extends EventHandler {
 
 
   private triggerSort() {
-    const vectorColsOnly = this.filters.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
-    this.fire(FilterManager.EVENT_SORT_DRAGGING, vectorColsOnly);
+    this.fire(FilterManager.EVENT_SORT_DRAGGING, this.filters);
   }
 
   /**
@@ -199,7 +216,7 @@ export default class FilterManager extends EventHandler {
 
     switch (data.desc.type) {
       case AColumn.DATATYPE.vector:
-        const v = <IStringVector|ICategoricalVector|INumericalVector>data;
+        const v = <IStringVector | ICategoricalVector | INumericalVector>data;
         switch (v.desc.value.type) {
           case VALUE_TYPE_STRING:
             return new StringFilter(<IStringVector>v, $parent);
