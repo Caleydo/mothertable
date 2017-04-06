@@ -203,12 +203,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       .data(options).enter()
       .append('option')
       .text((d) => d);
-    // .attr('title', 'Aggregated Me')
-    //.html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
-
-    // $vectorChange.on('click', () => {
-    //   this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this);
-    // });
 
   }
 
