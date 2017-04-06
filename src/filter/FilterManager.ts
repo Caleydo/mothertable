@@ -89,8 +89,10 @@ export default class FilterManager extends EventHandler {
   updateFilterView(flattenedMatrix, col) {
     const matrixFilter = this.filters.find((f) => f.data === col.data);
     const index = (this.filters.indexOf(matrixFilter));
+    if (matrixFilter === undefined) {
+      return;
+    }
     matrixFilter.$node.remove();
-    this.filters.splice(index, 1);
     this.filters.splice(index, 1);
 
   }

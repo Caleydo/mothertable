@@ -160,14 +160,16 @@ export default class App {
       this.supportView[0].sortFilterByHeader(data);
     });
 
-    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col: AnyColumn,aggfunction:string) => {
-      const flattenedMatrix = this.colManager.convertMatrixToVector(col,aggfunction);
+    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col: AnyColumn, aggfunction: string) => {
+      const matrixOnly = this.colManager.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
+      const supportIndex = matrixOnly.indexOf(col) + 1;
+      const flattenedMatrix = this.colManager.convertMatrixToVector(col, aggfunction);
       this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
       this.supportView[0].filterManager.push(flattenedMatrix);
       this.colManager.updateTableView(flattenedMatrix, col);
       this.supportView[0].filterManager.updateFilterView(flattenedMatrix, col);
-      this.supportView[1].destroy();
-      this.supportView.splice(1, 1);
+      this.supportView[supportIndex].destroy();
+      this.supportView.splice(supportIndex, 1);
 
     });
 
@@ -189,6 +191,7 @@ export default class App {
     });
 
     this.supportView.push(supportView);
+
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
     });
