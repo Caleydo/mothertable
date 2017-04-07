@@ -34,7 +34,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private brushedRanges: Range[] = [];
   private colRange: Range;
   dataView: IDataType;
-  multiformList: TaggleMultiform[] = [];
 
   private $colStrat: d3.Selection<any>;
   private colStratManager: AColumnManager = new AColumnManager();
@@ -76,6 +75,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
+    const that = this;
+
     this.stratifiedRanges = stratifiedRanges;
     this.brushedRanges = brushedRanges;
 
@@ -97,27 +98,46 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     });
 
     return Promise.all(viewPromises).then((views) => {
-      this.body.selectAll('.multiformList').remove();
-      this.multiformList = [];
-
-      views.forEach((view, id) => {
-        const $multiformDivs = this.body.append('div').classed('multiformList', true);
-
-        const m = new TaggleMultiform(view, <HTMLElement>$multiformDivs.node(), this.multiFormParams($multiformDivs));
-        m.groupId = this.findGroupId(stratifiedRanges, rowRanges[id]);
-        m.brushed = this.checkBrushed(brushedRanges, rowRanges[id]);
-
-        //assign visses
-        if (this.selectedAggVis) {
-          VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
-        }
-        if (this.selectedUnaggVis) {
-          VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
-        }
-        VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
-
-        this.multiformList.push(m);
+      const viewData = views.map((d:any) => {
+        return {
+          key: d.range.toString(),
+          view: d,
+        };
       });
+
+      const multiformList = this.body.selectAll('.multiformList').data(viewData, (d) => d.key);
+
+      multiformList.enter().append('div')
+        .classed('multiformList', true)
+        .each(function(d) {
+          const $elem = d3.select(this);
+          const m = new TaggleMultiform(d.view, <HTMLElement>$elem.node(), that.multiFormParams($elem));
+          that.multiformMap.set(d.key, m);
+        });
+
+      multiformList
+        .each(function(d, i) {
+          const m = that.multiformMap.get(d.key);
+          m.groupId = that.findGroupId(stratifiedRanges, rowRanges[i]);
+          m.brushed = that.checkBrushed(brushedRanges, rowRanges[i]);
+
+          //assign visses
+          if (that.selectedAggVis) {
+            VisManager.userSelectedAggregatedVisses.set(m.id, that.selectedAggVis);
+          }
+          if (that.selectedUnaggVis) {
+            VisManager.userSelectedUnaggregatedVisses.set(m.id, that.selectedUnaggVis);
+          }
+          VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+      });
+
+      multiformList.exit().remove()
+        .each(function(d) {
+          that.multiformMap.delete(d.key);
+        });
+
+      // order DOM elements according to the data order
+      multiformList.order();
 
       return this.multiformList;
     });
