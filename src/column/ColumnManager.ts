@@ -241,14 +241,13 @@ export default class ColumnManager extends EventHandler {
 
 
   convertMatrixToVector(col: AnyColumn, aggfunction) {
-    const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => aggregatorFunction(aggfunction, row));
+    const flattenedData: any = (<INumericalMatrix> col.dataView).reduce((row: number[]) => aggregatorFunction(aggfunction, row));
     return flattenedData;
   }
 
   updateTableView(flattenedMatrix: IAnyVector, col: AnyColumn) {
-
     const index = this.columns.indexOf(col);
-    const projectedcolumn = this.columns.find((c) => c.data === flattenedMatrix);
+    const projectedcolumn = this.columns.find((c) => c.dataView === flattenedMatrix);
     (<any>col).$node.node().replaceWith(projectedcolumn.$node.node());
     this.columns.splice(index, 1); // Remove matrix column
 

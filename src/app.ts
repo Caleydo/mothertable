@@ -176,7 +176,8 @@ export default class App {
 
     this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, (evt: any, col: AnyColumn) => {
       const matrixData = (<any>col).data.m;
-      //  const flattenedMatrix = this.colManager.convertMatrixToVector(data);
+
+      // const flattenedMatrix = this.colManager.convertMatrixToVector(data);
       this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [matrixData]);
       this.supportView[0].filterManager.push(matrixData);
       this.colManager.updateTableView(matrixData, col);

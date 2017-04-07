@@ -8,7 +8,7 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
@@ -16,10 +16,6 @@ import AColumnManager from './AColumnManager';
 import {AnyFilter, default as AFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
-import {AVectorFilter} from '../filter/AVectorFilter';
-import {on} from 'phovea_core/src/event';
-import {INumericalVector} from "phovea_core/src/vector/IVector";
-import {AVectorColumn} from './AVectorColumn';
 
 export const AGGREGATE = {
   min: 'min',
@@ -101,6 +97,16 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       this.colRange = colRange;
     }
     this.colRange = colRange;
+
+    const mergedRange = mergeRanges(this.rowRanges);
+    let rowView = await this.data.idView(mergedRange);
+    rowView = (<INumericalMatrix>rowView).t;
+
+    let colView = await rowView.idView(colRange);
+    colView = (<INumericalMatrix>colView).t;
+    this.dataView = colView;
+
+
     const viewPromises = rowRanges.map((r) => {
       return this.data.idView(r)
         .then((rowView) => (<INumericalMatrix>rowView).t)
@@ -167,6 +173,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   filterStratData(range: Range) {
     this.colStratManager.filter(range);
+    this.colRange = range;
     this.updateColStrats();
   }
 
@@ -189,7 +196,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   private attachListener() {
-    const options = [' ', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
+    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
 
     const $vectorChange = this.toolbar.insert('select', ':first-child')
       .attr('class', 'aggSelect')
