@@ -13,10 +13,8 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import TaggleMultiform from './TaggleMultiform';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
-import {on, fire} from 'phovea_core/src/event';
 import {IHistogram} from 'phovea_core/src/math';
 import {AVectorFilter} from '../filter/AVectorFilter';
-import {VectorView} from '../../../phovea_core/src/vector/AVector';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export interface ITaggleHistogramData {
