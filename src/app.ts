@@ -160,16 +160,12 @@ export default class App {
       this.supportView[0].sortFilterByHeader(data);
     });
 
-    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, col: AnyColumn, aggfunction: string) => {
+    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, matrixViews: IAnyVector[], aggfunction: string, col: AnyColumn) => {
       const matrixOnly = this.colManager.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
       const supportIndex = matrixOnly.indexOf(col) + 1;
-      const flattenedMatrix = this.colManager.convertMatrixToVector(col, aggfunction);
-      this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
-      this.supportView[0].filterManager.push(flattenedMatrix);
-      this.colManager.updateTableView(flattenedMatrix, col);
-      this.supportView[0].filterManager.updateFilterView(flattenedMatrix, col);
-      this.supportView[supportIndex].destroy();
-      this.supportView.splice(supportIndex, 1);
+      const flattenedMatrix = this.colManager.convertMatrixToVector(matrixViews, aggfunction);
+      flattenedMatrix.map((fm) => this.updateTableView(fm, supportIndex, col));
+
 
     });
 
@@ -242,6 +238,20 @@ export default class App {
         this.reset();
       }
     });
+  }
+
+  private updateTableView(flattenedMatrix, supportIndex, col) {
+    this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
+    this.supportView[0].filterManager.push(flattenedMatrix);
+    this.colManager.updateTableView(flattenedMatrix, col);
+    this.supportView[0].filterManager.updateFilterView(flattenedMatrix, col);
+    //If already deleted
+    if (this.supportView[supportIndex] === undefined) {
+
+      return;
+    }
+    this.supportView[supportIndex].destroy();
+    this.supportView.splice(supportIndex, 1);
   }
 
   private addMatrixColSupportManger(col: MatrixColumn) {

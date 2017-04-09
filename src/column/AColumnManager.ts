@@ -4,10 +4,10 @@
 
 import {AnyColumn} from './ColumnManager';
 import AColumn from './AColumn';
-import SortHandler from '../SortHandler/SortHandler';
+import SortHandler, {prepareRangeFromList} from '../SortHandler/SortHandler';
 import Range from 'phovea_core/src/range/Range';
 import {AnyFilter} from '../filter/AFilter';
-import {makeListFromRange} from './utils';
+import {makeListFromRange, makeRangeFromList} from './utils';
 
 
 export default class AColumnManager {
@@ -16,6 +16,8 @@ export default class AColumnManager {
   private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
   private _nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private dataPerStratificaiton; //The number of data elements per stratification
+  private stratifyColid = null;
+
   constructor() {
     //
 
@@ -31,6 +33,10 @@ export default class AColumnManager {
 
   get nonStratifiedRange(): Range {
     return this._nonStratifiedRange;
+  }
+
+  get stratifiedRanges(): Range[] {
+    return this._stratifiedRanges;
   }
 
   /**
@@ -71,6 +77,24 @@ export default class AColumnManager {
 
     return colsWithRange;
   }
+
+
+  updateStratifiedRanges(stratifyColid) {
+
+    //Return nothing if there is no stratification column
+    const datas = this.dataPerStratificaiton.get(stratifyColid.data.desc.id);
+    const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
+    this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
+    return this._stratifiedRanges;
+    // if (this.totalbrushed.length === 0) {
+    //   cols.forEach((col) => {
+    //     this.colsWithRange.set(col.data.desc.id, this._stratifiedRanges);
+    //   });
+    //   this._multiformRangeList = this._stratifiedRanges;
+    // }
+
+  }
+
 
   async stratify(rangeListMap: Map<string, Range[]>) {
     this.stratifyVectorCols(rangeListMap);

@@ -82,7 +82,7 @@ export default class ColumnManager extends EventHandler {
   }
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
-  private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction);
+  private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
@@ -170,8 +170,6 @@ export default class ColumnManager extends EventHandler {
     // }
 
 
-    //
-    // console.log(f.desc.type)
     const col = createColumn(data, this.orientation, this.$node);
 
     if (this.firstColumnRange === undefined) {
@@ -240,13 +238,19 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  convertMatrixToVector(col: AnyColumn, aggfunction) {
-    const flattenedData: any = (<INumericalMatrix> col.dataView).reduce((row: number[]) => aggregatorFunction(aggfunction, row));
+  convertMatrixToVector(col, aggfunction) {
+    const flattenedData: any = col.map((c) => {
+      return c.reduce((row: number[]) => aggregatorFunction(aggfunction, row))
+    });
     return flattenedData;
   }
 
   updateTableView(flattenedMatrix: IAnyVector, col: AnyColumn) {
+
     const index = this.columns.indexOf(col);
+    if (index === -1) {
+      return;
+    }
     const projectedcolumn = this.columns.find((c) => c.dataView === flattenedMatrix);
     (<any>col).$node.node().replaceWith(projectedcolumn.$node.node());
     this.columns.splice(index, 1); // Remove matrix column

@@ -8,7 +8,7 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges, makeRangeFromList} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
@@ -16,7 +16,9 @@ import AColumnManager from './AColumnManager';
 import {AnyFilter, default as AFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
-
+import CategoricalColumn from "mothertable/src/column/CategoricalColumn";
+import {on} from 'phovea_core/src/event';
+import {prepareRangeFromList} from "mothertable/src/SortHandler/SortHandler";
 export const AGGREGATE = {
   min: 'min',
   max: 'max',
@@ -41,6 +43,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private colRange: Range;
   dataView: IDataType;
   multiformList: TaggleMultiform[] = [];
+  private matrixViews;
 
   private $colStrat: d3.Selection<any>;
   private colStratManager: AColumnManager = new AColumnManager();
@@ -189,20 +192,44 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   updateColStratsSorting(filterList: AnyFilter[]) {
     this.colStratManager.sortByFilters(filterList);
-
     this.updateColStrats();
     // TODO still need to update the DOM order in `this.$colStrat`
   }
 
 
-  private attachListener() {
-    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
+  private stratifyMe = (event: any, colid) => {
+    // this.stratifyColid = colid.data.desc.id;
+    const s = this.colStratManager.updateStratifiedRanges(colid);
+    this.makeMatrixView(s);
+  }
 
+
+  private async makeMatrixView(s) {
+
+    this.matrixViews = [];
+    for (const r of s) {
+
+      const mergedRange = mergeRanges(this.rowRanges);
+      let rowView = await this.data.idView(mergedRange);
+      rowView = (<INumericalMatrix>rowView).t;
+
+      let colView = await rowView.idView(r);
+      colView = (<INumericalMatrix>colView).t;
+
+      this.matrixViews.push(colView);
+    }
+
+  }
+
+
+  private attachListener() {
+    on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
+    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
     const $vectorChange = this.toolbar.insert('select', ':first-child')
       .attr('class', 'aggSelect')
       .on('change', (d, i) => {
-        const v = this.toolbar.select('select').property('value');
-        this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this, v);
+        const value = this.toolbar.select('select').property('value');
+        this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.matrixViews, value, this);
       });
 
     $vectorChange
