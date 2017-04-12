@@ -16,10 +16,9 @@ import AColumnManager from './AColumnManager';
 import {AnyFilter, default as AFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
-import CategoricalColumn from "mothertable/src/column/CategoricalColumn";
+import CategoricalColumn from './CategoricalColumn';
 import {on} from 'phovea_core/src/event';
-import {prepareRangeFromList} from "mothertable/src/SortHandler/SortHandler";
-import {IAnyVector, IVector} from "phovea_core/src/vector/IVector";
+
 export const AGGREGATE = {
   min: 'min',
   max: 'max',
@@ -90,27 +89,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
-  //
-  // private async updateMatrixColumn(cols) {
-  //   this.colStratManager.columns = [];
-  //   //  console.log(this.colStratManager.columns)
-  //   //this.colStratManager.columns = this.matrixFilters;
-  //   const r = cols.data.m.range.dim(1).asList();
-  //
-  //
-  //   const promises = cols.matrixFilters.map((c) => c.data.idView(r));
-  //
-  //   Promise.all(promises).then((cols: any) => {
-  //     cols.forEach((c) => {
-  //       this.pushColStratData(c);
-  //     });
-  //
-  //     console.log(this.colStratManager);
-  //     //this.matrixFilters.map((c)=>this.pushColStratData(c.data))
-  //     this.updateColStrats();
-  //   });
-  // }
-
   async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
     this.stratifiedRanges = stratifiedRanges;
     this.brushedRanges = brushedRanges;
@@ -125,6 +103,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       this.colRange = colRange;
     }
     this.colRange = colRange;
+    console.log(this.rowRanges)
     const mergedRange = mergeRanges(this.rowRanges);
     let rowView = await this.data.idView(mergedRange);
     rowView = (<INumericalMatrix>rowView).t;

@@ -20,10 +20,9 @@ import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter, default as AFilter} from './filter/AFilter';
 import {formatIdTypeName} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
-import NumberColumn from "mothertable/src/column/NumberColumn";
-import any = jasmine.any;
+import NumberColumn from './column/NumberColumn';
 import {AVectorFilter} from './filter/AVectorFilter';
-import {clearNode} from "phovea_core/src/multiform/internal/index";
+
 
 /**
  * The main class for the App app
@@ -161,7 +160,7 @@ export default class App {
       this.supportView[0].sortFilterByHeader(data);
     });
 
-    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, matrixViews: IAnyVector[], aggfunction: string, col: AnyColumn) => {
+    this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, matrixViews: IAnyVector[], aggfunction: string, col: MatrixColumn) => {
       let matrixData: any = matrixViews;
       if (matrixData === undefined) {
         matrixData = [col.data];
@@ -233,26 +232,20 @@ export default class App {
     });
 
 
-    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, async (evt: any, col: AnyColumn) => {
+    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, async (evt: any, col: NumberColumn) => {
       const matrixData = (<any>col).data.m;
 
       // To add the previous col stratifiers
       this.colManager.on(ColumnManager.EVENT_COLUMN_ADDED, (evt: any, matrixCol: MatrixColumn) => {
-        console.log('ColumnManager.EVENT_COLUMN_ADDED');
         matrixCol.matrixFilters = col.matrixFilters;
         //this.addMatrixView(matrixCol, this.supportView.length - 1)
         this.colManager.off(ColumnManager.EVENT_COLUMN_ADDED, null);
       });
 
       await this.supportView[0].addFilter(matrixData);  // Create columns and filters
-
-
       this.colManager.updateTableView(matrixData, col);
       this.supportView[0].updateFilterView(col);
 
-      console.log(col.matrixFilters)
-      //  col.matrixFilters.map((c) => this.supportView[1].addFilter(c.data))
-      //this.supportView[1].addFilter(col);
     });
 
   }
@@ -278,8 +271,7 @@ export default class App {
     this.supportView.splice(supportIndex, 1);
   }
 
-  private async addMatrixColSupportManger(col: MatrixColumn):Promise<SupportView> {
-    console.log(col, this.supportView, 'inside the matrix')
+  private async addMatrixColSupportManger(col: MatrixColumn): Promise<SupportView> {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
     return supportView.init()
@@ -328,11 +320,10 @@ export default class App {
         if (col === undefined || col.matrixFilters === undefined) {
           return Promise.resolve(supportView);
         }
-        const r = col.data.range.dim(1);
+        const r = (<any>col.data).range.dim(1);
         const promises = col.matrixFilters.map((c) => c.data.idView(r));
         return Promise.all(promises).then((cols: any) => {
           cols.forEach((c) => {
-            console.log(c)
             supportView.addFilter(c);
           });
           return supportView;
