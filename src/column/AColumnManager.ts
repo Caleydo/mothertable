@@ -58,7 +58,7 @@ export default class AColumnManager {
   }
 
   async sort(): Promise<Map<string, Range[]>> {
-   // console.log(this.columns, this, this.vectorCols)
+    // console.log(this.columns, this, this.vectorCols)
     const colsWithRange = new Map<string, Range[]>();
     const uniqueVectorCols = this.unique(this.vectorCols);
 
@@ -81,20 +81,15 @@ export default class AColumnManager {
 
 
   updateStratifiedRanges(stratifyColid) {
-
-
-    //Return nothing if there is no stratification column
+    //Return nothing if there is zero  stratification column
+    const d = this.columns.find((d) => d.data === stratifyColid.data);
+    if (stratifyColid === undefined || d === undefined) {
+      return;
+    }
     const datas = this.dataPerStratificaiton.get(stratifyColid.data.desc.id);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
     return this._stratifiedRanges;
-    // if (this.totalbrushed.length === 0) {
-    //   cols.forEach((col) => {
-    //     this.colsWithRange.set(col.data.desc.id, this._stratifiedRanges);
-    //   });
-    //   this._multiformRangeList = this._stratifiedRanges;
-    // }
-
   }
 
 
@@ -104,7 +99,6 @@ export default class AColumnManager {
   }
 
   async filter(range: Range) {
-
     for (const col of this.columns) {
       col.rangeView = range;
       col.dataView = await col.data.idView(range);
@@ -117,7 +111,7 @@ export default class AColumnManager {
   }
 
   private stratifyVectorCols(rangeListMap: Map<string, Range[]>) {
-   // console.log(this.vectorCols,rangeListMap)
+    // console.log(this.vectorCols,rangeListMap)
     this.vectorCols.forEach((col) => {
       col.updateMultiForms(rangeListMap.get(col.data.desc.id));
     });

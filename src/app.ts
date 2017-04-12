@@ -18,7 +18,7 @@ import {IDataType} from 'phovea_core/src/datatype';
 import {IFuelBarDataSize} from './SupportView';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter, default as AFilter} from './filter/AFilter';
-import {formatIdTypeName} from './column/utils';
+import {formatIdTypeName, makeRangeFromList} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import NumberColumn from './column/NumberColumn';
 import {AVectorFilter} from './filter/AVectorFilter';

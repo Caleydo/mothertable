@@ -40,7 +40,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private rowRanges: Range[] = [];
   private stratifiedRanges: Range[] = [];
   private brushedRanges: Range[] = [];
-  private colRange: Range;
+  colRange: Range;
   dataView: IDataType;
   multiformList: TaggleMultiform[] = [];
   private matrixViews;
@@ -93,12 +93,13 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       rowRanges = this.rowRanges;
     }
     this.rowRanges = rowRanges;
+    // console.log((colRange), 'colrange');
 
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
       this.colRange = colRange;
     }
-    this.colRange = colRange;
+    // this.colRange = colRange;
     const mergedRange = mergeRanges(this.rowRanges);
     let rowView = await this.data.idView(mergedRange);
     rowView = (<INumericalMatrix>rowView).t;
@@ -173,8 +174,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.colStratManager.stratify(rangeListMap);
   }
 
-  filterStratData(range: Range) {
-    this.colStratManager.filter(range);
+  async filterStratData(range: Range) {
+    await this.colStratManager.filter(range);
     this.colRange = range;
     this.updateColStrats();
   }
@@ -208,9 +209,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   private async makeMatrixView(s) {
 
+    //If there is zero and not matching columns return nothing
+    if (s === undefined) {
+      return;
+    }
     this.matrixViews = [];
     for (const r of s) {
-
       const mergedRange = mergeRanges(this.rowRanges);
       let rowView = await this.data.idView(mergedRange);
       rowView = (<INumericalMatrix>rowView).t;
