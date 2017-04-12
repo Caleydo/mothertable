@@ -54,10 +54,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.dataView = data;
     this.calculateDefaultRange();
     this.$node = this.build($columnParent);
-    // if (matrixCol !== undefined) {
-    //    //  this.updateMatrixColumn(matrixCol);
-    // }
-
     this.attachListener();
 
   }
@@ -103,7 +99,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       this.colRange = colRange;
     }
     this.colRange = colRange;
-    console.log(this.rowRanges)
     const mergedRange = mergeRanges(this.rowRanges);
     let rowView = await this.data.idView(mergedRange);
     rowView = (<INumericalMatrix>rowView).t;

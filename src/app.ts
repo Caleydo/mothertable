@@ -282,8 +282,6 @@ export default class App {
         supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
           col.sortByFilterHeader(data);
         });
-
-
         supportView.updateFuelBar(this.dataSize);
         supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
           col.filterStratData(filter);
@@ -320,13 +318,15 @@ export default class App {
         if (col === undefined || col.matrixFilters === undefined) {
           return Promise.resolve(supportView);
         }
-        const r = (<any>col.data).range.dim(1);
-        const promises = col.matrixFilters.map((c) => c.data.idView(r));
-        return Promise.all(promises).then((cols: any) => {
-          cols.forEach((c) => {
-            supportView.addFilter(c);
+        col.data.ids().then((range) => {
+          const r = range.dim(1).asList();
+          const promises = col.matrixFilters.map((c) => c.data.idView(r));
+          return Promise.all(promises).then((cols: any) => {
+            cols.forEach((c) => {
+              supportView.addFilter(c);
+            });
+            return supportView;
           });
-          return supportView;
         });
       });
   }
