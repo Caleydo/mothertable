@@ -9,9 +9,8 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import * as d3 from 'd3';
-import ProjectedVector from "phovea_core/src/matrix/internal/ProjectedVector";
-import Range from "phovea_core/src/range/Range";
-import MatrixColumn from "mothertable/src/column/MatrixColumn";
+import Range from 'phovea_core/src/range/Range';
+import MatrixColumn from './MatrixColumn';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
@@ -26,7 +25,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   private scale;
   public static EVENT_CONVERT_TO_MATRIX = 'convertToMatrix';
 
-  constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?:MatrixColumn) {
+  constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?: MatrixColumn) {
     super(data, orientation);
     this.$node = this.build($parent);
     this.attachListener();

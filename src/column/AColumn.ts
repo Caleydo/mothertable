@@ -16,7 +16,7 @@ import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
 import {dataValueTypeCSSClass, dataValueType} from './ColumnManager';
-import {AnyFilter} from "mothertable/src/filter/AFilter";
+import {AnyFilter} from '../filter/AFilter';
 
 export enum EOrientation {
   Vertical,
