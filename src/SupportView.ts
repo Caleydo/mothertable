@@ -50,7 +50,6 @@ export default class SupportView extends EventHandler {
   constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
     this.build($parent);
-    this.init();
   }
 
   private get idTypeHash() {
@@ -81,12 +80,11 @@ export default class SupportView extends EventHandler {
     this.supportViewNode = $wrapper;
   }
 
-  private async init() {
+  async init() {
     this.setupFilterManager();
-
     await this.loadDatasets();
     this.buildSelect2(this.$node);
-    this.addInitialFilters();
+    await this.addInitialFilters();
   }
 
   private async loadDatasets() {
@@ -104,6 +102,21 @@ export default class SupportView extends EventHandler {
         this.datasets.push(idVector);
       }
     }
+  }
+
+
+  async addFilter(dataset) {
+    const data = await this.addDataset(dataset);
+    this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
+    this.updateURLHash();
+  }
+
+
+  updateFilterView(col) {
+
+    this.filterManager.updateFilterView(col);
+    this.updateURLHash();
+
   }
 
   private setupFilterManager() {
@@ -133,7 +146,6 @@ export default class SupportView extends EventHandler {
         .map((data) => {
           return this.addDataset(data);
         }));
-
       this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
   }
@@ -147,15 +159,13 @@ export default class SupportView extends EventHandler {
     );
   }
 
-  convertToVector(col) {
-
-    this._filterManager.convertToVector(col);
-  }
-
   destroy() {
     this._filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.$node.remove();
     this.supportViewNode.remove();
+    this.filterManager.destroy();
+    this.updateURLHash();
+
   }
 
   sortByColumnHeader(sortColdata) {
@@ -254,10 +264,7 @@ export default class SupportView extends EventHandler {
         $jqSelect2.val(null).trigger('change');
 
         // load data and add columns
-        const data = await this.addDataset(dataset);
-        this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
-
-        this.updateURLHash();
+        this.addFilter(dataset);
 
         return false;
       });

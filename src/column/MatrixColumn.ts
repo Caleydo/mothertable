@@ -19,6 +19,7 @@ import TaggleMultiform from './TaggleMultiform';
 import CategoricalColumn from "mothertable/src/column/CategoricalColumn";
 import {on} from 'phovea_core/src/event';
 import {prepareRangeFromList} from "mothertable/src/SortHandler/SortHandler";
+import {IAnyVector, IVector} from "phovea_core/src/vector/IVector";
 export const AGGREGATE = {
   min: 'min',
   max: 'max',
@@ -49,11 +50,15 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private colStratManager: AColumnManager = new AColumnManager();
   public static EVENT_CONVERT_TO_VECTOR = 'convertMatrix';
 
-  constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
+  constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>, matrixCol?) {
     super(data, orientation);
     this.dataView = data;
     this.calculateDefaultRange();
     this.$node = this.build($columnParent);
+    // if (matrixCol !== undefined) {
+    //    //  this.updateMatrixColumn(matrixCol);
+    // }
+
     this.attachListener();
 
   }
@@ -85,6 +90,26 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     };
   }
 
+  //
+  // private async updateMatrixColumn(cols) {
+  //   this.colStratManager.columns = [];
+  //   //  console.log(this.colStratManager.columns)
+  //   //this.colStratManager.columns = this.matrixFilters;
+  //   const r = cols.data.m.range.dim(1).asList();
+  //
+  //
+  //   const promises = cols.matrixFilters.map((c) => c.data.idView(r));
+  //
+  //   Promise.all(promises).then((cols: any) => {
+  //     cols.forEach((c) => {
+  //       this.pushColStratData(c);
+  //     });
+  //
+  //     console.log(this.colStratManager);
+  //     //this.matrixFilters.map((c)=>this.pushColStratData(c.data))
+  //     this.updateColStrats();
+  //   });
+  // }
 
   async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
     this.stratifiedRanges = stratifiedRanges;
@@ -100,7 +125,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       this.colRange = colRange;
     }
     this.colRange = colRange;
-
     const mergedRange = mergeRanges(this.rowRanges);
     let rowView = await this.data.idView(mergedRange);
     rowView = (<INumericalMatrix>rowView).t;
@@ -108,7 +132,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     let colView = await rowView.idView(colRange);
     colView = (<INumericalMatrix>colView).t;
     this.dataView = colView;
-
 
     const viewPromises = rowRanges.map((r) => {
       return this.data.idView(r)
@@ -168,7 +191,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<void>}
    */
   async updateColStrats() {
+
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
+    //  console.log(this.colStratManager.columns, rangeListMap, this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange)
     this.colRange = this.colStratManager.nonStratifiedRange;
     this.updateMultiForms(this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange);
     this.colStratManager.stratify(rangeListMap);
@@ -196,9 +221,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     // TODO still need to update the DOM order in `this.$colStrat`
   }
 
+  get colStratsColumns() {
+    return this.colStratManager.columns;
+  }
+
 
   private stratifyMe = (event: any, colid) => {
-    // this.stratifyColid = colid.data.desc.id;
     const s = this.colStratManager.updateStratifiedRanges(colid);
     this.makeMatrixView(s);
   }
@@ -215,7 +243,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
       let colView = await rowView.idView(r);
       colView = (<INumericalMatrix>colView).t;
-
       this.matrixViews.push(colView);
     }
 

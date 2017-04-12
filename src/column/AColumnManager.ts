@@ -12,7 +12,7 @@ import {makeListFromRange, makeRangeFromList} from './utils';
 
 export default class AColumnManager {
 
-  columns: AnyColumn[] = [];
+  columns: any[] = [];
   private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
   private _nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private dataPerStratificaiton; //The number of data elements per stratification
@@ -49,6 +49,7 @@ export default class AColumnManager {
   }
 
   add(column: AnyColumn) {
+
     this.columns.push(column);
   }
 
@@ -57,6 +58,7 @@ export default class AColumnManager {
   }
 
   async sort(): Promise<Map<string, Range[]>> {
+   // console.log(this.columns, this, this.vectorCols)
     const colsWithRange = new Map<string, Range[]>();
     const uniqueVectorCols = this.unique(this.vectorCols);
 
@@ -67,7 +69,6 @@ export default class AColumnManager {
     // The sort object is created on the fly and destroyed after it exits this method
     const s = new SortHandler();
     const r = await s.sortColumns(uniqueVectorCols);
-
     this._nonStratifiedRange = r.combined;
     this._stratifiedRanges = [r.combined];
     this.dataPerStratificaiton = r.stratified;
@@ -80,6 +81,7 @@ export default class AColumnManager {
 
 
   updateStratifiedRanges(stratifyColid) {
+
 
     //Return nothing if there is no stratification column
     const datas = this.dataPerStratificaiton.get(stratifyColid.data.desc.id);
@@ -115,7 +117,7 @@ export default class AColumnManager {
   }
 
   private stratifyVectorCols(rangeListMap: Map<string, Range[]>) {
-
+   // console.log(this.vectorCols,rangeListMap)
     this.vectorCols.forEach((col) => {
       col.updateMultiForms(rangeListMap.get(col.data.desc.id));
     });

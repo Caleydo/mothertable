@@ -23,6 +23,7 @@ import {on, fire} from 'phovea_core/src/event';
 import NumberColumn from "mothertable/src/column/NumberColumn";
 import any = jasmine.any;
 import {AVectorFilter} from './filter/AVectorFilter';
+import {clearNode} from "phovea_core/src/multiform/internal/index";
 
 /**
  * The main class for the App app
@@ -150,7 +151,7 @@ export default class App {
 
   }
 
-  private setPrimaryIDType(idtype: IDType) {
+  private async setPrimaryIDType(idtype: IDType) {
     this.hideSelection();
 
     // create a column manager
@@ -161,27 +162,19 @@ export default class App {
     });
 
     this.colManager.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, (evt: any, matrixViews: IAnyVector[], aggfunction: string, col: AnyColumn) => {
+      let matrixData: any = matrixViews;
+      if (matrixData === undefined) {
+        matrixData = [col.data];
+      }
       const matrixOnly = this.colManager.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
       const supportIndex = matrixOnly.indexOf(col) + 1;
-      const flattenedMatrix = this.colManager.convertMatrixToVector(matrixViews, aggfunction);
+      const flattenedMatrix = this.colManager.convertMatrixToVector(matrixData, aggfunction);
       flattenedMatrix.map((fm) => this.updateTableView(fm, supportIndex, col));
-
-
-    });
-
-
-    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, (evt: any, col: AnyColumn) => {
-      const matrixData = (<any>col).data.m;
-
-      // const flattenedMatrix = this.colManager.convertMatrixToVector(data);
-      this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [matrixData]);
-      this.supportView[0].filterManager.push(matrixData);
-      this.colManager.updateTableView(matrixData, col);
-      this.supportView[0].filterManager.updateFilterView(matrixData, col);
     });
 
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
+    await supportView.init();
     supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       const col = this.colManager.updateSortByIcons(data);
       (<AVectorColumn<any, any>>col).updateSortIcon(data.sortMethod);
@@ -207,13 +200,13 @@ export default class App {
       Promise.all(addedColumnsPromise)
         .then((columns: AnyColumn[]) => {
           // add new support views for matrix column
-          columns
+          const supportViewPromises = columns
             .filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix)
-            .forEach((col) => {
-              this.addMatrixColSupportManger(<MatrixColumn>col);
+            .map((col) => {
+              return this.addMatrixColSupportManger(<MatrixColumn>col);
             });
 
-          return columns;
+          return Promise.all(supportViewPromises);
         })
         .then(() => {
           this.colManager.updateColumns();
@@ -238,13 +231,44 @@ export default class App {
         this.reset();
       }
     });
+
+
+    this.colManager.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, async (evt: any, col: AnyColumn) => {
+      const matrixData = (<any>col).data.m;
+
+      // To add the previous col stratifiers
+      this.colManager.on(ColumnManager.EVENT_COLUMN_ADDED, (evt: any, matrixCol: MatrixColumn) => {
+        console.log('ColumnManager.EVENT_COLUMN_ADDED');
+        matrixCol.matrixFilters = col.matrixFilters;
+        //this.addMatrixView(matrixCol, this.supportView.length - 1)
+        this.colManager.off(ColumnManager.EVENT_COLUMN_ADDED, null);
+      });
+
+      await this.supportView[0].addFilter(matrixData);  // Create columns and filters
+
+
+      this.colManager.updateTableView(matrixData, col);
+      this.supportView[0].updateFilterView(col);
+
+      console.log(col.matrixFilters)
+      //  col.matrixFilters.map((c) => this.supportView[1].addFilter(c.data))
+      //this.supportView[1].addFilter(col);
+    });
+
   }
 
-  private updateTableView(flattenedMatrix, supportIndex, col) {
-    this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix]);
-    this.supportView[0].filterManager.push(flattenedMatrix);
+
+  private async updateTableView(flattenedMatrix: IAnyVector, supportIndex: number, col: MatrixColumn) {
+    //this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix], col);
+    this.colManager.on(ColumnManager.EVENT_COLUMN_ADDED, (evt: any, numCol: NumberColumn) => {
+      numCol.matrixFilters = col.colStratsColumns;
+      this.colManager.off(ColumnManager.EVENT_COLUMN_ADDED, null);
+    });
+
+    await this.supportView[0].addFilter(flattenedMatrix);
+
     this.colManager.updateTableView(flattenedMatrix, col);
-    this.supportView[0].filterManager.updateFilterView(flattenedMatrix, col);
+    this.supportView[0].updateFilterView(col);
     //If already deleted
     if (this.supportView[supportIndex] === undefined) {
 
@@ -254,44 +278,66 @@ export default class App {
     this.supportView.splice(supportIndex, 1);
   }
 
-  private addMatrixColSupportManger(col: MatrixColumn) {
+  private async addMatrixColSupportManger(col: MatrixColumn):Promise<SupportView> {
+    console.log(col, this.supportView, 'inside the matrix')
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
-    this.supportView.push(supportView);
-    const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
-    new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
-    supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
-      col.sortByFilterHeader(data);
-    });
-
-
-    supportView.updateFuelBar(this.dataSize);
-    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
-      col.filterStratData(filter);
-      this.dataSize.filtered = filter.size()[0];
-      supportView.updateFuelBar(this.dataSize);
-    });
-
-    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
-      col.updateColStratsSorting(data);
-    });
-
-    // add columns if we add one or multiple datasets
-    supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
-      // first push all the new stratifications ...
-      const promises = datasets.map((d) => {
-        return col.pushColStratData(d);
-      });
-      // ... when all stratifications are pushed -> render the column and relayout
-      Promise.all(promises)
-        .then(() => {
-          return Promise.all([col.updateColStrats(), col.updateMultiForms()]);
-        })
-        .then(() => {
-          this.colManager.relayout();
+    return supportView.init()
+      .then(() => {
+        this.supportView.push(supportView);
+        const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
+        new MatrixFilter(matrix.t, supportView.$node.select(`.${otherIdtype.id}.filter-manager`));
+        supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+          col.sortByFilterHeader(data);
         });
 
-    });
+
+        supportView.updateFuelBar(this.dataSize);
+        supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+          col.filterStratData(filter);
+          this.dataSize.filtered = filter.size()[0];
+          supportView.updateFuelBar(this.dataSize);
+        });
+
+        supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
+          col.updateColStratsSorting(data);
+        });
+
+
+        // add columns if we add one or multiple datasets
+        supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+          // first push all the new stratifications ...
+          const promises = datasets.map((d) => {
+            return col.pushColStratData(d);
+          });
+          // ... when all stratifications are pushed -> render the column and relayout
+          Promise.all(promises)
+            .then(() => {
+              return Promise.all([col.updateColStrats(), col.updateMultiForms()]);
+            })
+            .then(() => {
+              this.colManager.relayout();
+            });
+
+        });
+        return supportView;
+
+      })
+      .then((supportView) => {
+        // if restoring a matrix column from number column col.matrixFilters is set in ColumnManager.EVENT_COLUMN_ADDED in app.ts
+        if (col === undefined || col.matrixFilters === undefined) {
+          return Promise.resolve(supportView);
+        }
+        const r = col.data.range.dim(1);
+        const promises = col.matrixFilters.map((c) => c.data.idView(r));
+        return Promise.all(promises).then((cols: any) => {
+          cols.forEach((c) => {
+            console.log(c)
+            supportView.addFilter(c);
+          });
+          return supportView;
+        });
+      });
   }
 
 

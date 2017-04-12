@@ -16,6 +16,7 @@ import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
 import {dataValueTypeCSSClass, dataValueType} from './ColumnManager';
+import {AnyFilter} from "mothertable/src/filter/AFilter";
 
 export enum EOrientation {
   Vertical,
@@ -45,6 +46,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   selectedAggVis: IVisPluginDesc;
   selectedUnaggVis: IVisPluginDesc;
+  matrixFilters: AnyFilter[];//For the header in matrix
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();

@@ -53,7 +53,8 @@ export declare type IMotherTableType = IStringVector | ICategoricalVector | INum
 export default class ColumnManager extends EventHandler {
 
 
-  static readonly EVENT_COLUMN_REMOVED = 'removed';
+  static readonly EVENT_COLUMN_REMOVED = 'columnRemoved';
+  static readonly EVENT_COLUMN_ADDED = 'columnAdded';
   static readonly EVENT_DATA_REMOVED = 'removedData';
 
   private $node: d3.Selection<any>;
@@ -164,13 +165,12 @@ export default class ColumnManager extends EventHandler {
    * @param data
    * @returns {Promise<AnyColumn>}
    */
-  async push(data: IMotherTableType) {
+  async push(data: IMotherTableType, matrixCol?) {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
 
-
-    const col = createColumn(data, this.orientation, this.$node);
+    const col = createColumn(data, this.orientation, this.$node, matrixCol);
 
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
@@ -192,6 +192,8 @@ export default class ColumnManager extends EventHandler {
     if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length === 0) {
       this.filtersHierarchy.push(col);
     }
+
+    this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
 
     return col;
   }
@@ -246,7 +248,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   updateTableView(flattenedMatrix: IAnyVector, col: AnyColumn) {
-
     const index = this.columns.indexOf(col);
     if (index === -1) {
       return;
@@ -836,7 +837,7 @@ export function distributeColWidths(columns: { lockedWidth: number, minWidth: nu
 }
 
 
-export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
+export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?): AnyColumn {
   switch (data.desc.type) {
     case AColumn.DATATYPE.vector:
       const v = <IStringVector | ICategoricalVector | INumericalVector>data;
@@ -847,7 +848,7 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
           return new CategoricalColumn(<ICategoricalVector>v, orientation, $parent);
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new NumberColumn(<INumericalVector>v, orientation, $parent);
+          return new NumberColumn(<INumericalVector>v, orientation, $parent, matrixCol);
       }
       throw new Error('invalid vector type');
 
@@ -856,7 +857,7 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
       switch (m.desc.value.type) {
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new MatrixColumn(<INumericalMatrix>m, orientation, $parent);
+          return new MatrixColumn(<INumericalMatrix>m, orientation, $parent, matrixCol);
       }
       throw new Error('invalid matrix type');
 

@@ -33,7 +33,7 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
 
-  readonly filters: AnyColumn[] = [];
+  readonly _filters: AnyColumn[] = [];
 
   private onFilterChanged = () => this.refilter();
   //private onFilterRemove = (evt: any, col) => this.removeMe(col);
@@ -51,6 +51,10 @@ export default class FilterManager extends EventHandler {
       .classed('filter-manager', true)
       .append('ol')
       .classed('filterlist', true);
+  }
+
+  get filters(): AnyColumn[] {
+    return this._filters;
   }
 
   push(data: IFilterAbleType) {
@@ -86,7 +90,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateFilterView(flattenedMatrix, col) {
+  updateFilterView(col) {
     const matrixFilter = this.filters.find((f) => f.data === col.data);
     const index = (this.filters.indexOf(matrixFilter));
     if (matrixFilter === undefined) {
@@ -120,6 +124,14 @@ export default class FilterManager extends EventHandler {
     }
 
   }
+
+
+  destroy() {
+
+    this._filters.splice(0);
+
+  }
+
 
   /**
    * move a column node to the given index

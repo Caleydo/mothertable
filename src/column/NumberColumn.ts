@@ -10,6 +10,8 @@ import {mixin} from 'phovea_core/src/index';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import * as d3 from 'd3';
 import ProjectedVector from "phovea_core/src/matrix/internal/ProjectedVector";
+import Range from "phovea_core/src/range/Range";
+import MatrixColumn from "mothertable/src/column/MatrixColumn";
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
@@ -18,12 +20,13 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   minHeight: number = 4;
   maxHeight: number = 20;
   projectedMatrix: boolean = false;
+  matrixViewRange: Range;
 
   private $points: d3.Selection<any>;
   private scale;
   public static EVENT_CONVERT_TO_MATRIX = 'convertToMatrix';
 
-  constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
+  constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?:MatrixColumn) {
     super(data, orientation);
     this.$node = this.build($parent);
     this.attachListener();
@@ -46,7 +49,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   public updateAxis(brushedItems) {
     const axis = this.$node.selectAll('taggle-axis')[0];
-    let brushedData = [];
+    const brushedData = [];
 
     this.$points.selectAll('line').remove();
 
@@ -96,6 +99,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   private attachListener() {
     if ((<any>this).data.m !== undefined) {
+      // this.matrixViewRange = this.data.m.range.dim(1).asList();
+      //  console.log(this.data.m, this.data.m.range.dim(1).asList())
       const $matrixChange = this.toolbar.insert('a', ':first-child')
         .attr('title', 'Aggregated Me')
         .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
