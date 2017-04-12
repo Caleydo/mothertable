@@ -113,7 +113,6 @@ export default class SupportView extends EventHandler {
 
 
   updateFilterView(col) {
-
     this.filterManager.updateFilterView(col);
     this.updateURLHash();
 

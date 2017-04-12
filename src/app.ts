@@ -173,7 +173,6 @@ export default class App {
 
 
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
-    await supportView.init();
     supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       const col = this.colManager.updateSortByIcons(data);
       (<AVectorColumn<any, any>>col).updateSortIcon(data.sortMethod);
@@ -241,12 +240,13 @@ export default class App {
         //this.addMatrixView(matrixCol, this.supportView.length - 1)
         this.colManager.off(ColumnManager.EVENT_COLUMN_ADDED, null);
       });
-
       await this.supportView[0].addFilter(matrixData);  // Create columns and filters
       this.colManager.updateTableView(matrixData, col);
       this.supportView[0].updateFilterView(col);
 
     });
+
+    await supportView.init();
 
   }
 
