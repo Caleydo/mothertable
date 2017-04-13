@@ -294,6 +294,7 @@ export default class ColumnManager extends EventHandler {
    */
   mapFiltersAndSort(filterList: AnyFilter[]) {
     this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
+    this.updateColumns();
   }
 
   /**
