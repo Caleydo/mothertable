@@ -252,10 +252,18 @@ export default class ColumnManager extends EventHandler {
     }
     const c = col.$node;
     c.select('aside').selectAll('ol').remove();
-    c.select('header.columnHeader').selectAll('.toolbar').remove();
-    c.select('main').selectAll('.multiformList').remove();
+    const aggNode = (c.select('header.columnHeader').selectAll('.fa.fa-exchange').node())
+    if (aggNode === null) {
+      c.select('header.columnHeader').selectAll('.toolbar').selectAll('*').remove();
+      const aggIcon = c.select('header.columnHeader').selectAll('.toolbar').insert('a', ':first-child')
+        .attr('title', 'Aggregated Me')
+        .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+      c.select('main').selectAll('.multiformList').remove();
+      aggIcon.on('click', (d) => {
+        console.log(d);
+      });
+    }
     const d = (c.select('main').selectAll('ol').node());
-
     let b;
     if (d === null) {
       b = c.select('main').append('ol').classed('matrixTables', true);
