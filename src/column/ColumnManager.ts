@@ -46,6 +46,7 @@ import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
 import {AGGREGATE} from './MatrixColumn';
+import SupportView from "mothertable/src/SupportView";
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
@@ -260,7 +261,10 @@ export default class ColumnManager extends EventHandler {
         .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
       c.select('main').selectAll('.multiformList').remove();
       aggIcon.on('click', (d) => {
-        console.log(d);
+        const m = c.selectAll('ol').selectAll('li');
+        const f = this.columns.find((d) => d.$node.node() === m[0][0])
+        this.fire(SupportView.EVENT_DATASETS_ADDED, col.data);
+        console.log(m[0][0], f)
       });
     }
     const d = (c.select('main').selectAll('ol').node());

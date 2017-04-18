@@ -22,6 +22,7 @@ import {formatIdTypeName, makeRangeFromList} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import NumberColumn from './column/NumberColumn';
 import {AVectorFilter} from './filter/AVectorFilter';
+import {data} from "phovea_core/src/wrapper";
 
 
 /**
@@ -156,6 +157,12 @@ export default class App {
     // create a column manager
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+    this.colManager.on(SupportView.EVENT_DATASETS_ADDED, async (evt: any, data) => {
+
+      console.log(data);
+      await this.supportView[0].addFilter(data);
+
+    })
     this.colManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       this.supportView[0].sortFilterByHeader(data);
     });
