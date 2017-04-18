@@ -255,12 +255,13 @@ export default class App {
     //this.supportView[0].fire(SupportView.EVENT_DATASETS_ADDED, [flattenedMatrix], col);
     this.colManager.on(ColumnManager.EVENT_COLUMN_ADDED, (evt: any, numCol: NumberColumn) => {
       numCol.matrixFilters = col.colStratsColumns;
+      this.colManager.updateTableView(flattenedMatrix, col);
       this.colManager.off(ColumnManager.EVENT_COLUMN_ADDED, null);
     });
 
     await this.supportView[0].addFilter(flattenedMatrix);
 
-    this.colManager.updateTableView(flattenedMatrix, col);
+    // this.colManager.updateTableView(flattenedMatrix, col);
     this.supportView[0].updateFilterView(col);
     //If already deleted
     if (this.supportView[supportIndex] === undefined) {

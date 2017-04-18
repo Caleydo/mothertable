@@ -165,17 +165,15 @@ export default class ColumnManager extends EventHandler {
    * @param data
    * @returns {Promise<AnyColumn>}
    */
-  async push(data: IMotherTableType, matrixCol?) {
+  async push(data: IMotherTableType) {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
 
-    const col = createColumn(data, this.orientation, this.$node, matrixCol);
-
+    const col = createColumn(data, this.orientation, this.$node);
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
     }
-
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
@@ -248,12 +246,27 @@ export default class ColumnManager extends EventHandler {
   }
 
   updateTableView(flattenedMatrix: IAnyVector, col: AnyColumn) {
+    const projectedcolumn = this.columns.find((c) => c.dataView === flattenedMatrix);
+    if (projectedcolumn === undefined) {
+      return;
+    }
+    const c = col.$node;
+    c.select('aside').selectAll('ol').remove();
+    c.select('header.columnHeader').selectAll('.toolbar').remove();
+    c.select('main').selectAll('.multiformList').remove();
+    const d = (c.select('main').selectAll('ol').node());
+
+    let b;
+    if (d === null) {
+      b = c.select('main').append('ol').classed('matrixTables', true);
+    } else {
+      b = c.select('main').select('ol');
+    }
+    b.node().appendChild(projectedcolumn.$node.node());
     const index = this.columns.indexOf(col);
     if (index === -1) {
       return;
     }
-    const projectedcolumn = this.columns.find((c) => c.dataView === flattenedMatrix);
-    (<any>col).$node.node().replaceWith(projectedcolumn.$node.node());
     this.columns.splice(index, 1); // Remove matrix column
 
   }
