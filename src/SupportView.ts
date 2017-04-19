@@ -302,7 +302,6 @@ export default class SupportView extends EventHandler {
   }
 
   private async addDataset(data: IDataType) {
-    console.log(data)
     if (data.desc.type === 'stratification') {
       data = await (<IStratification>data).asVector();
     }

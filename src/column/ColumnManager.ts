@@ -199,7 +199,6 @@ export default class ColumnManager extends EventHandler {
 
   remove(evt: any, data: IDataType) {
     const col = this.columns.find((d) => d.data === data);
-
     //IF column is already removed
     if (col === undefined) {
       return;
@@ -261,10 +260,10 @@ export default class ColumnManager extends EventHandler {
         .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
       c.select('main').selectAll('.multiformList').remove();
       aggIcon.on('click', (d) => {
-        const m = c.selectAll('ol').selectAll('li');
-        const f = this.columns.find((d) => d.$node.node() === m[0][0])
-        this.fire(SupportView.EVENT_DATASETS_ADDED, col.data);
-        console.log(m[0][0], f)
+        const numberColNodes = c.selectAll('ol').selectAll('li');
+        const numberCols = numberColNodes[0].map((node) => this.columns.find((d) => d.$node.node() === node))
+        this.fire(SupportView.EVENT_DATASETS_ADDED, col, numberCols);
+
       });
     }
     const d = (c.select('main').selectAll('ol').node());
@@ -283,6 +282,11 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+
+  removeMatrixCol(col, numberCols) {
+    numberCols.forEach((d) => this.remove(null, d.data));
+    col.$node.remove();
+  }
 
   clearBrush(evt: any, brushIndices: any[]) {
     this.brushedItems = [];

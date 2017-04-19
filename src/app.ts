@@ -157,12 +157,11 @@ export default class App {
     // create a column manager
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
-    this.colManager.on(SupportView.EVENT_DATASETS_ADDED, async (evt: any, data) => {
-
-      console.log(data);
-      await this.supportView[0].addFilter(data);
-
-    })
+    this.colManager.on(SupportView.EVENT_DATASETS_ADDED, async (evt: any, col, numberCols) => {
+      this.colManager.removeMatrixCol(col, numberCols);
+      numberCols.forEach((d) => this.supportView[0].filterManager.updateFilterView(d));
+      await this.supportView[0].addFilter(col.data);
+    });
     this.colManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       this.supportView[0].sortFilterByHeader(data);
     });
