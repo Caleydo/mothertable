@@ -240,7 +240,7 @@ export default class ColumnManager extends EventHandler {
 
   convertMatrixToVector(col, aggfunction) {
     const flattenedData: any = col.map((c) => {
-      return c.reduce((row: number[]) => aggregatorFunction(aggfunction, row))
+      return c.reduce((row: number[]) => aggregatorFunction(aggfunction, row));
     });
     return flattenedData;
   }
@@ -250,30 +250,15 @@ export default class ColumnManager extends EventHandler {
     if (projectedcolumn === undefined) {
       return;
     }
-    const c = col.$node;
-    c.select('aside').selectAll('ol').remove();
-    const aggNode = (c.select('header.columnHeader').selectAll('.fa.fa-exchange').node())
+    const columnNode = col.$node;
+    columnNode.select('aside').selectAll('ol').remove();
+    const aggNode = (columnNode.select('header.columnHeader').selectAll('.fa.fa-exchange').node());
     if (aggNode === null) {
-      c.select('header.columnHeader').selectAll('.toolbar').selectAll('*').remove();
-      const aggIcon = c.select('header.columnHeader').selectAll('.toolbar').insert('a', ':first-child')
-        .attr('title', 'Aggregated Me')
-        .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
-      c.select('main').selectAll('.multiformList').remove();
-      aggIcon.on('click', (d) => {
-        const numberColNodes = c.selectAll('ol').selectAll('li');
-        const numberCols = numberColNodes[0].map((node) => this.columns.find((d) => d.$node.node() === node))
-        this.fire(SupportView.EVENT_DATASETS_ADDED, col, numberCols);
-
-      });
+      this.addChangeIconMatrix(columnNode, col);
     }
-    const d = (c.select('main').selectAll('ol').node());
-    let b;
-    if (d === null) {
-      b = c.select('main').append('ol').classed('matrixTables', true);
-    } else {
-      b = c.select('main').select('ol');
-    }
-    b.node().appendChild(projectedcolumn.$node.node());
+    const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
+    const matrixDOM = this.getMatrixDOM(columnNode, selection);
+    matrixDOM.node().appendChild(projectedcolumn.$node.node());
     const index = this.columns.indexOf(col);
     if (index === -1) {
       return;
@@ -282,8 +267,34 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+  private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
+    columnNode.select('header.columnHeader').selectAll('.toolbar').selectAll('*').remove();
+    const aggIcon = columnNode.select('header.columnHeader').selectAll('.toolbar').insert('a', ':first-child')
+      .attr('title', 'Aggregated Me')
+      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+    columnNode.select('main').selectAll('.multiformList').remove();
+    aggIcon.on('click', (d) => {
+      const numberColNodes = columnNode.selectAll('ol').selectAll('li');
+      const numberCols = numberColNodes[0].map((node) => this.columns.find((d) => d.$node.node() === node));
+      this.fire(SupportView.EVENT_DATASETS_ADDED, col, numberCols);
 
-  removeMatrixCol(col, numberCols) {
+    });
+
+  }
+
+  private getMatrixDOM(columnNode: d3.Selection<any>, selection: HTMLElement) {
+    let matrixDOM;
+    if (selection === null) {
+      matrixDOM = columnNode.select('main').append('ol').classed('matrixTables', true);
+    } else {
+      matrixDOM = columnNode.select('main').select('ol');
+    }
+
+    return matrixDOM;
+  }
+
+
+  removeMatrixCol(col: AnyColumn, numberCols: AnyColumn[]) {
     numberCols.forEach((d) => this.remove(null, d.data));
     col.$node.remove();
   }
