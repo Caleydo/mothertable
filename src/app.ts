@@ -247,7 +247,7 @@ export default class App {
         this.colManager.off(ColumnManager.EVENT_COLUMN_ADDED, null);
       });
       await this.supportView[0].addFilter(matrixData);  // Create columns and filters
-      this.colManager.updateTableView(matrixData, col);
+      //this.colManager.updateTableView(matrixData, col);
       this.supportView[0].updateFilterView(col);
 
     });
