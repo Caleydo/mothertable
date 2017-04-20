@@ -46,7 +46,7 @@ import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
 import {AGGREGATE} from './MatrixColumn';
-import SupportView from "mothertable/src/SupportView";
+import SupportView from '../SupportView';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
