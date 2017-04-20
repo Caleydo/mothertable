@@ -22,7 +22,7 @@ import {formatIdTypeName, makeRangeFromList} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import NumberColumn from './column/NumberColumn';
 import {AVectorFilter} from './filter/AVectorFilter';
-import {data} from "phovea_core/src/wrapper";
+
 
 
 /**
