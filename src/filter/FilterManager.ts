@@ -73,7 +73,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  primarySortColumn(sortColdata) {
+  primarySortColumn(sortColdata: { data: IFilterAbleType}) {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
@@ -85,7 +85,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateSortIcon(sortColdata: { sortMethod: string, col: AnyFilter }) {
+  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType} }) {
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
     (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
   }

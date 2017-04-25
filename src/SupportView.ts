@@ -42,7 +42,7 @@ export default class SupportView extends EventHandler {
   private $fuelBar: d3.Selection<any>;
 
   private filterManager: FilterManager;
-  private _matrixData: Map<string, INumericalMatrix> = new Map();
+  private _matrixData= new Map<string, INumericalMatrix>();
   private datasets: IDataType[];
 
   constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
@@ -55,7 +55,7 @@ export default class SupportView extends EventHandler {
     return this.idType.id + '_' + this.id;
   }
 
-  private build($parent) {
+  private build($parent: d3.Selection<any>) {
     const $wrapper = $parent.append('div')
       .classed(`support-view-${this.idType.id}`, true)
       .classed(`support-view`, true);
@@ -144,11 +144,11 @@ export default class SupportView extends EventHandler {
     this.$node.remove();
   }
 
-  sortByColumnHeader(sortColdata) {
+  sortByColumnHeader(sortColdata: { data: IFilterAbleType}) {
     this.filterManager.primarySortColumn(sortColdata);
   }
 
-  sortFilterByHeader(sortColdata) {
+  sortFilterByHeader(sortColdata: { sortMethod: string, col: { data: IFilterAbleType}}) {
     this.filterManager.updateSortIcon(sortColdata);
   }
 
@@ -256,7 +256,7 @@ export default class SupportView extends EventHandler {
    * @param datasets
    * @returns {Promise<void>}
    */
-  private async addExplicitColors(datasets) {
+  private async addExplicitColors(datasets: IDataType[]) {
     const color = [
       ['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f'],
       ['#1b9e77', '#1d9ee8', '#d97979', '#e7298a', '#66a61e', '#e6ab02'],
