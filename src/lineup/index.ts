@@ -171,7 +171,8 @@ export default class Renderer extends EventHandler {
 
 
   mapFiltersAndSort(activeFilters: { data: ITaggleDataType}[]) {
-    // TODO
+    const sortCriteria = activeFilters[0].data;
+    this.updateSortByIcons({col: {data: sortCriteria}, sortMethod: SORT.desc});
     console.log(activeFilters);
   }
 
