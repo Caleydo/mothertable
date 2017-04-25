@@ -82,7 +82,7 @@ function spliceArr(rangeArr: number[], dragIndices: number[]) {
   const startArr = rangeArr.slice(0, startIndex);
   const endArr = rangeArr.slice(endIndex + 1, rangeArr.length);
   let r = [startArr, draggedArea, endArr];
-  r = r.filter((d) => d !== 0);
+  r = r.filter((d) => d.length !== 0);
   return r;
 
 }
