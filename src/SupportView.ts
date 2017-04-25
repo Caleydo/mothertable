@@ -144,7 +144,7 @@ export default class SupportView extends EventHandler {
     this.$node.remove();
   }
 
-  sortByColumnHeader(sortColdata: { data: IFilterAbleType}) {
+  sortByColumnHeader(sortColdata: { data: IDataType}) {
     this.filterManager.primarySortColumn(sortColdata);
   }
 

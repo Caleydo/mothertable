@@ -73,7 +73,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  primarySortColumn(sortColdata: { data: IFilterAbleType}) {
+  primarySortColumn(sortColdata: { data: IDataType}) {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);

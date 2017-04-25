@@ -6,7 +6,7 @@ import {ZoomLogic} from 'phovea_core/src/behavior';
 import {EOrientation} from './AColumn';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import Range from 'phovea_core/src/range/Range';
-import {VALUE_TYPE_CATEGORICAL} from 'phovea_core/src/datatype';
+import {VALUE_TYPE_CATEGORICAL, IDataType} from 'phovea_core/src/datatype';
 import {AnyFilter} from '../filter/FilterManager';
 
 export function scaleTo(multiform: MultiForm, width: number, height: number, orientation: EOrientation) {
@@ -282,7 +282,7 @@ function revertBackToRangeIndices(stratifiedRangeIndices: number[], localArrayIn
   return rangeIndices;
 }
 
-export function findColumnTie(cols: AnyFilter[]) {
+export function findColumnTie(cols: { data: IDataType}[]) {
   let columnIndexForTie = NaN;
   cols.some((val, index) => {
     if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
