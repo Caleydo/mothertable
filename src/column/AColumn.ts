@@ -3,14 +3,12 @@
  */
 
 import {IDataType} from 'phovea_core/src/datatype';
-import Range1D from 'phovea_core/src/range/Range1D';
 import Range from 'phovea_core/src/range/Range';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
 import {SORT} from '../SortHandler/SortHandler';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {formatAttributeName} from './utils';
-import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import {IVisPluginDesc, list as listVisses} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
@@ -207,8 +205,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     const m = stratifiedRanges
       .map((s) => s.intersect(multiformRange).size()[0]);
     const a = m.filter((d) => d > 0);
-    const groupId = m.indexOf(a[0]);
-    return groupId;
+    return m.indexOf(a[0]);
 
   }
 
@@ -218,12 +215,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     }
     const checkMe = brushedRanges.map((b) => multiformRange.intersect(b).size()[0]);
     const f = Math.max(...checkMe);
-    return (f > 0) ? true : false;
+    return f > 0;
 
   }
 
 
-  protected lockColumnWidth($lockButton) {
+  protected lockColumnWidth($lockButton: d3.Selection<any>) {
     if ($lockButton.select('i').classed('fa-lock')) {
       // UNLOCKING
       $lockButton
