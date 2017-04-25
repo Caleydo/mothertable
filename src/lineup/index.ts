@@ -118,6 +118,7 @@ export default class Renderer extends EventHandler {
     const ranking = this.provider.getLastRanking();
 
     if (this.descriptions.has(data)) {
+      // TODO add same column multiple times
       return {data};
     }
 
