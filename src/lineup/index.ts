@@ -7,6 +7,7 @@ import Range from 'phovea_core/src/range/Range';
 import Range1D from 'phovea_core/src/range/Range1D';
 import createAccessor from './access';
 import LineUp from 'lineupjs/src/lineup';
+import Ranking, {ISortCriteria} from 'lineupjs/src/model/Ranking';
 import {ITaggleDataType, ITaggleDataDescription} from './constant';
 
 import ValueColumn from 'lineupjs/src/model/ValueColumn';
@@ -18,6 +19,8 @@ import {SORT} from 'mothertable/src/SortHandler/SortHandler';
 import AFilter from 'mothertable/src/filter/AFilter';
 import ColumnManager from 'mothertable/src/column/ColumnManager';
 import {EVENT_GLOBAL_REMOVE_DATA} from './constants';
+import {AVectorFilter} from '../filter/AVectorFilter';
+import {AVectorColumn} from '../column/AVectorColumn';
 
 
 function createDesc(vectorDesc: ITaggleDataDescription) {
@@ -72,8 +75,6 @@ export default class Renderer extends EventHandler {
     });
 
     this.attachListeners();
-    //AVectorColumn.EVENT_SORTBY_COLUMN_HEADER { data: IDataType}
-    //AVectorFilter.EVENT_SORTBY_FILTER_ICON { sortMethod: string, col: { data: IFilterAbleType}}
   }
 
   private attachListeners() {
@@ -81,6 +82,16 @@ export default class Renderer extends EventHandler {
 
     this.provider.on(LocalDataProvider.EVENT_REMOVE_COLUMN, (column: Column) => {
       this.removeViaLineUp(column);
+    });
+
+    this.provider.getRankings().forEach((r) => {
+      r.on(Ranking.EVENT_SORT_CRITERIA_CHANGED, (old: any, newValue: ISortCriteria) => {
+        const sortMethod = newValue.asc ? SORT.asc : SORT.desc;
+        const col = { data: getDataSet4Column(newValue.col) };
+        // confused why 2 events???
+        this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, col);
+        this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, {sortMethod, col});
+      });
     });
   }
 
@@ -95,6 +106,7 @@ export default class Renderer extends EventHandler {
   private removeViaLineUp(column: Column) {
     const data = getDataSet4Column(column);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, data);
+
   }
 
   async push(data: ITaggleDataType) {
