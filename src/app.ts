@@ -169,7 +169,7 @@ export default class App {
     });
     this.supportView.push(supportView);
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
-      this.colManager.mapFiltersAndSort(data);
+      this.colManager.mapFiltersAndSort(<any>data);
     });
 
     // add columns if we add one or multiple datasets

@@ -5,14 +5,19 @@
 import {VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL, ICategoricalValueTypeDesc, INumberValueTypeDesc} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import Range1D from 'phovea_core/src/range/Range1D';
-import createAccessor, {ScoreAccessorProxy} from './access';
+import createAccessor from './access';
 import LineUp from 'lineupjs/src/lineup';
 import {ITaggleDataType, ITaggleDataDescription} from './constant';
 
 import ValueColumn from 'lineupjs/src/model/ValueColumn';
+import Column from 'lineupjs/src/model/Column';
 import {createSelectionDesc} from 'lineupjs/src/model';
 import LocalDataProvider from 'lineupjs/src/provider/LocalDataProvider';
-import {EventHandler} from 'phovea_core/src/event';
+import {EventHandler, on as globalOn} from 'phovea_core/src/event';
+import {SORT} from 'mothertable/src/SortHandler/SortHandler';
+import AFilter from 'mothertable/src/filter/AFilter';
+import ColumnManager from 'mothertable/src/column/ColumnManager';
+import {EVENT_GLOBAL_REMOVE_DATA} from './constants';
 
 
 function createDesc(vectorDesc: ITaggleDataDescription) {
@@ -52,6 +57,8 @@ export default class Renderer extends EventHandler {
   private readonly provider: LocalDataProvider;
   private readonly providerRange: Range1D = Range1D.none();
 
+  private readonly descriptions = new Map<ITaggleDataType, any>();
+
   constructor(readonly parent: HTMLElement) {
     super();
     this.provider = new LocalDataProvider([], []);
@@ -63,12 +70,45 @@ export default class Renderer extends EventHandler {
         histograms: true
       }
     });
+
+    this.attachListeners();
+    //AVectorColumn.EVENT_SORTBY_COLUMN_HEADER { data: IDataType}
+    //AVectorFilter.EVENT_SORTBY_FILTER_ICON { sortMethod: string, col: { data: IFilterAbleType}}
+  }
+
+  private attachListeners() {
+    globalOn(EVENT_GLOBAL_REMOVE_DATA, this.removeViaFilter.bind(this));
+
+    this.provider.on(LocalDataProvider.EVENT_REMOVE_COLUMN, (column: Column) => {
+      this.removeViaLineUp(column);
+    });
+  }
+
+  private removeViaFilter(evt: any, col: ITaggleDataType) {
+    const columns = this.columns;
+    const column = columns.find((d) => d.data === col);
+    if (column) {
+      column.column.removeMe();
+    }
+  }
+
+  private removeViaLineUp(column: Column) {
+    const data = getDataSet4Column(column);
+    this.fire(ColumnManager.EVENT_DATA_REMOVED, data);
   }
 
   async push(data: ITaggleDataType) {
-    const {desc, accessor} = createDesc(data.desc);
-    this.provider.pushDesc(desc);
     const ranking = this.provider.getLastRanking();
+
+    if (this.descriptions.has(data)) {
+      return {data};
+    }
+
+    const {desc, accessor} = createDesc(data.desc);
+    desc._dataset = data;
+    this.provider.pushDesc(desc);
+    this.descriptions.set(data, desc);
+
     // add to visible lineup
     const column = <ValueColumn<any>>this.provider.push(ranking, desc);
 
@@ -105,13 +145,15 @@ export default class Renderer extends EventHandler {
     this.lineup.update();
   }
 
-  updateSortByIcons(data: ITaggleDataType): any {
-    // TODO
-    return null;
+  updateSortByIcons(sortData: {col: { data: ITaggleDataType}, sortMethod: string}): any {
+    const columns = this.columns;
+    const column = columns.find((c) => c.data === sortData.col.data);
+    column.column.sortByMe(sortData.sortMethod === SORT.asc);
+    return column;
   }
 
 
-  mapFiltersAndSort(data: any[]) {
+  mapFiltersAndSort(aktiveFilters: { data: ITaggleDataType}[]) {
     // TODO
   }
 
@@ -119,8 +161,9 @@ export default class Renderer extends EventHandler {
     this.lineup.update();
   }
 
-  filterData(filter: Range) {
+  filterData(idRange: Range) {
     // TODO
+    console.log(idRange);
   }
 
   get length() {
@@ -128,6 +171,25 @@ export default class Renderer extends EventHandler {
   }
 
   get columns() {
-    return [];
+    const rankings = this.provider.getRankings();
+    const datasets = rankings.map((r) => r.flatColumns.map((column) => new LineUpAdapter(column)));
+    return <LineUpAdapter[]>[].concat(...datasets).filter((d) => d.data);
+  }
+}
+
+function getDataSet4Column(column: Column) {
+  return (<any>column.desc)._dataset;
+}
+
+export class LineUpAdapter {
+  constructor(public readonly column: Column) {
+
+  }
+  get data() {
+    return getDataSet4Column(this.column);
+  }
+
+  updateSortIcon(sortMethod: 'asc'|'desc') {
+    this.column.sortByMe(sortMethod === 'asc');
   }
 }

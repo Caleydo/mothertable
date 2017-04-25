@@ -138,7 +138,7 @@ export default class ColumnManager extends EventHandler {
     return this._brushedRanges;
   }
 
-  updateSortByIcons(sortData: {col: AnyColumn, sortMethod: string}) {
+  updateSortByIcons(sortData: {col: { data: IDataType}, sortMethod: string}) {
     const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
