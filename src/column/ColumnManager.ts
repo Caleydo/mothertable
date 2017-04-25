@@ -44,6 +44,7 @@ import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
+import Any = jasmine.Any;
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
@@ -69,7 +70,7 @@ export default class ColumnManager extends EventHandler {
   private _brushedRanges: Range[] = [];
   private brushedItems = [];
   private totalbrushed: number[] = [];
-  private _multiformRangeList;
+  private _multiformRangeList: Range[];
   private rowCounter = 0;
 
   private onColumnRemoved = (event: IEvent, data: IDataType) => this.remove(null, data);
@@ -137,7 +138,7 @@ export default class ColumnManager extends EventHandler {
     return this._brushedRanges;
   }
 
-  updateSortByIcons(sortData) {
+  updateSortByIcons(sortData: {col: AnyColumn, sortMethod: string}) {
     const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
@@ -253,8 +254,6 @@ export default class ColumnManager extends EventHandler {
       }
 
     }
-    ;
-
   }
 
   async updateRangeList(brushedIndices: number[][]) {
@@ -354,7 +353,7 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  private updateAggModePerGroupAfterNewStrat(oldRanges) {
+  private updateAggModePerGroupAfterNewStrat(oldRanges: Map<number, Range>) {
     const newAggModePergroup = [];
 
     this._stratifiedRanges.forEach((newR, newId) => {
@@ -554,7 +553,7 @@ export default class ColumnManager extends EventHandler {
     $strats.style('height', maxHeight + 'px');
   }
 
-  private async calColHeight(height) {
+  private async calColHeight(height: number) {
     let minHeights = [];
     let maxHeights = [];
     let index = 0;

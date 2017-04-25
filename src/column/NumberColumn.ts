@@ -18,7 +18,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   maxHeight: number = 20;
 
   private $points:d3.Selection<any>;
-  private scale;
+  private scale: d3.scale.Linear<number, number>;
 
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -29,7 +29,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     super.buildToolbar($toolbar);
     this.$points = $toolbar.select('svg').append('g');
     const $svg = $toolbar.select('svg').append('g');
-    const width = parseInt($toolbar.style("width"));
+    const width = parseInt($toolbar.style('width'), 10);
 
     this.scale = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
     const axis =  d3.svg.axis()
@@ -40,14 +40,14 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     $svg.call(axis);
   }
 
-  public updateAxis(brushedItems) {
+  public updateAxis(brushedItems: number[][]) {
     const axis = this.$node.selectAll('taggle-axis')[0];
-    let brushedData  = [];
+    const brushedData  = [];
 
     this.$points.selectAll('line').remove();
 
     this.data.forEach((d,i) => {
-      brushedItems.forEach(brush => {
+      brushedItems.forEach( (brush) => {
         if(brush.indexOf(i) > -1) {
           brushedData.push(d);
           this.$points.append('line').attr({
