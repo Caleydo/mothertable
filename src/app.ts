@@ -22,6 +22,7 @@ import {formatIdTypeName} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import any = jasmine.any;
 import {AVectorFilter} from './filter/AVectorFilter';
+import Renderer from './lineup';
 
 /**
  * The main class for the App app
@@ -30,7 +31,7 @@ export default class App {
 
   private readonly $node: d3.Selection<any>;
 
-  private colManager: ColumnManager;
+  private colManager: Renderer;
   private supportView: SupportView[] = [];
   private idtypes: IDType[];
   private rowRange: Range;
@@ -153,7 +154,7 @@ export default class App {
     this.hideSelection();
 
     // create a column manager
-    this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
+    this.colManager = new Renderer(<HTMLElement>this.$node.select('main').node());
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
     this.colManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       this.supportView[0].sortFilterByHeader(data);
@@ -162,7 +163,9 @@ export default class App {
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
     supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       const col = this.colManager.updateSortByIcons(data);
-      (<AVectorColumn<any, any>>col).updateSortIcon(data.sortMethod);
+      if (col) {
+        (<AVectorColumn<any, any>>col).updateSortIcon(data.sortMethod);
+      }
     });
     this.supportView.push(supportView);
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
