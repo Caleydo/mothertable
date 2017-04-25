@@ -21,6 +21,7 @@ import ColumnManager from 'mothertable/src/column/ColumnManager';
 import {EVENT_GLOBAL_REMOVE_DATA} from './constants';
 import {AVectorFilter} from '../filter/AVectorFilter';
 import {AVectorColumn} from '../column/AVectorColumn';
+import MyRankColumn from './MyRankColumn';
 
 
 function createDesc(vectorDesc: ITaggleDataDescription) {
@@ -64,7 +65,11 @@ export default class Renderer extends EventHandler {
 
   constructor(readonly parent: HTMLElement) {
     super();
-    this.provider = new LocalDataProvider([], []);
+    this.provider = new LocalDataProvider([], [], {
+      columnTypes: {
+        'rank': MyRankColumn
+      }
+    });
     const r = this.provider.pushRanking();
     this.provider.push(r, createSelectionDesc());
 
@@ -165,8 +170,9 @@ export default class Renderer extends EventHandler {
   }
 
 
-  mapFiltersAndSort(aktiveFilters: { data: ITaggleDataType}[]) {
+  mapFiltersAndSort(activeFilters: { data: ITaggleDataType}[]) {
     // TODO
+    console.log(activeFilters);
   }
 
   updateColumns() {
@@ -174,8 +180,13 @@ export default class Renderer extends EventHandler {
   }
 
   filterData(idRange: Range) {
-    // TODO
-    console.log(idRange);
+    // set the filter within the custom rank column
+    this.provider.getRankings().forEach((r) => {
+      const myRank: MyRankColumn = <MyRankColumn>r.children.find((c) => c.desc.type === 'rank');
+      if (myRank) {
+        myRank.setFilter(idRange.dim(0));
+      }
+    });
   }
 
   get length() {
