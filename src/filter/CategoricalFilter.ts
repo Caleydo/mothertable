@@ -180,12 +180,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
 }
 
-function isSame(value, compareWith) {
+function isSame<T>(value: T, compareWith: T) {
   return value === compareWith;
 }
 
 
-function findCatName(catName: any[], value, index,) {
+function findCatName(catName: any[], value: string) {
 
   for (const x in catName) {
     if (catName[x].name === value) {
@@ -195,7 +195,7 @@ function findCatName(catName: any[], value, index,) {
   return;
 }
 
-function catObjectsort(sortCriteria, a, b) {
+function catObjectsort(sortCriteria: string, a: { name: string }, b: { name: string }) {
   const aVal = a.name.toUpperCase();
   const bVal = b.name.toUpperCase();
 
