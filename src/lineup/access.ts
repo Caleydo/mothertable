@@ -2,8 +2,6 @@
  * Created by Samuel Gratzl on 25.04.2017.
  */
 
-import {IValueTypeDesc, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL, ICategoricalValueTypeDesc, INumberValueTypeDesc} from 'phovea_core/src/datatype';
-
 export class ScoreAccessorProxy<T> {
   /**
    * the accessor for the score column

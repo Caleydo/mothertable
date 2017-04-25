@@ -16,12 +16,11 @@ import {createSelectionDesc} from 'lineupjs/src/model';
 import LocalDataProvider from 'lineupjs/src/provider/LocalDataProvider';
 import {EventHandler, on as globalOn} from 'phovea_core/src/event';
 import {SORT} from 'mothertable/src/SortHandler/SortHandler';
-import AFilter from 'mothertable/src/filter/AFilter';
 import ColumnManager from 'mothertable/src/column/ColumnManager';
 import {EVENT_GLOBAL_REMOVE_DATA} from './constants';
 import {AVectorFilter} from '../filter/AVectorFilter';
 import {AVectorColumn} from '../column/AVectorColumn';
-import MyRankColumn from './MyRankColumn';
+import MyRankColumn from './model/MyRankColumn';
 
 
 function createDesc(vectorDesc: ITaggleDataDescription) {
@@ -50,6 +49,7 @@ function createDesc(vectorDesc: ITaggleDataDescription) {
     desc.type = 'multiValue';
     const n = <INumberValueTypeDesc>vectorDesc.value;
     desc.domain = n.range;
+    // TODO doesn't work with views since the meta data is not updated
     desc.dataLength = vectorDesc.size[0];
   }
   const accessor = createAccessor(desc, (row) => row);
@@ -59,6 +59,10 @@ function createDesc(vectorDesc: ITaggleDataDescription) {
 export default class Renderer extends EventHandler {
   private readonly lineup: LineUp;
   private readonly provider: LocalDataProvider;
+  /**
+   * the range of ids currently hosted in the provider
+   * @type {Range1D}
+   */
   private readonly providerRange: Range1D = Range1D.none();
 
   private readonly descriptions = new Map<ITaggleDataType, any>();
@@ -67,9 +71,10 @@ export default class Renderer extends EventHandler {
     super();
     this.provider = new LocalDataProvider([], [], {
       columnTypes: {
-        'rank': MyRankColumn
+        'rank': MyRankColumn // inject my version of a rank column model
       }
     });
+    // create default columns
     const r = this.provider.pushRanking();
     this.provider.push(r, createSelectionDesc());
 
@@ -192,7 +197,7 @@ export default class Renderer extends EventHandler {
   }
 
   get length() {
-    return this.provider.getLastRanking().length;
+    return this.columns.length;
   }
 
   get columns() {
@@ -206,6 +211,9 @@ function getDataSet4Column(column: Column) {
   return (<any>column.desc)._dataset;
 }
 
+/**
+ * very dummy wrapper for a lineup column to access the data and confirm with 'AColumn"
+ */
 export class LineUpAdapter {
   constructor(public readonly column: Column) {
 
