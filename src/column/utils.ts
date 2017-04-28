@@ -253,8 +253,7 @@ function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeInd
         if (firstElem > -1 && lastElem > -1) {
           localArray.push([firstElem, elem]);
         }
-      }
-      else {
+      } else {
         if (firstElem > -1 && lastElem > -1) {
           localArray.push([firstElem, lastElem]);
         }
