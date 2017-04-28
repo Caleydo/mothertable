@@ -53,12 +53,12 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
     if(heights.length !== this.aggTypesPerGroup.length) {
       this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
         return {
-          selectByUser: EAggregationType.AUTOMATIC,
-          selectByAutomatic: EAggregationType.AUTOMATIC,
+          selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
+          selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
           height: d
         };
       });
-      VisManager.modePerGroup = this.aggTypesPerGroup.map((d) => d.selectByAutomatic);
+      VisManager.modePerGroup = this.aggTypesPerGroup.map((d) => EAggregationType.UNAGGREGATED); //d.selectByAutomatic);
     }
 
     this.aggTypesPerGroup.forEach((d, i) => {
@@ -145,8 +145,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
   setAggregationType(rowIndex:number, aggregationType:EAggregationType) {
     if(!this.aggTypesPerGroup[rowIndex]) {
       this.aggTypesPerGroup[rowIndex] = {
-        selectByUser: EAggregationType.AUTOMATIC,
-        selectByAutomatic: aggregationType,
+        selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
+        selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
         height: 0
       };
     } else {

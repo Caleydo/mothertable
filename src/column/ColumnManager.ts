@@ -365,14 +365,14 @@ export default class ColumnManager extends EventHandler {
           if (VisManager.modePerGroup[oldId] !== undefined) {
             newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
           } else {
-            newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+            newAggModePergroup[newId] = EAggregationType.UNAGGREGATED; //AUTOMATIC
           }
 
           return true;
         }
       });
       if (!isSuccesor) {
-        newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+        newAggModePergroup[newId] = EAggregationType.UNAGGREGATED; //AUTOMATIC
       }
     });
 
