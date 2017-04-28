@@ -63,6 +63,7 @@ export default class FilterManager extends EventHandler {
     filter.on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
     this.filters.push(filter);
     this.updateStratifyIcon(findColumnTie(this.filters));
+    this.updateStratifyColor();
     filter.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       if (filter instanceof CategoricalFilter) {
         filter.sortByFilterIcon(data);
@@ -228,6 +229,16 @@ export default class FilterManager extends EventHandler {
     this.filters.filter((d, i) => i < columnIndexForTie)
       .filter((col) => col.data.desc.value.type === VALUE_TYPE_CATEGORICAL)
       .forEach((col) => (<CategoricalFilter>col).showStratIcon(true));
+  }
+
+  private updateStratifyColor() {
+
+    const cat = this.filters.find((d) => d.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    // Reject if number columns or matrix are added first
+    if (cat === undefined) {
+      return;
+    }
+    (<CategoricalFilter>cat).stratifyByMe(true);
   }
 
 

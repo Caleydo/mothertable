@@ -44,6 +44,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   private attachListener() {
     const $stratifyButton = this.toolbar.insert('a', ':first-child')
       .attr('title', 'Stratify table by this column')
+      .classed('stratifyByMe', true)
       .html(`<i class="fa fa-columns fa-rotate-270 fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
       .on('click', () => {
         fire(CategoricalColumn.EVENT_STRATIFYME, this); // for updating the filter and other columns
@@ -61,5 +62,10 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   showStratIcon(isVisible: boolean) {
     this.toolbar.select('.fa-columns').classed('hidden', !isVisible);
   }
+
+  stratifyByMe(isTrue: boolean) {
+    this.toolbar.select('.stratifyByMe').classed('active', isTrue);
+  }
+
 
 }
