@@ -394,14 +394,14 @@ export default class ColumnManager extends EventHandler {
           if (VisManager.modePerGroup[oldId] !== undefined) {
             newAggModePergroup[newId] = VisManager.modePerGroup[oldId];
           } else {
-            newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+            newAggModePergroup[newId] = EAggregationType.UNAGGREGATED; //AUTOMATIC
           }
 
           return true;
         }
       });
       if (!isSuccesor) {
-        newAggModePergroup[newId] = EAggregationType.AUTOMATIC;
+        newAggModePergroup[newId] = EAggregationType.UNAGGREGATED; //AUTOMATIC
       }
     });
 
@@ -472,7 +472,21 @@ export default class ColumnManager extends EventHandler {
     //update the stratifyIcon
     this.updateStratifyIcon(findColumnTie(this.filtersHierarchy));
 
+    this.updateStratifyColor(this.stratifyColid);
+
+
     return Promise.all([vectorUpdatePromise, matrixUpdatePromise]);
+  }
+
+  private updateStratifyColor(stratifyColid: string) {
+
+    // Reject if number columns or matrix are added first
+    if (stratifyColid === null) {
+      return;
+    }
+    const col = this.columns.find((d) => d.data.desc.id === stratifyColid);
+    (<CategoricalColumn>col).stratifyByMe(true);
+
   }
 
   private updateStratifyIcon(columnIndexForTie: number) {
@@ -489,7 +503,6 @@ export default class ColumnManager extends EventHandler {
 
 
   private stratifyColumnsByMe() {
-
     const cols = this.filtersHierarchy;
     const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
     const checkColumnTie = findColumnTie(cols); // Find the index of numerical column or String
