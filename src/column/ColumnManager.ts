@@ -114,9 +114,9 @@ export default class ColumnManager extends EventHandler {
     on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
     on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
 
-    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
+    this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, async (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
       this.updateRangeList(this.brushedItems);
-      this.stratifyColumns();
+      await this.stratifyColumns();
       this.relayout();
     });
   }
@@ -251,10 +251,7 @@ export default class ColumnManager extends EventHandler {
       if (col instanceof NumberColumn) {
         (<NumberColumn>col).updateAxis(this.brushedItems);
       }
-
     }
-    ;
-
   }
 
   async updateRangeList(brushedIndices: number[][]) {
@@ -504,7 +501,7 @@ export default class ColumnManager extends EventHandler {
     await resolveIn(10);
     this.relayoutColStrats();
     // this.findGroupId();
-    this.correctGapBetwnMultiform();
+    this.correctGapBetweenMultiform();
     const header = 47;//TODO solve programatically
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
     const rowHeight = await this.calColHeight(height);
@@ -604,7 +601,7 @@ export default class ColumnManager extends EventHandler {
     //set the propper aggregation level
     for (let i = 0; i < VisManager.modePerGroup.length; i++) {
       if (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC) {
-        const mode = aggregationNeeded && !this.checkIfGruopBrushed(i) ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
+        const mode = aggregationNeeded && !this.checkIfGroupBrushed(i) ? EAggregationType.AGGREGATED : EAggregationType.UNAGGREGATED;
         this.updateAggregationLevelForRow(i, mode);
       } else {
         this.updateAggregationLevelForRow(i, VisManager.modePerGroup[i]);
@@ -651,7 +648,7 @@ export default class ColumnManager extends EventHandler {
           minSize.push(m[ind]);
         });
         let min = Math.max(...minSize);
-        if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGruopBrushed(i))) {
+        if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGroupBrushed(i))) {
           min = 72;
           totalAggreg = totalAggreg + min;
         } else if (brushedMultiforms.indexOf(ind) !== -1) {
@@ -662,7 +659,7 @@ export default class ColumnManager extends EventHandler {
         });
         let maxBrush = 0;
         maxHeights.forEach((m) => {
-          if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGruopBrushed(i))) {
+          if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED || (VisManager.modePerGroup[i] === EAggregationType.AUTOMATIC && aggregationNeeded && !this.checkIfGroupBrushed(i))) {
             m[ind] = min;
           } else if (brushedMultiforms.indexOf(ind) !== -1) {
             maxBrush = m[ind];
@@ -708,7 +705,7 @@ export default class ColumnManager extends EventHandler {
     return brushedMultiforms;
   }
 
-  private checkIfGruopBrushed(rowIndex: number) {
+  private checkIfGroupBrushed(rowIndex: number) {
     let isBrushed = false;
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((m) => {
@@ -721,16 +718,15 @@ export default class ColumnManager extends EventHandler {
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
     this.aggSwitcherCol.setAggregationType(rowIndex, aggregationType);
-
     this.columns.forEach((col) => {
-      this.multiformsInGroup(rowIndex).forEach((m) => {
-        VisManager.multiformAggregationType.set(col.multiformList[m].id, aggregationType);
+      this.multiformsInGroup(rowIndex).forEach((i) => {
+        VisManager.multiformAggregationType.set(col.multiformList[i].id, aggregationType);
       });
     });
   }
 
 
-  private correctGapBetwnMultiform() {
+  private correctGapBetweenMultiform() {
     this.columns.forEach((col, i) => {
       col.multiformList.forEach((multiform, index) => {
         if (index + 1 < col.multiformList.length) {

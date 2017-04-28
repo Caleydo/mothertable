@@ -13,7 +13,6 @@ import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import TaggleMultiform from './TaggleMultiform';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
-import {on, fire} from 'phovea_core/src/event';
 import {IHistogram} from 'phovea_core/src/math';
 import {AVectorFilter} from '../filter/AVectorFilter';
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
@@ -30,15 +29,12 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   multiform: MultiForm;
   dataView: IDataType;
-  multiformList: TaggleMultiform[] = [];
   private $sortButton;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
     this.rangeView = (<any>data).indices;
-
-
   }
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
@@ -93,6 +89,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
 
   async updateMultiForms(multiformRanges: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[]) {
+    const that = this;
     const data: any = await this.data.data(); // wait first for data and then continue with removing old  forms
     const histData: IHistogram = await this.data.hist();
     let histogramData;
@@ -109,28 +106,46 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const viewPromises = multiformRanges.map((r) => this.data.idView(r));
 
     return Promise.all(viewPromises).then((views) => {
-
-      this.body.selectAll('.multiformList').remove();
-      this.multiformList = [];
-
-      views.forEach((view, id) => {
-        const $multiformDivs = this.body.append('div').classed('multiformList', true);
-
-        const m = new TaggleMultiform(view, <HTMLElement>$multiformDivs.node(), this.multiFormParams($multiformDivs, histogramData));
-        m.groupId = this.findGroupId(stratifiedRanges, multiformRanges[id]);
-        m.brushed = this.checkBrushed(brushedRanges, multiformRanges[id]);
-
-        //assign visses
-        if (this.selectedAggVis) {
-          VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
-        }
-        if (this.selectedUnaggVis) {
-          VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
-        }
-        VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
-
-        this.multiformList.push(m);
+      const viewData = views.map((d:any) => {
+        return {
+          key: d.range.toString(),
+          view: d,
+        };
       });
+
+      const multiformList = this.body.selectAll('.multiformList').data(viewData, (d) => d.key);
+
+      multiformList.enter().append('div')
+        .classed('multiformList', true)
+        .each(function(d) {
+          const $elem = d3.select(this);
+          const m = new TaggleMultiform(d.view, <HTMLElement>$elem.node(), that.multiFormParams($elem, histogramData));
+          that.multiformMap.set(d.key, m);
+        });
+
+      multiformList
+        .each(function(d, i) {
+          const m = that.multiformMap.get(d.key);
+          m.groupId = that.findGroupId(stratifiedRanges, multiformRanges[i]);
+          m.brushed = that.checkBrushed(brushedRanges, multiformRanges[i]);
+
+          //assign visses
+          if (that.selectedAggVis) {
+            VisManager.userSelectedAggregatedVisses.set(m.id, that.selectedAggVis);
+          }
+          if (that.selectedUnaggVis) {
+            VisManager.userSelectedUnaggregatedVisses.set(m.id, that.selectedUnaggVis);
+          }
+          VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+      });
+
+      multiformList.exit().remove()
+        .each(function(d) {
+          that.multiformMap.delete(d.key);
+        });
+
+      // order DOM elements according to the data order
+      multiformList.order();
 
       return this.multiformList;
     });
