@@ -144,7 +144,7 @@ export default class App {
     }
   }
 
-  private primarySortCol(evt: any, sortColdata: IAnyVector) {
+  private primarySortCol(evt: any, sortColdata: AnyColumn) {
     this.supportView[0].sortByColumnHeader(sortColdata);
 
   }

@@ -178,7 +178,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.updateColStrats();
   }
 
-  sortByFilterHeader(sortData) {
+  sortByFilterHeader(sortData: {col: AnyColumn, sortMethod: string}) {
     const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;

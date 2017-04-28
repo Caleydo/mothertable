@@ -87,7 +87,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     return svg;
   }
 
-  private async makeBins($svg) {
+  private async makeBins($svg: d3.Selection<any>) {
 
     const cellWidth = this.filterDim.width - 10;
     const cellHeight = this.filterDim.height;
@@ -165,7 +165,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private makeBrush($svg, width, range) {
+  private makeBrush($svg: d3.Selection<any>, width: number, range: number[]) {
     const that = this;
     const c = this.computeCoordinates();
     const scale = d3.scale.linear()
@@ -187,7 +187,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const brush = d3.svg.brush()
       .x(scale)
-      .extent(range)
+      .extent(<[number, number]>range)
       .on('brushstart', function () {
         copyBrush(d3.select(this).select('.extent'));
       })
@@ -214,16 +214,16 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private makeText(svg, posX: number, posY: number, className) {
+  private makeText(svg: d3.Selection<any>, posX: number, posY: number, className: string) {
 
-    const text = svg.append('text').classed(`${className}`, true)
+    const text = svg.append('text').classed(className, true)
       .attr('x', posX)
       .attr('y', posY);
     return text;
 
   }
 
-  private  makeTriangleIcon(svg, posX: number, posY: number, classname) {
+  private  makeTriangleIcon(svg: d3.Selection<any>, posX: number, posY: number, classname: string) {
     const triangleSymbol = d3.svg.symbol().type('triangle-up').size(25);
     const triangle = svg.append('path')
       .classed(classname, true)
@@ -233,7 +233,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private makeBrushLine(svg, posX: number, lineYPos, classname) {
+  private makeBrushLine(svg: d3.Selection<any>, posX: number, lineYPos: number, classname: string) {
     const line = svg.append('path')
       .classed(classname, true)
       .attr('d', `M${posX} 0,L${posX} ${lineYPos}`);
@@ -330,7 +330,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   }
 }
 
-function numericalFilter(numRange, value, index) {
+function numericalFilter(numRange: number[], value: number) {
   if (value >= numRange[0] && value <= numRange[1]) {
     return value;
   } else {
