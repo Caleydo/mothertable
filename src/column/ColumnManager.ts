@@ -401,7 +401,7 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<[TaggleMultiform[][],TaggleMultiform[][],TaggleMultiform[]]>}
    */
   private stratifyColumns() {
-    let brushedRages = [];
+    let brushedRanges = [];
 
     const r = this._multiformRangeList;
     if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0) {
@@ -412,21 +412,21 @@ export default class ColumnManager extends EventHandler {
           const isSubrange = checkArraySubset(stratRange, brushedRange);
           if (isSubrange) {
             if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) {
-              brushedRages.push(sr);
+              brushedRanges.push(sr);
               return true;
             } else {
-              brushedRages.push(br);
+              brushedRanges.push(br);
             }
           }
         });
       });
     } else if (r === undefined) {
 
-      brushedRages = [this.nonStratifiedRange];
+      brushedRanges = [this.nonStratifiedRange];
     } else {
-      brushedRages = r;
+      brushedRanges = r;
     }
-    this._multiformRangeList = brushedRages;
+    this._multiformRangeList = brushedRanges;
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     const vectorUpdatePromise = Promise.all(vectorCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges)));
 
