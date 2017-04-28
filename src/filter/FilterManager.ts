@@ -25,7 +25,7 @@ import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
 
 
-declare type AnyColumn = AFilter<any, IDataType>;
+export declare type AnyFilter = AFilter<any, IDataType>;
 export declare type IFilterAbleType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
 export default class FilterManager extends EventHandler {
@@ -33,7 +33,7 @@ export default class FilterManager extends EventHandler {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_SORT_DRAGGING = 'sortByDragging';
 
-  readonly _filters: AnyColumn[] = [];
+  readonly filters: AnyFilter[] = [];
 
   private onFilterChanged = () => this.refilter();
   //private onFilterRemove = (evt: any, col) => this.removeMe(col);
@@ -42,8 +42,6 @@ export default class FilterManager extends EventHandler {
     super();
     this.build();
     this.drag();
-
-
   }
 
   private build() {
@@ -51,10 +49,6 @@ export default class FilterManager extends EventHandler {
       .classed('filter-manager', true)
       .append('ol')
       .classed('filterlist', true);
-  }
-
-  get filters(): AnyColumn[] {
-    return this._filters;
   }
 
   push(data: IFilterAbleType) {
@@ -73,7 +67,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  primarySortColumn(sortColdata) {
+  primarySortColumn(sortColdata: { data: IDataType}) {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
@@ -85,7 +79,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateSortIcon(sortColdata: { sortMethod: string, col: AnyColumn }) {
+  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType} }) {
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
     (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
   }
@@ -128,9 +122,7 @@ export default class FilterManager extends EventHandler {
 
 
   destroy() {
-
-    this._filters.splice(0);
-
+    this.filters.splice(0);
   }
 
 
@@ -139,7 +131,7 @@ export default class FilterManager extends EventHandler {
    * @param col
    * @param index
    */
-  move(col: AnyColumn, index: number) {
+  move(col: AnyFilter, index: number) {
     const old = this.filters.indexOf(col);
     if (old === index) {
       this.triggerSort();
@@ -265,7 +257,7 @@ export default class FilterManager extends EventHandler {
     this.fire(FilterManager.EVENT_FILTER_CHANGED, filter);
   }
 
-  private static createFilter(data: IFilterAbleType, $parent: d3.Selection<any>): AnyColumn {
+  private static createFilter(data: IFilterAbleType, $parent: d3.Selection<any>): AnyFilter {
 
     switch (data.desc.type) {
       case AColumn.DATATYPE.vector:

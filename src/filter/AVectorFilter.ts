@@ -15,7 +15,7 @@ export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends AFilter<T, DATATYPE> {
   static EVENT_SORTBY_FILTER_ICON = 'sortFilter';
-  private $sortButton;
+  private $sortButton: d3.Selection<any>;
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
     const $ol = $parent.select('.filterlist');
@@ -49,7 +49,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
   }
 
 
-  updateSortIcon(sortMethod) {
+  updateSortIcon(sortMethod: string) {
     if (sortMethod === SORT.desc) {
       this.$sortButton
         .attr('title', 'Sort ascending')

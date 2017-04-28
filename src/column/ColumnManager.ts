@@ -47,6 +47,7 @@ import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
 import {AGGREGATE} from './MatrixColumn';
 import SupportView from '../SupportView';
+import Any = jasmine.Any;
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
@@ -73,7 +74,7 @@ export default class ColumnManager extends EventHandler {
   private _brushedRanges: Range[] = [];
   private brushedItems = [];
   private totalbrushed: number[] = [];
-  private _multiformRangeList;
+  private _multiformRangeList: Range[];
   private rowCounter = 0;
 
   private onColumnRemoved = (event: IEvent, data: IDataType) => this.remove(null, data);
@@ -143,7 +144,7 @@ export default class ColumnManager extends EventHandler {
     return this._brushedRanges;
   }
 
-  updateSortByIcons(sortData) {
+  updateSortByIcons(sortData: {col: AnyColumn, sortMethod: string}) {
     const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
@@ -423,7 +424,7 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  private updateAggModePerGroupAfterNewStrat(oldRanges) {
+  private updateAggModePerGroupAfterNewStrat(oldRanges: Map<number, Range>) {
     const newAggModePergroup = [];
 
     this._stratifiedRanges.forEach((newR, newId) => {
@@ -473,7 +474,7 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<[TaggleMultiform[][],TaggleMultiform[][],TaggleMultiform[]]>}
    */
   private stratifyColumns() {
-    let brushedRages = [];
+    let brushedRanges = [];
 
     const r = this._multiformRangeList;
     if (VisManager.modePerGroup.length === this._stratifiedRanges.length && this._brushedRanges.length > 0) {
@@ -484,21 +485,21 @@ export default class ColumnManager extends EventHandler {
           const isSubrange = checkArraySubset(stratRange, brushedRange);
           if (isSubrange) {
             if (VisManager.modePerGroup[i] === EAggregationType.AGGREGATED) {
-              brushedRages.push(sr);
+              brushedRanges.push(sr);
               return true;
             } else {
-              brushedRages.push(br);
+              brushedRanges.push(br);
             }
           }
         });
       });
     } else if (r === undefined) {
 
-      brushedRages = [this.nonStratifiedRange];
+      brushedRanges = [this.nonStratifiedRange];
     } else {
-      brushedRages = r;
+      brushedRanges = r;
     }
-    this._multiformRangeList = brushedRages;
+    this._multiformRangeList = brushedRanges;
     const vectorCols = this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
     const vectorUpdatePromise = Promise.all(vectorCols.map((col) => col.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges)));
 
@@ -636,7 +637,7 @@ export default class ColumnManager extends EventHandler {
     $strats.style('height', maxHeight + 'px');
   }
 
-  private async calColHeight(height) {
+  private async calColHeight(height: number) {
     let minHeights = [];
     let maxHeights = [];
     let index = 0;

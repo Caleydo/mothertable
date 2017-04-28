@@ -29,7 +29,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   multiform: MultiForm;
   dataView: IDataType;
-  private $sortButton;
+  multiformList: TaggleMultiform[] = [];
+  private $sortButton: d3.Selection<any>;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
@@ -72,7 +73,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     super.buildToolbar($toolbar);
   }
 
-  updateSortIcon(sortMethod) {
+  updateSortIcon(sortMethod: string) {
     if (sortMethod === SORT.desc) {
       this.$sortButton
         .attr('title', 'Sort ascending')

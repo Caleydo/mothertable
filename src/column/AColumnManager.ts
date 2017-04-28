@@ -15,13 +15,8 @@ export default class AColumnManager {
   columns: any[] = [];
   private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
   private _nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
-  private dataPerStratificaiton; //The number of data elements per stratification
-  private stratifyColid = null;
-
-  constructor() {
-    //
-
-  }
+  
+  private dataPerStratification; //The number of data elements per stratification
 
   get vectorCols(): AnyColumn[] {
     return this.columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.vector);
@@ -43,7 +38,7 @@ export default class AColumnManager {
    * Compares columns based on the dataset and returns the first column with that dataset
    * @param columns
    */
-  unique(columns): AnyColumn[] {
+  unique(columns: AnyColumn[]): AnyColumn[] {
     const data = columns.map((d) => d.data.desc.id);
     return columns.filter((col, pos) => data.indexOf(col.data.desc.id) === pos);
   }
@@ -71,7 +66,7 @@ export default class AColumnManager {
     const r = await s.sortColumns(uniqueVectorCols);
     this._nonStratifiedRange = r.combined;
     this._stratifiedRanges = [r.combined];
-    this.dataPerStratificaiton = r.stratified;
+    this.dataPerStratification = r.stratified;
     uniqueVectorCols.forEach((col) => {
       colsWithRange.set(col.data.desc.id, [this._nonStratifiedRange]);
     });

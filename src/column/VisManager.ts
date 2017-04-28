@@ -272,8 +272,7 @@ export default class VisManager {
       let minHeight;
       if (multiform.brushed && VisManager.modePerGroup[index] !== EAggregationType.AGGREGATED) {
         minHeight = multiform.data.dim[0] * 20;
-      }
-      else if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
+      } else if (VisManager.userSelectedAggregatedVisses.has(multiform.id)
         && VisManager.multiformAggregationType.get(multiform.id) === EAggregationType.AGGREGATED) {
         minHeight = this.minVisSize(VisManager.userSelectedAggregatedVisses.get(multiform.id).id, multiform.data.dim)[1];
       } else if (VisManager.userSelectedUnaggregatedVisses.has(multiform.id)

@@ -52,12 +52,12 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   }
 }
 
-function stringPattern(stringFilter, value, index) {
+function stringPattern(stringFilter: string, value: string) {
   if (stringFilter === null) {
     return value;
   }
 
-  const re = new RegExp(`${stringFilter}`, 'gi');
+  const re = new RegExp(stringFilter, 'gi');
   if (value.match(re) === null) {
 
     return;
