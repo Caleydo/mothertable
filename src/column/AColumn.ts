@@ -39,13 +39,21 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   dataView: IDataType;
   sortCriteria: string = SORT.asc;
   rangeView: Range;
-  multiformList: TaggleMultiform[] = [];
 
   selectedAggVis: IVisPluginDesc;
   selectedUnaggVis: IVisPluginDesc;
 
+  protected multiformMap: Map<string, TaggleMultiform> = new Map<string, TaggleMultiform>();
+
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
+  }
+
+  get multiformList():TaggleMultiform[] {
+    // return the array in the correct order of DOM elements
+    return this.body.selectAll('.multiformList')[0].map((d) => {
+      return this.multiformMap.get(d3.select(d).datum().key);
+    });
   }
 
   get idtype() {
@@ -135,7 +143,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
     this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
 
-    $toolbar.append('div').classed('axis', true).append('svg').classed('taggle-axis', true);
+    $toolbar.append('div').classed('axis', true).append('svg').classed('taggle-axis', true).attr('style', 'width:100%;height:20px;');
   }
 
   private addIconVisChooser(toolbar: HTMLElement, visses: IVisPluginDesc[], aggregationType: EAggregationType) {
