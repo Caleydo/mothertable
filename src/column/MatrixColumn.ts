@@ -42,7 +42,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private brushedRanges: Range[] = [];
   colRange: Range;
   dataView: IDataType;
-  multiformList: TaggleMultiform[] = [];
   private matrixViews;
 
   private $colStrat: d3.Selection<any>;

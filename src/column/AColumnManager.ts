@@ -15,7 +15,7 @@ export default class AColumnManager {
   columns: any[] = [];
   private _stratifiedRanges: Range[]; // This is the rangelist used for stratification
   private _nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
-  
+
   private dataPerStratification; //The number of data elements per stratification
 
   get vectorCols(): AnyColumn[] {
@@ -81,7 +81,7 @@ export default class AColumnManager {
     if (stratifyColid === undefined || d === undefined) {
       return;
     }
-    const datas = this.dataPerStratificaiton.get(stratifyColid.data.desc.id);
+    const datas = this.dataPerStratification.get(stratifyColid.data.desc.id);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
     return this._stratifiedRanges;

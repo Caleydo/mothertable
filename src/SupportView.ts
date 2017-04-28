@@ -42,7 +42,7 @@ export default class SupportView extends EventHandler {
   $node: d3.Selection<any>;
   private $fuelBar: d3.Selection<any>;
 
-  private filterManager: FilterManager;
+  private _filterManager: FilterManager;
   private _matrixData = new Map<string, INumericalMatrix>();
 
   private datasets: IDataType[];

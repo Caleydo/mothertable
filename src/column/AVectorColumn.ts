@@ -29,7 +29,6 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   multiform: MultiForm;
   dataView: IDataType;
-  multiformList: TaggleMultiform[] = [];
   private $sortButton: d3.Selection<any>;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
