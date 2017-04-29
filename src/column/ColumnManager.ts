@@ -9,6 +9,7 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
+import {list} from 'phovea_core/src/range';
 import {IStringVector, AVectorColumn} from './AVectorColumn';
 import AColumn, {EOrientation} from './AColumn';
 import CategoricalColumn from './CategoricalColumn';
@@ -44,6 +45,8 @@ import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
 import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
+import {AGGREGATE} from './MatrixColumn';
+import SupportView from '../SupportView';
 import Any = jasmine.Any;
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -52,7 +55,8 @@ export declare type IMotherTableType = IStringVector | ICategoricalVector | INum
 export default class ColumnManager extends EventHandler {
 
 
-  static readonly EVENT_COLUMN_REMOVED = 'removed';
+  static readonly EVENT_COLUMN_REMOVED = 'columnRemoved';
+  static readonly EVENT_COLUMN_ADDED = 'columnAdded';
   static readonly EVENT_DATA_REMOVED = 'removedData';
 
   private $node: d3.Selection<any>;
@@ -81,6 +85,8 @@ export default class ColumnManager extends EventHandler {
   }
   private onLockChange = (event: IEvent) => this.relayout();
   private onVisChange = (event: IEvent) => this.relayout();
+  private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
+  private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColid = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -165,18 +171,19 @@ export default class ColumnManager extends EventHandler {
     // if (data.idtypes[0] !== this.idType) {
     //   throw new Error('invalid idtype');
     // }
-    const col = createColumn(data, this.orientation, this.$node);
 
+    const col = createColumn(data, this.orientation, this.$node);
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
     }
-
     col.on(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
     col.on(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
     col.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.onSortByFilterHeader);
+    col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
+    col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
 
     this.columns.push(col);
 
@@ -186,12 +193,13 @@ export default class ColumnManager extends EventHandler {
       this.filtersHierarchy.push(col);
     }
 
+    this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
+
     return col;
   }
 
   remove(evt: any, data: IDataType) {
     const col = this.columns.find((d) => d.data === data);
-
     //IF column is already removed
     if (col === undefined) {
       return;
@@ -202,6 +210,8 @@ export default class ColumnManager extends EventHandler {
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
+    col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
+    col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
     this.updateColumns();
@@ -226,6 +236,68 @@ export default class ColumnManager extends EventHandler {
     }
     this.columns.splice(index, 0, col);
     this.relayout();
+  }
+
+
+  convertMatrixToVector(col, aggfunction) {
+    const flattenedData: any = col.map((c) => {
+      return c.reduce((row: number[]) => aggregatorFunction(aggfunction, row));
+    });
+    return flattenedData;
+  }
+
+  updateTableView(flattenedMatrix: IAnyVector, col: AnyColumn) {
+    const projectedcolumn = this.columns.find((c) => c.dataView === flattenedMatrix);
+    if (projectedcolumn === undefined) {
+      return;
+    }
+    const columnNode = col.$node;
+    columnNode.select('aside').selectAll('ol').remove();
+    const aggNode = (columnNode.select('header.columnHeader').selectAll('.fa.fa-exchange').node());
+    if (aggNode === null) {
+      this.addChangeIconMatrix(columnNode, col);
+    }
+    const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
+    const matrixDOM = this.getMatrixDOM(columnNode, selection);
+    matrixDOM.node().appendChild(projectedcolumn.$node.node());
+    const index = this.columns.indexOf(col);
+    if (index === -1) {
+      return;
+    }
+    this.columns.splice(index, 1); // Remove matrix column
+
+  }
+
+  private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
+    columnNode.select('header.columnHeader').selectAll('.toolbar').selectAll('*').remove();
+    const aggIcon = columnNode.select('header.columnHeader').selectAll('.toolbar').insert('a', ':first-child')
+      .attr('title', 'Aggregated Me')
+      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+    columnNode.select('main').selectAll('.multiformList').remove();
+    aggIcon.on('click', (d) => {
+      const numberColNodes = columnNode.selectAll('ol').selectAll('li');
+      const numberCols = numberColNodes[0].map((node) => this.columns.find((d) => d.$node.node() === node));
+      this.fire(SupportView.EVENT_DATASETS_ADDED, col, numberCols);
+
+    });
+
+  }
+
+  private getMatrixDOM(columnNode: d3.Selection<any>, selection: HTMLElement) {
+    let matrixDOM;
+    if (selection === null) {
+      matrixDOM = columnNode.select('main').append('ol').classed('matrixTables', true);
+    } else {
+      matrixDOM = columnNode.select('main').select('ol');
+    }
+
+    return matrixDOM;
+  }
+
+
+  removeMatrixCol(col: AnyColumn, numberCols: AnyColumn[]) {
+    numberCols.forEach((d) => this.remove(null, d.data));
+    col.$node.remove();
   }
 
   clearBrush(evt: any, brushIndices: any[]) {
@@ -294,7 +366,7 @@ export default class ColumnManager extends EventHandler {
    * @param filterList
    */
   mapFiltersAndSort(filterList: AnyFilter[]) {
-    this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data === d.data)[0]);
+    this.filtersHierarchy = filterList.map((d) => this.columns.filter((c) => c.data.desc.id === d.data.desc.id)[0]);
     this.updateColumns();
   }
 
@@ -815,7 +887,7 @@ export function distributeColWidths(columns: { lockedWidth: number, minWidth: nu
 }
 
 
-export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>): AnyColumn {
+export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?): AnyColumn {
   switch (data.desc.type) {
     case AColumn.DATATYPE.vector:
       const v = <IStringVector | ICategoricalVector | INumericalVector>data;
@@ -826,7 +898,7 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
           return new CategoricalColumn(<ICategoricalVector>v, orientation, $parent);
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new NumberColumn(<INumericalVector>v, orientation, $parent);
+          return new NumberColumn(<INumericalVector>v, orientation, $parent, matrixCol);
       }
       throw new Error('invalid vector type');
 
@@ -835,7 +907,7 @@ export function createColumn(data: IMotherTableType, orientation: EOrientation, 
       switch (m.desc.value.type) {
         case VALUE_TYPE_INT:
         case VALUE_TYPE_REAL:
-          return new MatrixColumn(<INumericalMatrix>m, orientation, $parent);
+          return new MatrixColumn(<INumericalMatrix>m, orientation, $parent, matrixCol);
       }
       throw new Error('invalid matrix type');
 
@@ -896,6 +968,25 @@ export function dataValueTypeCSSClass(valueType: EDataValueType) {
       return 'fa fa-fw fa-signal fa-rotate-270 fa-flip-vertical';
     case EDataValueType.String:
       return 'fa fa-fw fa-align-center';
+    default:
+      return '';
+  }
+}
+
+export function aggregatorFunction(aggType: string, arr: number[]) {
+  switch (aggType) {
+    case AGGREGATE.min:
+      return Math.round(d3.min(arr));
+    case AGGREGATE.max:
+      return Math.round(d3.max(arr));
+    case AGGREGATE.mean:
+      return Math.round(d3.mean(arr));
+    case AGGREGATE.median:
+      return Math.round(d3.median(arr));
+    case AGGREGATE.q1:
+      return Math.round(d3.quantile(arr, 0.25));
+    case AGGREGATE.q3:
+      return Math.round(d3.quantile(arr, 0.75));
     default:
       return '';
   }

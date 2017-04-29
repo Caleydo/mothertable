@@ -33,6 +33,7 @@ export interface IFuelBarDataSize {
 
 export default class SupportView extends EventHandler {
 
+
   static EVENT_DATASETS_ADDED = 'datasetAdded';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
@@ -41,18 +42,23 @@ export default class SupportView extends EventHandler {
   $node: d3.Selection<any>;
   private $fuelBar: d3.Selection<any>;
 
-  private filterManager: FilterManager;
-  private _matrixData= new Map<string, INumericalMatrix>();
+  private _filterManager: FilterManager;
+  private _matrixData = new Map<string, INumericalMatrix>();
+
   private datasets: IDataType[];
+  private supportViewNode;
 
   constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
     this.build($parent);
-    this.init();
   }
 
   private get idTypeHash() {
     return this.idType.id + '_' + this.id;
+  }
+
+  get filterManager(): FilterManager {
+    return this._filterManager;
   }
 
   private build($parent: d3.Selection<any>) {
@@ -72,14 +78,14 @@ export default class SupportView extends EventHandler {
     this.$fuelBar.append('div').classed('filteredData', true);
 
     this.$node = $wrapper.append('div').classed(this.idType.id, true);
+    this.supportViewNode = $wrapper;
   }
 
-  private async init() {
+  async init() {
     this.setupFilterManager();
-
     await this.loadDatasets();
     this.buildSelect2(this.$node);
-    this.addInitialFilters();
+    await this.addInitialFilters();
   }
 
   private async loadDatasets() {
@@ -99,13 +105,27 @@ export default class SupportView extends EventHandler {
     }
   }
 
+
+  async addFilter(dataset) {
+    const data = await this.addDataset(dataset);
+    this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
+    this.updateURLHash();
+  }
+
+
+  updateFilterView(col) {
+    this.filterManager.updateFilterView(col);
+    this.updateURLHash();
+
+  }
+
   private setupFilterManager() {
-    this.filterManager = new FilterManager(this.idType, this.$node);
-    this.filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
+    this._filterManager = new FilterManager(this.idType, this.$node);
+    this._filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
       this.updateURLHash();
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
-    this.filterManager.on(AFilter.EVENT_REMOVE_ME, (evt: any, data: IDataType) => {
+    this._filterManager.on(AFilter.EVENT_REMOVE_ME, (evt: any, data: IDataType) => {
       this.updateURLHash();
     });
 
@@ -113,7 +133,8 @@ export default class SupportView extends EventHandler {
     this.filterManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
     });
-    this.propagate(this.filterManager, FilterManager.EVENT_FILTER_CHANGED);
+
+    this.propagate(this._filterManager, FilterManager.EVENT_FILTER_CHANGED);
   }
 
   private async addInitialFilters() {
@@ -125,7 +146,6 @@ export default class SupportView extends EventHandler {
         .map((data) => {
           return this.addDataset(data);
         }));
-
       this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
   }
@@ -133,15 +153,19 @@ export default class SupportView extends EventHandler {
   private updateURLHash() {
     // add random id to hash
     hash.setProp(this.idTypeHash,
-      this.filterManager.filters
+      this._filterManager.filters
         .map((d) => d.data.desc.name)
         .join(SupportView.HASH_FILTER_DELIMITER)
     );
   }
 
   destroy() {
-    this.filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
+    this._filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.$node.remove();
+    this.supportViewNode.remove();
+    this.filterManager.destroy();
+    this.updateURLHash();
+
   }
 
   sortByColumnHeader(sortColdata: { data: IDataType}) {
@@ -163,8 +187,8 @@ export default class SupportView extends EventHandler {
   }
 
   public remove(data: IDataType) {
-    if (this.filterManager.contains(<IFilterAbleType>data)) {
-      this.filterManager.remove(null, <IFilterAbleType>data);
+    if (this._filterManager.contains(<IFilterAbleType>data)) {
+      this._filterManager.remove(null, <IFilterAbleType>data);
       this.updateURLHash();
     }
   }
@@ -240,10 +264,7 @@ export default class SupportView extends EventHandler {
         $jqSelect2.val(null).trigger('change');
 
         // load data and add columns
-        const data = await this.addDataset(dataset);
-        this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
-
-        this.updateURLHash();
+        this.addFilter(dataset);
 
         return false;
       });
@@ -285,8 +306,8 @@ export default class SupportView extends EventHandler {
     if (data.desc.type === 'stratification') {
       data = await (<IStratification>data).asVector();
     }
-    if (!this.filterManager.contains(<IFilterAbleType>data)) {
-      this.filterManager.push(<IFilterAbleType>data);
+    if (!this._filterManager.contains(<IFilterAbleType>data)) {
+      this._filterManager.push(<IFilterAbleType>data);
     }
     if (data.desc.type === AColumn.DATATYPE.matrix) {
       this._matrixData.set(data.desc.id, <INumericalMatrix>data);

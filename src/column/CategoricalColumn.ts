@@ -52,6 +52,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
 
     on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
       $stratifyButton.classed('active', ref.data.desc.id === this.data.desc.id);
+
       if (ref.data.desc.id === this.data.desc.id) {
         this.fire(CategoricalColumn.EVENT_STRATIFYME, this); // for stratifying in the ColumnManager
       }

@@ -130,7 +130,7 @@ export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[
   //Gives the group which it belongs to the brushing in the stratification.
   const groupid = [];
   Array.from(m.keys()).forEach((id) => {
-    if(m.get(id) === true) {
+    if (m.get(id) === true) {
       groupid.push(id);
     }
   });
@@ -138,7 +138,7 @@ export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[
   const newRangeInList = [];
   stratifiedRanges.forEach((r, id) => {
     const currentRangeList = makeListFromRange(r);
-    if(groupid.indexOf(id) > -1) {
+    if (groupid.indexOf(id) > -1) {
       const localArrayIndices = convertToLocalArrayIndices(brushedArray, currentRangeList);
       // Convert local sorted indices to the range Indices
       const newRangeIndices = revertBackToRangeIndices(currentRangeList, localArrayIndices);
@@ -184,6 +184,9 @@ function reformatRangeList(rearrangeRange: Range[][]) {
 }
 
 export function mergeRanges(ranges: Range[]) {
+  if (ranges.length === 0) {
+    return;
+  }
   const mergedRange = ranges.reduce((currentVal, nextValue) => {
     const r = new Range();
     r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
@@ -246,12 +249,12 @@ function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeInd
     indices.forEach((elem, i) => {
       if (((elem - lastElem) === 1 || (elem - lastElem) === 0) && i !== indices.length - 1) {
         lastElem = elem;
-      } else if(i === indices.length - 1) {
-        if(firstElem >- 1 &&  lastElem >- 1) {
+      } else if (i === indices.length - 1) {
+        if (firstElem > -1 && lastElem > -1) {
           localArray.push([firstElem, elem]);
         }
       } else {
-        if(firstElem >- 1 &&  lastElem >- 1) {
+        if (firstElem > -1 && lastElem > -1) {
           localArray.push([firstElem, lastElem]);
         }
         firstElem = elem;

@@ -9,6 +9,8 @@ import {EOrientation} from './AColumn';
 import {mixin} from 'phovea_core/src/index';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import * as d3 from 'd3';
+import Range from 'phovea_core/src/range/Range';
+import MatrixColumn from './MatrixColumn';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
@@ -16,13 +18,17 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   maxWidth: number = 140;
   minHeight: number = 4;
   maxHeight: number = 20;
+  projectedMatrix: boolean = false;
+  matrixViewRange: Range;
 
   private $points:d3.Selection<any>;
   private scale: d3.scale.Linear<number, number>;
+  public static EVENT_CONVERT_TO_MATRIX = 'convertToMatrix';
 
-  constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>) {
+  constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?: MatrixColumn) {
     super(data, orientation);
     this.$node = this.build($parent);
+    this.attachListener();
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
@@ -32,7 +38,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     const width = parseInt($toolbar.style('width'), 10);
 
     this.scale = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
-    const axis =  d3.svg.axis()
+    const axis = d3.svg.axis()
       .ticks(3)
       .orient('bottom')
       .scale(this.scale);
@@ -88,4 +94,24 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       }
     });
   }
+
+
+  private attachListener() {
+    if ((<any>this).data.m !== undefined) {
+      // this.matrixViewRange = this.data.m.range.dim(1).asList();
+      //  console.log(this.data.m, this.data.m.range.dim(1).asList())
+      const $matrixChange = this.toolbar.insert('a', ':first-child')
+        .attr('title', 'Aggregated Me')
+        .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+
+      $matrixChange.on('click', () => {
+        this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, this);
+      });
+
+    }
+
+
+  }
+
+
 }

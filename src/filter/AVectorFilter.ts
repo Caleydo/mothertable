@@ -19,7 +19,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
     const $ol = $parent.select('.filterlist');
-    const $li = $ol.append('li').classed('filter', true);
+    const $li = $ol.append('li').classed('filter', true).attr('filter-name', this.data.desc.id);
     const $header = $li.append('header');
     $li.append('main');
     const $toolbar = $header.append('div').classed('toolbar', true);

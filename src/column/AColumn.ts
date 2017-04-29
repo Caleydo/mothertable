@@ -14,6 +14,7 @@ import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
 import {dataValueTypeCSSClass, dataValueType} from './ColumnManager';
+import {AnyFilter} from '../filter/AFilter';
 
 export enum EOrientation {
   Vertical,
@@ -42,6 +43,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   selectedAggVis: IVisPluginDesc;
   selectedUnaggVis: IVisPluginDesc;
+  matrixFilters: AnyFilter[];//For the header in matrix
 
   protected multiformMap: Map<string, TaggleMultiform> = new Map<string, TaggleMultiform>();
 
