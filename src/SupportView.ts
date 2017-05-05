@@ -85,7 +85,19 @@ export default class SupportView extends EventHandler {
     this.setupFilterManager();
     await this.loadDatasets();
     this.buildSelect2(this.$node);
+    // add default column here
+    this.addDefaultColumn();
     await this.addInitialFilters();
+  }
+
+  private addDefaultColumn() {
+    // render the ID column
+    // find string column
+    console.log(this.datasets);
+    const stringColumn = this.datasets.find((x) => x.desc.value.type === VALUE_TYPE_STRING);
+    if('undefined' !== typeof stringColumn) {
+      this.addFilter(stringColumn);
+    }
   }
 
   private async loadDatasets() {
