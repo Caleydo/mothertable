@@ -24,8 +24,8 @@ import {formatAttributeName, formatIdTypeName} from './column/utils';
 import {IStratification} from 'phovea_core/src/stratification';
 import AFilter from './filter/AFilter';
 import {AVectorFilter} from './filter/AVectorFilter';
-import TableVector from '../../phovea_core/src/table/internal/TableVector';
-import Vector from '../../phovea_core/src/vector/Vector';
+import TableVector from 'phovea_core/src/table/internal/TableVector';
+import Vector from 'phovea_core/src/vector/Vector';
 
 
 export interface IFuelBarDataSize {
