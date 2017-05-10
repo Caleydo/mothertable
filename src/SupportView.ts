@@ -24,6 +24,8 @@ import {formatAttributeName, formatIdTypeName} from './column/utils';
 import {IStratification} from 'phovea_core/src/stratification';
 import AFilter from './filter/AFilter';
 import {AVectorFilter} from './filter/AVectorFilter';
+import TableVector from 'phovea_core/src/table/internal/TableVector';
+import Vector from 'phovea_core/src/vector/Vector';
 
 
 export interface IFuelBarDataSize {
@@ -85,7 +87,32 @@ export default class SupportView extends EventHandler {
     this.setupFilterManager();
     await this.loadDatasets();
     this.buildSelect2(this.$node);
+    // add default column here
+    this.addDefaultColumn();
     await this.addInitialFilters();
+  }
+
+  private addDefaultColumn() {
+    const stringColumn = this.datasets.find((x) => (x instanceof TableVector || x instanceof Vector) && x.desc.value.type === VALUE_TYPE_STRING);
+
+    // string column available?
+    if(!stringColumn) {
+      console.error(`No string column for idType '${this.idType.name}' found!`);
+      return;
+    }
+
+    // check if we have already added a string column
+    if (hash.has(this.idTypeHash)) {
+      const attributeArray = hash
+        .getProp(this.idTypeHash)
+        .split(SupportView.HASH_FILTER_DELIMITER);
+
+      if(attributeArray.indexOf(stringColumn.desc.name) > -1) {
+         return; // if a string column is already present, don't add another one
+      }
+    }
+
+    this.addFilter(stringColumn);
   }
 
   private async loadDatasets() {
