@@ -94,16 +94,25 @@ export default class SupportView extends EventHandler {
 
   private addDefaultColumn() {
     const stringColumn = this.datasets.find((x) => (x instanceof TableVector || x instanceof Vector) && x.desc.value.type === VALUE_TYPE_STRING);
-    if('undefined' !== typeof stringColumn) {
-      if (hash.has(this.idTypeHash)) { // check if we have already added a string column
-        const attributes = hash.getProp(this.idTypeHash);
-        const attributeArray = attributes.split(SupportView.HASH_FILTER_DELIMITER);
-        if(attributeArray.indexOf(stringColumn.desc.name) > -1) {
-           return; // if a string column is already present, don't add another one
-        }
-      }
-      this.addFilter(stringColumn);
+
+    // string column available?
+    if(!stringColumn) {
+      console.error(`No string column for idType '${this.idType.name}' found!`);
+      return;
     }
+
+    // check if we have already added a string column
+    if (hash.has(this.idTypeHash)) {
+      const attributeArray = hash
+        .getProp(this.idTypeHash)
+        .split(SupportView.HASH_FILTER_DELIMITER);
+
+      if(attributeArray.indexOf(stringColumn.desc.name) > -1) {
+         return; // if a string column is already present, don't add another one
+      }
+    }
+
+    this.addFilter(stringColumn);
   }
 
   private async loadDatasets() {
