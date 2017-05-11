@@ -195,15 +195,6 @@ export function mergeRanges(ranges: Range[]) {
   return mergedRange;
 }
 
-export function makeArrayBetweenNumbers(range: number[]) {
-  const increments = 1;
-  const arr = [];
-  for (let val = range[0]; val <= range[1]; val += increments) {
-    arr.push(val);
-  }
-  return arr;
-}
-
 
 /**
  * Checks if one array contains all elements of another array
