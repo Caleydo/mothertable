@@ -117,8 +117,8 @@ export default class ColumnManager extends EventHandler {
   }
 
   private attachListener() {
-    on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
-    on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
+    //on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
+    //on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
     on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, async (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
