@@ -33,7 +33,6 @@ import {
   updateRangeList,
   makeRangeFromList,
   makeListFromRange,
-  makeArrayBetweenNumbers,
   checkArraySubset,
   findColumnTie
 } from './utils';
@@ -43,7 +42,6 @@ import {prepareRangeFromList} from '../SortHandler/SortHandler';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
-import {List} from 'phovea_vis/src/list';
 import TaggleMultiform from './TaggleMultiform';
 import {AGGREGATE} from './MatrixColumn';
 import SupportView from '../SupportView';
@@ -75,7 +73,6 @@ export default class ColumnManager extends EventHandler {
   private brushedItems = [];
   private totalbrushed: number[] = [];
   private _multiformRangeList: Range[];
-  private rowCounter = 0;
 
   private onColumnRemoved = (event: IEvent, data: IDataType) => this.remove(null, data);
   private onSortByColumnHeader = (event: IEvent, sortData) => this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, sortData);
@@ -117,8 +114,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   private attachListener() {
-    on(List.EVENT_BRUSHING, this.updateBrushing.bind(this));
-    on(List.EVENT_BRUSH_CLEAR, this.clearBrush.bind(this));
     on(AFilter.EVENT_REMOVE_ME, this.remove.bind(this));
 
     this.aggSwitcherCol.on(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, async (evt: any, index: number, value: EAggregationType, allGroups: EAggregationType[]) => {
@@ -134,14 +129,6 @@ export default class ColumnManager extends EventHandler {
 
   get stratifiedRanges(): Range[] {
     return this._stratifiedRanges;
-  }
-
-  get multiformRangeList() {
-    return this._multiformRangeList;
-  }
-
-  get brushedRanges(): Range[] {
-    return this._brushedRanges;
   }
 
   updateSortByIcons(sortData: {col: AnyColumn, sortMethod: string}) {
@@ -294,37 +281,9 @@ export default class ColumnManager extends EventHandler {
     return matrixDOM;
   }
 
-
   removeMatrixCol(col: AnyColumn, numberCols: AnyColumn[]) {
     numberCols.forEach((d) => this.remove(null, d.data));
     col.$node.remove();
-  }
-
-  clearBrush(evt: any, brushIndices: any[]) {
-    this.brushedItems = [];
-    this.totalbrushed = [];
-    this._brushedRanges = [];
-    for (const col of this.columns) {
-      col.multiformList.forEach((m) => {
-        m.brushed = false;
-      });
-    }
-  }
-
-  async updateBrushing(evt: any, brushIndices: any[], multiformData: IAnyVector) {
-
-    const a = await this.getBrushIndices(brushIndices, multiformData);
-    this.brushedItems.push(a);
-    this.totalbrushed = this.totalbrushed.concat(brushIndices);
-    //console.log(this.brushedItems, a)
-    this._brushedRanges.push(makeRangeFromList(a));
-    this.stratifyAndRelayout();
-
-    for (const col of this.columns) {
-      if (col instanceof NumberColumn) {
-        (<NumberColumn>col).updateAxis(this.brushedItems);
-      }
-    }
   }
 
   async updateRangeList(brushedIndices: number[][]) {
@@ -335,12 +294,6 @@ export default class ColumnManager extends EventHandler {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
     this._multiformRangeList = newRange;
-  }
-
-
-  async getBrushIndices(stringList: number[], multiformData: IAnyVector) {
-    const m = (await multiformData.ids()).dim(0).asList();
-    return m.slice(stringList.sort()[0], stringList.sort()[1] + 1);
   }
 
   /**
