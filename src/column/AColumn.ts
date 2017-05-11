@@ -121,8 +121,29 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         </header>
         <main></main>`);
 
+    $node.select('div.toolbar')
+      .html(`
+        <div class="labelName"><i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> <span>${formatAttributeName(this.data.desc.name)}</span></div>
+        `);
     this.buildToolbar($node.select('div.toolbar'));
 
+    $node.select('div.toolbar')
+      .style('display', 'none' )
+      .style('visibility', 'hidden');
+    $node.select('header').on('mouseover', () => {
+      $node.select('div.toolbar')
+        .style('top', '0px')
+        .style('width', '170px')
+        .style('z-index', '10' )
+        .style('position', 'absolute' )
+        .style('display', 'block' )
+        .style('visibility', 'visible');
+    });
+     $node.select('div.toolbar').on('mouseleave', () => {
+      $node.select('div.toolbar')
+        .style('display', 'none' )
+        .style('visibility', 'hidden');
+    });
     return $node;
   }
 

@@ -29,7 +29,7 @@
   .tick line, path {
     fill: none;
     stroke: black;
-    shape-rendering: crispEdges;
+    shape-rendering: geometricPrecision;
   }
 
 }
