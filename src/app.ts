@@ -190,6 +190,8 @@ export default class App {
       this.colManager.mapFiltersAndSort(data);
     });
 
+    this.colManager.addRowNumberColumn();
+
     // add columns if we add one or multiple datasets
     supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
       // first push all the new columns ...

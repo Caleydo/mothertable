@@ -45,6 +45,7 @@ import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
 import {AGGREGATE} from './MatrixColumn';
 import SupportView from '../SupportView';
+import RowNumberColumn from './RowNumberColumn';
 import Any = jasmine.Any;
 
 export declare type AnyColumn = AColumn<any, IDataType>;
@@ -779,7 +780,26 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+  addRowNumberColumn() {
+    const rowNumberColumn = new RowNumberColumn(this.$node);
+    rowNumberColumn.buildHeader();
+    rowNumberColumn.buildInitialRows();
 
+      /*  const h = this.$node.select('.columnHeader');
+    h.attr('height', '200px');
+    const $node = this.$node.append('li')
+      .datum(this)
+      .classed('column', true)
+      .classed('column-hor', true)
+      .style('min-width', minWidth + 'px')
+      .style('width', width + 'px')
+      .html('<header class="columnHeader">' +
+        '');*/
+
+
+
+    return null;
+  }
 }
 
 
@@ -834,7 +854,6 @@ export function distributeColWidths(columns: { lockedWidth: number, minWidth: nu
   }
   return cols.map((d) => d.newWidth);
 }
-
 
 export function createColumn(data: IMotherTableType, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?): AnyColumn {
   switch (data.desc.type) {
