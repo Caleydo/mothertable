@@ -155,10 +155,6 @@ export default class ColumnManager extends EventHandler {
    * @returns {Promise<AnyColumn>}
    */
   async push(data: IMotherTableType) {
-    // if (data.idtypes[0] !== this.idType) {
-    //   throw new Error('invalid idtype');
-    // }
-
     const col = createColumn(data, this.orientation, this.$node);
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
@@ -543,7 +539,7 @@ export default class ColumnManager extends EventHandler {
     this.correctGapBetweenMultiform();
     const header = 47;//TODO solve programatically
     const height = Math.min(...this.columns.map((c) => c.$node.property('clientHeight') - header));
-    const rowHeight = await this.calColHeight(height);
+    const rowHeight = await this.calcColumnHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
     //  console.log(rowHeight)
@@ -590,7 +586,7 @@ export default class ColumnManager extends EventHandler {
     $strats.style('height', maxHeight + 'px');
   }
 
-  private async calColHeight(height: number) {
+  private async calcColumnHeight(height: number) {
     let minHeights = [];
     let maxHeights = [];
     let index = 0;
