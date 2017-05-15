@@ -1,10 +1,11 @@
 import AColumn, {EOrientation} from './AColumn';
 import {IDataType} from 'phovea_core/src/datatype';
+import {IMotherTableType} from './ColumnManager';
 
 export default class RowNumberColumn extends AColumn<any, IDataType> {
 
   readonly minWidth: number = 10;
-  width: number = 30;
+  private $div: d3.Selection<any>;
   constructor(data: any, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
     this.$node = this.build($parent);
@@ -13,7 +14,6 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
   protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
     this.$node = $parent.append('li')
       .attr('class', 'column column-hor nodrag rowNumberColumn')
-      .style('max-width', this.width + 'px')
       .style('min-width', this.minWidth + 'px');
 
     this.$node.append('aside');
@@ -34,17 +34,10 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
     if(!this.$node) {
       return;
     }
-    const $div = this.$node.append('main')
+    this.$div = this.$node.append('main')
       .append('div')
       .classed('phovea-list', true)
       .classed('taggle-vis-list', true);
-
-    const list = [3, 6, 78, 200, 3, 6, 78, 200, 3, 6, 78, 200];
-    $div.selectAll('div')
-      .data(list)
-      .enter()
-      .append('div')
-      .text(function(d){return d;});
   }
 
   updateRowBlocks(heights: number[]) {
@@ -52,5 +45,19 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
     $blocks
       .style('height', heights[0] + 'px')
       .style('min-height', heights[0] + 'px');
+  }
+
+  updateRowNumberColumn(size : number[]) {
+    const list = [];
+    for (let i = 0; i <= size[0]; i++) {
+      list.push(i);
+    }
+
+    //const list = [3, 6, 78, 200, 3, 6, 78, 200, 3, 6, 78, 200];
+    this.$div.selectAll('div')
+      .data(list)
+      .enter()
+      .append('div')
+      .text(function(d){return d;});
   }
 }

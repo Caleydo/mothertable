@@ -160,8 +160,10 @@
 
       background: $header-bg-color;
 
-      a + a {
-        margin-top: 3px;
+      div {
+        display: block;
+        text-align: right;
+        padding: 1px 6px;
       }
     }
   }

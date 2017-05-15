@@ -70,7 +70,7 @@ export default class ColumnManager extends EventHandler {
   private visManager: VisManager;
   private colsWithRange = new Map();
   private dataPerStratificaiton; //The number of data elements per stratification
-  private stratifyColid: string = null; // This is column Name used for stratification
+  private stratifyColId: string = null; // This is column Name used for stratification
   private _brushedRanges: Range[] = [];
   private brushedItems = [];
   private totalbrushed: number[] = [];
@@ -87,7 +87,7 @@ export default class ColumnManager extends EventHandler {
   private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
   private stratifyMe = (event: IEvent, colid) => {
-    this.stratifyColid = colid.data.desc.id;
+    this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
   }
 
@@ -158,6 +158,7 @@ export default class ColumnManager extends EventHandler {
    */
   async push(data: IMotherTableType) {
     const col = createColumn(data, this.orientation, this.$node);
+    this.rowNumberCol.updateRowNumberColumn(col.dataView.dim);
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
     }
@@ -403,12 +404,12 @@ export default class ColumnManager extends EventHandler {
   private updateStratifiedRanges() {
 
     //Return nothing if there is no stratification column
-    if (this.stratifyColid === null) {
+    if (this.stratifyColId === null) {
       return;
     }
 
     const cols = this.filtersHierarchy;
-    const datas = this.dataPerStratificaiton.get(this.stratifyColid);
+    const datas = this.dataPerStratificaiton.get(this.stratifyColId);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
     if (this.totalbrushed.length === 0) {
@@ -464,7 +465,7 @@ export default class ColumnManager extends EventHandler {
     //update the stratifyIcon
     this.updateStratifyIcon(findColumnTie(this.filtersHierarchy));
 
-    this.updateStratifyColor(this.stratifyColid);
+    this.updateStratifyColor(this.stratifyColId);
 
 
     return Promise.all([vectorUpdatePromise, matrixUpdatePromise]);
@@ -501,20 +502,20 @@ export default class ColumnManager extends EventHandler {
 
     // If there is zero number of categorical column then the stratification is null
     if (categoricalCol.length === 0) {
-      this.stratifyColid = null;
+      this.stratifyColId = null;
       this._multiformRangeList = [this.nonStratifiedRange];
       return;
     }
     // If there is either  number or string or matrix in the first sort hierarchy the stratification is null
     if (checkColumnTie === 0) {
-      this.stratifyColid = null;
+      this.stratifyColId = null;
       this._multiformRangeList = [this.nonStratifiedRange];
       return;
     }
 
     // If there is categorical column above the numerical or string and the stratification is null then set first categorical column as stratification
-    if (categoricalCol.length > 0 && this.stratifyColid === null) {
-      this.stratifyColid = categoricalCol[0].data.desc.id;
+    if (categoricalCol.length > 0 && this.stratifyColId === null) {
+      this.stratifyColId = categoricalCol[0].data.desc.id;
       return;
     }
 
@@ -523,10 +524,10 @@ export default class ColumnManager extends EventHandler {
     //If current stratified column is moved below the numerical column
     // then the stratificaiton is reset to the first categorical column above the numerical column
 
-    const sid = cols.filter((c) => c.data.desc.id === this.stratifyColid);
+    const sid = cols.filter((c) => c.data.desc.id === this.stratifyColId);
     const id = cols.indexOf(sid[0]);
     if (checkColumnTie > 0 && categoricalCol.length > 0 && id > checkColumnTie) {
-      this.stratifyColid = categoricalCol[0].data.desc.id;
+      this.stratifyColId = categoricalCol[0].data.desc.id;
       return;
 
     }
@@ -783,6 +784,12 @@ export default class ColumnManager extends EventHandler {
   addRowNumberColumn() {
     this.rowNumberCol = new RowNumberColumn(null, EOrientation.Vertical, this.$node);
   }
+
+/*  updateRowNumberColumn(data) {
+    const v = <IStringVector | ICategoricalVector | INumericalVector>data;
+    this.rowNumberCol.updateRowNumberColumn(v);
+  }*/
+
 }
 
 
