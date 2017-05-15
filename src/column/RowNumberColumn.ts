@@ -56,6 +56,10 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
   }
 
   updateRowNumberColumn(size : number[]) {
+    //TODO don't check statically for size[0] or check if it holds
+    if(size[0] + 1 === this.dataList.length) {
+      return;
+    }
     for (let i = 0; i <= size[0]; i++) {
       this.dataList.push(i);
     }
