@@ -152,6 +152,20 @@
     }
   }
 
+  .column.rowNumberColumn {
+    main > div {
+      margin-bottom: $gap-between-stratifications;
+      display: flex;
+      flex-direction: column;
+
+      background: $header-bg-color;
+
+      a + a {
+        margin-top: 3px;
+      }
+    }
+  }
+
   .column.column-matrix {
     position: relative;
     aside .labelName {

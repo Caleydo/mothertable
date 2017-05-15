@@ -61,6 +61,7 @@ export default class ColumnManager extends EventHandler {
   private $node: d3.Selection<any>;
 
   private aggSwitcherCol: AggSwitcherColumn;
+  private rowNumberCol : RowNumberColumn;
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
@@ -543,15 +544,14 @@ export default class ColumnManager extends EventHandler {
     const rowHeight = await this.calcColumnHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
-    //  console.log(rowHeight)
-    if (this.columns.length > 0) {
-      this.aggSwitcherCol.updateSwitcherBlocks(
-        this._stratifiedRanges.map((d, i) => {
+    const colHeight =  this._stratifiedRanges.map((d, i) => {
           return this.multiformsInGroup(i)
             .map((m) => rowHeight[m])
             .reduce((a, b) => a + b, 0);
-        })
-      );
+        });
+    if (this.columns.length > 0) {
+      this.aggSwitcherCol.updateSwitcherBlocks(colHeight);
+      this.rowNumberCol.updateRowBlocks(colHeight);
     }
 
     this.columns.forEach((col, i) => {
@@ -781,24 +781,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   addRowNumberColumn() {
-    const rowNumberColumn = new RowNumberColumn(this.$node);
-    rowNumberColumn.buildHeader();
-    rowNumberColumn.buildInitialRows();
-
-      /*  const h = this.$node.select('.columnHeader');
-    h.attr('height', '200px');
-    const $node = this.$node.append('li')
-      .datum(this)
-      .classed('column', true)
-      .classed('column-hor', true)
-      .style('min-width', minWidth + 'px')
-      .style('width', width + 'px')
-      .html('<header class="columnHeader">' +
-        '');*/
-
-
-
-    return null;
+    this.rowNumberCol = new RowNumberColumn(null, EOrientation.Vertical, this.$node);
   }
 }
 
