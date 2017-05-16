@@ -7,6 +7,7 @@ interface IAggSwitcherType {
   selectByUser: EAggregationType;
   selectByAutomatic: EAggregationType;
   height: number;
+  groupLength: number[];
 }
 
 export default class RowNumberColumn extends AColumn<any, IDataType> {
@@ -45,31 +46,29 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
     if(!this.$node) {
       return;
     }
-    /*this.$div = this.$node.append('main')
-      .append('div')
-      .classed('phovea-list', true)
-      .classed('taggle-vis-list', true);*/
-
     this.$main = this.$node.append('main');
   }
 
-  updateRowBlocks(heights: number[]) {
+  updateNumberedBlocks(heights: number[], groupLength: number[][]) {
+    console.assert(heights.length === groupLength.length)
     if(heights.length !== this.aggTypesPerGroup.length) {
       this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
         return {
           selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
           selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
-          height: d
+          height: d,
+          groupLength: []
         };
       });
     }
 
     this.aggTypesPerGroup.forEach((d, i) => {
       d.height = heights[i];
+      d.groupLength = groupLength[i];
     });
 
     const $blocks = this.$main
-      .selectAll('div')
+      .selectAll('main > div')
       .data(this.aggTypesPerGroup);
 
     const $enter = $blocks
@@ -82,17 +81,25 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .style('min-height', (d) => d.height + 'px')
       .style('height', (d) => d.height + 'px');
 
-    $blocks.exit().remove();
-    /*const $blocks = this.$node.select('main > div');
-    $blocks
-      .style('height', heights[0] + 'px')
-      .style('min-height', heights[0] + 'px');
-
-      this.$div.selectAll('div')
-      .data(this.dataList)
+    $blocks.selectAll('div')
+      .data((d) => {
+      console.log(d);
+      return d.groupLength;
+    })
       .enter()
       .append('div')
-      .text(function(d){return d;});*/
+      .text((d) => {return d;});
+
+     /*const $divs = $blocks.selectAll('div')
+      .data(dataList1)
+      .enter()
+      .append('div');*/
+
+     /*$divs.each((d, i) => {
+       console.log(d, i);
+     });*/
+
+    $blocks.exit().remove();
   }
 
   updateRowNumberColumn(size : number[]) {
@@ -110,7 +117,8 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       this.aggTypesPerGroup[rowIndex] = {
         selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
         selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
-        height: 0
+        height: 0,
+        groupLength: []
       };
     } else {
       this.aggTypesPerGroup[rowIndex].selectByAutomatic = aggregationType;

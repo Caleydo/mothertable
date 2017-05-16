@@ -550,9 +550,17 @@ export default class ColumnManager extends EventHandler {
             .map((m) => rowHeight[m])
             .reduce((a, b) => a + b, 0);
         });
+
+    let counter = 0;
+    const groupLength = this._stratifiedRanges.map((d, i) => {
+      const length = d.dim(0).asList().length;
+      return Array(length).fill(0).map((d, i) => {
+        return counter++;
+      });
+    });
     if (this.columns.length > 0) {
       this.aggSwitcherCol.updateSwitcherBlocks(colHeight);
-      this.rowNumberCol.updateRowBlocks(colHeight);
+      this.rowNumberCol.updateNumberedBlocks(colHeight, groupLength);
     }
 
     this.columns.forEach((col, i) => {
