@@ -158,7 +158,6 @@ export default class ColumnManager extends EventHandler {
    */
   async push(data: IMotherTableType) {
     const col = createColumn(data, this.orientation, this.$node);
-    this.rowNumberCol.updateRowNumberColumn(col.dataView.dim);
     if (this.firstColumnRange === undefined) {
       this.firstColumnRange = await data.ids();
     }
@@ -763,7 +762,6 @@ export default class ColumnManager extends EventHandler {
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
     this.aggSwitcherCol.setAggregationType(rowIndex, aggregationType);
-    this.rowNumberCol.setAggregationType(rowIndex, aggregationType);
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((i) => {
         VisManager.multiformAggregationType.set(col.multiformList[i].id, aggregationType);

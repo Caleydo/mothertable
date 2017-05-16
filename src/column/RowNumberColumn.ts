@@ -4,8 +4,6 @@ import {IMotherTableType} from './ColumnManager';
 import VisManager, {EAggregationType} from './VisManager';
 
 interface IAggSwitcherType {
-  selectByUser: EAggregationType;
-  selectByAutomatic: EAggregationType;
   height: number;
   groupLength: number[];
 }
@@ -33,7 +31,6 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
     const $header = this.$node.append('header')
       .classed('columnHeader', true);
 
-    //todo find a better way to calculate height (use the height of the aggregator column header
     $header.append('div').classed('labelName', true).html('&nbsp;');
     $header.append('div').classed('toolbar', true).html('&nbsp;');
     $header.append('div').classed('axis', true).html('&nbsp;');
@@ -50,12 +47,10 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
   }
 
   updateNumberedBlocks(heights: number[], groupLength: number[][]) {
-    console.assert(heights.length === groupLength.length)
+    console.assert(heights.length === groupLength.length);
     if(heights.length !== this.aggTypesPerGroup.length) {
       this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
         return {
-          selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
-          selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
           height: d,
           groupLength: []
         };
@@ -81,47 +76,19 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .style('min-height', (d) => d.height + 'px')
       .style('height', (d) => d.height + 'px');
 
-    $blocks.selectAll('div')
+    const $counter = $blocks.selectAll('div')
       .data((d) => {
       console.log(d);
       return d.groupLength;
-    })
-      .enter()
-      .append('div')
-      .text((d) => {return d;});
+    });
 
-     /*const $divs = $blocks.selectAll('div')
-      .data(dataList1)
-      .enter()
-      .append('div');*/
 
-     /*$divs.each((d, i) => {
-       console.log(d, i);
-     });*/
+    $counter.enter()
+    .append('div')
+    .text((d) => {return d;});
+
+    $counter.exit().remove();
 
     $blocks.exit().remove();
-  }
-
-  updateRowNumberColumn(size : number[]) {
-    //TODO don't check statically for size[0] or check if it holds
-    if(size[0] === this.dataList.length) {
-      return;
-    }
-    for (let i = 0; i < size[0]; i++) {
-      this.dataList.push(i + 1);
-    }
-  }
-
-  setAggregationType(rowIndex:number, aggregationType:EAggregationType) {
-    if(!this.aggTypesPerGroup[rowIndex]) {
-      this.aggTypesPerGroup[rowIndex] = {
-        selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
-        selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
-        height: 0,
-        groupLength: []
-      };
-    } else {
-      this.aggTypesPerGroup[rowIndex].selectByAutomatic = aggregationType;
-    }
   }
 }
