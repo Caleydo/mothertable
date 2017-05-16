@@ -51,14 +51,14 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
   updateSwitcherBlocks(heights: number[]) {
     if(heights.length !== this.aggTypesPerGroup.length) {
-      this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
+      this.aggTypesPerGroup = heights.map((d : number):IAggSwitcherType => {
         return {
           selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
           selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
           height: d
         };
       });
-      VisManager.modePerGroup = this.aggTypesPerGroup.map((d) => EAggregationType.UNAGGREGATED); //d.selectByAutomatic);
+      VisManager.modePerGroup = this.aggTypesPerGroup.map((d) => EAggregationType.UNAGGREGATED);
     }
 
     this.aggTypesPerGroup.forEach((d, i) => {

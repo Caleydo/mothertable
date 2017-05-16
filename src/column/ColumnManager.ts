@@ -755,6 +755,7 @@ export default class ColumnManager extends EventHandler {
 
   private updateAggregationLevelForRow(rowIndex: number, aggregationType: EAggregationType) {
     this.aggSwitcherCol.setAggregationType(rowIndex, aggregationType);
+    this.rowNumberCol.setAggregationType(rowIndex, aggregationType);
     this.columns.forEach((col) => {
       this.multiformsInGroup(rowIndex).forEach((i) => {
         VisManager.multiformAggregationType.set(col.multiformList[i].id, aggregationType);
@@ -784,11 +785,6 @@ export default class ColumnManager extends EventHandler {
   addRowNumberColumn() {
     this.rowNumberCol = new RowNumberColumn(null, EOrientation.Vertical, this.$node);
   }
-
-/*  updateRowNumberColumn(data) {
-    const v = <IStringVector | ICategoricalVector | INumericalVector>data;
-    this.rowNumberCol.updateRowNumberColumn(v);
-  }*/
 
 }
 
