@@ -164,7 +164,17 @@
         display: block;
         text-align: right;
         padding: 1px 6px;
+        position: relative;
       }
+    }
+  }
+
+  .aggregated {
+    :first-child:after {
+      content: '⋮';
+      position: absolute;
+      top: 20px;
+      right: 7px;
     }
   }
 

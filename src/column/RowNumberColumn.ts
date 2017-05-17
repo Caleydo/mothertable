@@ -6,6 +6,7 @@ import VisManager, {EAggregationType} from './VisManager';
 interface IAggSwitcherType {
   height: number;
   groupLength: number[];
+  rowHeight: number;
 }
 
 export default class RowNumberColumn extends AColumn<any, IDataType> {
@@ -14,6 +15,7 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
   private readonly dataList: number[];
   private $main: d3.Selection<any>;
   private aggTypesPerGroup:IAggSwitcherType[] = [];
+  private readonly minRowHeight = 18;
 
   constructor(data: any, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -48,11 +50,14 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
 
   updateNumberedBlocks(heights: number[], groupLength: number[][]) {
     console.assert(heights.length === groupLength.length);
+
+    // create new aggregation type object for each group
     if(heights.length !== this.aggTypesPerGroup.length) {
       this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
         return {
           height: d,
-          groupLength: []
+          groupLength: [],
+          rowHeight: 0
         };
       });
     }
@@ -60,6 +65,7 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
     this.aggTypesPerGroup.forEach((d, i) => {
       d.height = heights[i];
       d.groupLength = groupLength[i];
+      d.rowHeight = d.height / d.groupLength.length;
     });
 
     const $blocks = this.$main
@@ -73,19 +79,22 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .classed('taggle-vis-list', true);
 
     $blocks
+      .classed('aggregated', (d) => d.rowHeight < this.minRowHeight)
       .style('min-height', (d) => d.height + 'px')
       .style('height', (d) => d.height + 'px');
 
     const $counter = $blocks.selectAll('div')
       .data((d) => {
-      console.log(d);
+      if(d.rowHeight < this.minRowHeight) {
+        return [d.groupLength[0], d.groupLength[d.groupLength.length - 1]];
+      }
       return d.groupLength;
     });
 
 
-    $counter.enter()
-    .append('div')
-    .text((d) => {return d;});
+    $counter.enter().append('div');
+
+    $counter.text((d) => {return d;});
 
     $counter.exit().remove();
 
