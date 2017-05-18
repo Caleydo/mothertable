@@ -152,6 +152,32 @@
     }
   }
 
+  .column.rowNumberColumn {
+    main > div {
+      margin-bottom: $gap-between-stratifications;
+      display: flex;
+      flex-direction: column;
+
+      background: $header-bg-color;
+
+      div {
+        display: block;
+        text-align: right;
+        padding: 1px 6px;
+        position: relative;
+      }
+
+      &.aggregated {
+        :first-child:after {
+          content: '\22EE';
+          position: absolute;
+          top: 20px;
+          right: 7px;
+        }
+      }
+    }
+  }
+
   .column.column-matrix {
     position: relative;
     aside .labelName {
