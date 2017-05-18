@@ -122,7 +122,7 @@ export default class VisManager {
   public static unaggregatedNumVisses = ['barplot', 'proportionalSymbol', 'phovea-vis-heatmap1d', 'list'];
   public static aggregatedCatVisses = ['phovea-vis-histogram'];
   public static unaggregatedCatVisses = ['phovea-vis-heatmap1d'];
-  public static aggregatedStrVisses = ['list'];//TODO change to empty vis
+  public static aggregatedStrVisses = ['phovea-vis-label'];//TODO change to empty vis
   public static unaggregatedStrVisses = ['list'];
   public static aggregatedNumMatVisses = ['phovea-vis-histogram'];
   public static unaggregatedNumMatVisses = ['phovea-vis-heatmap'];
@@ -158,7 +158,7 @@ export default class VisManager {
           case AColumn.DATATYPE.vector:
             switch (dataType) {
               case VALUE_TYPE_STRING:
-                return 'list';
+                return 'phovea-vis-label';
               case VALUE_TYPE_INT:
               case VALUE_TYPE_REAL:
                 return 'phovea-vis-histogram';
