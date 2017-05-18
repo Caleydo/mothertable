@@ -166,15 +166,15 @@
         padding: 1px 6px;
         position: relative;
       }
-    }
-  }
 
-  .aggregated {
-    :first-child:after {
-      content: '⋮';
-      position: absolute;
-      top: 20px;
-      right: 7px;
+      &.aggregated {
+        :first-child:after {
+          content: '\22EE';
+          position: absolute;
+          top: 20px;
+          right: 7px;
+        }
+      }
     }
   }
 
