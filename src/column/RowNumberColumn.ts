@@ -7,6 +7,7 @@ interface IAggSwitcherType {
   height: number;
   groupLength: number[];
   rowHeight: number;
+  aggregationType: EAggregationType;
 }
 
 export default class RowNumberColumn extends AColumn<any, IDataType> {
@@ -51,13 +52,15 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
   updateNumberedBlocks(heights: number[], groupLength: number[][]) {
     console.assert(heights.length === groupLength.length);
 
+
     // create new aggregation type object for each group
     if(heights.length !== this.aggTypesPerGroup.length) {
       this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
         return {
           height: d,
           groupLength: [],
-          rowHeight: 0
+          rowHeight: 0,
+          aggregationType: EAggregationType.UNAGGREGATED
         };
       });
     }
@@ -66,6 +69,7 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       d.height = heights[i];
       d.groupLength = groupLength[i];
       d.rowHeight = d.height / d.groupLength.length;
+      d.aggregationType = VisManager.modePerGroup[i];
     });
 
     const $blocks = this.$main
@@ -79,13 +83,13 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .classed('taggle-vis-list', true);
 
     $blocks
-      .classed('aggregated', (d) => d.rowHeight < this.minRowHeight)
+      .classed('aggregated', (d) => d.rowHeight < this.minRowHeight || d.aggregationType === EAggregationType.AGGREGATED)
       .style('min-height', (d) => d.height + 'px')
       .style('height', (d) => d.height + 'px');
 
     const $counter = $blocks.selectAll('div')
       .data((d) => {
-      if(d.rowHeight < this.minRowHeight) {
+      if(d.rowHeight < this.minRowHeight || d.aggregationType === EAggregationType.AGGREGATED) {
         return [d.groupLength[0], d.groupLength[d.groupLength.length - 1]];
       }
       return d.groupLength;
