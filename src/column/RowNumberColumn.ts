@@ -65,6 +65,8 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       });
     }
 
+    // initialize each group type
+    // use VisManager.modePerGroup to know whether or not the group is aggregated
     this.aggTypesPerGroup.forEach((d, i) => {
       d.height = heights[i];
       d.groupLength = groupLength[i];
@@ -82,6 +84,9 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .classed('phovea-list', true)
       .classed('taggle-vis-list', true);
 
+    // if the current row height is too small to draw number labels or the row is aggregated
+    // then set the aggregated CSS class
+    // else draw each row label separately
     $blocks
       .classed('aggregated', (d) => d.rowHeight < this.minRowHeight || d.aggregationType === EAggregationType.AGGREGATED)
       .style('min-height', (d) => d.height + 'px')

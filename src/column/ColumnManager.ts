@@ -550,7 +550,7 @@ export default class ColumnManager extends EventHandler {
             .reduce((a, b) => a + b, 0);
         });
 
-    let counter = 0;
+    let counter = 1;
     const groupLength = this._stratifiedRanges.map((d, i) => {
       const length = d.dim(0).asList().length;
       return Array(length).fill(0).map((d, i) => {
