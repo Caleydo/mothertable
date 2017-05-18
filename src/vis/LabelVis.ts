@@ -78,8 +78,8 @@ export class LabelVis extends AVisInstance implements IVisInstance {
     const $list = $parent.append('div').attr('class', 'phovea-labelvis');
     $list.style('width', `${size[0]}px`);
     $list.style('height', `${size[1]}px`);
-    $list.html(`${this.data.length} ${this.data.idtype.names}`);
-
+    $list.html(`<div>${this.data.length} ${this.data.idtype.names}</div>`);
+    this.markReady();
     return $list;
   }
 }
