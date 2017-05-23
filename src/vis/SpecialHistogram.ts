@@ -9,6 +9,7 @@ import {IStratification} from 'phovea_core/src/stratification';
 import {
   IHistAbleDataType, ICategoricalValueTypeDesc, INumberValueTypeDesc,
 } from 'phovea_core/src/datatype';
+import * as d3 from 'd3';
 
 export interface ILabelOptions extends IVisInstanceOptions {
   /**
@@ -34,19 +35,29 @@ export class SpecialHistogram extends Histogram {
 
   }
   protected build($parent: d3.Selection<any>) {
-    const size = this.size,
-      data = this.data,
-      o = this.options;
+   const $svg = super.build($parent);
+    this.data.hist(Math.floor(this.options.nbins)).then((hist) => {
+      const arr : number[] = [];
 
-    const $svg = $parent.append('svg').attr({
-      width: size[0],
-      height: size[1],
-      'class': 'phovea-histogram'
+      let foundNonZero = false;
+      hist.forEach(function(value, index) {
+        if(value > 0) {
+          if(foundNonZero) {
+            return;
+          }
+          foundNonZero = true;
+        }
+      });
+      if(foundNonZero) {
+        this.buildAsMosaic();
+      }
     });
-
     return $svg;
   }
 
+  private buildAsMosaic() {
+
+  }
 }
 
 export default SpecialHistogram;
