@@ -8,7 +8,7 @@
 module.exports = function(registry) {
   //registry.push('extension-type', 'extension-id', function() { return System.import('./src/extension_impl'); }, {});
   // generator-phovea:begin
-  registry.push('vis', 'phovea-vis-label', function () {
+  registry.push('vis', 'taggle-vis-label', function () {
     return System.import('./src/vis/LabelVis');
   }, {
     name: 'LabelVis',
