@@ -358,7 +358,6 @@ export default class ColumnManager extends EventHandler {
    */
   private async sortColumns() {
     const cols = this.filtersHierarchy;
-    console.log(cols)
     //special handling if matrix is added as first column
     if (cols.length === 0) {
       this.nonStratifiedRange = this.firstColumnRange;
