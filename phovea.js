@@ -14,6 +14,12 @@ module.exports = function(registry) {
     name: 'LabelVis',
     filter: 'vector'
   });
+  registry.push('vis', 'taggle-vis-special-histogram', function () {
+    return System.import('./src/vis/SpecialHistogram');
+  }, {
+    name: 'SpecialHistogram',
+    filter: 'vector'
+  });
   // generator-phovea:end
 };
 

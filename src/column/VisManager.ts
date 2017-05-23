@@ -163,7 +163,7 @@ export default class VisManager {
               case VALUE_TYPE_REAL:
                 return 'phovea-vis-histogram';
               case VALUE_TYPE_CATEGORICAL:
-                return 'phovea-vis-histogram';
+                return 'taggle-vis-special-histogram';
             }
             break;
 
