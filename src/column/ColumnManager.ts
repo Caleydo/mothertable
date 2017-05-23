@@ -61,7 +61,7 @@ export default class ColumnManager extends EventHandler {
   private $node: d3.Selection<any>;
 
   private aggSwitcherCol: AggSwitcherColumn;
-  private rowNumberCol : RowNumberColumn;
+  private rowNumberCol: RowNumberColumn;
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
@@ -133,7 +133,7 @@ export default class ColumnManager extends EventHandler {
     return this._stratifiedRanges;
   }
 
-  updateSortByIcons(sortData: {col: AnyColumn, sortMethod: string}) {
+  updateSortByIcons(sortData: { col: AnyColumn, sortMethod: string }) {
     const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
@@ -191,6 +191,10 @@ export default class ColumnManager extends EventHandler {
     }
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
+    const countCol = this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length;
+    if (countCol < 1) {
+      this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
+    }
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
@@ -354,7 +358,7 @@ export default class ColumnManager extends EventHandler {
    */
   private async sortColumns() {
     const cols = this.filtersHierarchy;
-
+    console.log(cols)
     //special handling if matrix is added as first column
     if (cols.length === 0) {
       this.nonStratifiedRange = this.firstColumnRange;
@@ -544,11 +548,11 @@ export default class ColumnManager extends EventHandler {
     const rowHeight = await this.calcColumnHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
-    const colHeight =  this._stratifiedRanges.map((d, i) => {
-          return this.multiformsInGroup(i)
-            .map((m) => rowHeight[m])
-            .reduce((a, b) => a + b, 0);
-        });
+    const colHeight = this._stratifiedRanges.map((d, i) => {
+      return this.multiformsInGroup(i)
+        .map((m) => rowHeight[m])
+        .reduce((a, b) => a + b, 0);
+    });
 
     let counter = 1;
     const groupLength = this._stratifiedRanges.map((d, i) => {
