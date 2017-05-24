@@ -21,10 +21,7 @@ export class OneBinHistogram extends Histogram {
 
   }
   protected build($svg: d3.Selection<any>) {
-    const size = this.size;
-
     this.data.hist(Math.floor(this.options.nbins)).then((hist) => {
-      const arr : number[] = [];
       let nonZeroBins = 0;
       hist.forEach(function(value, index) {
         if(value > 0) {
