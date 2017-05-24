@@ -10,27 +10,13 @@ import {
   IHistAbleDataType, ICategoricalValueTypeDesc, INumberValueTypeDesc,
 } from 'phovea_core/src/datatype';
 import * as d3 from 'd3';
-
-export interface ILabelOptions extends IVisInstanceOptions {
-  /**
-   * width
-   * @default 200
-   */
-  width?: number;
-
-  /**
-   * scale such that the height matches the argument
-   * @default 100
-   */
-  heightTo?: number;
-}
-
 /**
  * Switches to a mosaic representation if only one bin is present
  */
+
 export class SpecialHistogram extends Histogram {
 
-  constructor(public readonly data: IHistAbleDataType<ICategoricalValueTypeDesc|INumberValueTypeDesc>|IStratification, parent: Element, options: ILabelOptions = {}) {
+  constructor(public readonly data: IHistAbleDataType<ICategoricalValueTypeDesc|INumberValueTypeDesc>|IStratification, parent: Element, options: IHistogramOptions = {}) {
     super(data, parent, options);
 
   }
