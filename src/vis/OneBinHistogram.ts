@@ -21,7 +21,7 @@ export class OneBinHistogram extends Histogram {
 
   }
   protected build($svg: d3.Selection<any>) {
-      const size = this.size;
+    const size = this.size;
 
     this.data.hist(Math.floor(this.options.nbins)).then((hist) => {
       const arr : number[] = [];
@@ -43,9 +43,8 @@ export class OneBinHistogram extends Histogram {
 
   private buildAsMosaic($svg) {
     const size = this.size;
-    $svg.style('width', `${size[0]}px`);
-    $svg.style('height', `${size[1]}px`);
-    $svg.html(`<div>${this.data.length} ${'sdfjdds'}</div>`);
+    $svg.attr('class', 'mycoolclass');
+    $svg.html(`<text  y="15">${this.data.length} ${'sdfjdds'}</text>`);
     this.markReady();
     return null;
 
