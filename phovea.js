@@ -14,10 +14,10 @@ module.exports = function(registry) {
     name: 'LabelVis',
     filter: 'vector'
   });
-  registry.push('vis', 'taggle-vis-special-histogram', function () {
-    return System.import('./src/vis/SpecialHistogram');
+  registry.push('vis', 'taggle-vis-onebin-histogram', function () {
+    return System.import('./src/vis/OneBinHistogram');
   }, {
-    name: 'SpecialHistogram',
+    name: 'OneBinHistogram',
     filter: 'vector'
   });
   // generator-phovea:end

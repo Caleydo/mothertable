@@ -163,7 +163,7 @@ export default class VisManager {
               case VALUE_TYPE_REAL:
                 return 'phovea-vis-histogram';
               case VALUE_TYPE_CATEGORICAL:
-                return 'taggle-vis-special-histogram';
+                return 'taggle-vis-onebin-histogram';
             }
             break;
 

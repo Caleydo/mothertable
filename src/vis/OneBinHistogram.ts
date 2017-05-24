@@ -14,41 +14,47 @@ import * as d3 from 'd3';
  * Switches to a mosaic representation if only one bin is present
  */
 
-export class SpecialHistogram extends Histogram {
+export class OneBinHistogram extends Histogram {
 
   constructor(public readonly data: IHistAbleDataType<ICategoricalValueTypeDesc|INumberValueTypeDesc>|IStratification, parent: Element, options: IHistogramOptions = {}) {
     super(data, parent, options);
 
   }
-  protected build($parent: d3.Selection<any>) {
-   const $svg = super.build($parent);
+  protected build($svg: d3.Selection<any>) {
+      const size = this.size;
+
     this.data.hist(Math.floor(this.options.nbins)).then((hist) => {
       const arr : number[] = [];
-
-      let foundNonZero = false;
+      let nonZeroBins = 0;
       hist.forEach(function(value, index) {
         if(value > 0) {
-          if(foundNonZero) {
-            return;
-          }
-          foundNonZero = true;
+          nonZeroBins++;
         }
       });
-      if(foundNonZero) {
-        this.buildAsMosaic();
+      if(nonZeroBins === 1) {
+        this.buildAsMosaic($svg);
+      }
+      else {
+        super.build($svg);
       }
     });
     return $svg;
   }
 
-  private buildAsMosaic() {
+  private buildAsMosaic($svg) {
+    const size = this.size;
+    $svg.style('width', `${size[0]}px`);
+    $svg.style('height', `${size[1]}px`);
+    $svg.html(`<div>${this.data.length} ${'sdfjdds'}</div>`);
+    this.markReady();
+    return null;
 
   }
 }
 
-export default SpecialHistogram;
+export default OneBinHistogram;
 
 export function create(data: IHistAbleDataType<ICategoricalValueTypeDesc|INumberValueTypeDesc>, parent: Element, options?: IHistogramOptions) {
-  return new SpecialHistogram(data, parent, options);
+  return new OneBinHistogram(data, parent, options);
 }
 
