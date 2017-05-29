@@ -36,33 +36,28 @@ export class OneBinHistogram extends Histogram {
       this.isOneBin = nonZeroBins === 1;
       if(this.isOneBin) {
         console.assert(lastNonZeroBin >= 0);
-        this.buildAsMosaic($svg, lastNonZeroBin);
-      }
-      else {
+        // we are using a div rather than an svg here because
+        // it is easier to style
+        const $parent = d3.select($svg.node().parentNode);
+        $svg.remove();
+        const $div = $parent.append('div');
+        this.buildAsMosaic($div, lastNonZeroBin);
+      } else {
         super.build($svg);
       }
     });
     return $svg;
   }
 
-  private buildAsMosaic($svg : d3.Selection<any>, lastNonZeroBin : number) {
-    this.markReady();
+  private buildAsMosaic($div : d3.Selection<any>, lastNonZeroBin : number) {
+        this.markReady();
     const fillColor = this.data.desc.value.categories[lastNonZeroBin].color;
     const dataLength = this.data.length;
     const name = this.data.desc.value.categories[lastNonZeroBin].name; //todo check if that holds
-    const $g = $svg.append('g');
-    $g.append('rect')
-      .attr('width', this.size[0])
-      .attr('height', this.size[1])
-      .attr('fill', fillColor);
-    const $text = $g.append('text');
-
-    $text.classed('taggle-onebarhistogram', true);
-    $text.attr('text-anchor', 'middle')
-      .attr('x', '50%')
-      .attr('y', '50%')
-      .attr('style', 'alignment-baseline: middle');
-    $text.text(name + dataLength);
+    $div.style('background-color', fillColor)
+      .style('width', `${this.size[0]}px`)
+      .style('height', `${this.size[1]}px`);
+    $div.text(name + ' ' + dataLength);
   }
 
   transform(scale?: [number, number], rotate?: number): ITransform {
