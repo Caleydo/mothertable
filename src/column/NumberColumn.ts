@@ -35,14 +35,20 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     super.buildToolbar($toolbar);
     this.$points = $toolbar.select('svg').append('g');
     const $svg = $toolbar.select('svg').append('g');
-    const width =170;
+    const width =$toolbar.node().parentElement.getBoundingClientRect().width;
 
-    this.scale = d3.scale.linear().range([10, width - 10]).domain((this.data.desc).value.range);
+    this.scale = d3.scale.linear().range([0, width]).domain((this.data.desc).value.range);
+    const tickCount = 2;
     const axis = d3.svg.axis()
-      .ticks(3)
+      .ticks(tickCount)
+      .tickFormat(d3.format('.2s'))
+      .outerTickSize(8)
       .orient('bottom')
       .scale(this.scale);
+    axis.tickValues(this.scale.ticks(tickCount).concat( this.scale.domain()));
     $svg.call(axis);
+   // ticks[ticks.size()-1]
+   // ticks[ticks.size()-2].style('text-anchor', 'end');
   }
 
   public updateAxis(brushedItems: number[][]) {

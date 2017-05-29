@@ -40,9 +40,8 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
     });
   }
 
-
   private attachListener() {
-    const $stratifyButton = this.toolbar.append('a')
+    const $stratifyButton = this.toolbar.select('div.onHoverToolbar').insert('a', ':first-child')
       .attr('title', 'Stratify table by this column')
       .classed('stratifyByMe', true)
       .html(`<i class="fa fa-columns fa-rotate-270 fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)

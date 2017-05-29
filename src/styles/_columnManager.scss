@@ -118,8 +118,20 @@
         }
       }
 
+      .onHoverToolbar{
+          height: 25px;
+          margin: -6px;
+          background: $header-bg-color;
+          border-style: solid;
+          border-width: 1px;
+          border-color: $toolbar-link-color;
+          padding-top: 2px;
+      }
+
       .axis {
-        height: 20px;
+        height: 18px;
+        margin: -6px;
+        margin-top: 2px;
       }
 
     }
