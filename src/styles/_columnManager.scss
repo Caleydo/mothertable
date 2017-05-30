@@ -197,6 +197,7 @@
   .column.column-matrix {
     position: relative;
     aside .labelName {
+      height: 17px;
       position: absolute;
       right: 0;
       margin-right: 101%;
@@ -206,6 +207,7 @@
 
     & ~ .column.column-matrix {
       aside .labelName {
+        height: 17px;
         position: absolute;
         left: 0;
         margin-left: 101%;
