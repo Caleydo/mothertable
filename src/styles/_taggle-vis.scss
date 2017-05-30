@@ -84,7 +84,7 @@
 
 .taggle-labelvis {
   text-align: center;
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,7 +96,7 @@
   align-items: center;
   justify-content: center;
   > div {
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden !important;
     text-overflow: ellipsis;
     line-height: normal;
