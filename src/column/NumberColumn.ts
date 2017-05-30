@@ -47,8 +47,17 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       .scale(this.scale);
     axis.tickValues(this.scale.ticks(tickCount).concat( this.scale.domain()));
     $svg.call(axis);
-   // ticks[ticks.size()-1]
-   // ticks[ticks.size()-2].style('text-anchor', 'end');
+    const count = $svg.selectAll('.tick').size();
+    $svg.selectAll('.tick').each(function(data, i) {
+      if(i === count-1) {
+        const tick = d3.select(this).select('text');
+        tick.style('text-anchor', 'end');
+      }
+      if(i === count-2) {
+        const tick = d3.select(this).select('text');
+        tick.style('text-anchor', 'start');
+      }
+    });
   }
 
   public updateAxis(brushedItems: number[][]) {
