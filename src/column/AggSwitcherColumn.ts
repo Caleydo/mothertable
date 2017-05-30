@@ -35,11 +35,14 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
       .style('max-width', this.maxWidth + 'px')
       .style('min-width', this.minWidth + 'px');
 
+    $node.append('aside');
+
     const $header = $node.append('header')
       .classed('columnHeader', true);
 
     $header.append('div').classed('labelName', true).html('&nbsp;');
     $header.append('div').classed('toolbar', true).html('&nbsp;');
+    $header.append('div').classed('axis', true).html('&nbsp;');
 
     this.$main = $node.append('main');
 
@@ -48,14 +51,14 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
 
   updateSwitcherBlocks(heights: number[]) {
     if(heights.length !== this.aggTypesPerGroup.length) {
-      this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
+      this.aggTypesPerGroup = heights.map((d : number):IAggSwitcherType => {
         return {
-          selectByUser: EAggregationType.AUTOMATIC,
-          selectByAutomatic: EAggregationType.AUTOMATIC,
+          selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
+          selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
           height: d
         };
       });
-      VisManager.modePerGroup = this.aggTypesPerGroup.map((d) => d.selectByAutomatic);
+      VisManager.modePerGroup = this.aggTypesPerGroup.map((d) => EAggregationType.UNAGGREGATED);
     }
 
     this.aggTypesPerGroup.forEach((d, i) => {
@@ -132,7 +135,9 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
         this.fire(AggSwitcherColumn.EVENT_GROUP_AGG_CHANGED, i, VisManager.modePerGroup[i], VisManager.modePerGroup);
       });
 
-    $blocks.style('height', (d) => d.height + 'px');
+    $blocks
+      .style('min-height', (d) => d.height + 'px')
+      .style('height', (d) => d.height + 'px');
 
     $blocks.exit().remove();
   }
@@ -140,8 +145,8 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
   setAggregationType(rowIndex:number, aggregationType:EAggregationType) {
     if(!this.aggTypesPerGroup[rowIndex]) {
       this.aggTypesPerGroup[rowIndex] = {
-        selectByUser: EAggregationType.AUTOMATIC,
-        selectByAutomatic: aggregationType,
+        selectByUser: EAggregationType.UNAGGREGATED, //AUTOMATIC
+        selectByAutomatic: EAggregationType.UNAGGREGATED, //AUTOMATIC
         height: 0
       };
     } else {

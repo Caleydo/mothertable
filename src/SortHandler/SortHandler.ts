@@ -6,13 +6,15 @@ import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
-import {IAnyVector} from 'phovea_core/src/vector';
+import {IAnyVector, INumericalVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
-import {mergeRanges} from '../column/utils';
+import {makeListFromRange, mergeRanges} from '../column/utils';
+import {IStringVector} from '../column/AVectorColumn';
+import {AnyColumn} from '../column/ColumnManager';
 
 interface ISortResults {
   combined: Range;
-  stratified: Map<string,number[]>;
+  stratified: Map<string, number[]>;
 }
 
 export const SORT = {
@@ -24,20 +26,13 @@ export const SORT = {
 
 export default class SortHandler {
 
-  private sortCriteria: string;
-
-  constructor() {
-    //this.sortCriteria = sortCriteria;
-    //this.sortMe();
-  }
-
   /**
    * Find the method to get the range
    * @param newView {IVector)
    * @returns {Promise<Range>}
    */
 
-  async chooseType(newView: IAnyVector, sortCriteria) {
+  async chooseType(newView: IAnyVector, sortCriteria: string) {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
@@ -50,7 +45,7 @@ export default class SortHandler {
   }
 
 
-  async collectRangeList(col: IAnyVector, sortCriteria, type: string): Promise<Range[]> {
+  async collectRangeList(col: IAnyVector, sortCriteria: string, type: string): Promise<Range[]> {
     const uniqValues = await this.uniqueValues(col);
     let sortedValue;
     if (type === 'sc') {
@@ -72,14 +67,13 @@ export default class SortHandler {
    * @param columns
    * @returns {Promise<Range[][]>}
    */
-  async sortColumns(columns): Promise<ISortResults> {
+  async sortColumns(columns: AnyColumn[]): Promise<ISortResults> {
     // if(columns.length === 0) {
     //   return [[]];
     // }
-    const d = await columns[0].data.idView(columns[0].rangeView);
+    const d = await columns[0].dataView;
     let range: any = [await d.ids()];
     const rangesPerCol = new Map();
-
     //Iterate through all the columns
     for (const col of columns) {
       const nextColumnData = (<any>col).data;
@@ -99,13 +93,12 @@ export default class SortHandler {
       rangesPerCol.set(col.data.desc.id, dataElementsPerCol);
     }
 
-    // console.log(range, rangesPerCol)
     return {combined: mergeRanges(range), stratified: rangesPerCol};
   }
 
 
   async concatRanges(rangeOfViewData: Range[][]) {
-    if (Array.isArray(rangeOfViewData[0]) === true) {
+    if (Array.isArray(rangeOfViewData[0])) {
       return rangeOfViewData.reduce((a, b) => a.concat(b));
     } else {
       return rangeOfViewData;
@@ -135,14 +128,14 @@ export default class SortHandler {
 
 
 //See Test Folder for the use of this function
-  async sortNumber(data: IAnyVector, sortCriteria) {
+  async sortNumber(data: INumericalVector, sortCriteria: string) {
     const sortedView = await data.sort(numSort.bind(this, sortCriteria));
     return await sortedView.ids(); // sortedRange
   }
 
 
 //See Test Folder for the use of this function
-  async sortString(data, sortCriteria) {
+  async sortString(data: IStringVector, sortCriteria: string) {
     const sortedView = await data.sort(stringSort.bind(this, sortCriteria));
     return await sortedView.ids(); // sortedRange
   }
@@ -168,7 +161,7 @@ export default class SortHandler {
  * @param bval
  * @returns {boolean}
  */
-export function filterCat(aVal, bval) {
+export function filterCat(aVal: string, bval: string) {
   //if (aVal === bval) {
   return aVal === bval; //Also include undefined empty strings and null values.
   // }
@@ -182,7 +175,7 @@ export function filterCat(aVal, bval) {
  * @param bVal
  * @returns {number}
  */
-export function stringSort(sortCriteria, aVal, bVal) {
+export function stringSort(sortCriteria: string, aVal: string, bVal: string) {
   if (sortCriteria === SORT.asc) {
     return (aVal.localeCompare(bVal));
   }
@@ -199,7 +192,7 @@ export function stringSort(sortCriteria, aVal, bVal) {
  * @param bVal
  * @returns {number}
  */
-export function numSort(sortCriteria, aVal, bVal) {
+export function numSort(sortCriteria: string, aVal: number, bVal: number) {
   if (sortCriteria === SORT.asc) {
     return (aVal - bVal);
   }
@@ -216,7 +209,7 @@ export function numSort(sortCriteria, aVal, bVal) {
  * @param bVal
  * @returns {number}
  */
-function categoricalSort(categories, sortCriteria, aVal, bVal) {
+function categoricalSort(categories: {[key: string]: number}, sortCriteria: string, aVal: string, bVal: string) {
   if (sortCriteria === SORT.asc) {
     return categories[aVal] - categories[bVal];
   }

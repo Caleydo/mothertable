@@ -30,8 +30,8 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const $toolbar = $header.append('div').classed('toolbar', true);
     this.addTrashIcon($toolbar);
-    this.generateLabel($li, this.data.desc.name);
-    this.generateMatrixHeatmap($li.select('main'), this.data.rowtype.id);
+    this.generateLabel($li);
+    this.generateMatrixHeatmap($li.select('main'));
 
     return $li;
   }
@@ -53,13 +53,13 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   }
 
 
-  private generateRect($node) {
+  private generateRect($node: d3.Selection<any>) {
 
     $node.append('div').classed('matrix', true);
 
   }
 
-  private async generateMatrixHeatmap($node, idtype) {
+  private async generateMatrixHeatmap($node: d3.Selection<any>) {
     const cellWidth = this.filterDim.width;
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
@@ -89,7 +89,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
   }
 
 
-  private async calculateAvg(transpose) {
+  private async calculateAvg(transpose?: boolean) {
 
     let v = await this.data.data();
     if (transpose === true) {

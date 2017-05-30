@@ -5,15 +5,33 @@
     // that the .content will wrap the visualization without more spacing
     // (e.g. without this: the .content is 20px, even if the svg is only 2px height)
     line-height: 1px;
+
     &.stratification {
-      margin-bottom: 4px;
+      margin-bottom: $gap-between-stratifications;
     }
+
     &.nonstratification {
-      margin-bottom: 0px;
+      margin-bottom: 0;
     }
 
     // font-size: 1px;
   }
+}
+
+.taggle-axis{
+  font-size: 10px;
+
+
+  line{
+      stroke: $select-color;
+  }
+
+  .tick line, path {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+  }
+
 }
 
 /* overrides phovea-barplot */
@@ -28,11 +46,18 @@
 /* overrides phovea-list */
 .taggle-vis-list {
   div {
+    //padding: 1px 1px 1px 11px;
+    //height: 100%;
+    //display: flex;
+    //align-items: center;
     padding: 1px 1px 1px 11px;
     height: 100%;
     display: flex;
     align-items: center;
-
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
     &.phovea-select-selected {
       border: 1px solid $select-color;
       padding: 0 0 0 10px;
@@ -55,4 +80,17 @@
 .phovea-heatmap rect {
   stroke: white;
   stroke-width: 0.1;
+}
+
+
+.phovea-histogram {
+  border-bottom: 1px solid $header-border-color;
+}
+
+.phovea-labelvis {
+  text-align: center;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

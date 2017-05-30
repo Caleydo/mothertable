@@ -8,40 +8,58 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges, makeRangeFromList} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
 import AColumnManager from './AColumnManager';
-import {AnyFilter} from '../filter/AFilter';
+import {AnyFilter, default as AFilter} from '../filter/AFilter';
 import {EAggregationType} from './VisManager';
 import TaggleMultiform from './TaggleMultiform';
+import CategoricalColumn from './CategoricalColumn';
+import {on} from 'phovea_core/src/event';
 
+export const AGGREGATE = {
+  min: 'min',
+  max: 'max',
+  mean: 'mean',
+  median: 'median',
+  q1: 'q1',
+  q3: 'q3'
+
+};
 
 export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   minWidth: number = 150;
   maxWidth: number = 300;
   minHeight: number = 2;
-  maxHeight: number = 25;
+  maxHeight: number = 20;
+
+  maxNumBins: number = 25;
 
   private rowRanges: Range[] = [];
-  private colRange: Range;
+  private stratifiedRanges: Range[] = [];
+  private brushedRanges: Range[] = [];
+  colRange: Range;
   dataView: IDataType;
-  multiformList: TaggleMultiform[] = [];
+  private matrixViews;
 
   private $colStrat: d3.Selection<any>;
   private colStratManager: AColumnManager = new AColumnManager();
+  public static EVENT_CONVERT_TO_VECTOR = 'convertMatrix';
 
-  constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>) {
+  constructor(data: INumericalMatrix, orientation: EOrientation, $columnParent: d3.Selection<any>, matrixCol?) {
     super(data, orientation);
     this.dataView = data;
     this.calculateDefaultRange();
     this.$node = this.build($columnParent);
+    this.attachListener();
+
   }
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
     const $node = super.build($parent);
-
+    $node.classed('column-matrix', true);
     this.$colStrat = $node.select('aside')
       .append('ol')
       .attr('reversed', 'reversed');
@@ -49,53 +67,99 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return $node;
   }
 
-  protected multiFormParams(): IMultiFormOptions {
+  protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
-        color: NUMERICAL_COLOR_MAP
+        color: NUMERICAL_COLOR_MAP,
+        domain: this.data.valuetype.range
+      },
+      'phovea-vis-histogram': {
+        nbins: Math.min(this.maxNumBins, Math.floor(Math.sqrt(this.data.length))),
+        color: 'grey'
+      },
+      all: {
+        heightTo: $body.property('clientHeight')
       }
     };
   }
 
   async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
-    this.body.selectAll('.multiformList').remove();
-    this.multiformList = [];
+    const that = this;
+
+    this.stratifiedRanges = stratifiedRanges;
+    this.brushedRanges = brushedRanges;
 
     if (!rowRanges) {
       rowRanges = this.rowRanges;
     }
     this.rowRanges = rowRanges;
+    // console.log((colRange), 'colrange');
 
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
+      this.colRange = colRange;
     }
+    // this.colRange = colRange;
+    const mergedRange = mergeRanges(this.rowRanges);
+    let rowView = await this.data.idView(mergedRange);
+    rowView = (<INumericalMatrix>rowView).t;
 
-    let id = 0;
-    for (const r of rowRanges) {
-      const $multiformDivs = this.body.append('div').classed('multiformList', true);
+    let colView = await rowView.idView(colRange);
+    colView = (<INumericalMatrix>colView).t;
+    this.dataView = colView;
 
-      let rowView = await this.data.idView(r);
-      rowView = (<INumericalMatrix>rowView).t;
+    const viewPromises = rowRanges.map((r) => {
+      return this.data.idView(r)
+        .then((rowView) => (<INumericalMatrix>rowView).t)
+        .then((rowViewMatrix) => rowViewMatrix.idView(colRange))
+        .then((colView) => (<INumericalMatrix>colView).t);
+    });
 
-      let colView = await rowView.idView(colRange);
-      colView = (<INumericalMatrix>colView).t;
+    return Promise.all(viewPromises).then((views) => {
+      const viewData = views.map((d:any) => {
+        return {
+          key: d.range.toString(),
+          view: d,
+        };
+      });
 
-      const m = new TaggleMultiform(colView, <HTMLElement>$multiformDivs.node(), this.multiFormParams());
-      m.groupId = this.findGroupId(stratifiedRanges, rowRanges[id]);
-      m.brushed = this.checkBrushed(brushedRanges, rowRanges[id]);
-      this.multiformList.push(m);
+      const multiformList = this.body.selectAll('.multiformList').data(viewData, (d) => d.key);
 
-      if (this.selectedAggVis) {
-        VisManager.userSelectedAggregatedVisses.set(m.id, this.selectedAggVis);
-      }
-      if (this.selectedUnaggVis) {
-        VisManager.userSelectedUnaggregatedVisses.set(m.id, this.selectedUnaggVis);
-      }
-      VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+      multiformList.enter().append('div')
+        .classed('multiformList', true)
+        .each(function(d) {
+          const $elem = d3.select(this);
+          const m = new TaggleMultiform(d.view, <HTMLElement>$elem.node(), that.multiFormParams($elem));
+          that.multiformMap.set(d.key, m);
+        });
 
-      id = id + 1;
-    }
+      multiformList
+        .each(function(d, i) {
+          const m = that.multiformMap.get(d.key);
+          m.groupId = that.findGroupId(stratifiedRanges, rowRanges[i]);
+          m.brushed = that.checkBrushed(brushedRanges, rowRanges[i]);
+
+          //assign visses
+          if (that.selectedAggVis) {
+            VisManager.userSelectedAggregatedVisses.set(m.id, that.selectedAggVis);
+          }
+          if (that.selectedUnaggVis) {
+            VisManager.userSelectedUnaggregatedVisses.set(m.id, that.selectedUnaggVis);
+          }
+          VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
+      });
+
+      multiformList.exit().remove()
+        .each(function(d) {
+          that.multiformMap.delete(d.key);
+        });
+
+      // order DOM elements according to the data order
+      multiformList.order();
+
+      return this.multiformList;
+    });
   }
 
   async calculateDefaultRange() {
@@ -122,13 +186,28 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<void>}
    */
   async updateColStrats() {
+
     const rangeListMap: Map<string, Range[]> = await this.colStratManager.sort();
-    //console.log(rangeListMap, this.colStratManager.columns); // see output for stratification
+    //  console.log(this.colStratManager.columns, rangeListMap, this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange)
+    this.colRange = this.colStratManager.nonStratifiedRange;
+    this.updateMultiForms(this.rowRanges, this.stratifiedRanges, this.brushedRanges, this.colRange);
     this.colStratManager.stratify(rangeListMap);
   }
 
-  filterStratData(range: Range) {
-    this.colStratManager.filter([range]);
+  async filterStratData(range: Range) {
+    await this.colStratManager.filter(range);
+    this.colRange = range;
+    this.updateColStrats();
+  }
+
+  sortByFilterHeader(sortData: {col: AnyColumn, sortMethod: string}) {
+    const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
+    if (col.length === 0) {
+      return;
+    }
+    col[0].sortCriteria = sortData.sortMethod;
+    this.updateColStrats();
+
   }
 
   updateColStratsSorting(filterList: AnyFilter[]) {
@@ -136,5 +215,55 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.updateColStrats();
     // TODO still need to update the DOM order in `this.$colStrat`
   }
+
+  get colStratsColumns() {
+    return this.colStratManager.columns;
+  }
+
+
+  private stratifyMe = (event: any, colid) => {
+    const s = this.colStratManager.updateStratifiedRanges(colid);
+    this.makeMatrixView(s);
+  }
+
+
+  private async makeMatrixView(s) {
+
+    //If there is zero and not matching columns return nothing
+    if (s === undefined) {
+      return;
+    }
+    this.matrixViews = [];
+    for (const r of s) {
+      const mergedRange = mergeRanges(this.rowRanges);
+      let rowView = await this.data.idView(mergedRange);
+      rowView = (<INumericalMatrix>rowView).t;
+
+      let colView = await rowView.idView(r);
+      colView = (<INumericalMatrix>colView).t;
+      this.matrixViews.push(colView);
+    }
+
+  }
+
+
+  private attachListener() {
+    on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
+    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
+    const $vectorChange = this.toolbar.insert('select', ':first-child')
+      .attr('class', 'aggSelect')
+      .on('change', (d, i) => {
+        const value = this.toolbar.select('select').property('value');
+        this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.matrixViews, value, this);
+      });
+
+    $vectorChange
+      .selectAll('option')
+      .data(options).enter()
+      .append('option')
+      .text((d) => d);
+
+  }
+
 
 }

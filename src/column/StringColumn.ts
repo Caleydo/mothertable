@@ -14,7 +14,7 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
   minWidth: number = 20;
   maxWidth: number = 300;
   minHeight: number = 19;
-  maxHeight: number = 25;
+  maxHeight: number = 20;
 
   constructor(data: IStringVector, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
@@ -23,9 +23,11 @@ export default class StringColumn extends AVectorColumn<string, IStringVector> {
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type,EAggregationType.UNAGGREGATED),
+      initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'list': {
         cssClass: 'taggle-vis-list'
+      }, all: {
+        heightTo: this.orientation === EOrientation.Horizontal ? 50 : $body.property('clientHeight'),
       }
     });
   }

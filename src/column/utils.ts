@@ -6,10 +6,8 @@ import {ZoomLogic} from 'phovea_core/src/behavior';
 import {EOrientation} from './AColumn';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import Range from 'phovea_core/src/range/Range';
-import {
-  VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
-  IDataType
-} from 'phovea_core/src/datatype';
+import {VALUE_TYPE_CATEGORICAL, IDataType} from 'phovea_core/src/datatype';
+import {AnyFilter} from '../filter/FilterManager';
 
 export function scaleTo(multiform: MultiForm, width: number, height: number, orientation: EOrientation) {
   const zoom = new ZoomLogic(multiform, multiform.asMetaData);
@@ -28,10 +26,10 @@ export function scaleTo(multiform: MultiForm, width: number, height: number, ori
 }
 
 
-export const NUMERICAL_COLOR_MAP: string[] = ['#fff5f0', '#67000d'];
+export const NUMERICAL_COLOR_MAP: string[] = ['white', 'black'];
 
 
-export function reArrangeRangeList(draggedArray, fullRangeasList) {
+export function reArrangeRangeList(draggedArray: number[], fullRangeasList: number[]) {
 
   if (draggedArray.length < 2) {
     let r = [fullRangeasList];
@@ -48,11 +46,11 @@ export function reArrangeRangeList(draggedArray, fullRangeasList) {
   }
 }
 
-export function insertArrayAt(array, index, arrayToInsert) {
-  Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
+export function insertArrayAt<T>(array: T[], index: number, arrayToInsert: T[]) {
+  Array.prototype.splice.apply(array, [index, 0].concat(<any>arrayToInsert));
 }
 
-export function reArrangeRangeListAfter(draggedArray, fullRangeList) {
+export function reArrangeRangeListAfter(draggedArray: number[], fullRangeList: number[][]) {
   let indices = [];
   fullRangeList.map((d, i) => {
     const c = [];
@@ -77,14 +75,14 @@ export function reArrangeRangeListAfter(draggedArray, fullRangeList) {
 }
 
 
-function spliceArr(rangeArr, dragIndices) {
+function spliceArr(rangeArr: number[], dragIndices: number[]) {
   const startIndex = dragIndices[0];
   const endIndex = dragIndices[dragIndices.length - 1];
   const draggedArea = rangeArr.slice(startIndex, endIndex + 1);
   const startArr = rangeArr.slice(0, startIndex);
   const endArr = rangeArr.slice(endIndex + 1, rangeArr.length);
   let r = [startArr, draggedArea, endArr];
-  r = r.filter((d) => d !== 0);
+  r = r.filter((d) => d.length !== 0);
   return r;
 
 }
@@ -132,7 +130,7 @@ export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[
   //Gives the group which it belongs to the brushing in the stratification.
   const groupid = [];
   Array.from(m.keys()).forEach((id) => {
-    if(m.get(id) === true) {
+    if (m.get(id) === true) {
       groupid.push(id);
     }
   });
@@ -140,7 +138,7 @@ export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[
   const newRangeInList = [];
   stratifiedRanges.forEach((r, id) => {
     const currentRangeList = makeListFromRange(r);
-    if(groupid.indexOf(id) > -1) {
+    if (groupid.indexOf(id) > -1) {
       const localArrayIndices = convertToLocalArrayIndices(brushedArray, currentRangeList);
       // Convert local sorted indices to the range Indices
       const newRangeIndices = revertBackToRangeIndices(currentRangeList, localArrayIndices);
@@ -186,6 +184,9 @@ function reformatRangeList(rearrangeRange: Range[][]) {
 }
 
 export function mergeRanges(ranges: Range[]) {
+  if (ranges.length === 0) {
+    return;
+  }
   const mergedRange = ranges.reduce((currentVal, nextValue) => {
     const r = new Range();
     r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
@@ -194,24 +195,15 @@ export function mergeRanges(ranges: Range[]) {
   return mergedRange;
 }
 
-export function makeArrayBetweenNumbers(range: number[]) {
-  const increments = 1;
-  const arr = [];
-  for (let val = range[0]; val <= range[1]; val += increments) {
-    arr.push(val);
-  }
-  return arr;
-}
-
 
 /**
  * Checks if one array contains all elements of another array
- * @param sup the larger array
- * @param sub the smaller array
+ * @param parentArr the larger array
+ * @param childArr the smaller array
  * @returns {boolean}
  */
-export function checkArraySubset(parentArr, childArr) {
-  return childArr.every(elem => parentArr.indexOf(elem) > -1);
+export function checkArraySubset<T>(parentArr: T[], childArr: T[]) {
+  return childArr.every((elem) => parentArr.indexOf(elem) > -1);
 }
 
 
@@ -219,7 +211,7 @@ export function checkArraySubset(parentArr, childArr) {
  * Sort function for sorting arrays based on the first elment
  * @param a
  * @param b
- * @return {number} 
+ * @return {number}
  */
 function sortArray(a: number[], b: number[]) {
   if (a[0] === b[0]) {
@@ -238,11 +230,29 @@ function sortArray(a: number[], b: number[]) {
 function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeIndices: number[]) {
   const localArray = [];
   brushedArray.forEach((d) => {
-    const firstElem = stratifiedRangeIndices.indexOf(d[0]);
-    const lastElem = stratifiedRangeIndices.indexOf(d[d.length - 1]);
-    if(firstElem >- 1 &&  lastElem >- 1){
-      localArray.push([firstElem, lastElem]);
-    }
+    const indices: number[] = [];
+    d.forEach((item) => {
+      indices.push(stratifiedRangeIndices.indexOf(item));
+    });
+    indices.sort();
+    let firstElem = indices[0];
+    let lastElem = indices[0];
+    indices.forEach((elem, i) => {
+      if (((elem - lastElem) === 1 || (elem - lastElem) === 0) && i !== indices.length - 1) {
+        lastElem = elem;
+      } else if (i === indices.length - 1) {
+        if (firstElem > -1 && lastElem > -1) {
+          localArray.push([firstElem, elem]);
+        }
+      } else {
+        if (firstElem > -1 && lastElem > -1) {
+          localArray.push([firstElem, lastElem]);
+        }
+        firstElem = elem;
+        lastElem = elem;
+      }
+    });
+
   });
   return localArray;
 }
@@ -266,7 +276,7 @@ function revertBackToRangeIndices(stratifiedRangeIndices: number[], localArrayIn
   return rangeIndices;
 }
 
-export function findColumnTie(cols) {
+export function findColumnTie(cols: { data: IDataType}[]) {
   let columnIndexForTie = NaN;
   cols.some((val, index) => {
     if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {

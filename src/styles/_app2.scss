@@ -18,3 +18,14 @@
     text-align: center;
   }
 }
+
+
+// correct y-position for rotated icon --> used as aggregated icon in column
+i.fa-window-minimize {
+  transform: rotate(90deg) translateY(-3px);
+}
+
+// FA doesn't support combining rotate and flip --> create combination
+i.fa-signal.fa-rotate-270.fa-flip-vertical {
+  transform: rotate(-90deg) scale(1, -1);
+}

@@ -8,17 +8,18 @@ import {IStringValueTypeDesc} from 'phovea_core/src/datatype';
 import {SORT} from '../SortHandler/SortHandler';
 import * as d3 from 'd3';
 import {on, fire} from 'phovea_core/src/event';
+import {AVectorColumn} from '../column/AVectorColumn';
 
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
 
 
 export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends AFilter<T, DATATYPE> {
   static EVENT_SORTBY_FILTER_ICON = 'sortFilter';
-
+  private $sortButton: d3.Selection<any>;
 
   protected build($parent: d3.Selection<any>): d3.Selection<any> {
     const $ol = $parent.select('.filterlist');
-    const $li = $ol.append('li').classed('filter', true);
+    const $li = $ol.append('li').classed('filter', true).attr('filter-name', this.data.desc.id);
     const $header = $li.append('header');
     $li.append('main');
     const $toolbar = $header.append('div').classed('toolbar', true);
@@ -29,27 +30,41 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
 
 
   protected addSortIcon($node: d3.Selection<any>) {
-    const $sortButton = $node.append('a')
-      .attr('title', 'Sort descending')
-      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`)
-      .on('click', () => {
-        if ($sortButton.select('i').classed('fa-sort-amount-asc')) {
-          $sortButton
-            .attr('title', 'Sort ascending')
-            .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
-          const sortData = {'sortMethod': SORT.desc, col: this};
-          fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        } else {
-          $sortButton
-            .attr('title', 'Sort descending')
-            .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
-          const sortData = {'sortMethod': SORT.asc, col: this};
-          fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        }
-      });
+    this.$sortButton = $node.append('a')
+      .attr('title', 'Sort ascending')
+      .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+
+    this.$sortButton.on('click', () => {
+      if (this.$sortButton.select('i').classed('fa-sort-amount-asc')) {
+        const sortData = {sortMethod: SORT.desc, col: this};
+        this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+        this.updateSortIcon(SORT.desc);
+      } else {
+        const sortData = {sortMethod: SORT.asc, col: this};
+        this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+        this.updateSortIcon(SORT.asc);
+      }
+    });
+
+  }
+
+
+  updateSortIcon(sortMethod: string) {
+    if (sortMethod === SORT.desc) {
+      this.$sortButton
+        .attr('title', 'Sort ascending')
+        .html(`<i class="fa fa-sort-amount-desc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort descending</span>`);
+
+    } else {
+      this.$sortButton
+        .attr('title', 'Sort descending')
+        .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
+
+    }
   }
 
 
 }
 
 export default AVectorFilter;
+

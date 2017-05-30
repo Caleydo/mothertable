@@ -12,7 +12,7 @@ import {on, fire} from 'phovea_core/src/event';
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly $node: d3.Selection<any>;
-  private _filterDim: {width: number, height: number};
+  private _filterDim: { width: number, height: number };
   private _activeCategories: string[];
   private _sortCriteria: string = SORT.asc;
 
@@ -20,12 +20,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   constructor(data: ICategoricalVector, $parent: d3.Selection<any>) {
     super(data);
     this.$node = this.build($parent);
-    on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
+    // on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.sortByFilterIcon.bind(this));
   }
 
   protected build($parent: d3.Selection<any>) {
     const $node = super.build($parent);
-    this.generateLabel($node, this.data.desc.name);
+    this.generateLabel($node);
     const dispHistogram: boolean = true;
     this.generateCategories($node.select('main'), dispHistogram);
     return $node;
@@ -34,7 +34,8 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   protected addSortIcon($node: d3.Selection<any>) {
     const $stratifyButton = $node.append('a')
       .attr('title', 'Stratify table by this column')
-      .html(`<i class="fa fa-bars fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
+      .classed('stratifyByMe', true)
+      .html(`<i class="fa fa-columns fa-rotate-270 fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
       .on('click', () => {
         fire(CategoricalColumn.EVENT_STRATIFYME, this);
       });
@@ -46,8 +47,19 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     super.addSortIcon($node);
   }
 
+  showStratIcon(isVisible: boolean) {
+    this.$node.select('.fa-columns').classed('hidden', !isVisible);
+  }
 
-  sortByFilterIcon(evt: any, sortData: {sortMethod: string, col}) {
+  stratifyByMe(isTrue: boolean) {
+    const check = this.$node.select('.stratifyByMe').classed('active');
+    if (check !== isTrue) {
+      this.$node.select('.stratifyByMe').classed('active', isTrue);
+    }
+  }
+
+
+  sortByFilterIcon(sortData: { sortMethod: string, col }) {
     if (sortData.col !== this) {
       return;
     }
@@ -58,12 +70,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     this.generateCategories(this.$node.select('main'), true);
   }
 
-  get filterDim(): {width: number; height: number} {
+  get filterDim(): { width: number; height: number } {
     this._filterDim = {width: 205, height: 35};
     return this._filterDim;
   }
 
-  set filterDim(value: {width: number; height: number}) {
+  set filterDim(value: { width: number; height: number }) {
     this._filterDim = value;
   }
 
@@ -177,12 +189,12 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
 
 }
 
-function isSame(value, compareWith) {
+function isSame<T>(value: T, compareWith: T) {
   return value === compareWith;
 }
 
 
-function findCatName(catName: any[], value, index,) {
+function findCatName(catName: any[], value: string) {
 
   for (const x in catName) {
     if (catName[x].name === value) {
@@ -192,7 +204,7 @@ function findCatName(catName: any[], value, index,) {
   return;
 }
 
-function catObjectsort(sortCriteria, a, b) {
+function catObjectsort(sortCriteria: string, a: { name: string }, b: { name: string }) {
   const aVal = a.name.toUpperCase();
   const bVal = b.name.toUpperCase();
 

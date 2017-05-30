@@ -2,7 +2,6 @@
 .column-manager {
   display: flex;
   align-items: stretch;
-  flex: 1 1 auto;
   overflow: auto;
   margin-top: 2px;
 
@@ -16,9 +15,6 @@
   }
 
   .column {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
     margin-right: 2px;
 
     .toolbar {
@@ -39,11 +35,6 @@
         &.active {
           color: $toolbar-link-active-color;
         }
-      }
-
-      // correct y-position for rotated icon
-      i.fa-window-minimize {
-        transform: rotate(90deg) translateY(-3px);
       }
 
       div.visChooser {
@@ -97,13 +88,21 @@
 
       .labelName {
         cursor: move;
-        align-items: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-align: center;
-        font-weight: 500;
+        display: flex;
+        justify-content: center;
         padding: 0 2px 3px;
+
+        i {
+          margin-right: 3px;
+        }
+
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          text-align: center;
+          font-weight: 500;
+        }
       }
 
       .toolbar {
@@ -113,6 +112,10 @@
         a + a {
           margin-left: 5px;
         }
+      }
+
+      .axis {
+        height: 20px
       }
 
     }
@@ -128,15 +131,15 @@
     // column stratification
     aside {
       ol, li {
-        list-style-type: decimal;
-        margin: 0;
+        list-style-type: none;
+        padding: 0;
       }
     }
   }
 
   .column.aggSwitcher {
     main > div {
-      margin-bottom: 2px;
+      margin-bottom: $gap-between-stratifications;
       display: flex;
       flex-direction: column;
 
@@ -145,6 +148,52 @@
 
       a + a {
         margin-top: 3px;
+      }
+    }
+  }
+
+  .column.rowNumberColumn {
+    main > div {
+      margin-bottom: $gap-between-stratifications;
+      display: flex;
+      flex-direction: column;
+
+      background: $header-bg-color;
+
+      div {
+        display: block;
+        text-align: right;
+        padding: 1px 6px;
+        position: relative;
+      }
+
+      &.aggregated {
+        :first-child:after {
+          content: '\22EE';
+          position: absolute;
+          top: 20px;
+          right: 7px;
+        }
+      }
+    }
+  }
+
+  .column.column-matrix {
+    position: relative;
+    aside .labelName {
+      position: absolute;
+      right: 0;
+      margin-right: 101%;
+      //margin-top: 5%; // doesn't work for smaller heights like heat map
+      white-space: nowrap;
+    }
+
+    & ~ .column.column-matrix {
+      aside .labelName {
+        position: absolute;
+        left: 0;
+        margin-left: 101%;
+        white-space: nowrap;
       }
     }
   }
@@ -159,4 +208,15 @@
   position: absolute;
   z-index: 1000;
   background: #fff;
+}
+
+.aggSelect {
+  height: 18px;
+  font-size: 10px;
+}
+
+.matrixTables {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
 }
