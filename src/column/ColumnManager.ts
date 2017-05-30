@@ -61,7 +61,7 @@ export default class ColumnManager extends EventHandler {
   private $node: d3.Selection<any>;
 
   private aggSwitcherCol: AggSwitcherColumn;
-  private rowNumberCol : RowNumberColumn;
+  private rowNumberCol: RowNumberColumn;
   readonly columns: AnyColumn[] = [];
   private filtersHierarchy: AnyColumn[] = [];
   private firstColumnRange: Range;
@@ -133,7 +133,7 @@ export default class ColumnManager extends EventHandler {
     return this._stratifiedRanges;
   }
 
-  updateSortByIcons(sortData: {col: AnyColumn, sortMethod: string}) {
+  updateSortByIcons(sortData: { col: AnyColumn, sortMethod: string }) {
     const col = this.filtersHierarchy.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
@@ -238,18 +238,28 @@ export default class ColumnManager extends EventHandler {
     }
     const columnNode = col.$node;
     columnNode.select('aside').selectAll('ol').remove();
+    columnNode.style('width', null);
+    columnNode.select('header.columnHeader').select('.labelName')
+      .classed('labelName', false)
+      .classed('matrixLabel', true);
+    const h = columnNode.select('header.columnHeader').node();
+    columnNode.select('aside').node().appendChild(h);
     const aggNode = (columnNode.select('header.columnHeader').selectAll('.fa.fa-exchange').node());
+
     if (aggNode === null) {
       this.addChangeIconMatrix(columnNode, col);
     }
+
     const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
     matrixDOM.node().appendChild(projectedcolumn.$node.node());
+    projectedcolumn.$node.select('aside').remove();
     const index = this.columns.indexOf(col);
     if (index === -1) {
       return;
     }
     this.columns.splice(index, 1); // Remove matrix column
+    this.relayout();
 
   }
 
@@ -544,11 +554,11 @@ export default class ColumnManager extends EventHandler {
     const rowHeight = await this.calcColumnHeight(height);
     const colWidths = distributeColWidths(this.columns, this.$parent.property('clientWidth'));
 
-    const colHeight =  this._stratifiedRanges.map((d, i) => {
-          return this.multiformsInGroup(i)
-            .map((m) => rowHeight[m])
-            .reduce((a, b) => a + b, 0);
-        });
+    const colHeight = this._stratifiedRanges.map((d, i) => {
+      return this.multiformsInGroup(i)
+        .map((m) => rowHeight[m])
+        .reduce((a, b) => a + b, 0);
+    });
 
     let counter = 1;
     const groupLength = this._stratifiedRanges.map((d, i) => {
