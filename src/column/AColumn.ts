@@ -127,16 +127,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     $node.select('div.onHoverToolbar')
       .style('display', 'none' )
       .style('visibility', 'hidden');
+
     $node.select('header').on('mouseover', () => {
       $node.select('div.onHoverToolbar')
-        .style('top', '31px')
-        .style('width', '150px')
-        .style('z-index', '10' )
-        .style('position', 'absolute' )
         .style('display', 'block' )
         .style('visibility', 'visible');
     });
-     $node.select('div.toolbar').on('mouseleave', () => {
+
+    $node.select('div.toolbar').on('mouseleave', () => {
       $node.select('div.onHoverToolbar')
         .style('display', 'none' )
         .style('visibility', 'hidden');

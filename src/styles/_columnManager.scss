@@ -119,6 +119,10 @@
       }
 
       .onHoverToolbar{
+          top: 31px;
+          width: 150px;
+          z-index: 10;
+          position: absolute;
           height: 25px;
           margin: -6px;
           background: $header-bg-color;
