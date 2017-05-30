@@ -30,14 +30,14 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .style('min-width', this.minWidth + 'px');
 
     this.$node.append('aside');
-
-    const $header = this.$node.append('header')
-      .classed('columnHeader', true);
-
-    $header.append('div').classed('labelName', true).html('&nbsp;');
-    $header.append('div').classed('toolbar', true).html('&nbsp;');
-    $header.append('div').classed('axis', true).html('&nbsp;');
-
+    this.$node.html(`
+        <header class="columnHeader">
+          <div class="toolbar">
+            <div class="labelName">&nbsp;</div>
+            <div class="axis">&nbsp;</div>
+          </div>
+        </header>
+        <main></main>`);
     this.init();
     return this.$node;
   }

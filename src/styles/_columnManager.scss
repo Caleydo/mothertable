@@ -106,6 +106,10 @@
       }
 
       .toolbar {
+        background: $header-bg-color;
+        margin-bottom: 2px;
+        min-width: 10px;
+        padding: 3px;
         a + div.visChooser,
         div.visChooser + a,
         div.visChooser + div.visChooser,
@@ -114,8 +118,24 @@
         }
       }
 
+      .onHoverToolbar{
+          top: 31px;
+          width: 150px;
+          z-index: 10;
+          position: absolute;
+          height: 25px;
+          margin: -6px;
+          background: $header-bg-color;
+          border-style: solid;
+          border-width: 1px;
+          border-color: $toolbar-link-color;
+          padding-top: 2px;
+      }
+
       .axis {
-        height: 20px
+        height: 18px;
+        margin: -6px;
+        margin-top: 2px;
       }
 
     }
@@ -189,6 +209,7 @@
   .column.column-matrix {
     position: relative;
     aside .labelName {
+      height: 17px;
       position: absolute;
       right: 0;
       margin-right: 101%;
@@ -198,6 +219,7 @@
 
     & ~ .column.column-matrix {
       aside .labelName {
+        height: 17px;
         position: absolute;
         left: 0;
         margin-left: 101%;

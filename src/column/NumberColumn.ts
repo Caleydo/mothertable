@@ -15,7 +15,7 @@ import MatrixColumn from './MatrixColumn';
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
   minWidth: number = 2;
-  maxWidth: number = 140;
+  maxWidth: number = 70;
   minHeight: number = 4;
   maxHeight: number = 20;
   projectedMatrix: boolean = false;
@@ -35,15 +35,29 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     super.buildToolbar($toolbar);
     this.$points = $toolbar.select('svg').append('g');
     const $svg = $toolbar.select('svg').append('g');
-    const width = parseInt($toolbar.style('width'), 10);
+    const width =$toolbar.node().parentElement.getBoundingClientRect().width;
 
-    this.scale = d3.scale.linear().range([5, width - 5]).domain((this.data.desc).value.range);
+    this.scale = d3.scale.linear().range([0, width]).domain((this.data.desc).value.range);
+    const tickCount = 0;
     const axis = d3.svg.axis()
-      .ticks(3)
+      .ticks(tickCount)
+      .tickFormat(d3.format('.2s'))
+      .outerTickSize(8)
       .orient('bottom')
       .scale(this.scale);
-
+    axis.tickValues(this.scale.ticks(tickCount).concat( this.scale.domain()));
     $svg.call(axis);
+    const count = $svg.selectAll('.tick').size();
+    $svg.selectAll('.tick').each(function(data, i) {
+      if(i === count-1) {
+        const tick = d3.select(this).select('text');
+        tick.style('text-anchor', 'end');
+      }
+      if(i === count-2) {
+        const tick = d3.select(this).select('text');
+        tick.style('text-anchor', 'start');
+      }
+    });
   }
 
   public updateAxis(brushedItems: number[][]) {
