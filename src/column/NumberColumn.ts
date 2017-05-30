@@ -38,7 +38,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     const width =$toolbar.node().parentElement.getBoundingClientRect().width;
 
     this.scale = d3.scale.linear().range([0, width]).domain((this.data.desc).value.range);
-    const tickCount = 2;
+    const tickCount = 0;
     const axis = d3.svg.axis()
       .ticks(tickCount)
       .tickFormat(d3.format('.2s'))
