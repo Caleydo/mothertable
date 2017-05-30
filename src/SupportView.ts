@@ -321,10 +321,11 @@ export default class SupportView extends EventHandler {
         const categories = tableVector.desc.value.categories;
         categories.forEach((v, i) => {
           if (v.color === undefined) {
-            tableVector.desc.value.categories[i] = {name: v, color: color[j - 4][i]};
+            const base = color[j - 4];
+            v.color = base[i % base.length];
           }
           if (v.label !== undefined) {
-            tableVector.desc.value.categories[i] = {name: v.name, color: color[j - 4][i]};
+            v.label = v.name;
           }
         });
       }
