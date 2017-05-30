@@ -95,10 +95,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+
   > div {
-    white-space: normal;
-    overflow: hidden !important;
-    text-overflow: ellipsis;
     line-height: normal;
     font-size: 18px;
   }
