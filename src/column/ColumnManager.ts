@@ -238,14 +238,7 @@ export default class ColumnManager extends EventHandler {
     }
     const columnNode = col.$node;
     columnNode.select('aside').selectAll('ol').remove();
-    columnNode.style('width', null);
-    columnNode.select('header.columnHeader').select('.labelName')
-      .classed('labelName', false)
-      .classed('matrixLabel', true);
-    const h = columnNode.select('header.columnHeader').node();
-    columnNode.select('aside').node().appendChild(h);
     const aggNode = (columnNode.select('header.columnHeader').selectAll('.fa.fa-exchange').node());
-
     if (aggNode === null) {
       this.addChangeIconMatrix(columnNode, col);
     }
@@ -254,6 +247,24 @@ export default class ColumnManager extends EventHandler {
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
     matrixDOM.node().appendChild(projectedcolumn.$node.node());
     projectedcolumn.$node.select('aside').remove();
+    columnNode.style('width', null);
+    columnNode.style('min-width', null);
+    const colWidth = (<HTMLElement>columnNode.select('main').node()).clientWidth;
+    if (colWidth > 150) {
+      columnNode.select('header.columnHeader')
+        .classed('matrix', false)
+        .select('.labelName')
+        .classed('matrixLabel', false)
+        .classed('matrixLabelExtended', true);
+
+    } else {
+      columnNode.select('header.columnHeader')
+        .classed('matrix', true)
+        .select('.labelName')
+        .classed('matrixLabel', true);
+    }
+    const h = columnNode.select('header.columnHeader').node();
+    columnNode.select('aside').node().appendChild(h);
     const index = this.columns.indexOf(col);
     if (index === -1) {
       return;

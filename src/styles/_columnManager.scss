@@ -117,7 +117,10 @@
       .axis {
         height: 20px
       }
-
+      //Switching from matrix to vector for stratified
+      &.matrix {
+        flex-direction: row;
+      }
     }
 
     main {
@@ -180,16 +183,25 @@
 
   .column.column-matrix {
     position: relative;
-    aside .matrixLabel {
-      position: absolute;
-      white-space: nowrap;
-    }
+
     aside .labelName {
       position: absolute;
       right: 0;
       margin-right: 101%;
       //margin-top: 5%; // doesn't work for smaller heights like heat map
       white-space: nowrap;
+    }
+    //Switching from matrix to vector for non stratified
+    aside .matrixLabel {
+      right: auto;
+      margin-right: auto;
+      position: static;
+      width: 120px;
+    }
+    //Switching from matrix to vector for stratified
+    aside .matrixLabelExtended {
+      right: auto;
+      margin-right: auto;
     }
 
     & ~ .column.column-matrix {
@@ -198,6 +210,18 @@
         left: 0;
         margin-left: 101%;
         white-space: nowrap;
+      }
+      //Switching from matrix to vector for non stratified
+      aside .matrixLabel {
+        left: auto;
+        margin-left: auto;
+        position: static;
+        width: 120px;
+      }
+      //Switching from matrix to vector for stratified
+      aside .matrixLabelExtended {
+        left: auto;
+        margin-left: auto;
       }
 
     }
