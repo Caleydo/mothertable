@@ -8,6 +8,7 @@ import {
 } from 'phovea_core/src/datatype';
 import {IAnyVector, INumericalVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
+import {list as asRange} from 'phovea_core/src/range';
 import {makeListFromRange, mergeRanges} from '../column/utils';
 import {IStringVector} from '../column/AVectorColumn';
 import {AnyColumn} from '../column/ColumnManager';
@@ -113,17 +114,19 @@ export default class SortHandler {
    * @returns {Promise<Range>}
    */
   async filterRangeByName(col: IAnyVector, sortedByName: any[]): Promise<Range[]> {
-    const sortArr = [];
-    for (const f of sortedByName) {
-      const u: IAnyVector = await col.filter(filterCat.bind(this, f));
-      const id = await u.ids();
-      if (id.size()[0] >= 1) {
-        sortArr.push(id);
-        // console.log(f, await coldata.data(), id.dim(0).asList());
-      }
-    }
+    //fetch all ids and data and convert to lists
+    const data = await col.data();
+    const ids = (await col.ids()).dim(0).asList(col.length);
 
-    return sortArr;
+    return sortedByName.map((name) => {
+      const filterCatImpl = filterCat.bind(this, name);
+      //filter to the list of matching ids
+      const matchingIds = ids.filter((id, i) => {
+        const dataAt = data[i];
+        return filterCatImpl(dataAt);
+      });
+      return asRange(matchingIds);
+    });
   }
 
 
@@ -149,6 +152,7 @@ export default class SortHandler {
   //See Test Folder for the use of this function
   async uniqueValues(coldata: IAnyVector) {
     const allCatNames = await(coldata.data());
+    //TODO what about Array.from(new Set(allCatNames));
     const uniqvalues = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
     return uniqvalues;
   }
@@ -252,11 +256,7 @@ export function prepareRangeFromList(sortedRange: number[], stratifiedArr: numbe
  */
 function makeRangeFromList(arr: number[][][]): Range[][] {
   const rangeObject = arr.map((d) => {
-    return d.map((e) => {
-      const r = new Range();
-      r.dim(0).pushList(e);
-      return r;
-    });
+    return d.map((e) => asRange(e));
   });
   return rangeObject;
 
