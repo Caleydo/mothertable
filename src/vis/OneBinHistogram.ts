@@ -16,9 +16,7 @@ import List from 'phovea_vis/src/list';
 import Range1D from 'phovea_core/src/range/Range1D';
 import Range from 'phovea_core/src/range/Range';
 import {IHistogram} from 'phovea_core/src/math';
-import {
-  IHistData
-} from 'phovea_vis/src/distribution/internal';
+
 /**
  * Switches to a mosaic representation if only one bin is present
  */
@@ -29,6 +27,7 @@ export class OneBinHistogram extends CategoricalHistogram {
     super(data, parent, options);
 
   }
+
   protected build($svg: d3.Selection<any>) {
     this.data.hist(Math.floor(this.options.nbins)).then((hist) => {
       let nonZeroBins = 0;
@@ -102,10 +101,6 @@ export class OneBinHistogram extends CategoricalHistogram {
     this.options.rotate = rotate;
     return act;
   }
-
-  /*protected sortHistData(histData:IHistData[]):IHistData[] {
-    return super.sortHistData(histData);
-  }*/
 }
 
 export default OneBinHistogram;
