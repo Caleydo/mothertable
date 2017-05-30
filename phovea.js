@@ -17,7 +17,8 @@ module.exports = function(registry) {
   registry.push('vis', 'taggle-vis-onebin-histogram', function () {
     return System.import('./src/vis/OneBinHistogram');
   }, {
-    name: 'OneBinHistogram',
+    name: 'Histogram',
+    icon: function() { return System.import('./src/assets/distribution_histogram_icon.png'); },
     filter: 'vector'
   });
   // generator-phovea:end

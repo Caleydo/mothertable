@@ -120,7 +120,7 @@ export default class VisManager {
 
   public static aggregatedNumVisses = ['phovea-vis-histogram', 'phovea-vis-box'];
   public static unaggregatedNumVisses = ['barplot', 'proportionalSymbol', 'phovea-vis-heatmap1d', 'list'];
-  public static aggregatedCatVisses = ['phovea-vis-histogram', 'taggle-vis-onebin-histogram'];
+  public static aggregatedCatVisses = ['taggle-vis-onebin-histogram'];
   public static unaggregatedCatVisses = ['phovea-vis-heatmap1d'];
   public static aggregatedStrVisses = ['taggle-vis-label'];//TODO change to empty vis
   public static unaggregatedStrVisses = ['list'];

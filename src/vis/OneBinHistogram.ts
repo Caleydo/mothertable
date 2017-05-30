@@ -4,7 +4,7 @@
 
 
 import {ITransform} from 'phovea_core/src/vis';
-import Histogram, {IHistogramOptions} from 'phovea_vis/src/distribution/Histogram';
+import {CategoricalHistogram, IHistogramOptions} from 'phovea_vis/src/distribution/Histogram';
 import {IStratification} from 'phovea_core/src/stratification';
 import {
   IHistAbleDataType, ICategoricalValueTypeDesc, INumberValueTypeDesc,
@@ -16,11 +16,13 @@ import List from 'phovea_vis/src/list';
 import Range1D from 'phovea_core/src/range/Range1D';
 import Range from 'phovea_core/src/range/Range';
 import {IHistogram} from 'phovea_core/src/math';
-
+import {
+  IHistData
+} from 'phovea_vis/src/distribution/internal';
 /**
  * Switches to a mosaic representation if only one bin is present
  */
-export class OneBinHistogram extends Histogram {
+export class OneBinHistogram extends CategoricalHistogram {
 
   private isOneBin : boolean = false;
   constructor(public readonly data: IHistAbleDataType<ICategoricalValueTypeDesc|INumberValueTypeDesc>|IStratification, parent: Element, options: IHistogramOptions = {}) {
@@ -56,10 +58,9 @@ export class OneBinHistogram extends Histogram {
 
   private buildAsMosaic($div : d3.Selection<any>, lastNonZeroBin : number, hist : IHistogram) {
     const onClick = (d, i) => {
-      const arr = Array.apply(null, Array(d.count)).map(function (_, i) {return i;});
-      const r = Range1D.from(arr);
-      const r1 = new Range([r]);
-      this.data.select(0, r1, toSelectOperation(<MouseEvent>d3.event));
+      const numRange = new Range1D();
+      numRange.pushSlice(0, d.count);
+      this.data.select(0, new Range([numRange]), toSelectOperation(<MouseEvent>d3.event));
       fire(List.EVENT_BRUSHING, [-1, -1], this.data);
     };
     this.markReady();
@@ -67,11 +68,13 @@ export class OneBinHistogram extends Histogram {
     const dataLength = this.data.length;
     const name = this.data.desc.value.categories[lastNonZeroBin].name;
     $div.style('background-color', fillColor)
+      .classed('taggle-onebinhistogram', true)
       .style('width', `${this.size[0]}px`)
       .style('height', `${this.size[1]}px`)
       .on('click', onClick);
     $div.datum(hist);
-    $div.text(name + ' ' + dataLength);
+    $div.append('div')
+      .text(name);
   }
 
   transform(scale?: [number, number], rotate?: number): ITransform {
@@ -99,6 +102,10 @@ export class OneBinHistogram extends Histogram {
     this.options.rotate = rotate;
     return act;
   }
+
+  /*protected sortHistData(histData:IHistData[]):IHistData[] {
+    return super.sortHistData(histData);
+  }*/
 }
 
 export default OneBinHistogram;

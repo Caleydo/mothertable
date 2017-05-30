@@ -34,6 +34,10 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
         nbins: histogramData.nbins,
         maxValue: histogramData.maxValue
       },
+      'taggle-vis-onebin-histogram': {
+        nbins: histogramData.nbins,
+        maxValue: histogramData.maxValue
+      },
       all: {
         heightTo: this.orientation === EOrientation.Horizontal ? VisManager.heatmap1DOptions.rowMaxHeight : $body.property('clientHeight'),
       }
