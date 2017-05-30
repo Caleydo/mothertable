@@ -12,7 +12,7 @@ import {
 } from 'phovea_core/src/datatype';
 import {EventHandler} from 'phovea_core/src/event';
 import FilterManager from './filter/FilterManager';
-import {INumericalMatrix} from 'phovea_core/src/matrix';
+import {INumericalMatrix, IAnyMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {asVector} from 'phovea_core/src/vector';
 import {list as listData, convertTableToVectors} from 'phovea_core/src/data';
@@ -119,6 +119,9 @@ export default class SupportView extends EventHandler {
     this.datasets = convertTableToVectors(await listData())
       .filter((d) => d.idtypes.indexOf(this.idType) >= 0 && isPossibleDataset(d));
 
+    const matrixColumns = await Promise.all(this.datasets.filter((d) => d.desc.type === 'matrix').map(splitMatrixInVectors));
+    this.datasets.push(...[].concat(...matrixColumns));
+
     if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
       const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
       if (vectorsOnly.length > 0) {
@@ -221,7 +224,7 @@ export default class SupportView extends EventHandler {
   }
 
   private buildSelect2($parent: d3.Selection<any>) {
-    (<HTMLElement>$parent.node()).insertAdjacentHTML('afterbegin', `<div class="selection"> 
+    (<HTMLElement>$parent.node()).insertAdjacentHTML('afterbegin', `<div class="selection">
       <select class="form-control">
         <option></option>
       </select>
@@ -231,38 +234,9 @@ export default class SupportView extends EventHandler {
 
     this.addExplicitColors(this.datasets);
 
-    const availableDataTypes = this.datasets
-      .map((d) => d.desc.type)
-      .sort()
-      .filter((el, i, a) => {
-        if (i === a.indexOf(el)) {
-          return 1;
-        }
-        return 0;
-      });
-
-    const defaultData = availableDataTypes.map((type) => {
-      const children = this.datasets
-        .filter((d) => d.desc.type === type)
-        .map((d, i) => {
-          return {
-            id: d.desc.id,
-            text: formatAttributeName(d.desc.name),
-            dataType: d.desc.type,
-            valueType: dataValueType(d),
-            data: d
-          };
-        });
-
-      return {
-        text: type,
-        dataType: type,
-        children
-      };
-    });
+    const dataSetTree = convertToTree(this.datasets);
 
     const defaultOptions = {
-      data: defaultData,
       placeholder: 'Select Attribute',
       allowClear: true,
       theme: 'bootstrap',
@@ -280,6 +254,34 @@ export default class SupportView extends EventHandler {
         }
         return $(`<span><i class="${dataValueTypeCSSClass(item.valueType)}" aria-hidden="true"></i> ${item.text}</span>`);
       },
+      minimumInputLength: 0,
+      ajax: {
+        cache: false,
+        dataType: 'json',
+        delay: 0, // increase for 'real' ajax calls
+        data: (params) => {
+          return params; // params.term = search term
+        },
+        // fake ajax call with local data
+        transport: (queryParams, success, error) => {
+          success({
+            items: filterTree(dataSetTree, queryParams.data.term)
+          });
+          return <any>{
+            status: 0
+          };
+        },
+
+        // parse the results into the format expected by Select2.
+        processResults: (data, params) => {
+          return {
+            results: data.items,
+            pagination: {
+              more: false
+            }
+          };
+        }
+      }
     };
 
     const $jqSelect2 = (<any>$($select.node()))
@@ -393,4 +395,100 @@ export function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
   }
 
   return d;
+}
+
+
+async function splitMatrixInVectors(matrix: IAnyMatrix) {
+  const colNames = await matrix.cols();
+  const cols = matrix.ncol;
+  const r : IAnyVector[] = [];
+  for (let i = 0; i < cols; ++i) {
+    const v = matrix.slice(i);
+    const anyDesc : any = v.desc;
+    // hack the name to include the column label
+    anyDesc.name = matrix.desc.name + '/' + colNames[i];
+    anyDesc.origin = matrix;
+    anyDesc.fqname = matrix.desc.fqname + '/' + colNames[i];
+    r.push(v);
+  }
+  return r;
+}
+
+function convertToTree(datasets: IDataType[]) {
+  // has a origin field, i.e. is derived from a matrix
+  const isDerivedDataset = (dataset: IDataType) => !!(<any>dataset.desc).origin;
+  const isDerivedGroup = (group: string) => group.endsWith('-d');
+  //group by data type with special derived groups at the end
+  const grouped = d3.nest<IDataType>()
+    .key((d) => d.desc.type + (isDerivedDataset(d) ? '-d': ''))
+    .sortKeys((a, b) => {
+      //derived groups to the end of the list
+      const derivedA = isDerivedGroup(a);
+      const derivedB = isDerivedGroup(b);
+      if (derivedA === derivedB) {
+        return a.localeCompare(b);
+      }
+      return derivedA ? +1 : -1;
+    })
+    .entries(datasets);
+
+  return grouped.map((group) => {
+    const isDervivedGroup = isDerivedGroup(group.key);
+    const type = isDervivedGroup ? group.key.substring(0, group.key.length - 2) : group.key;
+    const children = group.values.map((d) => ({
+        id: d.desc.id,
+        text: formatAttributeName(d.desc.name),
+        dataType: d.desc.type,
+        valueType: dataValueType(d),
+        data: d
+      }));
+    return {
+      text: (isDervivedGroup ? `Derived ${type}` : type),
+      dataType: type,
+      children
+    };
+  });
+}
+
+
+/**
+ * filteres the given dataset tree to matching the query
+ * @param datasetTree
+ * @param query
+ * @return {({}&{children: {text: string}[]}&{children: {text: string}[]})[]}
+ */
+function filterTree(datasetTree: {text: string; children: {text: string}[]}[], query: string, maxTotalItems = 30, minItemsPerGroup = 5) {
+  function limit(group: string, arr: any[], maxItemsPerGroup = 5) {
+    if (arr.length <= maxItemsPerGroup) {
+      return arr;
+    }
+    const base = arr.slice(0, maxItemsPerGroup);
+    base.push({
+      id: group + '-more',
+      disabled: true,
+      text: `${arr.length - maxItemsPerGroup} more ...`
+    });
+    return base;
+  }
+  const filteredTree = datasetTree
+    .map((parent) => {
+      //create a copy with filtered children
+      const children = !query ? parent.children : parent.children.filter((child) => child.text.toLowerCase().includes(query));
+      //create a shallow copy
+      return Object.assign({}, parent, {children});
+    })
+    .filter((d) => d.children.length > 0); //remove empty categories
+
+  // total number of entries
+  const total = filteredTree.reduce((total, act) => total + act.children.length, 0);
+  if (total > maxTotalItems) {
+    //filter too many entries
+    filteredTree.forEach((parent) => {
+      const ratio = parent.children.length / total;
+      //distribute based on the number of items
+      const maxItems = Math.max(minItemsPerGroup, Math.floor(maxTotalItems * ratio));
+      parent.children = limit(parent.text, parent.children, maxItems);
+    });
+  }
+  return filteredTree;
 }
