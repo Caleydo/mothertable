@@ -117,7 +117,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     });
 
     return Promise.all(viewPromises).then((views) => {
-      const viewData = views.map((d:any) => {
+      const viewData = views.map((d: any) => {
         return {
           key: d.range.toString(),
           view: d,
@@ -128,14 +128,14 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
       multiformList.enter().append('div')
         .classed('multiformList', true)
-        .each(function(d) {
+        .each(function (d) {
           const $elem = d3.select(this);
           const m = new TaggleMultiform(d.view, <HTMLElement>$elem.node(), that.multiFormParams($elem));
           that.multiformMap.set(d.key, m);
         });
 
       multiformList
-        .each(function(d, i) {
+        .each(function (d, i) {
           const m = that.multiformMap.get(d.key);
           m.groupId = that.findGroupId(stratifiedRanges, rowRanges[i]);
           m.brushed = that.checkBrushed(brushedRanges, rowRanges[i]);
@@ -148,10 +148,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
             VisManager.userSelectedUnaggregatedVisses.set(m.id, that.selectedUnaggVis);
           }
           VisManager.multiformAggregationType.set(m.id, EAggregationType.UNAGGREGATED);
-      });
+        });
 
       multiformList.exit().remove()
-        .each(function(d) {
+        .each(function (d) {
           that.multiformMap.delete(d.key);
         });
 
@@ -176,9 +176,22 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
    * @returns {Promise<AnyColumn>}
    */
   pushColStratData(data: IMotherTableType) {
-    const col = createColumn(data, EOrientation.Horizontal, this.$colStrat);
-    this.colStratManager.add(col);
-    return Promise.resolve(col);
+    return Promise.all([this.data.colIds(), data.ids()])
+      .then((results) => {
+        const colRange = results[0];
+        const vectorRange = results[1];
+
+        const vr = vectorRange.intersect(colRange);
+        const dataView: any = data.idView(vr);
+
+        return dataView.then((coldata) => {
+          const col = createColumn(coldata, EOrientation.Horizontal, this.$colStrat);
+          this.colStratManager.add(col);
+          return Promise.resolve(col);
+        });
+
+      });
+
   }
 
   /**
@@ -200,7 +213,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     this.updateColStrats();
   }
 
-  sortByFilterHeader(sortData: {col: AnyColumn, sortMethod: string}) {
+  sortByFilterHeader(sortData: { col: AnyColumn, sortMethod: string }) {
     const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
     if (col.length === 0) {
       return;
