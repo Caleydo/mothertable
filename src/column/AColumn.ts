@@ -134,11 +134,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         .style('visibility', 'visible');
     });
 
-    $node.select('div.toolbar').on('mouseleave', () => {
+    $node.select('header').on('mouseleave', () => {
       $node.select('div.onHoverToolbar')
         .style('display', 'none' )
         .style('visibility', 'hidden');
     });
+
     return $node;
   }
 
