@@ -180,6 +180,10 @@
 
   .column.column-matrix {
     position: relative;
+    aside .matrixLabel {
+      position: absolute;
+      white-space: nowrap;
+    }
     aside .labelName {
       position: absolute;
       right: 0;
@@ -195,6 +199,7 @@
         margin-left: 101%;
         white-space: nowrap;
       }
+
     }
   }
 }
