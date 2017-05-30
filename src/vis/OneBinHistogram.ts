@@ -10,7 +10,12 @@ import {
   IHistAbleDataType, ICategoricalValueTypeDesc, INumberValueTypeDesc,
 } from 'phovea_core/src/datatype';
 import * as d3 from 'd3';
-
+import {toSelectOperation} from 'phovea_core/src/idtype';
+import {fire} from 'phovea_core/src/event';
+import List from 'phovea_vis/src/list';
+import Range1D from 'phovea_core/src/range/Range1D';
+import Range from 'phovea_core/src/range/Range';
+import {IHistogram} from 'phovea_core/src/math';
 
 /**
  * Switches to a mosaic representation if only one bin is present
@@ -41,7 +46,7 @@ export class OneBinHistogram extends Histogram {
         const $parent = d3.select($svg.node().parentNode);
         $svg.remove();
         const $div = $parent.append('div');
-        this.buildAsMosaic($div, lastNonZeroBin);
+        this.buildAsMosaic($div, lastNonZeroBin, hist);
       } else {
         super.build($svg);
       }
@@ -49,14 +54,23 @@ export class OneBinHistogram extends Histogram {
     return $svg;
   }
 
-  private buildAsMosaic($div : d3.Selection<any>, lastNonZeroBin : number) {
-        this.markReady();
+  private buildAsMosaic($div : d3.Selection<any>, lastNonZeroBin : number, hist : IHistogram) {
+    const onClick = (d, i) => {
+      const arr = Array.apply(null, Array(d.count)).map(function (_, i) {return i;});
+      const r = Range1D.from(arr);
+      const r1 = new Range([r]);
+      this.data.select(0, r1, toSelectOperation(<MouseEvent>d3.event));
+      fire(List.EVENT_BRUSHING, [-1, -1], this.data);
+    };
+    this.markReady();
     const fillColor = this.data.desc.value.categories[lastNonZeroBin].color;
     const dataLength = this.data.length;
-    const name = this.data.desc.value.categories[lastNonZeroBin].name; //todo check if that holds
+    const name = this.data.desc.value.categories[lastNonZeroBin].name;
     $div.style('background-color', fillColor)
       .style('width', `${this.size[0]}px`)
-      .style('height', `${this.size[1]}px`);
+      .style('height', `${this.size[1]}px`)
+      .on('click', onClick);
+    $div.datum(hist);
     $div.text(name + ' ' + dataLength);
   }
 
