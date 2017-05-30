@@ -191,6 +191,12 @@ export default class ColumnManager extends EventHandler {
     }
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
+
+    // no columns of attribute available --> delete from filter hierarchy for correct sorting
+    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
+      this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
+    }
+
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
@@ -375,7 +381,6 @@ export default class ColumnManager extends EventHandler {
    */
   private async sortColumns() {
     const cols = this.filtersHierarchy;
-
     //special handling if matrix is added as first column
     if (cols.length === 0) {
       this.nonStratifiedRange = this.firstColumnRange;
