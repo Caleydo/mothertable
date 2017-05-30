@@ -130,7 +130,15 @@
 
     // column stratification
     aside {
-      ol, li {
+      display: flex;
+      ol {
+        align-self: flex-end;
+        width: 100%;
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+
         list-style-type: none;
         padding: 0;
       }
