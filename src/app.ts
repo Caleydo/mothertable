@@ -195,15 +195,21 @@ export default class App {
     // add columns if we add one or multiple datasets
     supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
       // first push all the new columns ...
-      const addedColumnsPromise = datasets.map((data) => {
-        if (this.dataSize === undefined) {
-          this.dataSize = {total: data.length, filtered: data.length};
-          supportView.updateFuelBar(this.dataSize);
-        }
-        return this.colManager.push(data);
-      });
+      let wait = Promise.resolve([]);
+      for (const data of datasets) {
+        wait = wait.then((current: AnyColumn[]) => {
+          if (this.dataSize === undefined) {
+            this.dataSize = {total: data.length, filtered: data.length};
+            supportView.updateFuelBar(this.dataSize);
+          }
+          return this.colManager.push(data).then((col) => {
+            current.push(col);
+            return current;
+          });
+        });
+      }
       // ... when all columns are pushed -> sort and render them
-      Promise.all(addedColumnsPromise)
+      wait
         .then((columns: AnyColumn[]) => {
           // add new support views for matrix column
           const supportViewPromises = columns
