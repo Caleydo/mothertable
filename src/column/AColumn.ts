@@ -93,7 +93,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .html(`
         <header>
-          <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
+          <div class="labelName" title="${formatAttributeName(this.data.desc.name)}">${formatAttributeName(this.data.desc.name)}</div>
         </header> 
         <main></main>
       `);
@@ -117,7 +117,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         <aside></aside>
         <header class="columnHeader">
           <div class="toolbar">
-            <div class="labelName"><i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> <span>${formatAttributeName(this.data.desc.name)}</span></div>
+            <div class="labelName" title="${formatAttributeName(this.data.desc.name)}"><i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> <span>${formatAttributeName(this.data.desc.name)}</span></div>
             <div class="onHoverToolbar"></div>
           </div>
         </header>
