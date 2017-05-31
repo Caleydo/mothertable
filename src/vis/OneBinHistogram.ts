@@ -67,7 +67,7 @@ export class OneBinHistogram extends CategoricalHistogram {
     const dataLength = this.data.length;
     const name = this.data.desc.value.categories[lastNonZeroBin].name;
     $div.style('background-color', fillColor)
-      .classed('taggle-onebinhistogram', true)
+      .classed('taggle-labelvis', true)
       .style('width', `${this.size[0]}px`)
       .style('height', `${this.size[1]}px`)
       .on('click', onClick);
