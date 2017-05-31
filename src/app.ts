@@ -193,36 +193,24 @@ export default class App {
     this.colManager.addRowNumberColumn();
 
     // add columns if we add one or multiple datasets
-    supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+    supportView.on(SupportView.EVENT_DATASETS_ADDED, async (evt: any, datasets: IMotherTableType[]) => {
       // first push all the new columns ...
-      let wait = Promise.resolve([]);
+      const columns: AnyColumn[] = [];
       for (const data of datasets) {
-        wait = wait.then((current: AnyColumn[]) => {
-          if (this.dataSize === undefined) {
+         if (this.dataSize === undefined) {
             this.dataSize = {total: data.length, filtered: data.length};
             supportView.updateFuelBar(this.dataSize);
           }
-          return this.colManager.push(data).then((col) => {
-            current.push(col);
-            return current;
-          });
-        });
+          columns.push(await this.colManager.push(data));
       }
-      // ... when all columns are pushed -> sort and render them
-      wait
-        .then((columns: AnyColumn[]) => {
-          // add new support views for matrix column
-          const supportViewPromises = columns
-            .filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix)
-            .map((col) => {
-              return this.addMatrixColSupportManger(<MatrixColumn>col);
-            });
 
-          return Promise.all(supportViewPromises);
-        })
-        .then(() => {
-          this.colManager.updateColumns();
-        });
+      // add new support views for matrix column
+      const matrixColumns = <MatrixColumn[]>columns.filter((col) => col.data.desc.type === AColumn.DATATYPE.matrix);
+      for (const col of matrixColumns) {
+        await this.addMatrixColSupportManger(col);
+      }
+
+      this.colManager.updateColumns();
     });
 
     supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
