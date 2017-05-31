@@ -579,7 +579,7 @@ export default class ColumnManager extends EventHandler {
     const multiformList = [];
     this._multiformRangeList.forEach((r, index) => {
       const m = this._stratifiedRanges
-        .map((s) => s.intersect(r).size()[0]);
+        .map((s) => s.intersect(r).dim(0).length);
       const a = m.filter((d) => d > 0);
       const sd = m.indexOf(a[0]);
       if (groupIndex === sd) {
