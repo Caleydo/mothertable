@@ -14,7 +14,13 @@ import {IStringVector} from '../column/AVectorColumn';
 import {AnyColumn} from '../column/ColumnManager';
 
 interface ISortResults {
+  /**
+   * the sorted range to be shown
+   */
   combined: Range;
+  /**
+   * the sizes of groups in individual columns identified by column.data.desc.id
+   */
   stratified: Map<string, number[]>;
 }
 
@@ -33,7 +39,7 @@ export default class SortHandler {
    * @returns {Promise<Range>}
    */
 
-  async chooseType(newView: IAnyVector, sortCriteria: string) {
+  private async chooseType(newView: IAnyVector, sortCriteria: 'asc'|'desc') {
     const v = <IAnyVector>newView;
     switch (v.desc.value.type) {
       case VALUE_TYPE_STRING:
@@ -46,18 +52,22 @@ export default class SortHandler {
   }
 
 
-  async collectRangeList(col: IAnyVector, sortCriteria: string, type: string): Promise<Range[]> {
-    const uniqValues = await this.uniqueValues(col);
+  private async collectRangeList(col: IAnyVector, sortCriteria: 'asc'|'desc', type: 'sc'|'ir'): Promise<Range[]> {
+    //optimize for the simple cases
+    if (col.length === 0) {
+      return Promise.resolve([]);
+    } else if (col.length === 1) {
+      return [await col.ids()];
+    }
+    //more than one
+    const uniqValues = await this.toUnique(await col.data());
     let sortedValue;
     if (type === 'sc') {
-
       sortedValue = uniqValues.sort(stringSort.bind(this, sortCriteria));
     } else if (type === 'ir') {
-
       sortedValue = uniqValues.sort(numSort.bind(this, sortCriteria));
     } else {
-
-      return;
+      throw Error('invalid argument: ' + type);
     }
     return await this.filterRangeByName(col, sortedValue); // sortedRange
   }
@@ -73,38 +83,45 @@ export default class SortHandler {
     //   return [[]];
     // }
     const d = await columns[0].dataView;
-    let range: any = [await d.ids()];
-    const rangesPerCol = new Map();
+    let range: Range[] = [await d.ids()];
+
+    const groupSizes = new Map<string, number[]>();
+
     //Iterate through all the columns
-    for (const col of columns) {
-      const nextColumnData = (<any>col).data;
-      const sortCriteria = (<any>col).sortCriteria;
-      const rangeOfView = [];
+    for (const column of columns) {
+      const data = column.data;
+      const sortCriteria = <'asc'|'desc'>column.sortCriteria;
+      const columnRanges: Range[] = [];
 
       // Iterate through all the ranges available for that column.
       // A column can be composed with array of ranges.
       for (const n of range) {
-        //Create VectorView  of from each array element of range.
-        const newView = await nextColumnData.idView(n);
-        rangeOfView.push(await this.chooseType(newView, sortCriteria));
+        if (n.dim(0).length === 1) {
+          //can't be splitted further
+          columnRanges.push(n);
+        } else {
+          //Create VectorView  of from each array element of range.
+          const newView: any = await data.idView(n);
+          columnRanges.push(...await this.chooseType(newView, sortCriteria));
+        }
       }
 
-      range = await this.concatRanges(rangeOfView);
-      const dataElementsPerCol = range.map((d) => (d.dim(0).length));
-      rangesPerCol.set(col.data.desc.id, dataElementsPerCol);
+      range = columnRanges;
+      const dataElementsPerCol = range.map((d) => d.dim(0).length);
+      groupSizes.set(column.data.desc.id, dataElementsPerCol);
     }
 
-    return {combined: mergeRanges(range), stratified: rangesPerCol};
+    return {combined: mergeRanges(range), stratified: groupSizes};
   }
 
 
-  async concatRanges(rangeOfViewData: Range[][]) {
+  private concatRanges(rangeOfViewData: Range[][]|Range[]): Range[] {
     if (Array.isArray(rangeOfViewData[0])) {
-      return rangeOfViewData.reduce((a, b) => a.concat(b));
+      //flat the array
+      return [].concat(...rangeOfViewData);
     } else {
-      return rangeOfViewData;
+      return <Range[]>rangeOfViewData;
     }
-
   }
 
   /**
@@ -113,7 +130,7 @@ export default class SortHandler {
    * @param sortedByName {Array of unique elment  sorted by asc or dsc}
    * @returns {Promise<Range>}
    */
-  async filterRangeByName(col: IAnyVector, sortedByName: any[]): Promise<Range[]> {
+  private async filterRangeByName(col: IAnyVector, sortedByName: any[]): Promise<Range[]> {
     //fetch all ids and data and convert to lists
     const data = await col.data();
     const ids = (await col.ids()).dim(0).asList(col.length);
@@ -129,45 +146,20 @@ export default class SortHandler {
     });
   }
 
-
-//See Test Folder for the use of this function
-  async sortNumber(data: INumericalVector, sortCriteria: string) {
-    const sortedView = await data.sort(numSort.bind(this, sortCriteria));
-    return await sortedView.ids(); // sortedRange
+  private toUnique<T>(values: T[]) {
+    return Array.from(new Set(values));
   }
-
-
-//See Test Folder for the use of this function
-  async sortString(data: IStringVector, sortCriteria: string) {
-    const sortedView = await data.sort(stringSort.bind(this, sortCriteria));
-    return await sortedView.ids(); // sortedRange
-  }
-
-
-  /**
-   * Method to find the unique items in the IVector data
-   * @param coldata
-   * @returns {Promise<[values]>}
-   */
-  //See Test Folder for the use of this function
-  async uniqueValues(coldata: IAnyVector) {
-    const allCatNames = await(coldata.data());
-    //TODO what about Array.from(new Set(allCatNames));
-    const uniqvalues = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-    return uniqvalues;
-  }
-
 }
 
 /**
  * See Test Folder for the use of this function
  * @param aVal
- * @param bval
+ * @param bVal
  * @returns {boolean}
  */
-export function filterCat(aVal: string, bval: string) {
+export function filterCat<T>(aVal: T, bVal: T) {
   //if (aVal === bval) {
-  return aVal === bval; //Also include undefined empty strings and null values.
+  return aVal === bVal; //Also include undefined empty strings and null values.
   // }
 }
 
@@ -180,14 +172,19 @@ export function filterCat(aVal: string, bval: string) {
  * @returns {number}
  */
 export function stringSort(sortCriteria: string, aVal: string, bVal: string) {
-  if (sortCriteria === SORT.asc) {
-    return (aVal.localeCompare(bVal));
+  if (aVal === bVal) {
+    return 0;
   }
-  if (sortCriteria === SORT.desc) {
-    return (bVal.localeCompare(aVal));
+  let r : number = 0;
+  if (aVal === null) {
+    r = +1;
+  } else if (bVal === null) {
+    r = -1;
+  } else {
+    r = aVal.localeCompare(bVal);
   }
+  return sortCriteria === SORT.desc ? -r : r;
 }
-
 /**
  * See Test Folder for the use of this function
  *
@@ -197,29 +194,20 @@ export function stringSort(sortCriteria: string, aVal: string, bVal: string) {
  * @returns {number}
  */
 export function numSort(sortCriteria: string, aVal: number, bVal: number) {
-  if (sortCriteria === SORT.asc) {
-    return (aVal - bVal);
+  const isANaN = isNaN(aVal);
+  const isBNaN = isNaN(bVal);
+  if (aVal === bVal || (isANaN && isBNaN)) {
+    return 0;
   }
-  if (sortCriteria === SORT.desc) {
-    return bVal - aVal;
+  let r : number = 0;
+  if (aVal === null || isANaN) {
+    r = +1;
+  } else if (bVal === null || isBNaN) {
+    r = -1;
+  } else {
+    r = aVal - bVal;
   }
-}
-
-/**
- * Unused at the moment.
- * @param categories
- * @param sortCriteria
- * @param aVal
- * @param bVal
- * @returns {number}
- */
-function categoricalSort(categories: {[key: string]: number}, sortCriteria: string, aVal: string, bVal: string) {
-  if (sortCriteria === SORT.asc) {
-    return categories[aVal] - categories[bVal];
-  }
-  if (sortCriteria === SORT.desc) {
-    return categories[bVal] - categories[aVal];
-  }
+  return sortCriteria === SORT.desc ? -r : r;
 }
 
 
@@ -244,20 +232,4 @@ export function prepareRangeFromList(sortedRange: number[], stratifiedArr: numbe
     });
   });
   return rlist;
-}
-
-
-/**
- * Joining the stratifications from given array
- * Works with the output of `prepareRangeFromList()`.
- *
- * @param arr
- * @returns {Range[][]} Returns the range object from list
- */
-function makeRangeFromList(arr: number[][][]): Range[][] {
-  const rangeObject = arr.map((d) => {
-    return d.map((e) => asRange(e));
-  });
-  return rangeObject;
-
 }
