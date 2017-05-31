@@ -290,10 +290,8 @@ export default class ColumnManager extends EventHandler {
     col.$node.remove();
   }
 
-  async updateRangeList(brushedIndices: number[][]) {
+  updateRangeList(brushedIndices: number[][]) {
     const newRange = updateRangeList(this._stratifiedRanges, brushedIndices);
-    //   console.log(newRange)
-    // this.brushedRange = makeRangeFromList(brushedStringIndices);
     this.filtersHierarchy.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, newRange);
     });
@@ -346,7 +344,7 @@ export default class ColumnManager extends EventHandler {
     this.stratifyColumnsByMe();
     this.updateStratifiedRanges();
     if (this.totalbrushed.length > 0) {
-      await this.updateRangeList(this.brushedItems);
+      this.updateRangeList(this.brushedItems);
     }
 
     await this.stratifyColumns();
@@ -502,7 +500,6 @@ export default class ColumnManager extends EventHandler {
   private stratifyColumnsByMe() {
     const cols = this.filtersHierarchy;
     const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
-    const checkColumnTie = findColumnTie(cols); // Find the index of numerical column or String
 
     // If there is zero number of categorical column then the stratification is null
     if (categoricalCol.length === 0) {
@@ -510,6 +507,8 @@ export default class ColumnManager extends EventHandler {
       this._multiformRangeList = [this.nonStratifiedRange];
       return;
     }
+
+    const checkColumnTie = findColumnTie(cols); // Find the index of numerical column or String
     // If there is either  number or string or matrix in the first sort hierarchy the stratification is null
     if (checkColumnTie === 0) {
       this.stratifyColId = null;
@@ -580,7 +579,7 @@ export default class ColumnManager extends EventHandler {
     const multiformList = [];
     this._multiformRangeList.forEach((r, index) => {
       const m = this._stratifiedRanges
-        .map((s) => s.intersect(r).size()[0]);
+        .map((s) => s.intersect(r).dim(0).length);
       const a = m.filter((d) => d > 0);
       const sd = m.indexOf(a[0]);
       if (groupIndex === sd) {

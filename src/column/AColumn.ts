@@ -231,7 +231,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       return;
     }
     const m = stratifiedRanges
-      .map((s) => s.intersect(multiformRange).size()[0]);
+      .map((s) => s.intersect(multiformRange).dim(0).length);
     const a = m.filter((d) => d > 0);
     return m.indexOf(a[0]);
 
