@@ -49,7 +49,8 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    this.$sortButton = $toolbar.append('a')
+    const $hoverToolbar =  $toolbar.select('div.onHoverToolbar');
+    this.$sortButton = $hoverToolbar.append('a')
       .attr('title', 'Sort ascending')
       .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
 

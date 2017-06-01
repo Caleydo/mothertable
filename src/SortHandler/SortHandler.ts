@@ -72,16 +72,12 @@ export default class SortHandler {
     return await this.filterRangeByName(col, sortedValue); // sortedRange
   }
 
-
   /**
    *
    * @param columns
    * @returns {Promise<Range[][]>}
    */
   async sortColumns(columns: AnyColumn[]): Promise<ISortResults> {
-    // if(columns.length === 0) {
-    //   return [[]];
-    // }
     const d = await columns[0].dataView;
     let range: Range[] = [await d.ids()];
 
