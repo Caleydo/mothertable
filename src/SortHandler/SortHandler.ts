@@ -40,16 +40,29 @@ export default class SortHandler {
     }
 
     const {data, ids} = await Promise.all([vector.data(), vector.ids()]).then((r) => ({data: r[0], ids: r[1]}));
+    const lookup = new Map<any, number[]>();
 
-    const uniqValues = SortHandler.toUnique(data);
+    ids.dim(0).forEach((id, i) => {
+      let d = data[i];
+      //special case for NaN replace it with null, since NaN != NaN comparision issue
+      if (typeof d === 'number' && isNaN(d)) {
+        d = null;
+      }
+      //check for group and collect
+      if (!lookup.has(d)) {
+        lookup.set(d, [id]);
+      } else {
+        lookup.get(d).push(id);
+      }
+    });
 
     const valueType = vector.desc.value.type;
     const isNumeric = valueType === VALUE_TYPE_INT || valueType === VALUE_TYPE_REAL;
     const sortFunc = (isNumeric ? numSort : stringSort);
 
-    const sortedValue = uniqValues.sort(sortFunc.bind(this, sortCriteria));
-
-    return SortHandler.groupIDs(data, ids, sortedValue);
+    return Array.from(lookup.keys())
+      .sort(sortFunc.bind(this, sortCriteria))
+      .map((key) => asRange(lookup.get(key)));
   }
 
   /**
@@ -104,32 +117,6 @@ export default class SortHandler {
   async sortColumns(columns: AnyColumn[]): Promise<ISortResults> {
     return SortHandler.sort(columns);
   }
-
-  /**
-   * return the matching ids for the given sorted set of values
-   * @param data the data behind the ids
-   * @param ids the ids to split
-   * @param sortedSet the set of groups
-   * @return Range[] the list of ranges one for each group
-   */
-  private static groupIDs<T>(data: T[], ids: Range, sortedSet: T[]): Range[] {
-    //fetch all ids and data and convert to lists
-    const idList = ids.dim(0).asList(data.length);
-
-    return sortedSet.map((name) => {
-      const filterCatImpl = filterCat.bind(this, name);
-      //filter to the list of matching ids
-      const matchingIds = idList.filter((id, i) => {
-        const dataAt = data[i];
-        return filterCatImpl(dataAt);
-      });
-      return asRange(matchingIds);
-    });
-  }
-
-  private static toUnique<T>(values: T[]) {
-    return Array.from(new Set(values));
-  }
 }
 
 /**
@@ -181,6 +168,7 @@ export function numSort(sortCriteria: string, aVal: number, bVal: number) {
     return 0;
   }
   let r : number = 0;
+  //NaN and null is maximal value
   if (aVal === null || isANaN) {
     r = +1;
   } else if (bVal === null || isBNaN) {
