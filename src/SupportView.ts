@@ -445,7 +445,8 @@ function convertToTree(datasets: IDataType[]) {
     return {
       text: (isDervivedGroup ? `Derived ${type}` : type),
       dataType: type,
-      children
+      children,
+      derived: isDervivedGroup
     };
   });
 }
@@ -457,7 +458,7 @@ function convertToTree(datasets: IDataType[]) {
  * @param query
  * @return {({}&{children: {text: string}[]}&{children: {text: string}[]})[]}
  */
-function filterTree(datasetTree: {text: string; children: {text: string}[]}[], query: string, maxTotalItems = 30, minItemsPerGroup = 5) {
+function filterTree(datasetTree: {text: string; derived: boolean; children: {text: string}[]}[], query: string, maxTotalItems = 30, minItemsPerRegular = 5, minItemsPerDerived = 2) {
   function limit(group: string, arr: any[], maxItemsPerGroup = 5) {
     if (arr.length <= maxItemsPerGroup) {
       return arr;
@@ -482,13 +483,25 @@ function filterTree(datasetTree: {text: string; children: {text: string}[]}[], q
   // total number of entries
   const total = filteredTree.reduce((total, act) => total + act.children.length, 0);
   if (total > maxTotalItems) {
-    //filter too many entries
-    filteredTree.forEach((parent) => {
-      const ratio = parent.children.length / total;
-      //distribute based on the number of items
-      const maxItems = Math.max(minItemsPerGroup, Math.floor(maxTotalItems * ratio));
-      parent.children = limit(parent.text, parent.children, maxItems);
+    const derived = filteredTree.filter((d) => d.derived);
+    const totalDerived = derived.reduce((total, act) => total + act.children.length, 0);
+    const totalRegular = total - totalDerived;
+
+    //if we have to hide something take it from the derived ones first
+    const remainingPerDerived = Math.max(Math.ceil((maxTotalItems - (total - totalDerived)) / derived.length), minItemsPerDerived);
+    derived.forEach((parent) => {
+      parent.children = limit(parent.text, parent.children, remainingPerDerived);
     });
+
+    if ((total - totalDerived) > maxTotalItems) {
+      //need to cut also the regular ones
+      filteredTree.forEach((parent) => {
+        //distribute based on the number of items
+        const ratio = parent.children.length / totalRegular;
+        const maxItems = Math.max(minItemsPerRegular, Math.floor(maxTotalItems * ratio));
+        parent.children = limit(parent.text, parent.children, maxItems);
+      });
+    }
   }
   return filteredTree;
 }
