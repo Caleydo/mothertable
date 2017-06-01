@@ -36,12 +36,26 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .attr('title', 'Stratify table by this column')
       .classed('stratifyByMe', true)
       .html(`<i class="fa fa-columns fa-rotate-270 fa-fw" aria-hidden="true"></i><span class="sr-only">Stratify table by this column</span>`)
-      .on('click', () => {
-        fire(CategoricalColumn.EVENT_STRATIFYME, this);
-      });
+      .on('click', () => { // change stratification
+        if($stratifyButton.classed('active')) {
+          fire(CategoricalColumn.EVENT_UNSTRATIFYME, this);
+        } else {
+          fire(CategoricalColumn.EVENT_STRATIFYME, this);
+        }
+    });
 
     on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
-      $stratifyButton.classed('active', ref.data.desc.id === this.data.desc.id);
+      if (ref.data.desc.id === this.data.desc.id) {
+        $stratifyButton.classed('active', true);
+        this.fire(CategoricalColumn.EVENT_STRATIFYME, this); // for stratifying in the ColumnManager
+      }
+    });
+
+    on(CategoricalColumn.EVENT_UNSTRATIFYME, (evt, ref) => {
+      if (ref.data.desc.id === this.data.desc.id) {
+        $stratifyButton.classed('active', false);
+        this.fire(CategoricalColumn.EVENT_UNSTRATIFYME, this); // for unstratifying in the ColumnManager
+      }
     });
 
     super.addSortIcon($node);
