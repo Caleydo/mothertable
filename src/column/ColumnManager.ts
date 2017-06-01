@@ -69,7 +69,7 @@ export default class ColumnManager extends EventHandler {
   private nonStratifiedRange: Range; //This is the flatten Range which is obtained from Sort
   private visManager: VisManager;
   private colsWithRange = new Map();
-  private dataPerStratificaiton; //The number of data elements per stratification
+  private dataPerStratification; //The number of data elements per stratification
   private stratifyColId: string = null; // This is column Name used for stratification
   private _brushedRanges: Range[] = [];
   private brushedItems = [];
@@ -89,6 +89,19 @@ export default class ColumnManager extends EventHandler {
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
+  }
+
+  private unstratifyMe = async (event: IEvent, colid) => {
+    const oldRanges: Map<number, Range> = new Map<number, Range>();
+    if (this._stratifiedRanges) {
+      this._stratifiedRanges.forEach((r, index) => {
+        oldRanges.set(index, r);
+      });
+    }
+    this.unstratify();
+    await this.stratifyColumns();
+    this.updateAggModePerGroupAfterNewStrat(oldRanges);
+    this.relayout();
   }
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
@@ -165,6 +178,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.on(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
     col.on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
+    col.on(CategoricalColumn.EVENT_UNSTRATIFYME, this.unstratifyMe);
     col.on(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
     col.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.onSortByFilterHeader);
     col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
@@ -370,7 +384,7 @@ export default class ColumnManager extends EventHandler {
     const r = await s.sortColumns(cols);
     this.nonStratifiedRange = r.combined;
     this._stratifiedRanges = [r.combined];
-    this.dataPerStratificaiton = r.stratified;
+    this.dataPerStratification = r.stratified;
     cols.forEach((col) => {
       this.colsWithRange.set(col.data.desc.id, [this.nonStratifiedRange]);
     });
@@ -411,7 +425,7 @@ export default class ColumnManager extends EventHandler {
     }
 
     const cols = this.filtersHierarchy;
-    const datas = this.dataPerStratificaiton.get(this.stratifyColId);
+    const datas = this.dataPerStratification.get(this.stratifyColId);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
     if (this.totalbrushed.length === 0) {
@@ -420,7 +434,6 @@ export default class ColumnManager extends EventHandler {
       });
       this._multiformRangeList = this._stratifiedRanges;
     }
-
   }
 
   /**
@@ -496,6 +509,11 @@ export default class ColumnManager extends EventHandler {
       .forEach((col) => (<CategoricalColumn>col).showStratIcon(true));
   }
 
+  private unstratify() {
+    this.stratifyColId = null;
+    this._multiformRangeList = [this.nonStratifiedRange];
+  }
+
 
   private stratifyColumnsByMe() {
     const cols = this.filtersHierarchy;
@@ -503,16 +521,14 @@ export default class ColumnManager extends EventHandler {
 
     // If there is zero number of categorical column then the stratification is null
     if (categoricalCol.length === 0) {
-      this.stratifyColId = null;
-      this._multiformRangeList = [this.nonStratifiedRange];
+      this.unstratify();
       return;
     }
 
     const checkColumnTie = findColumnTie(cols); // Find the index of numerical column or String
     // If there is either  number or string or matrix in the first sort hierarchy the stratification is null
     if (checkColumnTie === 0) {
-      this.stratifyColId = null;
-      this._multiformRangeList = [this.nonStratifiedRange];
+      this.unstratify();
       return;
     }
 
