@@ -34,42 +34,26 @@ export const SORT = {
 export default class SortHandler {
 
   /**
-   * Find the method to get the range
-   * @param newView {IVector)
-   * @returns {Promise<Range>}
+   * stratify the given vector and returning a list of ranges per sorted unique value
    */
-
-  private async chooseType(newView: IAnyVector, sortCriteria: 'asc'|'desc') {
-    const v = <IAnyVector>newView;
-    switch (v.desc.value.type) {
-      case VALUE_TYPE_STRING:
-      case VALUE_TYPE_CATEGORICAL:
-        return (await this.collectRangeList(newView, sortCriteria, 'sc'));
-      case VALUE_TYPE_INT:
-      case VALUE_TYPE_REAL:
-        return (await this.collectRangeList(newView, sortCriteria, 'ir'));
-    }
-  }
-
-
-  private async collectRangeList(col: IAnyVector, sortCriteria: 'asc'|'desc', type: 'sc'|'ir'): Promise<Range[]> {
+  private async stratify(vector: IAnyVector, sortCriteria: 'asc' | 'desc'): Promise<Range[]> {
     //optimize for the simple cases
-    if (col.length === 0) {
+    if (vector.length === 0) {
       return Promise.resolve([]);
-    } else if (col.length === 1) {
-      return [await col.ids()];
+    } else if (vector.length === 1) {
+      return [await vector.ids()];
     }
-    //more than one
-    const uniqValues = await this.toUnique(await col.data());
-    let sortedValue;
-    if (type === 'sc') {
-      sortedValue = uniqValues.sort(stringSort.bind(this, sortCriteria));
-    } else if (type === 'ir') {
-      sortedValue = uniqValues.sort(numSort.bind(this, sortCriteria));
-    } else {
-      throw Error('invalid argument: ' + type);
-    }
-    return await this.filterRangeByName(col, sortedValue); // sortedRange
+
+    const {data, ids} = await Promise.all([vector.data(), vector.ids()]).then((r) => ({data: r[0], ids: r[1]}));
+
+    const uniqValues = this.toUnique(data);
+
+    const valueType = vector.desc.value.type;
+    const isNumeric = valueType === VALUE_TYPE_INT || valueType === VALUE_TYPE_REAL;
+    const sortFunc = (isNumeric ? numSort : stringSort).bind(this, sortCriteria);
+    const sortedValue = uniqValues.sort(sortFunc);
+
+    return this.groupIDs(data, ids, sortedValue);
   }
 
   /**
@@ -98,7 +82,7 @@ export default class SortHandler {
         } else {
           //Create VectorView  of from each array element of range.
           const newView: any = await data.idView(n);
-          columnRanges.push(...await this.chooseType(newView, sortCriteria));
+          columnRanges.push(...await this.stratify(newView, sortCriteria));
         }
       }
 
@@ -123,18 +107,17 @@ export default class SortHandler {
   /**
    *
    * @param column Data {IVector}
-   * @param sortedByName {Array of unique elment  sorted by asc or dsc}
+   * @param sortedSet {Array of unique elment  sorted by asc or dsc}
    * @returns {Promise<Range>}
    */
-  private async filterRangeByName(col: IAnyVector, sortedByName: any[]): Promise<Range[]> {
+  private groupIDs<T>(data: T[], ids: Range, sortedSet: T[]): Range[] {
     //fetch all ids and data and convert to lists
-    const data = await col.data();
-    const ids = (await col.ids()).dim(0).asList(col.length);
+    const idList = ids.dim(0).asList(data.length);
 
-    return sortedByName.map((name) => {
+    return sortedSet.map((name) => {
       const filterCatImpl = filterCat.bind(this, name);
       //filter to the list of matching ids
-      const matchingIds = ids.filter((id, i) => {
+      const matchingIds = idList.filter((id, i) => {
         const dataAt = data[i];
         return filterCatImpl(dataAt);
       });
