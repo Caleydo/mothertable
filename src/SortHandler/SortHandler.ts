@@ -2,15 +2,11 @@
  * Created by bikramkawan on 11/02/2017.
  */
 
-import {
-  VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
-  IDataType
-} from 'phovea_core/src/datatype';
-import {IAnyVector, INumericalVector} from 'phovea_core/src/vector';
+import {VALUE_TYPE_INT, VALUE_TYPE_REAL} from 'phovea_core/src/datatype';
+import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
 import {list as asRange} from 'phovea_core/src/range';
-import {makeListFromRange, mergeRanges} from '../column/utils';
-import {IStringVector} from '../column/AVectorColumn';
+import {mergeRanges} from '../column/utils';
 import {AnyColumn} from '../column/ColumnManager';
 
 interface ISortResults {
@@ -27,7 +23,6 @@ interface ISortResults {
 export const SORT = {
   asc: 'asc',
   desc: 'desc'
-
 };
 
 
@@ -36,7 +31,7 @@ export default class SortHandler {
   /**
    * stratify the given vector and returning a list of ranges per sorted unique value
    */
-  private async stratify(vector: IAnyVector, sortCriteria: 'asc' | 'desc'): Promise<Range[]> {
+  private static async stratify(vector: IAnyVector, sortCriteria: 'asc' | 'desc'): Promise<Range[]> {
     //optimize for the simple cases
     if (vector.length === 0) {
       return Promise.resolve([]);
@@ -46,23 +41,25 @@ export default class SortHandler {
 
     const {data, ids} = await Promise.all([vector.data(), vector.ids()]).then((r) => ({data: r[0], ids: r[1]}));
 
-    const uniqValues = this.toUnique(data);
+    const uniqValues = SortHandler.toUnique(data);
 
     const valueType = vector.desc.value.type;
     const isNumeric = valueType === VALUE_TYPE_INT || valueType === VALUE_TYPE_REAL;
-    const sortFunc = (isNumeric ? numSort : stringSort).bind(this, sortCriteria);
-    const sortedValue = uniqValues.sort(sortFunc);
+    const sortFunc = (isNumeric ? numSort : stringSort);
 
-    return this.groupIDs(data, ids, sortedValue);
+    const sortedValue = uniqValues.sort(sortFunc.bind(this, sortCriteria));
+
+    return SortHandler.groupIDs(data, ids, sortedValue);
   }
 
   /**
-   *
+   * sorts the given array of columns in a hierarchical way
    * @param columns
-   * @returns {Promise<Range[][]>}
+   * @return {Promise<{combined: Range, stratified: Map<string, number[]>}>}
    */
-  async sortColumns(columns: AnyColumn[]): Promise<ISortResults> {
+  static async sort(columns: AnyColumn[]): Promise<ISortResults> {
     const d = await columns[0].dataView;
+
     let range: Range[] = [await d.ids()];
 
     const groupSizes = new Map<string, number[]>();
@@ -71,46 +68,51 @@ export default class SortHandler {
     for (const column of columns) {
       const data = column.data;
       const sortCriteria = <'asc'|'desc'>column.sortCriteria;
-      const columnRanges: Range[] = [];
+
+      const nextRanges: Range[] = [];
 
       // Iterate through all the ranges available for that column.
       // A column can be composed with array of ranges.
       for (const n of range) {
         if (n.dim(0).length === 1) {
           //can't be splitted further
-          columnRanges.push(n);
+          nextRanges.push(n);
         } else {
           //Create VectorView  of from each array element of range.
           const newView: any = await data.idView(n);
-          columnRanges.push(...await this.stratify(newView, sortCriteria));
+          //sort this view and split in individual values
+          nextRanges.push(...await SortHandler.stratify(newView, sortCriteria));
         }
       }
 
-      range = columnRanges;
-      const dataElementsPerCol = range.map((d) => d.dim(0).length);
+      //collect stats
+      const dataElementsPerCol = nextRanges.map((d) => d.dim(0).length);
       groupSizes.set(column.data.desc.id, dataElementsPerCol);
+
+      //the combined values of all subranges are the ranges for the next round
+      range = nextRanges;
     }
 
     return {combined: mergeRanges(range), stratified: groupSizes};
   }
 
-
-  private concatRanges(rangeOfViewData: Range[][]|Range[]): Range[] {
-    if (Array.isArray(rangeOfViewData[0])) {
-      //flat the array
-      return [].concat(...rangeOfViewData);
-    } else {
-      return <Range[]>rangeOfViewData;
-    }
+  /**
+   *
+   * @param columns
+   * @returns {Promise<Range[][]>}
+   */
+  async sortColumns(columns: AnyColumn[]): Promise<ISortResults> {
+    return SortHandler.sort(columns);
   }
 
   /**
-   *
-   * @param column Data {IVector}
-   * @param sortedSet {Array of unique elment  sorted by asc or dsc}
-   * @returns {Promise<Range>}
+   * return the matching ids for the given sorted set of values
+   * @param data the data behind the ids
+   * @param ids the ids to split
+   * @param sortedSet the set of groups
+   * @return Range[] the list of ranges one for each group
    */
-  private groupIDs<T>(data: T[], ids: Range, sortedSet: T[]): Range[] {
+  private static groupIDs<T>(data: T[], ids: Range, sortedSet: T[]): Range[] {
     //fetch all ids and data and convert to lists
     const idList = ids.dim(0).asList(data.length);
 
@@ -125,7 +127,7 @@ export default class SortHandler {
     });
   }
 
-  private toUnique<T>(values: T[]) {
+  private static toUnique<T>(values: T[]) {
     return Array.from(new Set(values));
   }
 }
@@ -199,16 +201,14 @@ export function numSort(sortCriteria: string, aVal: number, bVal: number) {
  * @returns {number[][][]}
  */
 export function prepareRangeFromList(sortedRange: number[], stratifiedArr: number[][]): number[][][] {
-  const rlist = stratifiedArr.map((d) => {
+  return stratifiedArr.map((d) => {
     let index = 0;
     return d.map((e, i) => {
       if (i > 0) {
         index = index + d[i - 1];
       }
-
       return sortedRange.slice(index, index + e);
 
     });
   });
-  return rlist;
 }
