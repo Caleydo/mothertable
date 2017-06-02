@@ -39,7 +39,7 @@ export default class SupportView extends EventHandler {
   static EVENT_DATASETS_ADDED = 'datasetAdded';
   static EVENT_FILTER_CHANGED = FilterManager.EVENT_FILTER_CHANGED;
 
-  private static readonly HASH_FILTER_DELIMITER = ',';
+  private static readonly HASH_FILTER_DELIMITER = ';';
 
   $node: d3.Selection<any>;
   private $fuelBar: d3.Selection<any>;
@@ -107,7 +107,7 @@ export default class SupportView extends EventHandler {
         .getProp(this.idTypeHash)
         .split(SupportView.HASH_FILTER_DELIMITER);
 
-      if(attributeArray.indexOf(stringColumn.desc.name) > -1) {
+      if(attributeArray.indexOf(stringColumn.desc.id) > -1) {
          return; // if a string column is already present, don't add another one
       }
     }
@@ -169,13 +169,14 @@ export default class SupportView extends EventHandler {
 
   private async addInitialFilters() {
     if (hash.has(this.idTypeHash)) {
-      const datasets = await Promise.all(hash.getProp(this.idTypeHash)
+      const toAdd = hash.getProp(this.idTypeHash)
         .split(SupportView.HASH_FILTER_DELIMITER)
-        .map((name) => this.datasets.filter((d) => d.desc.name === name)[0])
-        .filter((data) => data !== undefined)
-        .map((data) => {
-          return this.addDataset(data);
-        }));
+        .map((name) => this.datasets.filter((d) => d.desc.id === name)[0])
+        .filter((data) => data !== undefined);
+      const datasets = [];
+      for (const data of toAdd) {
+        datasets.push(await this.addDataset(data));
+      }
       this.fire(SupportView.EVENT_DATASETS_ADDED, datasets);
     }
   }
@@ -184,7 +185,7 @@ export default class SupportView extends EventHandler {
     // add random id to hash
     hash.setProp(this.idTypeHash,
       this._filterManager.filters
-        .map((d) => d.data.desc.name)
+        .map((d) => d.data.desc.id)
         .join(SupportView.HASH_FILTER_DELIMITER)
     );
   }
