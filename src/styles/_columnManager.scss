@@ -138,7 +138,7 @@
         margin: -6px;
         margin-top: 2px;
       }
-      
+
       //Switching from matrix to vector for stratified
       &.matrix {
         flex-direction: row;
@@ -237,25 +237,30 @@
   .column.column-matrix {
     position: relative;
 
-    aside .labelName {
-      height: 17px;
-      position: absolute;
-      right: 0;
-      margin-right: 101%;
-      //margin-top: 5%; // doesn't work for smaller heights like heat map
-      white-space: nowrap;
-    }
-    //Switching from matrix to vector for non stratified
-    aside .matrixLabel {
-      right: auto;
-      margin-right: auto;
-      position: static;
-      width: 60px;
-    }
-    //Switching from matrix to vector for stratified
-    aside .matrixLabelExtended {
-      right: auto;
-      margin-right: auto;
+    aside {
+      .labelName {
+        height: 17px;
+        position: absolute;
+        right: 0;
+        margin-right: 101%;
+        //margin-top: 5%; // doesn't work for smaller heights like heat map
+        white-space: nowrap;
+      }
+      //Switching from matrix to vector for non stratified
+      .matrixLabel {
+        right: auto;
+        margin-right: auto;
+        position: static;
+        width: 60px;
+      }
+      //Switching from matrix to vector for stratified
+      .matrixLabelExtended {
+        right: auto;
+        margin-right: auto;
+      }
+      .resize-handle {
+        display: none;
+      }
     }
 
     & ~ .column.column-matrix {
