@@ -264,26 +264,22 @@
     }
 
     & ~ .column.column-matrix {
-      aside .labelName {
-        height: 17px;
-        position: absolute;
-        left: 0;
-        margin-left: 101%;
-        white-space: nowrap;
+      aside {
+        .labelName {
+          left: 0;
+          margin-left: 101%;
+        }
+        //Switching from matrix to vector for non stratified
+        .matrixLabel {
+          left: auto;
+          margin-left: auto;
+        }
+        //Switching from matrix to vector for stratified
+        .matrixLabelExtended {
+          left: auto;
+          margin-left: auto;
+        }
       }
-      //Switching from matrix to vector for non stratified
-      aside .matrixLabel {
-        left: auto;
-        margin-left: auto;
-        position: static;
-        width: 60px;
-      }
-      //Switching from matrix to vector for stratified
-      aside .matrixLabelExtended {
-        left: auto;
-        margin-left: auto;
-      }
-
     }
   }
 }
