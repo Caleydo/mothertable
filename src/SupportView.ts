@@ -218,6 +218,7 @@ export default class SupportView extends EventHandler {
   }
 
   public remove(data: IDataType) {
+    console.log(data)
     if (this._filterManager.contains(<IFilterAbleType>data)) {
       this._filterManager.remove(null, <IFilterAbleType>data);
       this.updateURLHash();

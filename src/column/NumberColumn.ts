@@ -21,7 +21,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   projectedMatrix: boolean = false;
   matrixViewRange: Range;
 
-  private $points:d3.Selection<any>;
+  private $points: d3.Selection<any>;
   private scale: d3.scale.Linear<number, number>;
   public static EVENT_CONVERT_TO_MATRIX = 'convertToMatrix';
 
@@ -35,7 +35,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     super.buildToolbar($toolbar);
     this.$points = $toolbar.select('svg').append('g');
     const $svg = $toolbar.select('svg').append('g');
-    const width =$toolbar.node().parentElement.getBoundingClientRect().width;
+    const width = $toolbar.node().parentElement.getBoundingClientRect().width;
 
     this.scale = d3.scale.linear().range([0, width]).domain((this.data.desc).value.range);
     const tickCount = 0;
@@ -45,15 +45,15 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       .outerTickSize(8)
       .orient('bottom')
       .scale(this.scale);
-    axis.tickValues(this.scale.ticks(tickCount).concat( this.scale.domain()));
+    axis.tickValues(this.scale.ticks(tickCount).concat(this.scale.domain()));
     $svg.call(axis);
     const count = $svg.selectAll('.tick').size();
-    $svg.selectAll('.tick').each(function(data, i) {
-      if(i === count-1) {
+    $svg.selectAll('.tick').each(function (data, i) {
+      if (i === count - 1) {
         const tick = d3.select(this).select('text');
         tick.style('text-anchor', 'end');
       }
-      if(i === count-2) {
+      if (i === count - 2) {
         const tick = d3.select(this).select('text');
         tick.style('text-anchor', 'start');
       }
@@ -62,13 +62,13 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   public updateAxis(brushedItems: number[][]) {
     const axis = this.$node.selectAll('taggle-axis')[0];
-    const brushedData  = [];
+    const brushedData = [];
 
     this.$points.selectAll('line').remove();
 
-    this.data.forEach((d,i) => {
-      brushedItems.forEach( (brush) => {
-        if(brush.indexOf(i) > -1) {
+    this.data.forEach((d, i) => {
+      brushedItems.forEach((brush) => {
+        if (brush.indexOf(i) > -1) {
           brushedData.push(d);
           this.$points.append('line').attr({
             'x1': this.scale(d),
@@ -114,7 +114,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     if ((<any>this).data.m !== undefined) {
       // this.matrixViewRange = this.data.m.range.dim(1).asList();
       //  console.log(this.data.m, this.data.m.range.dim(1).asList())
-      const $matrixChange = this.toolbar.insert('a', ':first-child')
+      const $matrixChange = this.toolbar.select('.onHoverToolbar').insert('a', ':first-child')
         .attr('title', 'Aggregated Me')
         .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
 
