@@ -67,13 +67,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return $node;
   }
 
-  protected resizableDragBehavior() {
-    super.resizableDragBehavior();
-
-    const width = (<any>d3.event).x;
-
-    // respect the given min-width
-    if(width <= this.minWidth) {
+  setFixedWidth(width:number) {
+    if(isNaN(width)) {
       return;
     }
 
@@ -84,6 +79,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
         scaleTo(multiform, width, multiform.size[1], col.orientation);
       });
     });
+
+    super.setFixedWidth(width);
   }
 
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {

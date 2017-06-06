@@ -98,8 +98,11 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
   }
 
-  protected resizableDragBehavior() {
-    super.resizableDragBehavior();
+  setFixedWidth(width:number) {
+    if(isNaN(width)) {
+      return;
+    }
+    super.setFixedWidth(width);
     this.updateAxisScale();
   }
 

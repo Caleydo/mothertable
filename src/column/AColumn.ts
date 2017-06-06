@@ -22,10 +22,14 @@ export enum EOrientation {
 }
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
+
   static readonly VISUALIZATION_SWITCHED = 'switched';
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
+  static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
+
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix', stratification: 'stratification'};
+
   $node: d3.Selection<any>;
 
   minWidth: number = 10;
@@ -45,7 +49,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   selectedUnaggVis: IVisPluginDesc;
   matrixFilters: AnyFilter[];//For the header in matrix
 
-  private _width:number = 0;
+  private _width:number = this.maxWidth;
 
   protected multiformMap: Map<string, TaggleMultiform> = new Map<string, TaggleMultiform>();
 
@@ -164,8 +168,15 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   protected buildResizable($handle: d3.Selection<any>) {
     const drag = d3.behavior.drag()
       //.on('dragstart', () => console.log('start', d3.event))
-      .on('drag', this.resizableDragBehavior.bind(this));
-      //.on('dragend', () => console.log('start', d3.event))
+      .on('drag', () => {
+        const width = (<any>d3.event).x;
+        // respect the given min-width
+        if(width <= this.minWidth) {
+          return;
+        }
+        this.setFixedWidth(width);
+      })
+      .on('dragend', () => this.fire(AColumn.EVENT_WIDTH_CHANGED));
 
     $handle.call(drag);
   }
@@ -173,11 +184,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   /**
    * Simple resize behavior for the column width by scaling each multiform within the column
    */
-  protected resizableDragBehavior() {
-    const width = (<any>d3.event).x;
-
-    // respect the given min-width
-    if(width <= this.minWidth) {
+  public setFixedWidth(width:number) {
+    if(isNaN(width)) {
       return;
     }
 
@@ -318,7 +326,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         .classed('active', true)
         .attr('title', 'Unlock column')
         .html(`<i class="fa fa-lock fa-fw" aria-hidden="true"></i><span class="sr-only">Unlock column</span>`);
-      this.lockedWidth = this.$node.property('clientWidth');
+      this.lockedWidth = +this.$node.property('clientWidth');
       this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
     }
   }
