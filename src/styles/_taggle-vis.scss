@@ -75,6 +75,10 @@
 .phovea-heatmap rect {
   stroke: white;
   stroke-width: 0.1;
+
+  &.phovea-select-selected {
+    stroke: $select-color;
+  }
 }
 
 
