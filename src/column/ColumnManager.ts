@@ -213,14 +213,19 @@ export default class ColumnManager extends EventHandler {
     if (col === undefined) {
       return;
     }
+
+    //Special case for the removing the parent dom of the projected vector from matrix.
+    const parentNode = col.$node.node().parentNode.parentNode.parentNode;
+    const checkParent = col.$node.node().parentNode.childNodes.length;
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
-
     // no columns of attribute available --> delete from filter hierarchy for correct sorting
     if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
       this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
     }
-
+    if (checkParent < 2) {
+      parentNode.parentNode.removeChild(parentNode);
+    }
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
@@ -229,6 +234,8 @@ export default class ColumnManager extends EventHandler {
     col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
+
+
     this.updateColumns();
   }
 
@@ -272,20 +279,42 @@ export default class ColumnManager extends EventHandler {
     if (aggNode === null) {
       this.addChangeIconMatrix(columnNode, col);
     }
+
     const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
     matrixDOM.node().appendChild(projectedcolumn.$node.node());
+    projectedcolumn.$node.select('aside').remove();
+    columnNode.style('width', null);
+    columnNode.style('min-width', null);
+    const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
+    if (childCount > 1) {
+      columnNode.select('header.columnHeader')
+        .classed('matrix', false)
+        .select('.labelName')
+        .classed('matrixLabel', false)
+        .classed('matrixLabelExtended', true);
+
+    } else {
+      columnNode.select('header.columnHeader')
+        .classed('matrix', true)
+        .select('.labelName')
+        .classed('matrixLabel', true);
+    }
+    const h = columnNode.select('header.columnHeader').node();
+    columnNode.select('header.columnHeader').select('.taggle-axis').classed('extended', true);
+    columnNode.select('aside').node().appendChild(h);
     const index = this.columns.indexOf(col);
     if (index === -1) {
       return;
     }
     this.columns.splice(index, 1); // Remove matrix column
+    this.relayout();
 
   }
 
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
-    columnNode.select('header.columnHeader').selectAll('.toolbar').selectAll('*').remove();
-    const aggIcon = columnNode.select('header.columnHeader').selectAll('.toolbar').insert('a', ':first-child')
+    columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').selectAll('*').remove();
+    const aggIcon = columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').insert('a', ':first-child')
       .attr('title', 'Aggregated Me')
       .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
     columnNode.select('main').selectAll('.multiformList').remove();

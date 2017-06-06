@@ -65,7 +65,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
         const tick = d3.select(this).select('text');
         tick.style('text-anchor', 'end');
       }
-      if(i === count-2) {
+      if (i === count - 2) {
         const tick = d3.select(this).select('text');
         tick.style('text-anchor', 'start');
       }
@@ -74,13 +74,13 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   public updateAxis(brushedItems: number[][]) {
     const axis = this.$node.selectAll('taggle-axis')[0];
-    const brushedData  = [];
+    const brushedData = [];
 
     this.$points.selectAll('line').remove();
 
-    this.data.forEach((d,i) => {
-      brushedItems.forEach( (brush) => {
-        if(brush.indexOf(i) > -1) {
+    this.data.forEach((d, i) => {
+      brushedItems.forEach((brush) => {
+        if (brush.indexOf(i) > -1) {
           brushedData.push(d);
           this.$points.append('line').attr({
             'x1': this.scale(d),
@@ -138,7 +138,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     if ((<any>this).data.m !== undefined) {
       // this.matrixViewRange = this.data.m.range.dim(1).asList();
       //  console.log(this.data.m, this.data.m.range.dim(1).asList())
-      const $matrixChange = this.toolbar.insert('a', ':first-child')
+      const $matrixChange = this.toolbar.select('.onHoverToolbar').insert('a', ':first-child')
         .attr('title', 'Aggregated Me')
         .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
 

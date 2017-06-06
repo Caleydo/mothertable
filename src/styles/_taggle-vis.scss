@@ -18,18 +18,21 @@
   }
 }
 
-.taggle-axis{
+.taggle-axis {
   font-size: 10px;
 
-
-  line{
-      stroke: $select-color;
+  line {
+    stroke: $select-color;
   }
 
   .tick line, path {
     fill: none;
     stroke: black;
     shape-rendering: geometricPrecision;
+  }
+  &.extended {
+    display: none;
+
   }
 
 }
@@ -80,7 +83,6 @@
     stroke: $select-color;
   }
 }
-
 
 .phovea-histogram {
   border-bottom: 1px solid $header-border-color;
