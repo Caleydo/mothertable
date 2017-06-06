@@ -262,8 +262,8 @@ export default class ColumnManager extends EventHandler {
     projectedcolumn.$node.select('aside').remove();
     columnNode.style('width', null);
     columnNode.style('min-width', null);
-    const colWidth = (<HTMLElement>columnNode.select('main').node()).clientWidth;
-    if (colWidth > 80) {
+    const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
+    if (childCount > 1) {
       columnNode.select('header.columnHeader')
         .classed('matrix', false)
         .select('.labelName')
