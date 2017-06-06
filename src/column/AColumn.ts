@@ -167,7 +167,6 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
    */
   protected buildResizable($handle: d3.Selection<any>) {
     const drag = d3.behavior.drag()
-      //.on('dragstart', () => console.log('start', d3.event))
       .on('drag', () => {
         const width = (<any>d3.event).x;
         // respect the given min-width
@@ -191,7 +190,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     this.width = width;
 
-    // set lockWidth to avoid overiding the width from ColumnManager.distributeColWidths()
+    // set lockWidth to avoid overriding the width by ColumnManager.distributeColWidths()
     this.lockedWidth = this.width;
 
     this.$node.select('.lock-column')
