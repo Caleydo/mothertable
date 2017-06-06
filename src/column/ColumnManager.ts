@@ -277,7 +277,7 @@ export default class ColumnManager extends EventHandler {
         .classed('matrixLabel', true);
     }
     const h = columnNode.select('header.columnHeader').node();
-    console.log(colWidth, h)
+    columnNode.select('header.columnHeader').select('.taggle-axis').classed('extended', true);
     columnNode.select('aside').node().appendChild(h);
     const index = this.columns.indexOf(col);
     if (index === -1) {
@@ -289,7 +289,6 @@ export default class ColumnManager extends EventHandler {
   }
 
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
-    console.log(columnNode.node())
     columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').selectAll('*').remove();
     const aggIcon = columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').insert('a', ':first-child')
       .attr('title', 'Aggregated Me')
