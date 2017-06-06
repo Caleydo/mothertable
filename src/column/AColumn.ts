@@ -8,7 +8,7 @@ import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
 import {SORT} from '../SortHandler/SortHandler';
 import {createNode} from 'phovea_core/src/multiform/internal';
-import {formatAttributeName} from './utils';
+import {formatAttributeName, scaleTo} from './utils';
 import {IVisPluginDesc, list as listVisses} from 'phovea_core/src/vis';
 import VisManager from './VisManager';
 import {EAggregationType} from './VisManager';
@@ -22,10 +22,14 @@ export enum EOrientation {
 }
 
 abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
+
   static readonly VISUALIZATION_SWITCHED = 'switched';
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
+  static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
+
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix', stratification: 'stratification'};
+
   $node: d3.Selection<any>;
 
   minWidth: number = 10;
@@ -45,10 +49,21 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   selectedUnaggVis: IVisPluginDesc;
   matrixFilters: AnyFilter[];//For the header in matrix
 
+  private _width:number = this.maxWidth;
+
   protected multiformMap: Map<string, TaggleMultiform> = new Map<string, TaggleMultiform>();
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
+  }
+
+  set width(value:number) {
+    this._width = value;
+    this.$node.style('width', value + 'px');
+  }
+
+  get width():number {
+    return this._width;
   }
 
   get multiformList():TaggleMultiform[] {
@@ -116,6 +131,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .html(`
         <aside></aside>
         <header class="columnHeader">
+          <div class="resize-handle"></div>
           <div class="toolbar">
             <div class="labelName" title="${formatAttributeName(this.data.desc.name)}"><i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> <span>${formatAttributeName(this.data.desc.name)}</span></div>
             <div class="onHoverToolbar"></div>
@@ -123,7 +139,9 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         </header>
         <main></main>`);
 
+    this.buildResizable($node.select('div.resize-handle'));
     this.buildToolbar($node.select('div.toolbar'));
+
     $node.select('div.onHoverToolbar')
       .style('display', 'none' )
       .style('visibility', 'hidden');
@@ -143,9 +161,52 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     return $node;
   }
 
+  /**
+   * Add a drag behavior to a given node
+   * @param $handle
+   */
+  protected buildResizable($handle: d3.Selection<any>) {
+    const drag = d3.behavior.drag()
+      .on('drag', () => {
+        const width = (<any>d3.event).x;
+        // respect the given min-width
+        if(width <= this.minWidth) {
+          return;
+        }
+        this.setFixedWidth(width);
+      })
+      .on('dragend', () => this.fire(AColumn.EVENT_WIDTH_CHANGED));
+
+    $handle.call(drag);
+  }
+
+  /**
+   * Simple resize behavior for the column width by scaling each multiform within the column
+   */
+  public setFixedWidth(width:number) {
+    if(isNaN(width)) {
+      return;
+    }
+
+    this.width = width;
+
+    // set lockWidth to avoid overriding the width by ColumnManager.distributeColWidths()
+    this.lockedWidth = this.width;
+
+    this.$node.select('.lock-column')
+        .classed('active', true)
+        .attr('title', 'Unlock column')
+        .html(`<i class="fa fa-lock fa-fw" aria-hidden="true"></i><span class="sr-only">Unlock column</span>`);
+
+    this.multiformList.forEach((multiform) => {
+      scaleTo(multiform, this.width, multiform.size[1], this.orientation);
+    });
+  }
+
   protected buildToolbar($toolbar: d3.Selection<any>) {
     const $hoverToolbar =  $toolbar.select('div.onHoverToolbar');
     const $lockButton = $hoverToolbar.append('a')
+      .classed('lock-column', true)
       .attr('title', 'Lock column')
       .html(`<i class="fa fa-unlock fa-fw" aria-hidden="true"></i><span class="sr-only">Lock column</span>`)
       .on('click', () => {
@@ -264,7 +325,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         .classed('active', true)
         .attr('title', 'Unlock column')
         .html(`<i class="fa fa-lock fa-fw" aria-hidden="true"></i><span class="sr-only">Unlock column</span>`);
-      this.lockedWidth = this.$node.property('clientWidth');
+      this.lockedWidth = +this.$node.property('clientWidth');
       this.fire(AColumn.EVENT_COLUMN_LOCK_CHANGED, 'locked');
     }
   }

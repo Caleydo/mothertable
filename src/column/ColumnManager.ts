@@ -47,16 +47,18 @@ import {AGGREGATE} from './MatrixColumn';
 import SupportView from '../SupportView';
 import RowNumberColumn from './RowNumberColumn';
 import Any = jasmine.Any;
+import {hash} from 'phovea_core/src/index';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
 export default class ColumnManager extends EventHandler {
 
-
   static readonly EVENT_COLUMN_REMOVED = 'columnRemoved';
   static readonly EVENT_COLUMN_ADDED = 'columnAdded';
   static readonly EVENT_DATA_REMOVED = 'removedData';
+
+  private static readonly HASH_FILTER_DELIMITER = ',';
 
   private $node: d3.Selection<any>;
 
@@ -86,6 +88,7 @@ export default class ColumnManager extends EventHandler {
   private onVisChange = (event: IEvent) => this.relayout();
   private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
+  private onWidthChanged = (event:IEvent) => this.setWidthToURLHash();
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -149,6 +152,24 @@ export default class ColumnManager extends EventHandler {
     this.$parent.selectAll('.column').remove();
   }
 
+  private setWidthToURLHash() {
+    hash.setProp('colWidths',
+      this.filtersHierarchy
+        .map((d) => d.width.toFixed())
+        .join(ColumnManager.HASH_FILTER_DELIMITER)
+    );
+  }
+
+  private initWidthFromURLHash(column:AnyColumn) {
+    if (hash.has('colWidths')) {
+      const widths = hash.getProp('colWidths')
+        .split(ColumnManager.HASH_FILTER_DELIMITER);
+
+      const width = parseFloat(widths[this.filtersHierarchy.indexOf(column)]);
+      column.setFixedWidth(width);
+    }
+  }
+
   /**
    * Adding a new column from given data
    * Called when adding a new filter from dropdown or from hash
@@ -169,6 +190,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.onSortByFilterHeader);
     col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
     col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
+    col.on(AColumn.EVENT_WIDTH_CHANGED, this.onWidthChanged);
 
     this.columns.push(col);
 
@@ -177,6 +199,8 @@ export default class ColumnManager extends EventHandler {
     if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length === 0) {
       this.filtersHierarchy.push(col);
     }
+
+    this.initWidthFromURLHash(col);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
 
@@ -596,12 +620,14 @@ export default class ColumnManager extends EventHandler {
     }
 
     this.columns.forEach((col, i) => {
-      col.$node.style('width', colWidths[i] + 'px');
+      col.width = colWidths[i];
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
       });
     });
+
+    this.setWidthToURLHash();
   }
 
   private multiformsInGroup(groupIndex: number) {
