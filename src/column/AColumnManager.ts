@@ -77,7 +77,7 @@ export default class AColumnManager {
 
   updateStratifiedRanges(stratifyColid) {
     //Return nothing if there is zero  stratification column
-    const d = this.columns.find((d) => d.data === stratifyColid.data);
+    const d = this.columns.find((d) => d.data.desc.id === stratifyColid.data.desc.id);
     if (stratifyColid === undefined || d === undefined) {
       return;
     }
@@ -102,7 +102,8 @@ export default class AColumnManager {
   }
 
   sortByFilters(filterList: AnyFilter[]) {
-    this.columns = filterList.map((f) => this.columns.filter((c) => c.data === f.data)[0]);
+    const cols = filterList.map((f) => this.columns.filter((c) => c.data.desc.id === f.data.desc.id)[0]);
+    this.columns = cols.filter((col) => col !== undefined); //Filter because default string column in not registered in columns
   }
 
   private stratifyVectorCols(rangeListMap: Map<string, Range[]>) {
