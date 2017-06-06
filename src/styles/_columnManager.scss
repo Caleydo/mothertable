@@ -138,6 +138,27 @@
         margin-top: 2px;
       }
 
+      .resize-handle {
+        display: block;
+        width: 5px;
+        background: $toolbar-link-color;
+        position: absolute;
+        right: -2px;
+        top: 0;
+        bottom: 0;
+        cursor: ew-resize;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity .3s ease-in-out;
+      }
+
+      &:hover {
+        .resize-handle {
+          visibility: visible;
+          opacity: 1;
+        }
+      }
+
     }
 
     main {

@@ -567,7 +567,7 @@ export default class ColumnManager extends EventHandler {
     }
 
     this.columns.forEach((col, i) => {
-      col.$node.style('width', colWidths[i] + 'px');
+      col.width = colWidths[i];
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
