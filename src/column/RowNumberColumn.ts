@@ -29,15 +29,14 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .attr('class', 'column column-hor nodrag rowNumberColumn')
       .style('min-width', this.minWidth + 'px');
 
-    this.$node.append('aside');
     this.$node.html(`
+        <aside></aside>
         <header class="columnHeader">
           <div class="toolbar">
             <div class="labelName">&nbsp;</div>
             <div class="axis">&nbsp;</div>
           </div>
-        </header>
-        <main></main>`);
+        </header>`);
     this.init();
     return this.$node;
   }

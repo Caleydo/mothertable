@@ -35,15 +35,14 @@ export default class AggSwitcherColumn extends AColumn<any, IDataType> {
       .style('max-width', this.maxWidth + 'px')
       .style('min-width', this.minWidth + 'px');
 
-    $node.append('aside');
     $node.html(`
+        <aside></aside>
         <header class="columnHeader">
           <div class="toolbar">
             <div class="labelName">&nbsp;</div>
             <div class="axis">&nbsp;</div>
           </div>
-        </header>
-        <main></main>`);
+        </header>`);
     this.$main = $node.append('main');
     return $node;
   }
