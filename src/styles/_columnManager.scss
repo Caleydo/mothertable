@@ -177,6 +177,8 @@
       background: $header-bg-color;
       padding: 5px 0;
 
+      overflow: hidden; // cut-off the icons --> TODO better solution (e.g., fly-out) needed
+
       a + a {
         margin-top: 3px;
       }
