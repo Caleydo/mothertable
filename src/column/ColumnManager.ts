@@ -160,12 +160,12 @@ export default class ColumnManager extends EventHandler {
     );
   }
 
-  private initWidthFromURLHash(column:AColumn<any,any>) {
+  private initWidthFromURLHash(column:AnyColumn) {
     if (hash.has('colWidths')) {
       const widths = hash.getProp('colWidths')
         .split(ColumnManager.HASH_FILTER_DELIMITER);
 
-      const width = parseFloat(widths[this.columns.indexOf(column)]);
+      const width = parseFloat(widths[this.filtersHierarchy.indexOf(column)]);
       column.setFixedWidth(width);
     }
   }
@@ -194,13 +194,13 @@ export default class ColumnManager extends EventHandler {
 
     this.columns.push(col);
 
-    this.initWidthFromURLHash(col);
-
     // add column to hierarchy if it isn't a matrix and already added
     const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
     if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length === 0) {
       this.filtersHierarchy.push(col);
     }
+
+    this.initWidthFromURLHash(col);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
 
