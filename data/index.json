@@ -425,7 +425,7 @@
     }
   },
   {
-    "name": "N. ppl. living with HIV norm.",
+    "name": "N. ppl living with HIV per 1000 ppl",
     "type": "matrix",
     "path": "AIDS_living_HIV_normalized.csv",
     "separator": ",",
@@ -438,7 +438,7 @@
     "value": {
       "type": "int",
       "range": [
-        0.000379492,
+        0.0,
         166.6217293
       ]
     }
@@ -463,7 +463,7 @@
     }
   },
   {
-    "name": "N. new HIV infections norm.",
+    "name": "N. new HIV infections per 1000 ppl",
     "type": "matrix",
     "path": "AIDS_new_HIV_infections_normalized.csv",
     "separator": ",",
@@ -476,7 +476,7 @@
     "value": {
       "type": "int",
       "range": [
-        0.000379492,
+        0.0,
         15.33289704
       ]
     }
@@ -501,7 +501,7 @@
     }
   },
   {
-    "name": "AIDS related deaths norm.",
+    "name": "AIDS related deaths per 1000 ppl",
     "type": "matrix",
     "path": "AIDS_related_deaths_normalized.csv",
     "separator": ",",
@@ -514,7 +514,7 @@
     "value": {
       "type": "int",
       "range": [
-        0.000379492,
+        0.0,
         7.395867983
       ]
     }
@@ -539,7 +539,7 @@
     }
   },
   {
-    "name": "N. ppl. on ART norm.",
+    "name": "N. ppl. on ART per 1000 ppl",
     "type": "matrix",
     "path": "AIDS_on_ART_normalized.csv",
     "separator": ",",
@@ -552,7 +552,7 @@
     "value": {
       "type": "int",
       "range": [
-        0.001755969,
+        0.0,
         122.7684049
       ]
     }
@@ -577,7 +577,7 @@
     }
   },
   {
-    "name": "AIDS orphans norm.",
+    "name": "AIDS orphans per 1000 ppl",
     "type": "matrix",
     "path": "AIDS_orphans_normalized.csv",
     "separator": ",",
@@ -590,7 +590,7 @@
     "value": {
       "type": "int",
       "range": [
-        0.000379492,
+        0.0,
         47.13008393
       ]
     }
