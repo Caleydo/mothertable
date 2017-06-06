@@ -93,7 +93,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .classed('column-' + (this.orientation === EOrientation.Vertical ? 'hor' : 'ver'), true)
       .html(`
         <header>
-          <div class="labelName">${formatAttributeName(this.data.desc.name)}</div>
+          <div class="labelName" title="${formatAttributeName(this.data.desc.name)}">${formatAttributeName(this.data.desc.name)}</div>
         </header> 
         <main></main>
       `);
@@ -116,25 +116,43 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .html(`
         <aside></aside>
         <header class="columnHeader">
-          <div class="labelName"><i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> <span>${formatAttributeName(this.data.desc.name)}</span></div>
-          <div class="toolbar"></div>
+          <div class="toolbar">
+            <div class="labelName" title="${formatAttributeName(this.data.desc.name)}"><i class="${dataValueTypeCSSClass(dataValueType(this.data))}" aria-hidden="true"></i> <span>${formatAttributeName(this.data.desc.name)}</span></div>
+            <div class="onHoverToolbar"></div>
+          </div>
         </header>
         <main></main>`);
 
     this.buildToolbar($node.select('div.toolbar'));
+    $node.select('div.onHoverToolbar')
+      .style('display', 'none' )
+      .style('visibility', 'hidden');
+
+    $node.select('header').on('mouseover', () => {
+      $node.select('div.onHoverToolbar')
+        .style('display', 'block' )
+        .style('visibility', 'visible');
+    });
+
+    $node.select('header').on('mouseleave', () => {
+      $node.select('div.onHoverToolbar')
+        .style('display', 'none' )
+        .style('visibility', 'hidden');
+    });
 
     return $node;
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    const $lockButton = $toolbar.append('a')
+    const $hoverToolbar =  $toolbar.select('div.onHoverToolbar');
+    const $lockButton = $hoverToolbar.append('a')
       .attr('title', 'Lock column')
       .html(`<i class="fa fa-unlock fa-fw" aria-hidden="true"></i><span class="sr-only">Lock column</span>`)
       .on('click', () => {
         this.lockColumnWidth($lockButton);
       });
 
-    $toolbar.append('a')
+    $hoverToolbar.append('a')
       .attr('title', 'Remove column')
       .html(`<i class="fa fa-trash fa-fw" aria-hidden="true"></i><span class="sr-only">Remove column</span>`)
       .on('click', () => {
@@ -142,8 +160,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
         // return false;
       });
 
-    this.appendVisChooser($toolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
-    this.appendVisChooser($toolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
+    this.appendVisChooser($hoverToolbar, 'fa fa-ellipsis-v fa-fw', 'Select visualization for unaggregated areas', EAggregationType.UNAGGREGATED);
+    this.appendVisChooser($hoverToolbar, 'fa fa-window-minimize fa-fw fa-rotate-90', 'Select visualization for aggregated areas', EAggregationType.AGGREGATED);
 
     $toolbar.append('div').classed('axis', true).append('svg').classed('taggle-axis', true).attr('style', 'width:100%;height:20px;');
   }
@@ -213,7 +231,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       return;
     }
     const m = stratifiedRanges
-      .map((s) => s.intersect(multiformRange).size()[0]);
+      .map((s) => s.intersect(multiformRange).dim(0).length);
     const a = m.filter((d) => d > 0);
     return m.indexOf(a[0]);
 

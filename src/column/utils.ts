@@ -6,6 +6,7 @@ import {ZoomLogic} from 'phovea_core/src/behavior';
 import {EOrientation} from './AColumn';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import Range from 'phovea_core/src/range/Range';
+import {list as asRange} from 'phovea_core/src/range';
 import {VALUE_TYPE_CATEGORICAL, IDataType} from 'phovea_core/src/datatype';
 import {AnyFilter} from '../filter/FilterManager';
 
@@ -47,7 +48,8 @@ export function reArrangeRangeList(draggedArray: number[], fullRangeasList: numb
 }
 
 export function insertArrayAt<T>(array: T[], index: number, arrayToInsert: T[]) {
-  Array.prototype.splice.apply(array, [index, 0].concat(<any>arrayToInsert));
+  array.splice(index, 0, ...arrayToInsert);
+  return array;
 }
 
 export function reArrangeRangeListAfter(draggedArray: number[], fullRangeList: number[][]) {
@@ -87,9 +89,7 @@ function spliceArr(rangeArr: number[], dragIndices: number[]) {
 
 }
 export function makeRangeFromList(arr: number[]): Range {
-  const r = new Range();
-  r.dim(0).pushList(arr);
-  return r;
+  return asRange(arr);
 }
 
 export function makeListFromRange(range: Range): number[] {
@@ -122,7 +122,7 @@ export function updateRangeList(stratifiedRanges: Range[], brushedArray: number[
   const n = new Map();
   const updateRange = stratifiedRanges.forEach((r, index) => {
     return brushedArray.forEach((s) => {
-      const isSuperset = checkArraySubset(makeListfromRange(r), s);
+      const isSuperset = checkArraySubset(makeListFromRange(r), s);
       m.set(index, isSuperset || m.get(index));
     });
   });
@@ -175,24 +175,21 @@ function reformatArray(brushedRange: number[], brushedArray: number[][]) {
   return newarr;
 }
 
-function makeListfromRange(range: Range) {
-  return (range.dim(0).asList());
-}
-
-function reformatRangeList(rearrangeRange: Range[][]) {
+function reformatRangeList(rearrangeRange: Range[][]): Range[] {
   return rearrangeRange.reduce((p, b) => p.concat(b));
 }
 
-export function mergeRanges(ranges: Range[]) {
+export function mergeRanges(ranges: Range[]): Range {
   if (ranges.length === 0) {
     return;
   }
-  const mergedRange = ranges.reduce((currentVal, nextValue) => {
-    const r = new Range();
-    r.dim(0).pushList(currentVal.dim(0).asList().concat(nextValue.dim(0).asList()));
-    return r;
-  });
-  return mergedRange;
+  const combined = ranges.reduce((combined, d) => {
+    //combine plain indices
+    combined.push(...d.dim(0).asList());
+    return combined;
+  }, <number[]>[]);
+  //convert once to range
+  return asRange(combined);
 }
 
 
@@ -265,25 +262,15 @@ function convertToLocalArrayIndices(brushedArray: number[][], stratifiedRangeInd
  */
 function revertBackToRangeIndices(stratifiedRangeIndices: number[], localArrayIndices: number[][]) {
   const sortedLocalArray = localArrayIndices.slice().sort(sortArray);
-  const rangeIndices = [];
-  sortedLocalArray.forEach((d) => {
+  return sortedLocalArray.map((d) => {
     const firstElem = stratifiedRangeIndices[d[0]];
     const lastElem = stratifiedRangeIndices[d[d.length - 1]];
-    rangeIndices.push([firstElem, lastElem]);
-
+    return [firstElem, lastElem];
   });
-
-  return rangeIndices;
 }
 
 export function findColumnTie(cols: { data: IDataType}[]) {
-  let columnIndexForTie = NaN;
-  cols.some((val, index) => {
-    if (val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL) {
-      columnIndexForTie = index;
-    }
-    return val.data.desc.value.type !== VALUE_TYPE_CATEGORICAL;
-  });
-
-  return columnIndexForTie;
+  // find the first non categorical column index
+  const index = cols.findIndex((v) => v.data.desc.value.type !== VALUE_TYPE_CATEGORICAL);
+  return index < 0 ? NaN : index;
 }

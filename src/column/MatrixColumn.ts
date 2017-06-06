@@ -263,10 +263,10 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private attachListener() {
     on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
     const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
-    const $vectorChange = this.toolbar.insert('select', ':first-child')
+    const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
       .attr('class', 'aggSelect')
       .on('change', (d, i) => {
-        const value = this.toolbar.select('select').property('value');
+        const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
         this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.matrixViews, value, this);
       });
 

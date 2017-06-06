@@ -75,7 +75,7 @@ export class LabelVis extends AVisInstance implements IVisInstance {
 
   private build($parent: d3.Selection<any>) {
     const size = this.size;
-    const $list = $parent.append('div').attr('class', 'phovea-labelvis');
+    const $list = $parent.append('div').attr('class', 'taggle-labelvis');
     $list.style('width', `${size[0]}px`);
     $list.style('height', `${size[1]}px`);
     $list.html(`<div>${this.data.length} ${this.data.idtype.names}</div>`);
