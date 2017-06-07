@@ -5,7 +5,6 @@
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';
 import AFilter from './AFilter';
-import {NUMERICAL_COLOR_MAP} from '../column/utils';
 import DensityPlot from './DensityPlot';
 
 export default class MatrixFilter extends AFilter<number, INumericalMatrix> {

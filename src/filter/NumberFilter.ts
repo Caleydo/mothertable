@@ -6,7 +6,6 @@ import {AVectorFilter} from './AVectorFilter';
 import {INumericalVector} from 'phovea_core/src/vector';
 import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
-import {NUMERICAL_COLOR_MAP} from '../column/utils';
 import DensityPlot from './DensityPlot';
 
 
