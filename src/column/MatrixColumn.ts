@@ -67,12 +67,29 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return $node;
   }
 
+  setFixedWidth(width:number) {
+    if(isNaN(width)) {
+      return;
+    }
+
+    // scale all column stratifications
+    this.colStratManager.columns.forEach((col) => {
+      col.width = width;
+      col.multiformList.forEach((multiform) => {
+        scaleTo(multiform, width, multiform.size[1], col.orientation);
+      });
+    });
+
+    super.setFixedWidth(width);
+  }
+
   protected multiFormParams($body: d3.Selection<any>): IMultiFormOptions {
     return {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-heatmap': {
         color: NUMERICAL_COLOR_MAP,
-        domain: this.data.valuetype.range
+        domain: this.data.valuetype.range,
+        mode: 'lg'
       },
       'phovea-vis-histogram': {
         nbins: Math.min(this.maxNumBins, Math.floor(Math.sqrt(this.data.length))),

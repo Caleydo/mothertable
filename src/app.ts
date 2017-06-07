@@ -24,7 +24,6 @@ import NumberColumn from './column/NumberColumn';
 import {AVectorFilter} from './filter/AVectorFilter';
 
 
-
 /**
  * The main class for the App app
  */
@@ -197,11 +196,11 @@ export default class App {
       // first push all the new columns ...
       const columns: AnyColumn[] = [];
       for (const data of datasets) {
-         if (this.dataSize === undefined) {
-            this.dataSize = {total: data.length, filtered: data.length};
-            supportView.updateFuelBar(this.dataSize);
-          }
-          columns.push(await this.colManager.push(data));
+        if (this.dataSize === undefined) {
+          this.dataSize = {total: data.length, filtered: data.length};
+          supportView.updateFuelBar(this.dataSize);
+        }
+        columns.push(await this.colManager.push(data));
       }
 
       // add new support views for matrix column
@@ -222,7 +221,7 @@ export default class App {
 
     this.colManager.on(ColumnManager.EVENT_DATA_REMOVED, (evt: any, data: IMotherTableType) => {
       const cols = this.colManager.columns;
-      const countSame = cols.filter((d, i) => d.data.desc.id === data.desc.id).length;
+      const countSame = cols.filter((d, i) => d.data === data).length;
       if (countSame < 1) {
         supportView.remove(data);
       }

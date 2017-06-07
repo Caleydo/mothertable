@@ -47,16 +47,18 @@ import {AGGREGATE} from './MatrixColumn';
 import SupportView from '../SupportView';
 import RowNumberColumn from './RowNumberColumn';
 import Any = jasmine.Any;
+import {hash} from 'phovea_core/src/index';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
 
 export default class ColumnManager extends EventHandler {
 
-
   static readonly EVENT_COLUMN_REMOVED = 'columnRemoved';
   static readonly EVENT_COLUMN_ADDED = 'columnAdded';
   static readonly EVENT_DATA_REMOVED = 'removedData';
+
+  private static readonly HASH_FILTER_DELIMITER = ',';
 
   private $node: d3.Selection<any>;
 
@@ -86,6 +88,7 @@ export default class ColumnManager extends EventHandler {
   private onVisChange = (event: IEvent) => this.relayout();
   private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
+  private onWidthChanged = (event:IEvent) => this.setWidthToURLHash();
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -149,6 +152,24 @@ export default class ColumnManager extends EventHandler {
     this.$parent.selectAll('.column').remove();
   }
 
+  private setWidthToURLHash() {
+    hash.setProp('colWidths',
+      this.filtersHierarchy
+        .map((d) => d.width.toFixed())
+        .join(ColumnManager.HASH_FILTER_DELIMITER)
+    );
+  }
+
+  private initWidthFromURLHash(column:AnyColumn) {
+    if (hash.has('colWidths')) {
+      const widths = hash.getProp('colWidths')
+        .split(ColumnManager.HASH_FILTER_DELIMITER);
+
+      const width = parseFloat(widths[this.filtersHierarchy.indexOf(column)]);
+      column.setFixedWidth(width);
+    }
+  }
+
   /**
    * Adding a new column from given data
    * Called when adding a new filter from dropdown or from hash
@@ -169,6 +190,7 @@ export default class ColumnManager extends EventHandler {
     col.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, this.onSortByFilterHeader);
     col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
     col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
+    col.on(AColumn.EVENT_WIDTH_CHANGED, this.onWidthChanged);
 
     this.columns.push(col);
 
@@ -177,6 +199,8 @@ export default class ColumnManager extends EventHandler {
     if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length === 0) {
       this.filtersHierarchy.push(col);
     }
+
+    this.initWidthFromURLHash(col);
 
     this.fire(ColumnManager.EVENT_COLUMN_ADDED, col);
 
@@ -189,14 +213,19 @@ export default class ColumnManager extends EventHandler {
     if (col === undefined) {
       return;
     }
+
+    //Special case for the removing the parent dom of the projected vector from matrix.
+    const parentNode = col.$node.node().parentNode.parentNode.parentNode;
+    const checkParent = col.$node.node().parentNode.childNodes.length;
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
-
     // no columns of attribute available --> delete from filter hierarchy for correct sorting
     if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
       this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
     }
-
+    if (checkParent < 2) {
+      parentNode.parentNode.removeChild(parentNode);
+    }
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
     col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
@@ -205,6 +234,8 @@ export default class ColumnManager extends EventHandler {
     col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
+
+
     this.updateColumns();
   }
 
@@ -248,20 +279,42 @@ export default class ColumnManager extends EventHandler {
     if (aggNode === null) {
       this.addChangeIconMatrix(columnNode, col);
     }
+
     const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
     matrixDOM.node().appendChild(projectedcolumn.$node.node());
+    projectedcolumn.$node.select('aside').remove();
+    columnNode.style('width', null);
+    columnNode.style('min-width', null);
+    const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
+    if (childCount > 1) {
+      columnNode.select('header.columnHeader')
+        .classed('matrix', false)
+        .select('.labelName')
+        .classed('matrixLabel', false)
+        .classed('matrixLabelExtended', true);
+
+    } else {
+      columnNode.select('header.columnHeader')
+        .classed('matrix', true)
+        .select('.labelName')
+        .classed('matrixLabel', true);
+    }
+    const h = columnNode.select('header.columnHeader').node();
+    columnNode.select('header.columnHeader').select('.taggle-axis').classed('extended', true);
+    columnNode.select('aside').node().appendChild(h);
     const index = this.columns.indexOf(col);
     if (index === -1) {
       return;
     }
     this.columns.splice(index, 1); // Remove matrix column
+    this.relayout();
 
   }
 
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
-    columnNode.select('header.columnHeader').selectAll('.toolbar').selectAll('*').remove();
-    const aggIcon = columnNode.select('header.columnHeader').selectAll('.toolbar').insert('a', ':first-child')
+    columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').selectAll('*').remove();
+    const aggIcon = columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').insert('a', ':first-child')
       .attr('title', 'Aggregated Me')
       .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
     columnNode.select('main').selectAll('.multiformList').remove();
@@ -567,12 +620,14 @@ export default class ColumnManager extends EventHandler {
     }
 
     this.columns.forEach((col, i) => {
-      col.$node.style('width', colWidths[i] + 'px');
+      col.width = colWidths[i];
       col.multiformList.forEach((multiform, index) => {
         this.visManager.assignVis(multiform);
         scaleTo(multiform, colWidths[i], rowHeight[index], col.orientation);
       });
     });
+
+    this.setWidthToURLHash();
   }
 
   private multiformsInGroup(groupIndex: number) {

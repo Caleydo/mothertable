@@ -96,7 +96,7 @@ export default class SupportView extends EventHandler {
     const stringColumn = this.datasets.find((x) => (x instanceof TableVector || x instanceof Vector) && x.desc.value.type === VALUE_TYPE_STRING);
 
     // string column available?
-    if(!stringColumn) {
+    if (!stringColumn) {
       console.error(`No string column for idType '${this.idType.name}' found!`);
       return;
     }
@@ -107,8 +107,8 @@ export default class SupportView extends EventHandler {
         .getProp(this.idTypeHash)
         .split(SupportView.HASH_FILTER_DELIMITER);
 
-      if(attributeArray.indexOf(stringColumn.desc.id) > -1) {
-         return; // if a string column is already present, don't add another one
+      if (attributeArray.indexOf(stringColumn.desc.id) > -1) {
+        return; // if a string column is already present, don't add another one
       }
     }
 
@@ -199,11 +199,11 @@ export default class SupportView extends EventHandler {
 
   }
 
-  sortByColumnHeader(sortColdata: { data: IDataType}) {
+  sortByColumnHeader(sortColdata: { data: IDataType }) {
     this.filterManager.primarySortColumn(sortColdata);
   }
 
-  sortFilterByHeader(sortColdata: { sortMethod: string, col: { data: IFilterAbleType}}) {
+  sortFilterByHeader(sortColdata: { sortMethod: string, col: { data: IFilterAbleType } }) {
     this.filterManager.updateSortIcon(sortColdata);
   }
 
@@ -402,10 +402,10 @@ export function transposeMatrixIfNeeded(rowtype: IDType, d: IDataType) {
 async function splitMatrixInVectors(matrix: IAnyMatrix) {
   const colNames = await matrix.cols();
   const cols = matrix.ncol;
-  const r : IAnyVector[] = [];
+  const r: IAnyVector[] = [];
   for (let i = 0; i < cols; ++i) {
     const v = matrix.slice(i);
-    const anyDesc : any = v.desc;
+    const anyDesc: any = v.desc;
     // hack the name to include the column label
     anyDesc.name = matrix.desc.name + '/' + colNames[i];
     anyDesc.origin = matrix;
@@ -421,7 +421,7 @@ function convertToTree(datasets: IDataType[]) {
   const isDerivedGroup = (group: string) => group.endsWith('-d');
   //group by data type with special derived groups at the end
   const grouped = d3.nest<IDataType>()
-    .key((d) => d.desc.type + (isDerivedDataset(d) ? '-d': ''))
+    .key((d) => d.desc.type + (isDerivedDataset(d) ? '-d' : ''))
     .sortKeys((a, b) => {
       //derived groups to the end of the list
       const derivedA = isDerivedGroup(a);
@@ -437,12 +437,12 @@ function convertToTree(datasets: IDataType[]) {
     const isDervivedGroup = isDerivedGroup(group.key);
     const type = isDervivedGroup ? group.key.substring(0, group.key.length - 2) : group.key;
     const children = group.values.map((d) => ({
-        id: d.desc.id,
-        text: formatAttributeName(d.desc.name),
-        dataType: d.desc.type,
-        valueType: dataValueType(d),
-        data: d
-      }));
+      id: d.desc.id,
+      text: formatAttributeName(d.desc.name),
+      dataType: d.desc.type,
+      valueType: dataValueType(d),
+      data: d
+    }));
     return {
       text: (isDervivedGroup ? `Derived ${type}` : type),
       dataType: type,
@@ -459,7 +459,7 @@ function convertToTree(datasets: IDataType[]) {
  * @param query
  * @return {({}&{children: {text: string}[]}&{children: {text: string}[]})[]}
  */
-function filterTree(datasetTree: {text: string; derived: boolean; children: {text: string}[]}[], query: string, maxTotalItems = 30, minItemsPerRegular = 5, minItemsPerDerived = 2) {
+function filterTree(datasetTree: { text: string; derived: boolean; children: { text: string }[] }[], query: string, maxTotalItems = 30, minItemsPerRegular = 5, minItemsPerDerived = 2) {
   function limit(group: string, arr: any[], maxItemsPerGroup = 5) {
     if (arr.length <= maxItemsPerGroup) {
       return arr;
@@ -472,6 +472,7 @@ function filterTree(datasetTree: {text: string; derived: boolean; children: {tex
     });
     return base;
   }
+
   const filteredTree = datasetTree
     .map((parent) => {
       //create a copy with filtered children

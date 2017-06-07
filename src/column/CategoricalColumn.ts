@@ -32,7 +32,8 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-histogram': {
         nbins: histogramData.nbins,
-        maxValue: histogramData.maxValue
+        maxValue: histogramData.maxValue,
+        mode: 'lg'
       },
       'taggle-vis-onebin-histogram': {
         nbins: histogramData.nbins,
