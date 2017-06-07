@@ -1,35 +1,19 @@
-/**
- * Created by Samuel Gratzl on 19.01.2017.
- */
-
-import {AVectorFilter} from './AVectorFilter';
-import {INumericalVector} from 'phovea_core/src/vector';
-import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import {NUMERICAL_COLOR_MAP} from '../column/utils';
-import DensityPlot from './DensityPlot';
+import {IVector} from 'phovea_core/src/vector';
+import {AVectorFilter} from './AVectorFilter';
+import {INumericalVector} from 'phovea_core/src/vector';
+import {IDataType} from 'phovea_core/src/datatype';
+import NumberFilter from './NumberFilter';
 
-
-export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
-
+export default class DensityPlot<DATATYPE extends IDataType> {
   readonly $node: d3.Selection<any>;
   private _filterDim: { width: number, height: number };
-  private _numericalFilterRange: number[];
-  private _toolTip: d3.Selection<SVGElement>;
   private _SVG: d3.Selection<SVGElement>;
 
-  constructor(data: INumericalVector, $parent: d3.Selection<any>) {
-    super(data);
-    this.$node = this.build($parent);
-    this._numericalFilterRange = this.data.desc.value.range;
-  }
-
-  protected build($parent: d3.Selection<any>) {
-    const $node = super.build($parent);
-    this.generateLabel($node);
-
-    new DensityPlot(this.data, $node.select('main'), this, this.generateTooltip($node));
-    return $node;
+  constructor(public readonly data: DATATYPE, $node: d3.Selection<any>, private readonly filter:NumberFilter, private toolTip: d3.Selection<SVGElement>) {
+    this.generateDensityPlot($node);
+    this.$node = $node;
   }
 
   get filterDim(): { width: number; height: number } {
@@ -41,15 +25,6 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this._filterDim = value;
   }
 
-  set numericalFilterRange(value: number[]) {
-    this._numericalFilterRange = value;
-  }
-
-  public fireFilterChanged() {
-    this.triggerFilterChanged();
-  }
-
-
   private async getHistData() {
 
     const histData = await (<any>this.data).hist();
@@ -59,7 +34,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   }
 
-  private async generateDensityPlot($node: d3.Selection<any>) {
+  async generateDensityPlot($node: d3.Selection<any>) {
     const c = this.computeCoordinates();
     const triangleYPos = c.triangle.yPos;
     const lineYPos = c.line.yPos;
@@ -67,16 +42,18 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     const margin = 5;
     const svg = this.makeSVG($node);
     await this.makeBins(svg);
-    this.makeBrush(svg, brushRectPosY - margin * 2, c.range);
+    if(this.filter) {
+      this.makeBrush(svg, brushRectPosY - margin * 2, c.range);
 
-    this.makeText(svg, 0, triangleYPos + margin * 2, 'leftText').text(`${Math.floor(c.range[0])}`);
-    this.makeText(svg, brushRectPosY - margin * 2, triangleYPos + margin * 2, 'rightText').text(`${Math.floor(c.range[1])}`);
+      this.makeText(svg, 0, triangleYPos + margin * 2, 'leftText').text(`${Math.floor(c.range[0])}`);
+      this.makeText(svg, brushRectPosY - margin * 2, triangleYPos + margin * 2, 'rightText').text(`${Math.floor(c.range[1])}`);
 
-    this.makeTriangleIcon(svg, margin, triangleYPos - margin, 'leftTriangle');
-    this.makeTriangleIcon(svg, brushRectPosY - 5, triangleYPos - margin, 'rightTriangle');
+      this.makeTriangleIcon(svg, margin, triangleYPos - margin, 'leftTriangle');
+      this.makeTriangleIcon(svg, brushRectPosY - 5, triangleYPos - margin, 'rightTriangle');
 
-    this.makeBrushLine(svg, margin, lineYPos, 'leftLine');
-    this.makeBrushLine(svg, brushRectPosY - margin, lineYPos, 'rightLine');
+      this.makeBrushLine(svg, margin, lineYPos, 'leftLine');
+      this.makeBrushLine(svg, brushRectPosY - margin, lineYPos, 'rightLine');
+    }
     const bottomLine = this.makeBrushLine(svg, margin, lineYPos - margin, 'bottomLine');
     this.$node.select('.bottomLine')
       .attr('d', `M${margin} ${lineYPos - margin},L${brushRectPosY - margin} ${lineYPos - margin}`);
@@ -98,7 +75,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
     const cellWidth = this.filterDim.width - 10;
     const cellHeight = this.filterDim.height;
-    const toolTip = (this._toolTip);
+    const toolTip = (this.toolTip);
     const histData = await this.getHistData();
     const cellDimension = cellWidth / histData.length;
     const colorScale = d3.scale.linear<string, number>().domain([0, cellWidth]).range(NUMERICAL_COLOR_MAP);
@@ -207,8 +184,8 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
         copyBrush(d3.select(this).select('.extent'));
         const v: any = brush.extent();
         that.updateDragValues(v);
-        that._numericalFilterRange = v;
-        that.triggerFilterChanged();
+        that.filter.numericalFilterRange = v;
+        that.filter.fireFilterChanged();
       });
 
     const g = $svg.append('g');
@@ -314,31 +291,4 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     return coordinate;
 
   }
-
-
-  async filter(current: Range1D) {
-    const dataRange = this.data.desc.value.range;
-    let filteredRange = await <any>this.data.ids();
-    if (Math.round(this._numericalFilterRange[0]) === dataRange[0] && Math.round(this._numericalFilterRange[1]) === dataRange[1]) {
-
-      filteredRange = await this.data.ids();
-    } else {
-      const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
-      filteredRange = await vectorView.ids();
-    }
-    const rangeIntersected = current.intersect(filteredRange);
-    const fullRange = (await this.data.ids()).size();
-    const vectorRange = filteredRange.size();
-    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
-    return rangeIntersected;
-  }
 }
-
-function numericalFilter(numRange: number[], value: number) {
-  if (value >= numRange[0] && value <= numRange[1]) {
-    return value;
-  } else {
-    return;
-  }
-}
-

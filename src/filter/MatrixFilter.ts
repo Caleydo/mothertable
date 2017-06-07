@@ -6,7 +6,7 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';
 import AFilter from './AFilter';
 import {NUMERICAL_COLOR_MAP} from '../column/utils';
-import Range1D from 'phovea_core/src/range/Range1D';
+import DensityPlot from './DensityPlot';
 
 export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
@@ -31,7 +31,8 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     const $toolbar = $header.append('div').classed('toolbar', true);
     this.addTrashIcon($toolbar);
     this.generateLabel($li);
-    this.generateMatrixHeatmap($li.select('main'));
+    new DensityPlot(this.data, $li.select('main'), null, this.generateTooltip($li));
+    //this.generateMatrixHeatmap($li.select('main'));
 
     return $li;
   }
@@ -52,12 +53,12 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     this._filterDim = value;
   }
 
-
   private generateRect($node: d3.Selection<any>) {
 
     $node.append('div').classed('matrix', true);
 
   }
+
 
   private async generateMatrixHeatmap($node: d3.Selection<any>) {
     const cellWidth = this.filterDim.width;
@@ -85,27 +86,6 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
     const bins = [];
     histData.forEach((d, i) => bins.push(d));
     return bins;
-
-  }
-
-
-  private async calculateAvg(transpose?: boolean) {
-
-    let v = await this.data.data();
-    if (transpose === true) {
-      const t = (<any>this.data).t;
-      v = await t.data();
-    }
-
-    const avg = [];
-    v.forEach((d: any, i) => avg.push(d3.mean(d)));
-    return avg;
-
-  }
-
-  async filter(current: Range1D) {
-
-    return current;
 
   }
 }
