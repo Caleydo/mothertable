@@ -17,7 +17,7 @@ export default class DensityPlot<DATATYPE extends IDataType> {
   }
 
   get filterDim(): { width: number; height: number } {
-    this._filterDim = {width: 205, height: 35};
+    this._filterDim = {width: 230, height: 35};
     return this._filterDim;
   }
 
@@ -42,7 +42,7 @@ export default class DensityPlot<DATATYPE extends IDataType> {
     const margin = 5;
     const svg = this.makeSVG($node);
     await this.makeBins(svg);
-    if(this.filter) {
+    if(this.filter) { // we only need the sliders if we have a filter
       this.makeBrush(svg, brushRectPosY - margin * 2, c.range);
 
       this.makeText(svg, 0, triangleYPos + margin * 2, 'leftText').text(`${Math.floor(c.range[0])}`);
@@ -62,11 +62,13 @@ export default class DensityPlot<DATATYPE extends IDataType> {
   private makeSVG($node: d3.Selection<any>) {
     const cellWidth = this.filterDim.width + 10;
     const cellHeight = this.filterDim.height;
-    const svgHeight = cellHeight + 25;
+    let svgHeight = cellHeight + 25;
+    if(!this.filter) {
+      svgHeight -= 10;
+    }
     const svg = $node.append('svg')
-      .attr('height', svgHeight + 'px')
-      .attr('width', cellWidth + 'px')
-      .style('margin-left', '5px');
+      .attr('height', svgHeight)
+      .attr('width', cellWidth);
     this._SVG = svg;
     return svg;
   }
