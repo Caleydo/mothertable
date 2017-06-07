@@ -1,8 +1,9 @@
+/**
+ * Created by Martin Ennemoser on 07.06.2017.
+ */
+
 import * as d3 from 'd3';
 import {NUMERICAL_COLOR_MAP} from '../column/utils';
-import {IVector} from 'phovea_core/src/vector';
-import {AVectorFilter} from './AVectorFilter';
-import {INumericalVector} from 'phovea_core/src/vector';
 import {IDataType} from 'phovea_core/src/datatype';
 import NumberFilter from './NumberFilter';
 
@@ -63,7 +64,7 @@ export default class DensityPlot<DATATYPE extends IDataType> {
     const cellWidth = this.filterDim.width + 10;
     const cellHeight = this.filterDim.height;
     let svgHeight = cellHeight + 25;
-    if(!this.filter) {
+    if(!this.filter) { // if there is no filter, make the view a bit smaller in order to save space
       svgHeight -= 10;
     }
     const svg = $node.append('svg')
