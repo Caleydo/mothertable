@@ -45,6 +45,12 @@
     }
   }
 
+  &.nodrag {
+    header:before {
+      content:'';
+    }
+  }
+
   header {
     display: flex;
     align-content: space-between;
