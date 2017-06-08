@@ -23,6 +23,7 @@ import {IHistogram} from 'phovea_core/src/math';
 export class OneBinHistogram extends CategoricalHistogram {
 
   private isOneBin : boolean = false;
+  protected $div: d3.Selection<OneBinHistogram>;
   constructor(public readonly data: IHistAbleDataType<ICategoricalValueTypeDesc|INumberValueTypeDesc>|IStratification, parent: Element, options: IHistogramOptions = {}) {
     super(data, parent, options);
 
@@ -46,8 +47,9 @@ export class OneBinHistogram extends CategoricalHistogram {
         // it is easier to style
         const $parent = d3.select($svg.node().parentNode);
         $svg.remove();
-        const $div = $parent.append('div');
-        this.buildAsMosaic($div, lastNonZeroBin, hist);
+        this.$div = $parent.append('div');
+
+        this.buildAsMosaic(this.$div, lastNonZeroBin, hist);
       } else {
         super.build($svg);
       }
@@ -91,10 +93,10 @@ export class OneBinHistogram extends CategoricalHistogram {
       return bak;
     }
     const size = this.rawSize;
-    this.$node.attr({
-      width: size[0] * scale[0],
-      height: size[1] * scale[1]
-    }).style('transform', 'rotate(' + rotate + 'deg)');
+    this.$div
+      .style('width', `${size[0] * scale[0]}px`)
+      .style('height', `${size[1] * scale[1]}px`)
+      .style('transform', 'rotate(' + rotate + 'deg)');
     const act = {scale, rotate};
     this.fire('transform', act, bak);
     this.options.scale = scale;
