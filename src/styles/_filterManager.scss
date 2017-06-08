@@ -47,7 +47,7 @@
 
   &.nodrag {
     header:before {
-      content:'';
+      content: '';
     }
   }
 
@@ -75,6 +75,9 @@
       overflow: hidden !important;
       text-overflow: ellipsis;
       width: 200px;
+    }
+    &.highlight {
+      background: green;
     }
 
     .toolbar {

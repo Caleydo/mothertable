@@ -88,11 +88,13 @@ export default class ColumnManager extends EventHandler {
   private onVisChange = (event: IEvent) => this.relayout();
   private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
-  private onWidthChanged = (event:IEvent) => this.setWidthToURLHash();
+  private onWidthChanged = (event: IEvent) => this.setWidthToURLHash();
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
   }
+  private highlightColumn = (event: IEvent, coldata) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, coldata);
+  private removeHighlightColumn = (event: IEvent, coldata) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, coldata);
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
@@ -160,7 +162,7 @@ export default class ColumnManager extends EventHandler {
     );
   }
 
-  private initWidthFromURLHash(column:AnyColumn) {
+  private initWidthFromURLHash(column: AnyColumn) {
     if (hash.has('colWidths')) {
       const widths = hash.getProp('colWidths')
         .split(ColumnManager.HASH_FILTER_DELIMITER);
@@ -191,6 +193,7 @@ export default class ColumnManager extends EventHandler {
     col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
     col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     col.on(AColumn.EVENT_WIDTH_CHANGED, this.onWidthChanged);
+    col.on(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
 
     this.columns.push(col);
 

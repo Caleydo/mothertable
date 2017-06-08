@@ -149,6 +149,14 @@ export default class SupportView extends EventHandler {
 
   }
 
+  highlight(data) {
+    this._filterManager.highlightMe(data);
+  }
+
+  removeHighlight(data) {
+    this._filterManager.removeHighlightMe(data);
+  }
+
   private setupFilterManager() {
     this._filterManager = new FilterManager(this.idType, this.$node);
     this._filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {

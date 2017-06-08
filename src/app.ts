@@ -156,6 +156,7 @@ export default class App {
     // create a column manager
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+
     this.colManager.on(SupportView.EVENT_DATASETS_ADDED, async (evt: any, col, numberCols) => {
       this.colManager.removeMatrixCol(col, numberCols);
       numberCols.forEach((d) => this.supportView[0].filterManager.updateFilterView(d));
@@ -184,7 +185,8 @@ export default class App {
     });
 
     this.supportView.push(supportView);
-
+    this.colManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => supportView.highlight(data));
+    this.colManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => supportView.removeHighlight(data));
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
     });

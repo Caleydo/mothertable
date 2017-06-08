@@ -67,7 +67,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  primarySortColumn(sortColdata: { data: IDataType}) {
+  primarySortColumn(sortColdata: { data: IDataType }) {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
@@ -79,7 +79,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType} }) {
+  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType } }) {
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
     (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
   }
@@ -95,6 +95,20 @@ export default class FilterManager extends EventHandler {
     this.filters.splice(index, 1);
 
   }
+
+  highlightMe(coldata) {
+    const col = this.filters.find((d) => d.data === coldata);
+    col.$node.select('header').classed('highlight', true);
+
+  }
+
+  removeHighlightMe(coldata) {
+    console.log(coldata)
+    const col = this.filters.find((d) => d.data === coldata);
+    col.$node.select('.highlight').classed('highlight', false);
+
+  }
+
 
   /**
    * Removes the column from the vectorFilters by the given data parameter,
