@@ -45,6 +45,12 @@
     }
   }
 
+  &.nodrag {
+    header:before {
+      content:'';
+    }
+  }
+
   header {
     display: flex;
     align-content: space-between;
@@ -122,6 +128,8 @@
 
 .catentries {
   display: flex;
+  width: 220px; // same as DensityPlot.filterDim()
+
   .categoriesTransparent {
     background-color: transparent;
     display: flex;
