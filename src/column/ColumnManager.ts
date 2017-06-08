@@ -194,6 +194,7 @@ export default class ColumnManager extends EventHandler {
     col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     col.on(AColumn.EVENT_WIDTH_CHANGED, this.onWidthChanged);
     col.on(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
+    col.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
 
     this.columns.push(col);
 
@@ -235,6 +236,8 @@ export default class ColumnManager extends EventHandler {
     col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
     col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
     col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
+    col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
+    col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
 
