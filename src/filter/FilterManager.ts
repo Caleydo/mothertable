@@ -67,7 +67,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  primarySortColumn(sortColdata: { data: IDataType}) {
+  primarySortColumn(sortColdata: { data: IDataType }) {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
@@ -79,7 +79,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType} }) {
+  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType } }) {
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
     (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
   }
@@ -151,25 +151,6 @@ export default class FilterManager extends EventHandler {
     this.triggerSort();
   }
 
-  convertToVector(col) {
-
-    // console.log(col.data.desc.id, this.vectorFilters)
-    // const matrixFilters = this.vectorFilters.filter((c) => c.data.desc.id === col.data.desc.id)
-    //  const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
-    // const flattenedMatrix = FilterManager.createFilter(flattenedData, this.$node);
-    //matrixFilters[0].$node.remove()
-    //const index = this.vectorFilters.indexOf(matrixFilters[0]);
-    // this.push(flattenedData)
-    //console.log(flattenedMatrix, matrixFilters[0].$node.remove(),index,this.vectorFilters)
-
-
-    // flattenedMatrix.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges);
-    // const index = this.columns.indexOf(col);
-    // this.columns.splice(index, 1, flattenedMatrix);
-    // console.log(this.columns)
-
-    //matrixFilters[0].$node.node().replaceWith(flattenedMatrix.$node.node());
-  }
 
   /**
    * Filter Dragging  Event Listener
