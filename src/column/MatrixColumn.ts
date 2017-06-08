@@ -5,7 +5,7 @@
 import AColumn, {EOrientation} from './AColumn';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
-import {IDataType} from 'phovea_core/src/datatype';
+import {IDataType, VALUE_TYPE_CATEGORICAL} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
 import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges, makeRangeFromList} from './utils';
@@ -42,7 +42,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   private brushedRanges: Range[] = [];
   colRange: Range;
   dataView: IDataType;
-  private matrixViews;
+  private stratifyColID: string = null;
 
   private $colStrat: d3.Selection<any>;
   private colStratManager: AColumnManager = new AColumnManager();
@@ -67,8 +67,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return $node;
   }
 
-  setFixedWidth(width:number) {
-    if(isNaN(width)) {
+  setFixedWidth(width: number) {
+    if (isNaN(width)) {
       return;
     }
 
@@ -251,40 +251,44 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
 
-  private stratifyMe = (event: any, colid) => {
-    const s = this.colStratManager.updateStratifiedRanges(colid);
-    this.makeMatrixView(s);
+  private stratifyCheck() {
+    const categoricalCol = this.colStratManager.columns.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    if (categoricalCol.length > 0 && this.stratifyColID === null) {
+      this.stratifyColID = categoricalCol[0].data.desc.id;
+    }
+    const s = this.colStratManager.updateStratifiedRanges(this.stratifyColID);
+    return this.makeMatrixView(s);
   }
 
-
-  private async makeMatrixView(s) {
-
+  private  makeMatrixView(s) {
     //If there is zero and not matching columns return nothing
     if (s === undefined) {
       return;
     }
-    this.matrixViews = [];
-    for (const r of s) {
+    return Promise.all(s.map((d) => {
       const mergedRange = mergeRanges(this.rowRanges);
-      let rowView = await this.data.idView(mergedRange);
-      rowView = (<INumericalMatrix>rowView).t;
-
-      let colView = await rowView.idView(r);
-      colView = (<INumericalMatrix>colView).t;
-      this.matrixViews.push(colView);
-    }
-
+      const rowView = this.data.idView(mergedRange);
+      return rowView.then((rowdata) => {
+        const temp = (<INumericalMatrix>rowdata).t;
+        const colView = temp.idView(d);
+        return colView.then((coldata) => coldata.t);
+      });
+    }));
   }
 
 
-  private attachListener() {
-    on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
+  private  attachListener() {
+    on(CategoricalColumn.EVENT_STRATIFYME, (event: any, colid) => this.stratifyColID = colid.data.desc.id);
     const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
     const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
       .attr('class', 'aggSelect')
       .on('change', (d, i) => {
         const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
-        this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.matrixViews, value, this);
+        this.stratifyCheck().then((matrixViews) => {
+          this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, matrixViews, value, this);
+        });
+        // console.log(this.mPromises);
+        // this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.matrixViews, value, this);
       });
 
     $vectorChange

@@ -77,11 +77,11 @@ export default class AColumnManager {
 
   updateStratifiedRanges(stratifyColid) {
     //Return nothing if there is zero  stratification column
-    const d = this.columns.find((d) => d.data.desc.id === stratifyColid.data.desc.id);
+    const d = this.columns.find((d) => d.data.desc.id === stratifyColid);
     if (stratifyColid === undefined || d === undefined) {
       return;
     }
-    const datas = this.dataPerStratification.get(stratifyColid.data.desc.id);
+    const datas = this.dataPerStratification.get(stratifyColid);
     const prepareRange = prepareRangeFromList(makeListFromRange(this.nonStratifiedRange), [datas]);
     this._stratifiedRanges = prepareRange[0].map((d) => makeRangeFromList(d));
     return this._stratifiedRanges;
