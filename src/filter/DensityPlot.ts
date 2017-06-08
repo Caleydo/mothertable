@@ -18,7 +18,7 @@ export default class DensityPlot<DATATYPE extends IDataType> {
   }
 
   get filterDim(): { width: number; height: number } {
-    this._filterDim = {width: 230, height: 35};
+    this._filterDim = {width: 220, height: 35}; // width also defined for .catentries in CSS
     return this._filterDim;
   }
 
