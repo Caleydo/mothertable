@@ -295,7 +295,10 @@ export default class App {
           col.updateColStratsSorting(data);
         });
 
-
+        supportView.on(AFilter.EVENT_REMOVE_ME, (evt: any, data: IDataType) => {
+          col.remove(data);
+          this.colManager.relayout();
+        });
         // add columns if we add one or multiple datasets
         supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
           // first push all the new stratifications ...

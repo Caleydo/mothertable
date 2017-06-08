@@ -156,6 +156,7 @@ export default class SupportView extends EventHandler {
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
     this._filterManager.on(AFilter.EVENT_REMOVE_ME, (evt: any, data: IDataType) => {
+      this.fire(AFilter.EVENT_REMOVE_ME, data);
       this.updateURLHash();
     });
 
@@ -218,6 +219,7 @@ export default class SupportView extends EventHandler {
   }
 
   public remove(data: IDataType) {
+
     if (this._filterManager.contains(<IFilterAbleType>data)) {
       this._filterManager.remove(null, <IFilterAbleType>data);
       this.updateURLHash();

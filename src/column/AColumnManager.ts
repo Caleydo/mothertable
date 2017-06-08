@@ -8,6 +8,7 @@ import SortHandler, {prepareRangeFromList} from '../SortHandler/SortHandler';
 import Range from 'phovea_core/src/range/Range';
 import {AnyFilter} from '../filter/AFilter';
 import {makeListFromRange, makeRangeFromList} from './utils';
+import {IDataType} from "phovea_core/src/datatype";
 
 
 export default class AColumnManager {
@@ -44,16 +45,16 @@ export default class AColumnManager {
   }
 
   add(column: AnyColumn) {
-
     this.columns.push(column);
   }
 
-  remove(column: AnyColumn) {
-    this.columns.splice(this.columns.indexOf(column), 1);
+  remove(data: IDataType) {
+    const col = this.columns.find((d, i) => d.data.desc.id === data.desc.id);
+    col.$node.remove();
+    this.columns.splice(this.columns.indexOf(col), 1);
   }
 
   async sort(): Promise<Map<string, Range[]>> {
-    // console.log(this.columns, this, this.vectorCols)
     const colsWithRange = new Map<string, Range[]>();
     const uniqueVectorCols = this.unique(this.vectorCols);
 

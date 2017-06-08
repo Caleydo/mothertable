@@ -88,7 +88,7 @@ export default class ColumnManager extends EventHandler {
   private onVisChange = (event: IEvent) => this.relayout();
   private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
-  private onWidthChanged = (event:IEvent) => this.setWidthToURLHash();
+  private onWidthChanged = (event: IEvent) => this.setWidthToURLHash();
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -160,7 +160,7 @@ export default class ColumnManager extends EventHandler {
     );
   }
 
-  private initWidthFromURLHash(column:AnyColumn) {
+  private initWidthFromURLHash(column: AnyColumn) {
     if (hash.has('colWidths')) {
       const widths = hash.getProp('colWidths')
         .split(ColumnManager.HASH_FILTER_DELIMITER);
