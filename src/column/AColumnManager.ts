@@ -8,7 +8,7 @@ import SortHandler, {prepareRangeFromList} from '../SortHandler/SortHandler';
 import Range from 'phovea_core/src/range/Range';
 import {AnyFilter} from '../filter/AFilter';
 import {makeListFromRange, makeRangeFromList} from './utils';
-import {IDataType} from "phovea_core/src/datatype";
+import {IDataType} from 'phovea_core/src/datatype';
 
 
 export default class AColumnManager {
