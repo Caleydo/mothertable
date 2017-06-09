@@ -77,7 +77,7 @@
       width: 200px;
     }
     &.highlight {
-      background: green;
+      background: $highlight-active-color;
     }
 
     .toolbar {
@@ -180,7 +180,7 @@
   margin: 0.3em 0.3em 0;
   text-align: center;
   &.highlight{
-    background: green;
+    background: $highlight-active-color;
   }
 }
 
