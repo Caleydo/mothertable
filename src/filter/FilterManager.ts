@@ -97,14 +97,14 @@ export default class FilterManager extends EventHandler {
   }
 
   highlightMe(coldata) {
-    const col = this.filters.find((d) => d.data === coldata);
+    const col = this.filters.find((d) => d.data === coldata.data);
     col.$node.select('header').classed('highlight', true);
 
   }
 
   removeHighlightMe(coldata) {
-    console.log(coldata)
-    const col = this.filters.find((d) => d.data === coldata);
+   // console.log(coldata)
+    const col = this.filters.find((d) => d.data === coldata.data);
     col.$node.select('.highlight').classed('highlight', false);
 
   }

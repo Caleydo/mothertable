@@ -150,14 +150,14 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .style('visibility', 'hidden');
 
     $node.select('header').on('mouseover', () => {
-      this.fire(AColumn.EVENT_HIGHLIGHT_ME, this.data);
+      this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
       $node.select('div.onHoverToolbar')
         .style('display', 'block')
         .style('visibility', 'visible');
     });
 
     $node.select('header').on('mouseleave', () => {
-      this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.data);
+      this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
       $node.select('div.onHoverToolbar')
         .style('display', 'none')
         .style('visibility', 'hidden');
