@@ -8,7 +8,7 @@ import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType, VALUE_TYPE_CATEGORICAL} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges, makeRangeFromList} from './utils';
+import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges, makeRangeFromList, findColumnTie} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
@@ -252,7 +252,15 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
 
   private stratifyCheck() {
-    const categoricalCol = this.colStratManager.columns.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    const cols = this.colStratManager.columns;
+    const categoricalCol = cols.filter((c) => c.data.desc.value.type === VALUE_TYPE_CATEGORICAL);
+    const checkColumnTie = findColumnTie(cols); // Find the index of numerical column or String
+    // If there is zero number of categorical column or the string or number as first column then the stratification is null
+    if (categoricalCol.length === 0 || checkColumnTie === 0) {
+      this.stratifyColID = null;
+      return this.makeMatrixView([this.colStratManager.nonStratifiedRange]);
+    }
+    // If there is categorical column above the numerical or string and the stratification is null then set first categorical column as stratification
     if (categoricalCol.length > 0 && this.stratifyColID === null) {
       this.stratifyColID = categoricalCol[0].data.desc.id;
     }

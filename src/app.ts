@@ -276,42 +276,42 @@ export default class App {
   private async addMatrixColSupportManger(col: MatrixColumn): Promise<SupportView> {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
+    supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
+      col.sortByFilterHeader(data);
+    });
+    supportView.updateFuelBar(this.dataSize);
+    supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
+      col.filterStratData(filter);
+      this.dataSize.filtered = filter.size()[0];
+      supportView.updateFuelBar(this.dataSize);
+    });
+
+    supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
+      col.updateColStratsSorting(data);
+    });
+
+    // add columns if we add one or multiple datasets
+    supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
+      // first push all the new stratifications ...
+
+      const promises = datasets.map((d) => {
+        return col.pushColStratData(d);
+      });
+      // ... when all stratifications are pushed -> render the column and relayout
+      Promise.all(promises)
+        .then(() => {
+          return Promise.all([col.updateColStrats(), col.updateMultiForms()]);
+        })
+        .then(() => {
+          this.colManager.relayout();
+        });
+
+    });
     return supportView.init()
       .then(() => {
         this.supportView.push(supportView);
         const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
         new MatrixFilter(matrix.t, supportView.$node);
-        supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
-          col.sortByFilterHeader(data);
-        });
-        supportView.updateFuelBar(this.dataSize);
-        supportView.on(SupportView.EVENT_FILTER_CHANGED, (evt: any, filter: Range) => {
-          col.filterStratData(filter);
-          this.dataSize.filtered = filter.size()[0];
-          supportView.updateFuelBar(this.dataSize);
-        });
-
-        supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
-          col.updateColStratsSorting(data);
-        });
-
-
-        // add columns if we add one or multiple datasets
-        supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
-          // first push all the new stratifications ...
-          const promises = datasets.map((d) => {
-            return col.pushColStratData(d);
-          });
-          // ... when all stratifications are pushed -> render the column and relayout
-          Promise.all(promises)
-            .then(() => {
-              return Promise.all([col.updateColStrats(), col.updateMultiForms()]);
-            })
-            .then(() => {
-              this.colManager.relayout();
-            });
-
-        });
         return supportView;
 
       })
