@@ -45,6 +45,29 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     return tooltipDiv;
   }
 
+  protected addHighlight($node: d3.Selection<any>){
+     const onHoverHighlight = $node.append('div')
+      .attr('class', 'onHoverHighlight')
+      .style('display', 'none')
+      .style('visibility', 'hidden');
+
+    onHoverHighlight.on('mouseover', () => {
+     // this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
+      console.log(this)
+      $node.select('div.onHoverHighlight')
+        .style('display', 'block')
+        .style('visibility', 'visible');
+    });
+
+    onHoverHighlight.on('mouseleave', () => {
+    //  this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
+      $node.select('div.onHoverHighlight')
+        .style('display', 'none')
+        .style('visibility', 'hidden');
+    });
+    return onHoverHighlight;
+  }
+
   protected generateLabel($node: d3.Selection<any>) {
     $node.select('header')
       .append('h2')
