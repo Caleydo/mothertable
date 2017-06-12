@@ -23,7 +23,7 @@ import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
-import {AnyColumn} from "mothertable/src/column/ColumnManager";
+import {AnyColumn} from '../column/ColumnManager';
 
 
 export declare type AnyFilter = AFilter<any, IDataType>;

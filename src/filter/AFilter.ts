@@ -8,7 +8,7 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import {formatAttributeName} from '../column/utils';
 import {dataValueType, dataValueTypeCSSClass} from '../column/ColumnManager';
-import AColumn from "mothertable/src/column/AColumn";
+import AColumn from '../column/AColumn';
 
 export declare type AnyFilter = AFilter<any, IDataType>;
 
