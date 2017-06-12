@@ -77,7 +77,8 @@
       width: 200px;
     }
     &.highlight {
-      background: $highlight-active-color;
+      border-left: 3px solid $select-color;
+      padding-left: calc(0.5em - 3px);
     }
 
     .toolbar {
@@ -177,10 +178,12 @@
 
 .idType {
   font-size: 1.5em;
-  margin: 0.3em 0.3em 0;
+  margin: 0;
   text-align: center;
+  padding: 0.3em 0.3em 0;
   &.highlight {
-    background: $highlight-active-color;
+    border-left: 3px solid $select-color;
+    padding-left: calc(0.3em - 3px);
   }
 }
 

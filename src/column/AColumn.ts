@@ -212,7 +212,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
 
   public  highlightMe(isTrue: boolean) {
-    this.$node.select('.toolbar').classed('highlight', isTrue);
+    this.$node.select('header').classed('highlight', isTrue);
 
   }
 

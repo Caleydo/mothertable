@@ -193,12 +193,18 @@ export default class App {
       supportView.setHighlight(column);
       const sid = this.getSupporIDMatrixCol(column);
       this.supportView[sid].$supportViewNode.select('.idType').classed('highlight', true);
+      if (column instanceof MatrixColumn) {
+        this.supportView[0].$supportViewNode.select('.idType').classed('highlight', true);
+      }
     });
 
     this.colManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyColumn) => {
       supportView.removeHighlight(column);
       const sid = this.getSupporIDMatrixCol(column);
       this.supportView[sid].$supportViewNode.select('.idType').classed('highlight', false);
+      if (column instanceof MatrixColumn) {
+        this.supportView[0].$supportViewNode.select('.idType').classed('highlight', false);
+      }
     });
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);

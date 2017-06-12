@@ -106,9 +106,8 @@ export default class FilterManager extends EventHandler {
   }
 
   removeHighlight(column: AnyColumn) {
-    // console.log(coldata)
     const col = this.filters.find((d) => d.data === column.data);
-    col.$node.select('.highlight').classed('highlight', false);
+    col.$node.select('header').classed('highlight', false);
 
   }
 
