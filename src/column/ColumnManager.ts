@@ -93,8 +93,8 @@ export default class ColumnManager extends EventHandler {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
   }
-  private highlightColumn = (event: IEvent, coldata) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, coldata);
-  private removeHighlightColumn = (event: IEvent, coldata) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, coldata);
+  private highlightColumn = (event: IEvent, column: AnyColumn) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, column);
+  private removeHighlightColumn = (event: IEvent, column: AnyColumn) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, column);
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
@@ -173,15 +173,15 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  setColumnHighlight(coldata) {
-    const col = this.columns.find((d) => d.data === coldata.data);
+  setColumnHighlight(column: AnyColumn) {
+    const col = this.columns.find((d) => d.data === column.data);
     col.highlightMe(true);
-    // col.$node.select('.toolbar').classed('highlight', true);
+    // col.$node.select('.toolbar').classed('setHighlight', true);
 
   }
 
-  removeColumnHighlight(coldata) {
-    const col = this.columns.find((d) => d.data === coldata.data);
+  removeColumnHighlight(column: AnyColumn) {
+    const col = this.columns.find((d) => d.data === column.data);
     col.highlightMe(false);
 
   }

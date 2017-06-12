@@ -23,6 +23,7 @@ import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
+import {AnyColumn} from "mothertable/src/column/ColumnManager";
 
 
 export declare type AnyFilter = AFilter<any, IDataType>;
@@ -98,15 +99,15 @@ export default class FilterManager extends EventHandler {
 
   }
 
-  highlightMe(coldata) {
-    const col = this.filters.find((d) => d.data === coldata.data);
+  setHighlight(column: AnyColumn) {
+    const col = this.filters.find((d) => d.data === column.data);
     col.$node.select('header').classed('highlight', true);
 
   }
 
-  removeHighlightMe(coldata) {
+  removeHighlight(column: AnyColumn) {
     // console.log(coldata)
-    const col = this.filters.find((d) => d.data === coldata.data);
+    const col = this.filters.find((d) => d.data === column.data);
     col.$node.select('.highlight').classed('highlight', false);
 
   }

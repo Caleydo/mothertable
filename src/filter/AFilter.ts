@@ -50,17 +50,24 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
 
     $node.on('mouseover', () => {
       this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
-      $node.classed('highlight', true);
+      this.highlightMe(true);
 
     });
 
     $node.on('mouseleave', () => {
-      $node.classed('highlight', false);
+      this.highlightMe(false);
       this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
 
     });
     return $node;
   }
+
+
+  public  highlightMe(isTrue: boolean) {
+    this.$node.select('header').classed('highlight', isTrue);
+
+  }
+
 
   protected generateLabel($node: d3.Selection<any>) {
     $node.select('header')

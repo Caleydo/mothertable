@@ -11,7 +11,7 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import {EventHandler} from 'phovea_core/src/event';
-import FilterManager from './filter/FilterManager';
+import FilterManager, {AnyFilter} from './filter/FilterManager';
 import {INumericalMatrix, IAnyMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {asVector} from 'phovea_core/src/vector';
@@ -48,7 +48,7 @@ export default class SupportView extends EventHandler {
   private _matrixData = new Map<string, INumericalMatrix>();
 
   private datasets: IDataType[];
-  $supportViewNode:d3.Selection<any>;
+  $supportViewNode: d3.Selection<any>;
 
   constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
@@ -149,12 +149,12 @@ export default class SupportView extends EventHandler {
 
   }
 
-  highlight(data) {
-    this._filterManager.highlightMe(data);
+  setHighlight(column: AnyColumn) {
+    this._filterManager.setHighlight(column);
   }
 
-  removeHighlight(data) {
-    this._filterManager.removeHighlightMe(data);
+  removeHighlight(column: AnyColumn) {
+    this._filterManager.removeHighlight(column);
   }
 
   private setupFilterManager() {
@@ -172,9 +172,8 @@ export default class SupportView extends EventHandler {
       this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
     });
 
-    this.filterManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, data));
-    this.filterManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, data));
-
+    this.filterManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyFilter) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, column));
+    this.filterManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyFilter) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, column));
 
 
     this.propagate(this._filterManager, FilterManager.EVENT_FILTER_CHANGED);

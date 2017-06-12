@@ -189,23 +189,23 @@ export default class App {
     });
 
     this.supportView.push(supportView);
-    this.colManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => {
-      supportView.highlight(data);
-      const sid = this.getSupporIDMatrixCol(data);
+    this.colManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyColumn) => {
+      supportView.setHighlight(column);
+      const sid = this.getSupporIDMatrixCol(column);
       this.supportView[sid].$supportViewNode.select('.idType').classed('highlight', true);
     });
 
-    this.colManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => {
-      supportView.removeHighlight(data);
-      const sid = this.getSupporIDMatrixCol(data);
+    this.colManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyColumn) => {
+      supportView.removeHighlight(column);
+      const sid = this.getSupporIDMatrixCol(column);
       this.supportView[sid].$supportViewNode.select('.idType').classed('highlight', false);
     });
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
     });
 
-    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => this.colManager.setColumnHighlight(data));
-    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => this.colManager.removeColumnHighlight(data));
+    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyColumn) => this.colManager.setColumnHighlight(column));
+    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyColumn) => this.colManager.removeColumnHighlight(column));
 
 
     this.colManager.addRowNumberColumn();
@@ -295,8 +295,8 @@ export default class App {
   private async addMatrixColSupportManger(col: MatrixColumn): Promise<SupportView> {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
-    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => col.highlightMe(true));
-    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => col.highlightMe(false));
+    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyColumn) => col.highlightMe(true));
+    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyColumn) => col.highlightMe(false));
 
 
     return supportView.init()

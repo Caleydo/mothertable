@@ -1,4 +1,3 @@
-
 $rightPanelWidth: 250px;
 $select-color: orange;
 $hover-color: #ffc46b;
@@ -10,7 +9,6 @@ $toolbar-bg-color: #fff;
 $toolbar-link-color: #999;
 $toolbar-link-hover-color: #444;
 $toolbar-link-active-color: #d98000;
-$highlight-active-color:gray;
-
+$highlight-active-color: $hover-color;
 
 $gap-between-stratifications: 4px;
