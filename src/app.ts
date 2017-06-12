@@ -128,8 +128,9 @@ export default class App {
     const otherIdType = this.findType(idType, currentIDType);
     const sView = this.supportView.filter((d) => d.idType.id === otherIdType.id);
     d3.selectAll(`.support-view-${otherIdType.id}.support-view`).remove();
-    this.supportView.splice(this.supportView.indexOf(sView[0]), 1);
-
+    const deletedView = this.supportView.splice(this.supportView.indexOf(sView[0]), 1);
+    console.assert(deletedView.length === 1);
+    this.supportView[0].removeIdTypeFromHash(deletedView[0].idTypeHash);
   }
 
   private findType(data: IDataType, currentIDType: string) {
@@ -299,6 +300,7 @@ export default class App {
           col.remove(data);
           this.colManager.relayout();
         });
+
         // add columns if we add one or multiple datasets
         supportView.on(SupportView.EVENT_DATASETS_ADDED, (evt: any, datasets: IMotherTableType[]) => {
           // first push all the new stratifications ...

@@ -55,7 +55,7 @@ export default class SupportView extends EventHandler {
     this.build($parent);
   }
 
-  private get idTypeHash() {
+  get idTypeHash() {
     return this.idType.id + '_' + this.id;
   }
 
@@ -218,12 +218,15 @@ export default class SupportView extends EventHandler {
     return this._matrixData.get(datasetId);
   }
 
-  public remove(data: IDataType) {
-
+  remove(data: IDataType) {
+    this.updateURLHash();
     if (this._filterManager.contains(<IFilterAbleType>data)) {
       this._filterManager.remove(null, <IFilterAbleType>data);
-      this.updateURLHash();
     }
+  }
+
+  removeIdTypeFromHash(idType: string) {
+    hash.removeProp(idType);
   }
 
   private buildSelect2($parent: d3.Selection<any>) {
