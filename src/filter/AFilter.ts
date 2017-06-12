@@ -8,6 +8,7 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import {formatAttributeName} from '../column/utils';
 import {dataValueType, dataValueTypeCSSClass} from '../column/ColumnManager';
+import AColumn from "mothertable/src/column/AColumn";
 
 export declare type AnyFilter = AFilter<any, IDataType>;
 
@@ -45,27 +46,20 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     return tooltipDiv;
   }
 
-  protected addHighlight($node: d3.Selection<any>){
-     const onHoverHighlight = $node.append('div')
-      .attr('class', 'onHoverHighlight')
-      .style('display', 'none')
-      .style('visibility', 'hidden');
+  protected addHighlight($node: d3.Selection<any>) {
 
-    onHoverHighlight.on('mouseover', () => {
-     // this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
-      console.log(this)
-      $node.select('div.onHoverHighlight')
-        .style('display', 'block')
-        .style('visibility', 'visible');
+    $node.on('mouseover', () => {
+      this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
+      $node.classed('highlight', true);
+
     });
 
-    onHoverHighlight.on('mouseleave', () => {
-    //  this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
-      $node.select('div.onHoverHighlight')
-        .style('display', 'none')
-        .style('visibility', 'hidden');
+    $node.on('mouseleave', () => {
+      $node.classed('highlight', false);
+      this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
+
     });
-    return onHoverHighlight;
+    return $node;
   }
 
   protected generateLabel($node: d3.Selection<any>) {

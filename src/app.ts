@@ -204,6 +204,10 @@ export default class App {
       this.colManager.mapFiltersAndSort(data);
     });
 
+    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => this.colManager.setColumnHighlight(data));
+    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => this.colManager.removeColumnHighlight(data));
+
+
     this.colManager.addRowNumberColumn();
 
     // add columns if we add one or multiple datasets
@@ -291,6 +295,10 @@ export default class App {
   private async addMatrixColSupportManger(col: MatrixColumn): Promise<SupportView> {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
+    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => col.highlightMe(true));
+    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => col.highlightMe(false));
+
+
     return supportView.init()
       .then(() => {
         this.supportView.push(supportView);

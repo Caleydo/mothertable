@@ -64,6 +64,8 @@ export default class FilterManager extends EventHandler {
       }
       this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
     });
+    filter.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, data));
+    filter.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, data));
   }
 
 
@@ -103,7 +105,7 @@ export default class FilterManager extends EventHandler {
   }
 
   removeHighlightMe(coldata) {
-   // console.log(coldata)
+    // console.log(coldata)
     const col = this.filters.find((d) => d.data === coldata.data);
     col.$node.select('.highlight').classed('highlight', false);
 

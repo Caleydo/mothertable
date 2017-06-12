@@ -27,7 +27,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
-  static readonly EVENT_HIGHLIGHT_ME = 'highlightMe';
+  static readonly EVENT_HIGHLIGHT_ME = 'setColumnHighlight';
   static readonly EVENT_REMOVEHIGHLIGHT_ME = 'removehighlightMe';
 
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix', stratification: 'stratification'};
@@ -151,6 +151,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     $node.select('header').on('mouseover', () => {
       this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
+      this.highlightMe(true);
       $node.select('div.onHoverToolbar')
         .style('display', 'block')
         .style('visibility', 'visible');
@@ -158,6 +159,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
     $node.select('header').on('mouseleave', () => {
       this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
+      this.highlightMe(false);
       $node.select('div.onHoverToolbar')
         .style('display', 'none')
         .style('visibility', 'hidden');
@@ -207,6 +209,13 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       scaleTo(multiform, this.width, multiform.size[1], this.orientation);
     });
   }
+
+
+  public  highlightMe(isTrue: boolean) {
+    this.$node.select('.toolbar').classed('highlight', isTrue);
+
+  }
+
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
     const $hoverToolbar = $toolbar.select('div.onHoverToolbar');

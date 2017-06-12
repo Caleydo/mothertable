@@ -172,6 +172,20 @@ export default class ColumnManager extends EventHandler {
     }
   }
 
+
+  setColumnHighlight(coldata) {
+    const col = this.columns.find((d) => d.data === coldata.data);
+    col.highlightMe(true);
+    // col.$node.select('.toolbar').classed('highlight', true);
+
+  }
+
+  removeColumnHighlight(coldata) {
+    const col = this.columns.find((d) => d.data === coldata.data);
+    col.highlightMe(false);
+
+  }
+
   /**
    * Adding a new column from given data
    * Called when adding a new filter from dropdown or from hash

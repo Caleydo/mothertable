@@ -172,6 +172,11 @@ export default class SupportView extends EventHandler {
       this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
     });
 
+    this.filterManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, data));
+    this.filterManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, data));
+
+
+
     this.propagate(this._filterManager, FilterManager.EVENT_FILTER_CHANGED);
   }
 
