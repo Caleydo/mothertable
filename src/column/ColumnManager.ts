@@ -88,7 +88,7 @@ export default class ColumnManager extends EventHandler {
   private onVisChange = (event: IEvent) => this.relayout();
   private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
-  private onWidthChanged = (event:IEvent) => this.setWidthToURLHash();
+  private onWidthChanged = (event: IEvent) => this.setWidthToURLHash();
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
@@ -160,7 +160,7 @@ export default class ColumnManager extends EventHandler {
     );
   }
 
-  private initWidthFromURLHash(column:AnyColumn) {
+  private initWidthFromURLHash(column: AnyColumn) {
     if (hash.has('colWidths')) {
       const widths = hash.getProp('colWidths')
         .split(ColumnManager.HASH_FILTER_DELIMITER);
@@ -220,8 +220,9 @@ export default class ColumnManager extends EventHandler {
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
     // no columns of attribute available --> delete from filter hierarchy for correct sorting
-    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
-      this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
+    const colIndex = this.filtersHierarchy.indexOf(col);
+    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
+      this.filtersHierarchy.splice(colIndex, 1);
     }
     if (checkParent < 2) {
       parentNode.parentNode.removeChild(parentNode);
