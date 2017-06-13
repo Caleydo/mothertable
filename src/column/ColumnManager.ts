@@ -244,8 +244,9 @@ export default class ColumnManager extends EventHandler {
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
     // no columns of attribute available --> delete from filter hierarchy for correct sorting
-    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
-      this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
+    const colIndex = this.filtersHierarchy.indexOf(col);
+    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
+      this.filtersHierarchy.splice(colIndex, 1);
     }
     if (checkParent < 2) {
       parentNode.parentNode.removeChild(parentNode);

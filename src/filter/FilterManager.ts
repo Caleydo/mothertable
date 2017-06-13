@@ -119,10 +119,10 @@ export default class FilterManager extends EventHandler {
    * @param data
    */
   remove(evt: any, data: IFilterAbleType) {
-    const col = this.filters.find((d) => d.data === data);
-    if (!col.activeFilter) {
-      col.$node.remove();
-      this.filters.splice(this.filters.indexOf(col), 1);
+    const filter = this.filters.find((d) => d.data === data);
+    if (!filter.activeFilter) {
+      filter.$node.remove();
+      this.filters.splice(this.filters.indexOf(filter), 1);
       fire(AFilter.EVENT_REMOVE_ME, data);
       this.fire(AFilter.EVENT_REMOVE_ME, data);
     }
@@ -130,7 +130,7 @@ export default class FilterManager extends EventHandler {
 
     if (data.desc.type === AColumn.DATATYPE.matrix) {
 
-      fire(AFilter.EVENT_MATRIX_REMOVE, col.data, col.idtype.id);
+      fire(AFilter.EVENT_MATRIX_REMOVE, filter.data, filter.idtype.id);
 
     }
 
@@ -167,25 +167,6 @@ export default class FilterManager extends EventHandler {
     this.triggerSort();
   }
 
-  convertToVector(col) {
-
-    // console.log(col.data.desc.id, this.vectorFilters)
-    // const matrixFilters = this.vectorFilters.filter((c) => c.data.desc.id === col.data.desc.id)
-    //  const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
-    // const flattenedMatrix = FilterManager.createFilter(flattenedData, this.$node);
-    //matrixFilters[0].$node.remove()
-    //const index = this.vectorFilters.indexOf(matrixFilters[0]);
-    // this.push(flattenedData)
-    //console.log(flattenedMatrix, matrixFilters[0].$node.remove(),index,this.vectorFilters)
-
-
-    // flattenedMatrix.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges);
-    // const index = this.columns.indexOf(col);
-    // this.columns.splice(index, 1, flattenedMatrix);
-    // console.log(this.columns)
-
-    //matrixFilters[0].$node.node().replaceWith(flattenedMatrix.$node.node());
-  }
 
   /**
    * Filter Dragging  Event Listener
