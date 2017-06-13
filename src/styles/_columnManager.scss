@@ -143,6 +143,15 @@
         height: 18px;
         margin: -6px;
         margin-top: 2px;
+
+        g.tick {
+          &:first-of-type text {
+            text-anchor: start !important;
+          }
+          &:last-of-type text {
+            text-anchor: end !important;
+          }
+        }
       }
 
       //Switching from matrix to vector for stratified
