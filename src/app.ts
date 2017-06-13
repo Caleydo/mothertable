@@ -152,12 +152,18 @@ export default class App {
 
   }
 
+  private getSupporIDMatrixCol(col) {
+    const matrixOnly = this.colManager.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
+    return matrixOnly.indexOf(col) + 1;
+  }
+
   private async setPrimaryIDType(idtype: IDType) {
     this.hideSelection();
 
     // create a column manager
     this.colManager = new ColumnManager(idtype, EOrientation.Vertical, this.$node.select('main'));
     this.colManager.on(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.primarySortCol.bind(this));
+
     this.colManager.on(SupportView.EVENT_DATASETS_ADDED, async (evt: any, col, numberCols) => {
       this.colManager.removeMatrixCol(col, numberCols);
       numberCols.forEach((d) => this.supportView[0].filterManager.updateFilterView(d));
@@ -172,8 +178,7 @@ export default class App {
       if (matrixData === undefined) {
         matrixData = [col.data];
       }
-      const matrixOnly = this.colManager.columns.filter((d) => d.data.desc.type === AColumn.DATATYPE.matrix);
-      const supportIndex = matrixOnly.indexOf(col) + 1;
+      const supportIndex = this.getSupporIDMatrixCol(col);
       const flattenedMatrix = this.colManager.convertMatrixToVector(matrixData, aggfunction);
       flattenedMatrix.map((fm) => this.updateTableView(fm, supportIndex, col));
     });
@@ -186,10 +191,30 @@ export default class App {
     });
 
     this.supportView.push(supportView);
+    this.colManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyColumn) => {
+      supportView.setHighlight(column);
+      const sid = this.getSupporIDMatrixCol(column);
+      this.supportView[sid].$supportViewNode.select('.idType').classed('highlight', true);
+      if (column instanceof MatrixColumn) {
+        this.supportView[0].$supportViewNode.select('.idType').classed('highlight', true);
+      }
+    });
 
+    this.colManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyColumn) => {
+      supportView.removeHighlight(column);
+      const sid = this.getSupporIDMatrixCol(column);
+      this.supportView[sid].$supportViewNode.select('.idType').classed('highlight', false);
+      if (column instanceof MatrixColumn) {
+        this.supportView[0].$supportViewNode.select('.idType').classed('highlight', false);
+      }
+    });
     supportView.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyFilter[]) => {
       this.colManager.mapFiltersAndSort(data);
     });
+
+    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyColumn) => this.colManager.setColumnHighlight(column));
+    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyColumn) => this.colManager.removeColumnHighlight(column));
+
 
     this.colManager.addRowNumberColumn();
 
@@ -278,6 +303,10 @@ export default class App {
   private async addMatrixColSupportManger(col: MatrixColumn): Promise<SupportView> {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
     const supportView = new MatrixSupportView(col.data, this.$node.select('.rightPanel'), this.supportView.length);
+    supportView.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyColumn) => col.highlightMe(true));
+    supportView.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyColumn) => col.highlightMe(false));
+
+
     return supportView.init()
       .then(() => {
         this.supportView.push(supportView);

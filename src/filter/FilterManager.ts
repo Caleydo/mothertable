@@ -23,6 +23,7 @@ import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
+import {AnyColumn} from '../column/ColumnManager';
 
 
 export declare type AnyFilter = AFilter<any, IDataType>;
@@ -64,6 +65,8 @@ export default class FilterManager extends EventHandler {
       }
       this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
     });
+    filter.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, data));
+    filter.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, data));
   }
 
 
@@ -95,6 +98,19 @@ export default class FilterManager extends EventHandler {
     this.filters.splice(index, 1);
 
   }
+
+  setHighlight(column: AnyColumn) {
+    const col = this.filters.find((d) => d.data === column.data);
+    col.$node.select('header').classed('highlight', true);
+
+  }
+
+  removeHighlight(column: AnyColumn) {
+    const col = this.filters.find((d) => d.data === column.data);
+    col.$node.select('header').classed('highlight', false);
+
+  }
+
 
   /**
    * Removes the column from the vectorFilters by the given data parameter,

@@ -103,7 +103,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   remove(col: IDataType) {
     this.colStratManager.remove(col);
-
   }
 
 
