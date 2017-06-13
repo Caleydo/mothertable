@@ -19,11 +19,11 @@ import {IFuelBarDataSize} from './SupportView';
 import MatrixSupportView from './MatrixSupportView';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter, default as AFilter} from './filter/AFilter';
-import {formatIdTypeName, makeRangeFromList} from './column/utils';
+import {formatIdTypeName} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import NumberColumn from './column/NumberColumn';
 import {AVectorFilter} from './filter/AVectorFilter';
-import {INumericalMatrix} from '../../phovea_core/src/matrix/IMatrix';
+import {INumericalMatrix} from 'phovea_core/src/matrix/IMatrix';
 
 
 /**
