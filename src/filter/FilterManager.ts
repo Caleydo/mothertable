@@ -103,10 +103,10 @@ export default class FilterManager extends EventHandler {
    * @param data
    */
   remove(evt: any, data: IFilterAbleType) {
-    const col = this.filters.find((d) => d.data === data);
-    if (!col.activeFilter) {
-      col.$node.remove();
-      this.filters.splice(this.filters.indexOf(col), 1);
+    const filter = this.filters.find((d) => d.data === data);
+    if (!filter.activeFilter) {
+      filter.$node.remove();
+      this.filters.splice(this.filters.indexOf(filter), 1);
       fire(AFilter.EVENT_REMOVE_ME, data);
       this.fire(AFilter.EVENT_REMOVE_ME, data);
     }
@@ -114,7 +114,7 @@ export default class FilterManager extends EventHandler {
 
     if (data.desc.type === AColumn.DATATYPE.matrix) {
 
-      fire(AFilter.EVENT_MATRIX_REMOVE, col.data, col.idtype.id);
+      fire(AFilter.EVENT_MATRIX_REMOVE, filter.data, filter.idtype.id);
 
     }
 

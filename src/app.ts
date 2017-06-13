@@ -16,12 +16,14 @@ import Range from 'phovea_core/src/range/Range';
 import {hash} from 'phovea_core/src/index';
 import {IDataType} from 'phovea_core/src/datatype';
 import {IFuelBarDataSize} from './SupportView';
+import MatrixSupportView from './MatrixSupportView';
 import Range1D from 'phovea_core/src/range/Range1D';
 import {AnyFilter, default as AFilter} from './filter/AFilter';
 import {formatIdTypeName, makeRangeFromList} from './column/utils';
 import {on, fire} from 'phovea_core/src/event';
 import NumberColumn from './column/NumberColumn';
 import {AVectorFilter} from './filter/AVectorFilter';
+import {INumericalMatrix} from '../../phovea_core/src/matrix/IMatrix';
 
 
 /**
@@ -124,13 +126,12 @@ export default class App {
     on(AFilter.EVENT_MATRIX_REMOVE, this.removeSupportView.bind(this));
   }
 
-  private removeSupportView(evt: any, idType: IDataType, currentIDType: string) {
-    const otherIdType = this.findType(idType, currentIDType);
-    const sView = this.supportView.filter((d) => d.idType.id === otherIdType.id);
-    d3.selectAll(`.support-view-${otherIdType.id}.support-view`).remove();
-    const deletedView = this.supportView.splice(this.supportView.indexOf(sView[0]), 1);
-    console.assert(deletedView.length === 1);
-    this.supportView[0].removeIdTypeFromHash(deletedView[0].idTypeHash);
+  private removeSupportView(evt: any, matrix: INumericalMatrix, currentIDType: string) {
+    const viewToRemoveIndex = this.supportView.findIndex((view) => view instanceof MatrixSupportView && view.matrix.desc.id === matrix.desc.id);
+    const viewToRemove = this.supportView[viewToRemoveIndex];
+    this.supportView.splice(viewToRemoveIndex, 1);
+    viewToRemove.destroy();
+    this.supportView[0].removeIdTypeFromHash(viewToRemove.idTypeHash);
   }
 
   private findType(data: IDataType, currentIDType: string) {
@@ -276,7 +277,7 @@ export default class App {
 
   private async addMatrixColSupportManger(col: MatrixColumn): Promise<SupportView> {
     const otherIdtype: IDType = this.findType(col.data, col.idtype.id);
-    const supportView = new SupportView(otherIdtype, this.$node.select('.rightPanel'), this.supportView.length);
+    const supportView = new MatrixSupportView(col.data, this.$node.select('.rightPanel'), this.supportView.length);
     return supportView.init()
       .then(() => {
         this.supportView.push(supportView);
