@@ -122,13 +122,16 @@ export default class SupportView extends EventHandler {
     const matrixColumns = await Promise.all(this.datasets.filter((d) => d.desc.type === 'matrix').map(splitMatrixInVectors));
     this.datasets.push(...[].concat(...matrixColumns));
 
-    if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
+    if (this.idType.id !== 'artist' && this.idType.id !== 'country') { // TODO dirty HACK
       const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
       if (vectorsOnly.length > 0) {
         const idStrings = await (<IAnyVector>vectorsOnly[0]).names();
-        const idVector = asVector(idStrings, idStrings, {
+        const idVector = asVector(idStrings, idStrings, <any>{
           name: formatIdTypeName(this.idType.name),
-          idtype: `${this.idType}`
+          idtype: `${this.idType}`,
+          value: {
+            type: VALUE_TYPE_STRING
+          }
         });
         this.datasets.push(idVector);
       }
