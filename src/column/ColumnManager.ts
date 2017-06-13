@@ -88,11 +88,12 @@ export default class ColumnManager extends EventHandler {
   private onVisChange = (event: IEvent) => this.relayout();
   private onMatrixToVector = (event: IEvent, data: IDataType, aggfunction, col) => this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, data, aggfunction, col);
   private onVectorToMatrix = (event: IEvent, data: IDataType) => this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, data);
-  private onWidthChanged = (event:IEvent) => this.setWidthToURLHash();
+  private onWidthChanged = (event: IEvent) => this.setWidthToURLHash();
   private stratifyMe = (event: IEvent, colid) => {
     this.stratifyColId = colid.data.desc.id;
     this.stratifyAndRelayout();
   }
+  private onChangeAggFunc = (event: IEvent, aggfunction: string, col: NumberColumn) => this.changeAggFunction(aggfunction, col);
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
@@ -160,7 +161,7 @@ export default class ColumnManager extends EventHandler {
     );
   }
 
-  private initWidthFromURLHash(column:AnyColumn) {
+  private initWidthFromURLHash(column: AnyColumn) {
     if (hash.has('colWidths')) {
       const widths = hash.getProp('colWidths')
         .split(ColumnManager.HASH_FILTER_DELIMITER);
@@ -191,6 +192,7 @@ export default class ColumnManager extends EventHandler {
     col.on(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
     col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     col.on(AColumn.EVENT_WIDTH_CHANGED, this.onWidthChanged);
+    col.on(NumberColumn.EVENT_CHANGE_AGG_FUNC, this.onChangeAggFunc);
 
     this.columns.push(col);
 
@@ -214,17 +216,21 @@ export default class ColumnManager extends EventHandler {
       return;
     }
 
+
     //Special case for the removing the parent dom of the projected vector from matrix.
     const parentNode = col.$node.node().parentNode.parentNode.parentNode;
     const checkParent = col.$node.node().parentNode.childNodes.length;
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
+
+    // console.log(this.columns);
     // no columns of attribute available --> delete from filter hierarchy for correct sorting
     if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
       this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
     }
     if (checkParent < 2) {
       parentNode.parentNode.removeChild(parentNode);
+      console.log('checkMatrix');
     }
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
@@ -325,6 +331,22 @@ export default class ColumnManager extends EventHandler {
 
     });
 
+  }
+
+  private changeAggFunction(aggfunction, col) {
+    const m = [col.data.m];
+    const newdata = this.convertMatrixToVector(m, aggfunction);
+    this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, newdata[0], col);
+
+
+  }
+
+  updateTableAggDom(oldColumn, newVector) {
+    const parent = oldColumn.$node.node().parentNode;
+    const newCol = this.columns.find((d) => d.data === newVector);
+    newCol.$node.select('aside').remove();
+    parent.insertBefore(newCol.$node.node(), oldColumn.$node.node());
+    this.remove(null, oldColumn.data);
   }
 
   private getMatrixDOM(columnNode: d3.Selection<any>, selection: HTMLElement) {

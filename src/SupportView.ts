@@ -136,7 +136,7 @@ export default class SupportView extends EventHandler {
   }
 
 
-  async addFilter(dataset) {
+  async addFilter(dataset:IDataType) {
     const data = await this.addDataset(dataset);
     this.fire(SupportView.EVENT_DATASETS_ADDED, [data]);
     this.updateURLHash();

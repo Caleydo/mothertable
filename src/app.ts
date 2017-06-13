@@ -176,8 +176,15 @@ export default class App {
       flattenedMatrix.map((fm) => this.updateTableView(fm, supportIndex, col));
     });
 
-
     const supportView = new SupportView(idtype, this.$node.select('.rightPanel'), this.supportView.length);
+
+    this.colManager.on(NumberColumn.EVENT_CHANGE_AGG_FUNC, async (evt: any, newVector, oldColumn?) => {
+      await supportView.addFilter(newVector);
+      // console.log(await oldColumn.data.m.data());
+      this.colManager.updateTableAggDom(oldColumn, newVector);
+    });
+
+
     supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       const col = this.colManager.updateSortByIcons(data);
       (<AVectorColumn<any, any>>col).updateSortIcon(data.sortMethod);

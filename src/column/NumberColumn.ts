@@ -10,7 +10,7 @@ import {mixin} from 'phovea_core/src/index';
 import {NUMERICAL_COLOR_MAP} from './utils';
 import * as d3 from 'd3';
 import Range from 'phovea_core/src/range/Range';
-import MatrixColumn from './MatrixColumn';
+import MatrixColumn, {AGGREGATE} from './MatrixColumn';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
@@ -21,12 +21,13 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   projectedMatrix: boolean = false;
   matrixViewRange: Range;
 
-  private $points:d3.Selection<any>;
-  private $axis:d3.Selection<any>;
+  private $points: d3.Selection<any>;
+  private $axis: d3.Selection<any>;
   private scale: d3.scale.Linear<number, number> = d3.scale.linear();
   private axis: d3.svg.Axis = d3.svg.axis();
 
   public static EVENT_CONVERT_TO_MATRIX = 'convertToMatrix';
+  public static EVENT_CHANGE_AGG_FUNC = 'ChangeAggFunc';
 
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?: MatrixColumn) {
     super(data, orientation);
@@ -60,8 +61,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
 
     const count = this.$axis.selectAll('.tick').size();
-    this.$axis.selectAll('.tick').each(function(data, i) {
-      if(i === count-1) {
+    this.$axis.selectAll('.tick').each(function (data, i) {
+      if (i === count - 1) {
         const tick = d3.select(this).select('text');
         tick.style('text-anchor', 'end');
       }
@@ -98,8 +99,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
   }
 
-  setFixedWidth(width:number) {
-    if(isNaN(width)) {
+  setFixedWidth(width: number) {
+    if (isNaN(width)) {
       return;
     }
     super.setFixedWidth(width);
@@ -145,6 +146,22 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       $matrixChange.on('click', () => {
         this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, this);
       });
+
+
+      const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
+      const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
+        .attr('class', 'aggSelect')
+        .on('change', (d, i) => {
+          const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
+          this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, value, this);
+        });
+
+      $vectorChange
+        .selectAll('option')
+        .data(options).enter()
+        .append('option')
+        .text((d) => d);
+
 
     }
 
