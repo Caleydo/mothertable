@@ -23,6 +23,7 @@ import * as d3 from 'd3';
 import 'jquery-ui/ui/widgets/sortable';
 import {findColumnTie} from '../column/utils';
 import AColumn from '../column/AColumn';
+import {AnyColumn} from '../column/ColumnManager';
 
 
 export declare type AnyFilter = AFilter<any, IDataType>;
@@ -64,10 +65,12 @@ export default class FilterManager extends EventHandler {
       }
       this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
     });
+    filter.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, data));
+    filter.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, data) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, data));
   }
 
 
-  primarySortColumn(sortColdata: { data: IDataType}) {
+  primarySortColumn(sortColdata: { data: IDataType }) {
     const dataid = sortColdata.data.desc.id;
     const col = this.filters.filter((d) => d.data.desc.id === dataid);
     this.move(col[0], 0);
@@ -79,7 +82,7 @@ export default class FilterManager extends EventHandler {
   }
 
 
-  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType} }) {
+  updateSortIcon(sortColdata: { sortMethod: string, col: { data: IFilterAbleType } }) {
     const col = this.filters.find((d) => d.data === sortColdata.col.data);
     (<AVectorFilter<any, any>>col).updateSortIcon(sortColdata.sortMethod);
   }
@@ -96,6 +99,19 @@ export default class FilterManager extends EventHandler {
 
   }
 
+  setHighlight(column: AnyColumn) {
+    const col = this.filters.find((d) => d.data === column.data);
+    col.$node.select('header').classed('highlight', true);
+
+  }
+
+  removeHighlight(column: AnyColumn) {
+    const col = this.filters.find((d) => d.data === column.data);
+    col.$node.select('header').classed('highlight', false);
+
+  }
+
+
   /**
    * Removes the column from the vectorFilters by the given data parameter,
    * if the column has no filter applied.
@@ -103,10 +119,10 @@ export default class FilterManager extends EventHandler {
    * @param data
    */
   remove(evt: any, data: IFilterAbleType) {
-    const col = this.filters.find((d) => d.data === data);
-    if (!col.activeFilter) {
-      col.$node.remove();
-      this.filters.splice(this.filters.indexOf(col), 1);
+    const filter = this.filters.find((d) => d.data === data);
+    if (!filter.activeFilter) {
+      filter.$node.remove();
+      this.filters.splice(this.filters.indexOf(filter), 1);
       fire(AFilter.EVENT_REMOVE_ME, data);
       this.fire(AFilter.EVENT_REMOVE_ME, data);
     }
@@ -114,7 +130,7 @@ export default class FilterManager extends EventHandler {
 
     if (data.desc.type === AColumn.DATATYPE.matrix) {
 
-      fire(AFilter.EVENT_MATRIX_REMOVE, col.data, col.idtype.id);
+      fire(AFilter.EVENT_MATRIX_REMOVE, filter.data, filter.idtype.id);
 
     }
 
@@ -151,25 +167,6 @@ export default class FilterManager extends EventHandler {
     this.triggerSort();
   }
 
-  convertToVector(col) {
-
-    // console.log(col.data.desc.id, this.vectorFilters)
-    // const matrixFilters = this.vectorFilters.filter((c) => c.data.desc.id === col.data.desc.id)
-    //  const flattenedData: any = (<INumericalMatrix> col.data).reduce((row: number[]) => d3.mean(row));
-    // const flattenedMatrix = FilterManager.createFilter(flattenedData, this.$node);
-    //matrixFilters[0].$node.remove()
-    //const index = this.vectorFilters.indexOf(matrixFilters[0]);
-    // this.push(flattenedData)
-    //console.log(flattenedMatrix, matrixFilters[0].$node.remove(),index,this.vectorFilters)
-
-
-    // flattenedMatrix.updateMultiForms(this._multiformRangeList, this._stratifiedRanges, this._brushedRanges);
-    // const index = this.columns.indexOf(col);
-    // this.columns.splice(index, 1, flattenedMatrix);
-    // console.log(this.columns)
-
-    //matrixFilters[0].$node.node().replaceWith(flattenedMatrix.$node.node());
-  }
 
   /**
    * Filter Dragging  Event Listener

@@ -87,6 +87,11 @@
       padding: 3px;
       width: 100%;
 
+      &.highlight {
+        border-top: 3px solid $select-color;
+        padding-top: 0;
+      }
+
       .labelName {
         cursor: move;
         display: flex;
@@ -117,6 +122,7 @@
         a + a {
           margin-left: 5px;
         }
+
       }
 
       .onHoverToolbar {
@@ -164,6 +170,7 @@
           opacity: 1;
         }
       }
+
     }
 
     main {
