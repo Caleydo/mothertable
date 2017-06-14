@@ -46,7 +46,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
     this.scale
       .range([0, width])
-      .domain((this.data.desc).value.range);
+      .domain(this.data.desc.value.range);
 
     const tickCount = 0;
     this.axis
@@ -61,23 +61,20 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   }
 
   public updateAxis(brushedItems: number[][]) {
-    const axis = this.$node.selectAll('taggle-axis')[0];
-    const brushedData = [];
-
     this.$points.selectAll('line').remove();
 
+    const lookup = new Set<number>();
+    brushedItems.forEach((brush) => brush.forEach((e) => lookup.add(e)));
+
     this.data.forEach((d, i) => {
-      brushedItems.forEach((brush) => {
-        if (brush.indexOf(i) > -1) {
-          brushedData.push(d);
-          this.$points.append('line').attr({
-            'x1': this.scale(d),
-            'x2': this.scale(d),
-            'y1': 0,
-            'y2': 6
-          });
-        }
-      });
+      if (lookup.has(i)) {
+        this.$points.append('line').attr({
+          'x1': this.scale(d),
+          'x2': this.scale(d),
+          'y1': 0,
+          'y2': 6
+        });
+      }
     });
   }
 
