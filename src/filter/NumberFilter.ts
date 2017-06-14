@@ -12,15 +12,12 @@ import DensityPlot from './DensityPlot';
 export default class NumberFilter extends AVectorFilter<number, INumericalVector> {
 
   readonly $node: d3.Selection<any>;
-  private _filterDim: { width: number, height: number };
-  private _numericalFilterRange: number[];
-  private _toolTip: d3.Selection<SVGElement>;
-  private _SVG: d3.Selection<SVGElement>;
+  private filterRange: number[];
 
   constructor(data: INumericalVector, $parent: d3.Selection<any>) {
     super(data);
     this.$node = this.build($parent);
-    this._numericalFilterRange = this.data.desc.value.range;
+    this.filterRange = this.data.desc.value.range;
   }
 
   protected build($parent: d3.Selection<any>) {
@@ -32,7 +29,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
   }
 
   set numericalFilterRange(value: number[]) {
-    this._numericalFilterRange = value;
+    this.filterRange = value;
   }
 
   public fireFilterChanged() {
@@ -41,26 +38,17 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   async filter(current: Range) {
     const dataRange = this.data.desc.value.range;
-    let filteredRange = await this.data.ids();
-    if (Math.round(this._numericalFilterRange[0]) === dataRange[0] && Math.round(this._numericalFilterRange[1]) === dataRange[1]) {
 
-      filteredRange = await this.data.ids();
+    let viewBuilder: Promise<INumericalVector>;
+    //check if no filter set
+    if (Math.round(this.filterRange[0]) === dataRange[0] && Math.round(this.filterRange[1]) === dataRange[1]) {
+      viewBuilder = Promise.resolve(this.data);
     } else {
-      const vectorView = await(<any>this.data).filter(numericalFilter.bind(this, this._numericalFilterRange));
-      filteredRange = await vectorView.ids();
+      viewBuilder = this.data.filter((d) => d >= this.filterRange[0] && d <= this.filterRange[1]);
     }
-    const rangeIntersected = current.intersect(filteredRange);
-    const fullRange = (await this.data.ids()).size();
-    const vectorRange = filteredRange.size();
-    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
-    return rangeIntersected;
-  }
-}
-
-function numericalFilter(numRange: number[], value: number) {
-  if (value >= numRange[0] && value <= numRange[1]) {
-    return value;
-  } else {
-    return;
+    return viewBuilder.then((view) => {
+      this.activeFilter = view.length !== this.data.length;
+      return view.ids();
+    }).then((filteredRange) => current.intersect(filteredRange));
   }
 }
