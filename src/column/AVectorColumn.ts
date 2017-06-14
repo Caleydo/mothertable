@@ -27,8 +27,9 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
 
   static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
 
+  //CODE QUALITY variable not set or used in this class
   multiform: MultiForm;
-  // already defined by super class?
+  //QUESTION already defined by super class?
   dataView: IDataType;
   private $sortButton: d3.Selection<any>;
 

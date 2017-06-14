@@ -13,7 +13,7 @@ import {EAggregationType} from './VisManager';
 
 
 export default class CategoricalColumn extends AVectorColumn<string, ICategoricalVector> {
-
+  //CODE QUALITY since it is also a global event, this constant should also be stored in some constant file listing all global events
   static readonly EVENT_STRATIFYME = 'stratifyByMe';
 
   minWidth: number = 2;
@@ -28,6 +28,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
   }
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
+    //BUG assumes that histogramData is set even it is an optional argument
     return mixin(super.multiFormParams($body), {
       initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       'phovea-vis-histogram': {
@@ -54,19 +55,23 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
         fire(CategoricalColumn.EVENT_STRATIFYME, this); // for updating the filter and other columns
       });
 
+    //BUG who is deregistering this event listener again?
     on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
-      $stratifyButton.classed('active', ref.data.desc.id === this.data.desc.id);
+      const itsMe = ref.data.desc.id === this.data.desc.id;
+      $stratifyButton.classed('active', itsMe);
 
-      if (ref.data.desc.id === this.data.desc.id) {
+      if (itsMe) {
         this.fire(CategoricalColumn.EVENT_STRATIFYME, this); // for stratifying in the ColumnManager
       }
     });
   }
 
   showStratIcon(isVisible: boolean) {
+    //isn't it the same icon as in the next method? why using two different selectors? why not hiding the whole 'a' element
     this.toolbar.select('.fa-columns').classed('hidden', !isVisible);
   }
 
+  //QUESTION why is this method needed shouldn't the event listener take already care of it?
   stratifyByMe(isTrue: boolean) {
     this.toolbar.select('.stratifyByMe').classed('active', isTrue);
   }
