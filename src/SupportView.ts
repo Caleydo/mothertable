@@ -92,7 +92,7 @@ export default class SupportView extends EventHandler {
     await this.addInitialFilters();
   }
 
-  private addDefaultColumn() {
+  protected addDefaultColumn() {
     const stringColumn = this.datasets.find((x) => (x instanceof TableVector || x instanceof Vector) && x.desc.value.type === VALUE_TYPE_STRING);
 
     // string column available?
@@ -211,8 +211,7 @@ export default class SupportView extends EventHandler {
     this.$node.remove();
     this.$supportViewNode.remove();
     this.filterManager.destroy();
-    this.updateURLHash();
-
+    this.removeIdTypeFromHash(this.idTypeHash);
   }
 
   sortByColumnHeader(sortColdata: { data: IDataType }) {

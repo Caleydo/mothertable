@@ -8,4 +8,8 @@ export default class MatrixSupportView extends SupportView {
   constructor(public readonly matrix: INumericalMatrix, $parent: d3.Selection<any>, id: number) {
     super(matrix.coltype, $parent, id);
   }
+
+  protected addDefaultColumn() {
+    // no default column
+  }
 }
