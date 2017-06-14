@@ -47,22 +47,20 @@ export default class App {
     this.attachListener();
     await this.loadIdtypes();
 
+    this.buildStartSelection(d3.select('#startSelection'));
+
     if (hash.has('idtype')) {
-      const idtype = this.idtypes.filter((d) => d.id === hash.getProp('idtype'));
-      if (idtype.length > 0) {
-        this.setPrimaryIDType(idtype[0]);
-        return; // exit function -> do not build start selection
+      const idtype = this.idtypes.find((d) => d.id === hash.getProp('idtype'));
+      if (idtype) {
+        this.setPrimaryIDType(idtype);
       }
     }
-
-    this.buildStartSelection(d3.select('#startSelection'));
   }
 
   private async loadIdtypes() {
     // get all idtypes, filter to the valid ones and SORT by name
-    this.idtypes = (await listAll())
+    this.idtypes = <IDType[]>(await listAll())
       .filter((d) => d instanceof IDType)
-      .map((d) => <IDType>d)
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -99,9 +97,13 @@ export default class App {
   }
 
   private reset() {
-    this.supportView[0].destroy();
+    const primary = this.supportView[0];
+    primary.destroy();
+    this.supportView.splice(0, this.supportView.length);
     this.colManager.destroy();
-    d3.selectAll('.rightPanel').remove();
+    this.colManager = null;
+    hash.removeProp('idtype');
+    //d3.selectAll('.rightPanel').remove();
     this.showSelection();
   }
 
@@ -126,12 +128,11 @@ export default class App {
     on(AFilter.EVENT_MATRIX_REMOVE, this.removeSupportView.bind(this));
   }
 
-  private removeSupportView(evt: any, matrix: INumericalMatrix, currentIDType: string) {
+  private removeSupportView(evt: any, matrix: INumericalMatrix) {
     const viewToRemoveIndex = this.supportView.findIndex((view) => view instanceof MatrixSupportView && view.matrix.desc.id === matrix.desc.id);
     const viewToRemove = this.supportView[viewToRemoveIndex];
     this.supportView.splice(viewToRemoveIndex, 1);
     viewToRemove.destroy();
-    this.supportView[0].removeIdTypeFromHash(viewToRemove.idTypeHash);
   }
 
   private findType(data: IDataType, currentIDType: string) {
