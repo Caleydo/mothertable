@@ -30,6 +30,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_HIGHLIGHT_ME = 'setColumnHighlight';
   static readonly EVENT_REMOVEHIGHLIGHT_ME = 'removehighlightMe';
 
+  //what is the difference to EDataValueType?
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix', stratification: 'stratification'};
 
   $node: d3.Selection<any>;
@@ -49,11 +50,12 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
 
   selectedAggVis: IVisPluginDesc;
   selectedUnaggVis: IVisPluginDesc;
+  //HACK why not in the corresponding sub class?
   matrixFilters: AnyFilter[];//For the header in matrix
 
   private _width: number = this.maxWidth;
 
-  protected multiformMap: Map<string, TaggleMultiform> = new Map<string, TaggleMultiform>();
+  protected readonly multiformMap = new Map<string, TaggleMultiform>();
 
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {

@@ -28,12 +28,14 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
   static readonly EVENT_SORTBY_COLUMN_HEADER = 'sortByMe';
 
   multiform: MultiForm;
+  // already defined by super class?
   dataView: IDataType;
   private $sortButton: d3.Selection<any>;
 
   constructor(data: DATATYPE, orientation: EOrientation) {
     super(data, orientation);
     this.dataView = data;
+    //HACK by casting to any and assuming there is a .indices method
     this.rangeView = (<any>data).indices;
   }
 
@@ -55,19 +57,11 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
       .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
 
     this.$sortButton.on('click', () => {
-
       this.fire(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this);
-      if (this.$sortButton.select('i').classed('fa-sort-amount-asc')) {
-        const sortData = {sortMethod: SORT.desc, col: this};
-        this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        this.updateSortIcon(SORT.desc);
-        this.sortCriteria = SORT.desc;
-      } else {
-        const sortData = {sortMethod: SORT.asc, col: this};
-        this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
-        this.updateSortIcon(SORT.asc);
-        this.sortCriteria = SORT.asc;
-      }
+      this.sortCriteria = (this.$sortButton.select('i').classed('fa-sort-amount-asc')) ? SORT.desc : SORT.asc;
+      const sortData = {sortMethod: this.sortCriteria, col: this};
+      this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, sortData);
+      this.updateSortIcon(this.sortCriteria);
     });
 
     super.buildToolbar($toolbar);
@@ -93,7 +87,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     const that = this;
     const data: any = await this.data.data(); // wait first for data and then continue with removing old  forms
     const histData: IHistogram = await this.data.hist();
-    let histogramData;
+    let histogramData: ITaggleHistogramData;
 
     if (histData !== null) {
       // get common histogram data for all multiforms
@@ -109,6 +103,7 @@ export abstract class AVectorColumn<T, DATATYPE extends IVector<T, any>> extends
     return Promise.all(viewPromises).then((views) => {
       const viewData = views.map((d:any) => {
         return {
+          //HACK d.range is not a public method
           key: d.range.toString(),
           view: d,
         };
