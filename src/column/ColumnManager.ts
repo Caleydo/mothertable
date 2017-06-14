@@ -836,13 +836,10 @@ export default class ColumnManager extends EventHandler {
   }
 
   private checkIfGroupBrushed(rowIndex: number) {
-    let isBrushed = false;
-    this.columns.forEach((col) => {
-      this.multiformsInGroup(rowIndex).forEach((m) => {
-        isBrushed = col.multiformList[m].brushed || isBrushed ? true : false;
-      });
+    // return true if any column as a group that is brushed
+    return this.columns.some((col) => {
+      return this.multiformsInGroup(rowIndex).some((m) => col.multiformList[m].brushed);
     });
-    return isBrushed;
   }
 
 
@@ -857,18 +854,17 @@ export default class ColumnManager extends EventHandler {
 
 
   private correctGapBetweenMultiform() {
-    this.columns.forEach((col, i) => {
-      col.multiformList.forEach((multiform, index) => {
-        if (index + 1 < col.multiformList.length) {
-          const nextM = (<any>col).multiformList[index + 1].groupId;
-          const now = (<any>col).multiformList[index].groupId;
-          if (nextM === now) {
-            d3.select(multiform.node).select('.content').classed('nonstratification', true);
-          } else {
-            d3.select(multiform.node).select('.content').classed('stratification', true);
-            return;
-          }
-        }
+    this.columns.forEach((col) => {
+      // slice all except the last one
+      col.multiformList.slice(0, col.multiformList.length - 1).forEach((multiform, index) => {
+        const actGroup = multiform.groupId;
+        const nextGroup = col.multiformList[index + 1].groupId;
+
+        const sameGroup = nextGroup === actGroup;
+
+        d3.select(multiform.node).select('.content')
+          .classed('nonstratification', sameGroup)
+          .classed('stratification', !sameGroup);
       });
     });
 
