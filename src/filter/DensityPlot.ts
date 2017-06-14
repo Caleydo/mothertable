@@ -4,10 +4,10 @@
 
 import * as d3 from 'd3';
 import {NUMERICAL_COLOR_MAP} from '../column/utils';
-import {IDataType} from 'phovea_core/src/datatype';
+import {IHistAbleDataType} from 'phovea_core/src/datatype';
 import NumberFilter from './NumberFilter';
 
-export default class DensityPlot<DATATYPE extends IDataType> {
+export default class DensityPlot<DATATYPE extends IHistAbleDataType<any>> {
   readonly $node: d3.Selection<any>;
   private _filterDim: { width: number, height: number };
   private _SVG: d3.Selection<SVGElement>;
@@ -28,7 +28,7 @@ export default class DensityPlot<DATATYPE extends IDataType> {
 
   private async getHistData() {
 
-    const histData = await (<any>this.data).hist();
+    const histData = await this.data.hist();
     const bins = [];
     histData.forEach((d, i) => bins.push(d));
     return bins;

@@ -67,8 +67,8 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
     return $node;
   }
 
-  setFixedWidth(width:number) {
-    if(isNaN(width)) {
+  setFixedWidth(width: number) {
+    if (isNaN(width)) {
       return;
     }
 
@@ -100,6 +100,11 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       }
     };
   }
+
+  remove(col: IDataType) {
+    this.colStratManager.remove(col);
+  }
+
 
   async updateMultiForms(rowRanges?: Range[], stratifiedRanges?: Range[], brushedRanges?: Range[], colRange?: Range) {
     const that = this;

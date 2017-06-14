@@ -8,6 +8,7 @@ import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
 import {formatAttributeName} from '../column/utils';
 import {dataValueType, dataValueTypeCSSClass} from '../column/ColumnManager';
+import AColumn from '../column/AColumn';
 
 export declare type AnyFilter = AFilter<any, IDataType>;
 
@@ -44,6 +45,29 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
       .style('opacity', 0);
     return tooltipDiv;
   }
+
+  protected addHighlight($node: d3.Selection<any>) {
+
+    $node.on('mouseover', () => {
+      this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
+      this.highlightMe(true);
+
+    });
+
+    $node.on('mouseleave', () => {
+      this.highlightMe(false);
+      this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
+
+    });
+    return $node;
+  }
+
+
+  public  highlightMe(isTrue: boolean) {
+    this.$node.select('header').classed('highlight', isTrue);
+
+  }
+
 
   protected generateLabel($node: d3.Selection<any>) {
     $node.select('header')
