@@ -57,7 +57,7 @@ export default class CategoricalColumn extends AVectorColumn<string, ICategorica
 
     //BUG who is deregistering this event listener again?
     on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
-      const itsMe = ref.data.desc.id === this.data.desc.id;
+      const itsMe = ref && ref.data.desc.id === this.data.desc.id;
       $stratifyButton.classed('active', itsMe);
 
       if (itsMe) {

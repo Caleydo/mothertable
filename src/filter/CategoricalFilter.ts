@@ -4,16 +4,24 @@
 
 import AVectorFilter from './AVectorFilter';
 import {ICategoricalVector} from 'phovea_core/src/vector';
-import {Range1D} from 'phovea_core/src/range';
 import * as d3 from 'd3';
-import SortHandler, {SORT, stringSort} from '../SortHandler/SortHandler';
+import {SORT} from '../SortHandler/SortHandler';
 import CategoricalColumn from '../column/CategoricalColumn';
 import {on, fire} from 'phovea_core/src/event';
+import Range from 'phovea_core/src/range/Range';
+import {ICatHistogram} from 'phovea_core/src/math';
+
+interface IHistElem {
+  count: number;
+  name: string;
+  color: string;
+}
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly $node: d3.Selection<any>;
-  private _filterDim: { width: number, height: number };
-  private _activeCategories: string[];
+  filterDim = {width: 205, height: 35};
+  private readonly activeCategories = new Set<string>();
+  private allCategories: IHistElem[];
   private _sortCriteria: string = SORT.asc;
 
 
@@ -41,7 +49,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       });
 
     on(CategoricalColumn.EVENT_STRATIFYME, (evt, ref) => {
-      $stratifyButton.classed('active', ref.data.desc.id === this.data.desc.id);
+      $stratifyButton.classed('active', ref && ref.data.desc.id === this.data.desc.id);
     });
 
     super.addSortIcon($node);
@@ -52,10 +60,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   }
 
   stratifyByMe(isTrue: boolean) {
-    const check = this.$node.select('.stratifyByMe').classed('active');
-    if (check !== isTrue) {
-      this.$node.select('.stratifyByMe').classed('active', isTrue);
-    }
+    this.$node.select('.stratifyByMe').classed('active', isTrue);
   }
 
 
@@ -65,86 +70,54 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     }
 
     this._sortCriteria = sortData.sortMethod;
-    this.$node.select('main').remove();
-    this.$node.append('main');
-    this.generateCategories(this.$node.select('main'), true);
+    this.resortHist();
   }
 
-  get filterDim(): { width: number; height: number } {
-    this._filterDim = {width: 205, height: 35};
-    return this._filterDim;
-  }
 
-  set filterDim(value: { width: number; height: number }) {
-    this._filterDim = value;
+  private computeRealHistogram(): Promise<IHistElem[]> {
+    const colors = d3.scale.category20().range().slice();
+    return this.data.hist().then((hist: ICatHistogram) => {
+      return hist.categories.map((cat, i) => {
+        const count = hist.frequency(i);
+        const color = hist.colors ? hist.colors[i] : colors[i % colors.length];
+        return {count, color, name: cat};
+      })
+        .filter((d) => d.count > 0); // filter out empty bins
+    });
   }
-
 
   private async generateCategories($node: d3.Selection<any>, dispHistogram: boolean) {
-    const that = this;
     const cellHeight = this.filterDim.height;
-    const allCatNames = await(<any>this.data).data();
-    const categories = (<any>this.data).desc.value.categories;
+    const catData = await this.computeRealHistogram();
+    this.allCategories = catData;
+    // by default all
+    catData.forEach((bin) => this.activeCategories.add(bin.name));
 
-    const c20 = d3.scale.category20();
-    const toolTip = (this.generateTooltip($node));
-    const cellDimension = this.filterDim.width / categories.length;
-    const catData = [];
-    const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-    uniqueCategories.forEach(((val, i) => {
-      const count = allCatNames.filter(isSame.bind(this, val));
-      let colcat = [];
-      if (typeof categories !== 'undefined') {
-        colcat = categories.filter((d, i) => {
-          return d.name === val;
-        });
+    const onClick = (d: IHistElem, $this: d3.Selection<IHistElem>) => {
+      // active it is wasn't active before
+      const active = !$this.classed('active');
+
+      //update styles
+      $this
+        .classed('active', active)
+        .select('.categoriesColor').style('background-color', active ? d.color : null);
+      $node.select(`div.catNames[data-cat="${d.name}"]`).style('color', active ? 'black': null);
+
+      if (active) {
+        this.activeCategories.add(d.name);
+      } else {
+        this.activeCategories.delete(d.name);
       }
-      const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
-      catData.push({name: val, count: count.length, 'color': colorVal});
-    }));
-
-    const onClick = function (d, $this) {
-      $this.classed('active', !$this.classed('active'));
-      if ($this.classed('active') === false) {
-        $this.select('.categoriesColor').style('background-color', (d) => d.color);
-        const l = $node.selectAll('.catNames');
-        const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
-        d3.select(v[0]).style('color', 'black');
-        const cat = that._activeCategories;
-        cat.push(d);
-        that._activeCategories = cat;
-        that.triggerFilterChanged();
-
-      } else if ($this.classed('active') === true) {
-        $this.select('.categoriesColor').style('background-color', null);
-        const l = $node.selectAll('.catNames');
-        const v = l[0].filter((e) => (<any>e).__data__.name === d.name);
-        d3.select(v[0]).style('color', null);
-        let ind = -1;
-        const cat = that._activeCategories;
-        for (let i = 0; i < cat.length; ++i) {
-          if ((<any>cat[i]).name === d.name) {
-            ind = i;
-          }
-        }
-        cat.splice(ind, 1);
-        that._activeCategories = cat;
-        that.triggerFilterChanged();
-      }
+      this.triggerFilterChanged();
     };
 
-    const catEntries = $node.append('div').classed('catentries', true);
     const binScale = d3.scale.linear()
-      .domain([0, d3.max(catData, (d) => d.count)]).range([0, this._filterDim.height]);
+      .domain([0, d3.max(catData, (d) => d.count)]).range([0, this.filterDim.height]);
 
-    that._activeCategories = catData;
-    const sortedCatData = catData.slice().sort(catObjectsort.bind(this, this._sortCriteria));
-    const catListDiv = catEntries
-      .selectAll('div.categories')
-      .data(sortedCatData);
+    const $bins = $node.append('div').classed('catentries', true).selectAll('div.categoriesTransparent').data(catData);
 
-    catListDiv.enter().append('div')
-      .attr('class', 'categoriesTransparent')
+    $bins.enter().append('div')
+      .attr('class', 'categoriesTransparent active')
       .attr('title', (d) => `${d.name}: ${d.count}`)
       .style('height', cellHeight + 'px')
       .on('click', function (d) {
@@ -155,67 +128,42 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
       .style('height', (d, i) => (dispHistogram === true) ? binScale(d.count) + 'px' : cellHeight + 'px')
       .style('background-color', (d) => d.color);
 
-    catListDiv.exit().remove();
+    $bins.exit().remove();
+
     const catlabels = $node.append('div').classed('catlabels', true);
-    const catNames = catlabels
+    const $binLabels = catlabels
       .selectAll('div.catNames')
-      .data(sortedCatData);
-    catNames.enter().append('div')
+      .data(catData);
+
+    $binLabels.enter().append('div')
       .attr('class', 'catNames')
+      .attr('data-cat', (d) => d.name)
       .style('color', 'black')
       .attr('title', (d) => `${d.name}: ${d.count}`)
-      .text((d, i) => d.name)
-      .on('click', function (d, i) {
-        onClick(d, d3.select(catListDiv[0][i]));
-      });
-    catNames.exit().remove();
+      .text((d, i) => d.name);
+    $binLabels.exit().remove();
 
+    this.resortHist();
   }
 
-  async filter(current: Range1D) {
-    const vectorView = await(<any>this.data).filter(findCatName.bind(this, this._activeCategories));
-    const filteredRange = await vectorView.ids();
-    const rangeIntersected = current.intersect(filteredRange);
-    const fullRange = (await this.data.ids()).size();
-    const vectorRange = filteredRange.size();
-
-    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
-
-
-    // console.log(t === filteredRange);
-    // console.log(t.dim(0).asList(),filteredRange.dim(0).asList(),vectorView.data())
-    return rangeIntersected;
-  }
-
-}
-
-function isSame<T>(value: T, compareWith: T) {
-  return value === compareWith;
-}
-
-
-function findCatName(catName: any[], value: string) {
-
-  for (const x in catName) {
-    if (catName[x].name === value) {
-      return value;
+  private resortHist() {
+    function compare(a: IHistElem, b: IHistElem) {
+      const an = a.name ? a.name.toLowerCase() : '';
+      const bn = b.name ? b.name.toLowerCase() : '';
+      return an.localeCompare(bn);
     }
+    const comparator = this._sortCriteria === SORT.asc ? compare : (a, b) => -compare(a, b);
+    this.$node.select('.catentries').selectAll('div.categoriesTransparent').sort(comparator);
+    this.$node.select('.catlabels').selectAll('div.catNames').sort(comparator);
   }
-  return;
-}
 
-function catObjectsort(sortCriteria: string, a: { name: string }, b: { name: string }) {
-  const aVal = a.name.toUpperCase();
-  const bVal = b.name.toUpperCase();
-
-  if (sortCriteria === SORT.asc) {
-
-    return (aVal.localeCompare(bVal));
-  }
-  if (sortCriteria === SORT.desc) {
-
-
-    return (bVal.localeCompare(aVal));
+  filter(current: Range) {
+    const viewBuilder = (this.activeCategories.size === this.allCategories.length) ? Promise.resolve(this.data) : this.data.filter((d) => this.activeCategories.has(d));
+    return viewBuilder.then((view) => {
+      this.activeFilter = view.length !== this.data.length;
+      return view.ids();
+    }).then((filteredRange) =>  {
+      return current.intersect(filteredRange);
+    });
   }
 }
-

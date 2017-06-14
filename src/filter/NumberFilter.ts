@@ -4,7 +4,7 @@
 
 import {AVectorFilter} from './AVectorFilter';
 import {INumericalVector} from 'phovea_core/src/vector';
-import {Range1D} from 'phovea_core/src/range';
+import Range from 'phovea_core/src/range/Range';
 import * as d3 from 'd3';
 import DensityPlot from './DensityPlot';
 
@@ -39,9 +39,9 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
     this.triggerFilterChanged();
   }
 
-  async filter(current: Range1D) {
+  async filter(current: Range) {
     const dataRange = this.data.desc.value.range;
-    let filteredRange = await <any>this.data.ids();
+    let filteredRange = await this.data.ids();
     if (Math.round(this._numericalFilterRange[0]) === dataRange[0] && Math.round(this._numericalFilterRange[1]) === dataRange[1]) {
 
       filteredRange = await this.data.ids();

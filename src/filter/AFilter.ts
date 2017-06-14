@@ -4,7 +4,7 @@
 
 import {IDataType} from 'phovea_core/src/datatype';
 import {EventHandler} from 'phovea_core/src/event';
-import {Range1D} from 'phovea_core/src/range';
+import Range from 'phovea_core/src/range/Range';
 import * as d3 from 'd3';
 import {formatAttributeName} from '../column/utils';
 import {dataValueType, dataValueTypeCSSClass} from '../column/ColumnManager';
@@ -34,7 +34,7 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
   }
 
 
-  async filter(current: Range1D) {
+  async filter(current: Range) {
     return current;
   }
 

@@ -15,7 +15,7 @@ import CategoricalFilter from './CategoricalFilter';
 import StringFilter from './StringFilter';
 import NumberFilter from './NumberFilter';
 import {EventHandler} from 'phovea_core/src/event';
-import {Range1D} from 'phovea_core/src/range';
+import {Range1D, all} from 'phovea_core/src/range';
 import MatrixFilter from './MatrixFilter';
 import {on, fire} from 'phovea_core/src/event';
 import * as $ from 'jquery';
@@ -241,7 +241,7 @@ export default class FilterManager extends EventHandler {
    * @return {Promise<Range1D>}
    */
   private async currentFilter() {
-    let filtered = Range1D.all();
+    let filtered = all();
     for (const f of this.filters) {
       filtered = await f.filter(filtered);
     }

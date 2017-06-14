@@ -3,7 +3,7 @@
  */
 
 import {AVectorFilter, IStringVector} from './AVectorFilter';
-import {Range1D} from 'phovea_core/src/range';
+import Range from 'phovea_core/src/range/Range';
 import * as d3 from 'd3';
 
 export default class StringFilter extends AVectorFilter<string, IStringVector> {
@@ -39,7 +39,7 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
   }
 
 
-  async filter(current: Range1D) {
+  async filter(current: Range) {
 
     const vectorView = await(<any>this.data).filter(stringPattern.bind(this, this._textSearch));
     const filteredRange = await vectorView.ids();
