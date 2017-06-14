@@ -158,12 +158,6 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   }
 
   filter(current: Range) {
-    const viewBuilder = (this.activeCategories.size === this.allCategories.length) ? Promise.resolve(this.data) : this.data.filter((d) => this.activeCategories.has(d));
-    return viewBuilder.then((view) => {
-      this.activeFilter = view.length !== this.data.length;
-      return view.ids();
-    }).then((filteredRange) =>  {
-      return current.intersect(filteredRange);
-    });
+    return this.filterImpl(current, (this.activeCategories.size === this.allCategories.length) ? Promise.resolve(this.data) : this.data.filter((d) => this.activeCategories.has(d)));
   }
 }

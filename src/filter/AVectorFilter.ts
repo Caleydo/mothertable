@@ -3,9 +3,10 @@
  */
 
 import AFilter from './AFilter';
-import {IVector} from 'phovea_core/src/vector';
+import {IAnyVector, IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc} from 'phovea_core/src/datatype';
 import {SORT} from '../SortHandler/SortHandler';
+import Range from 'phovea_core/src/range/Range';
 import * as d3 from 'd3';
 
 export declare type IStringVector = IVector<string, IStringValueTypeDesc>;
@@ -60,6 +61,15 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
         .html(`<i class="fa fa-sort-amount-asc fa-fw" aria-hidden="true"></i><span class="sr-only">Sort ascending</span>`);
 
     }
+  }
+
+  protected filterImpl(current: Range, viewBuilder: Promise<IAnyVector>) {
+    return viewBuilder.then((view) => {
+      this.activeFilter = view.length !== this.data.length;
+      return view.ids();
+    }).then((filteredRange) =>  {
+      return current.intersect(filteredRange);
+    });
   }
 
 

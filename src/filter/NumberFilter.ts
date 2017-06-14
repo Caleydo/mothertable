@@ -38,17 +38,7 @@ export default class NumberFilter extends AVectorFilter<number, INumericalVector
 
   async filter(current: Range) {
     const dataRange = this.data.desc.value.range;
-
-    let viewBuilder: Promise<INumericalVector>;
-    //check if no filter set
-    if (Math.round(this.filterRange[0]) === dataRange[0] && Math.round(this.filterRange[1]) === dataRange[1]) {
-      viewBuilder = Promise.resolve(this.data);
-    } else {
-      viewBuilder = this.data.filter((d) => d >= this.filterRange[0] && d <= this.filterRange[1]);
-    }
-    return viewBuilder.then((view) => {
-      this.activeFilter = view.length !== this.data.length;
-      return view.ids();
-    }).then((filteredRange) => current.intersect(filteredRange));
+    const hasFilter = Math.round(this.filterRange[0]) === dataRange[0] && Math.round(this.filterRange[1]) === dataRange[1];
+    return this.filterImpl(current, hasFilter ? Promise.resolve(this.data) : this.data.filter((d) => d >= this.filterRange[0] && d <= this.filterRange[1]));
   }
 }

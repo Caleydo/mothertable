@@ -80,10 +80,6 @@ abstract class AFilter<T, DATATYPE extends IDataType> extends EventHandler {
     this.fire(AFilter.EVENT_FILTER_CHANGED, this);
   }
 
-  protected checkFilterApplied(fullRange: number, vectorViewRange: number) {
-    return (fullRange !== vectorViewRange);
-  }
-
   protected addTrashIcon($node: d3.Selection<any>) {
     const $trashIcon = $node.append('a')
       .attr('title', 'Remove column')

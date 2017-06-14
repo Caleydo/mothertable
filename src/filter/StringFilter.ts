@@ -8,12 +8,11 @@ import * as d3 from 'd3';
 
 export default class StringFilter extends AVectorFilter<string, IStringVector> {
   readonly $node: d3.Selection<any>;
-  private _textSearch: string;
+  private searchString: string = '';
 
   constructor(data: IStringVector, $parent: d3.Selection<any>) {
     super(data);
     this.$node = this.build($parent);
-    this._textSearch = null;
   }
 
   protected build($parent: d3.Selection<any>) {
@@ -32,40 +31,13 @@ export default class StringFilter extends AVectorFilter<string, IStringVector> {
       .classed('textSearch', true);
 
     textSearch.on('keyup', function (d) {
-      that._textSearch = this.value;
+      that.searchString = this.value;
       that.triggerFilterChanged();
     });
-
   }
 
-
-  async filter(current: Range) {
-
-    const vectorView = await(<any>this.data).filter(stringPattern.bind(this, this._textSearch));
-    const filteredRange = await vectorView.ids();
-    const rangeIntersected = current.intersect(filteredRange);
-    const fullRange = (await this.data.ids()).size();
-    const vectorRange = filteredRange.size();
-    this.activeFilter = this.checkFilterApplied(fullRange[0], vectorRange[0]);
-    // console.log('r=', (<any>rangeIntersected).dim(0).asList(), 'f=', (<any>filteredRange).dim(0).asList());
-    return rangeIntersected;
+  filter(current: Range) {
+    const regex = new RegExp(this.searchString, 'gi');
+    return this.filterImpl(current, this.searchString.trim().length === 0 ? Promise.resolve(this.data) : this.data.filter((d) => d !== null && regex.test(d)));
   }
-}
-
-function stringPattern(stringFilter: string, value: string) {
-  if (stringFilter === null) {
-    return value;
-  }
-
-  const re = new RegExp(stringFilter, 'gi');
-  if (value.match(re) === null) {
-
-    return;
-
-  } else {
-
-    return value;
-  }
-
-
 }
