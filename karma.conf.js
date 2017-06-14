@@ -10,7 +10,7 @@ module.exports = (config) => {
   config.set({
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine'],
+    frameworks: ['jasmine', 'jsmockito-jshamcrest'],
 
     // list of files / patterns to load in the browser
     files: [
