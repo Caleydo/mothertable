@@ -7,7 +7,7 @@ import {IVector} from 'phovea_core/src/vector';
 import {IStringValueTypeDesc, IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {IMultiFormOptions} from 'phovea_core/src/multiform';
-import {SORT} from '../SortHandler/SortHandler';
+import {SORT} from '../sort';
 import * as d3 from 'd3';
 import MultiForm from 'phovea_core/src/multiform/MultiForm';
 import TaggleMultiform from './TaggleMultiform';

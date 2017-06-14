@@ -4,7 +4,7 @@
 /// <reference types="jasmine" />
 
 import Range from 'phovea_core/src/range/Range';
-import {SORT, prepareRangeFromList, numSort, stringSort, filterCat} from '../src/SortHandler/SortHandler';
+import {SORT, prepareRangeFromList, numSort, stringSort, filterCat} from '../src/sort';
 
 
 function makeRangeFromList(arr) {

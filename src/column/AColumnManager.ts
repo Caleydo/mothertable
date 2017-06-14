@@ -4,7 +4,7 @@
 
 import {AnyColumn} from './ColumnManager';
 import AColumn from './AColumn';
-import SortHandler, {prepareRangeFromList} from '../SortHandler/SortHandler';
+import sort, {prepareRangeFromList} from '../sort';
 import Range from 'phovea_core/src/range/Range';
 import {AnyFilter} from '../filter/AFilter';
 import {makeListFromRange, makeRangeFromList} from './utils';
@@ -64,8 +64,7 @@ export default class AColumnManager {
     }
 
     // The sort object is created on the fly and destroyed after it exits this method
-    const s = new SortHandler();
-    const r = await s.sortColumns(uniqueVectorCols);
+    const r = await sort(uniqueVectorCols);
     this._nonStratifiedRange = r.combined;
     this._stratifiedRanges = [r.combined];
     this.dataPerStratification = r.stratified;

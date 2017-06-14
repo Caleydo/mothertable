@@ -6,7 +6,7 @@ import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
 import {EventHandler} from 'phovea_core/src/event';
 import * as d3 from 'd3';
-import {SORT} from '../SortHandler/SortHandler';
+import {SORT} from '../sort';
 import {createNode} from 'phovea_core/src/multiform/internal';
 import {formatAttributeName, scaleTo} from './utils';
 import {IVisPluginDesc, list as listVisses} from 'phovea_core/src/vis';

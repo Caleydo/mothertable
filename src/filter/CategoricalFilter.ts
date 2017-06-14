@@ -5,7 +5,7 @@
 import AVectorFilter from './AVectorFilter';
 import {ICategoricalVector} from 'phovea_core/src/vector';
 import * as d3 from 'd3';
-import {SORT} from '../SortHandler/SortHandler';
+import {SORT} from '../sort';
 import CategoricalColumn from '../column/CategoricalColumn';
 import {on, fire} from 'phovea_core/src/event';
 import Range from 'phovea_core/src/range/Range';

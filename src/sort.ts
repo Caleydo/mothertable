@@ -6,8 +6,8 @@ import {VALUE_TYPE_INT, VALUE_TYPE_REAL} from 'phovea_core/src/datatype';
 import {IAnyVector} from 'phovea_core/src/vector';
 import Range from 'phovea_core/src/range/Range';
 import {list as asRange} from 'phovea_core/src/range';
-import {mergeRanges} from '../column/utils';
-import {AnyColumn} from '../column/ColumnManager';
+import {mergeRanges} from './column/utils';
+import {AnyColumn} from './column/ColumnManager';
 
 interface ISortResults {
   /**

@@ -9,7 +9,6 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
-import {list} from 'phovea_core/src/range';
 import {IStringVector, AVectorColumn} from './AVectorColumn';
 import AColumn, {EOrientation} from './AColumn';
 import CategoricalColumn from './CategoricalColumn';
@@ -19,7 +18,6 @@ import MatrixColumn from './MatrixColumn';
 import {IEvent, EventHandler} from 'phovea_core/src/event';
 import {resolveIn, mod} from 'phovea_core/src';
 import IDType from 'phovea_core/src/idtype/IDType';
-import SortHandler from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
@@ -27,7 +25,6 @@ import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
-import min = d3.min;
 import {
   scaleTo,
   updateRangeList,
@@ -38,7 +35,7 @@ import {
 } from './utils';
 import {IAnyVector} from 'phovea_core/src/vector/IVector';
 import VisManager from './VisManager';
-import {prepareRangeFromList} from '../SortHandler/SortHandler';
+import sort, {prepareRangeFromList} from '../sort';
 import {AnyFilter} from '../filter/AFilter';
 import AggSwitcherColumn from './AggSwitcherColumn';
 import {EAggregationType} from './VisManager';
@@ -46,8 +43,7 @@ import TaggleMultiform from './TaggleMultiform';
 import {AGGREGATE} from './MatrixColumn';
 import SupportView from '../SupportView';
 import RowNumberColumn from './RowNumberColumn';
-import Any = jasmine.Any;
-import {hash} from 'phovea_core/src/index';
+import {hash} from 'phovea_core/src';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
@@ -446,8 +442,7 @@ export default class ColumnManager extends EventHandler {
     }
 
     // The sort object is created on the fly and destroyed after it exits this method
-    const s = new SortHandler();
-    const r = await s.sortColumns(cols);
+    const r = await sort(cols);
     this.nonStratifiedRange = r.combined;
     this._stratifiedRanges = [r.combined];
     this.dataPerStratificaiton = r.stratified;
