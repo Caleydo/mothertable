@@ -316,13 +316,16 @@ export default class ColumnManager extends EventHandler {
     const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
     if (childCount > 1) {
       columnNode.select('header.columnHeader')
+        .classed('highlight', false)
         .classed('matrix', false)
         .select('.labelName')
         .classed('matrixLabel', false)
         .classed('matrixLabelExtended', true);
 
     } else {
+
       columnNode.select('header.columnHeader')
+        .classed('highlight', false)
         .classed('matrix', true)
         .select('.labelName')
         .classed('matrixLabel', true);
