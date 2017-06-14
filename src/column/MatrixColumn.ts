@@ -4,11 +4,11 @@
 
 import AColumn, {EOrientation} from './AColumn';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
-import {MultiForm, IMultiFormOptions} from 'phovea_core/src/multiform';
+import {IMultiFormOptions} from 'phovea_core/src/multiform';
 import {IDataType} from 'phovea_core/src/datatype';
 import Range from 'phovea_core/src/range/Range';
-import {list as rlist} from 'phovea_core/src/range';
-import {scaleTo, NUMERICAL_COLOR_MAP, makeListFromRange, mergeRanges, makeRangeFromList} from './utils';
+import {join} from 'phovea_core/src/range';
+import {scaleTo, NUMERICAL_COLOR_MAP, mergeRanges} from './utils';
 import {createColumn, AnyColumn, IMotherTableType} from './ColumnManager';
 import * as d3 from 'd3';
 import VisManager from './VisManager';
@@ -120,27 +120,21 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());
+      //BUG? why is this just updated if the argument is not given while for rowRanges it will always be updated
       this.colRange = colRange;
     }
     // this.colRange = colRange;
-    const mergedRange = mergeRanges(this.rowRanges);
-    let rowView = await this.data.idView(mergedRange);
-    rowView = (<INumericalMatrix>rowView).t;
-
-    let colView = await rowView.idView(colRange);
-    colView = (<INumericalMatrix>colView).t;
-    this.dataView = colView;
+    const mergedRange = mergeRanges(rowRanges);
+    this.dataView = await this.data.idView(join(mergedRange, colRange));
 
     const viewPromises = rowRanges.map((r) => {
-      return this.data.idView(r)
-        .then((rowView) => (<INumericalMatrix>rowView).t)
-        .then((rowViewMatrix) => rowViewMatrix.idView(colRange))
-        .then((colView) => (<INumericalMatrix>colView).t);
+      return this.data.idView(join(r, colRange));
     });
 
     return Promise.all(viewPromises).then((views) => {
       const viewData = views.map((d: any) => {
         return {
+          //HACK .range is not accessible
           key: d.range.toString(),
           view: d,
         };
@@ -150,9 +144,9 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
       multiformList.enter().append('div')
         .classed('multiformList', true)
-        .each(function (d) {
+        .each(function (this: HTMLDivElement, d) {
           const $elem = d3.select(this);
-          const m = new TaggleMultiform(d.view, <HTMLElement>$elem.node(), that.multiFormParams($elem));
+          const m = new TaggleMultiform(d.view, this, that.multiFormParams($elem));
           that.multiformMap.set(d.key, m);
         });
 
@@ -186,8 +180,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   async calculateDefaultRange() {
     if (this.colRange === undefined) {
-      const indices = await this.data.ids();
-      this.colRange = rlist(indices.dim(1));
+      this.colRange = await this.data.colIds();
     }
     return this.colRange;
   }
@@ -209,7 +202,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
         return dataView.then((coldata) => {
           const col = createColumn(coldata, EOrientation.Horizontal, this.$colStrat);
           this.colStratManager.add(col);
-          return Promise.resolve(col);
+          return col;
         });
 
       });
@@ -236,13 +229,12 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
   sortByFilterHeader(sortData: { col: AnyColumn, sortMethod: string }) {
-    const col = this.colStratManager.columns.filter((d) => d.data.desc.id === sortData.col.data.desc.id);
-    if (col.length === 0) {
+    const col = this.colStratManager.columns.find((d) => d.data.desc.id === sortData.col.data.desc.id);
+    if (!col) {
       return;
     }
-    col[0].sortCriteria = sortData.sortMethod;
+    col.sortCriteria = sortData.sortMethod;
     this.updateColStrats();
-
   }
 
   updateColStratsSorting(filterList: AnyFilter[]) {
@@ -262,43 +254,44 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
   }
 
 
-  private async makeMatrixView(s) {
+  private makeMatrixView(s?: Range[]) {
 
     //If there is zero and not matching columns return nothing
     if (s === undefined) {
+      //QUESTION: why not resetting the matrix views?
       return;
     }
-    this.matrixViews = [];
-    for (const r of s) {
-      const mergedRange = mergeRanges(this.rowRanges);
-      let rowView = await this.data.idView(mergedRange);
-      rowView = (<INumericalMatrix>rowView).t;
-
-      let colView = await rowView.idView(r);
-      colView = (<INumericalMatrix>colView).t;
-      this.matrixViews.push(colView);
-    }
-
+    const mergedRange = mergeRanges(this.rowRanges);
+    Promise.all(s.map(async (r) => {
+      return this.data.idView(join(mergedRange, r));
+    })).then((views) => {
+      this.matrixViews = views;
+    });
   }
 
-
   private attachListener() {
+    //BUG who is degregistering this listener again?
     on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
+  }
+
+  protected buildToolbar($toolbar: d3.Selection<any>) {
+    const that = this;
+    super.buildToolbar($toolbar);
+    const $hoverToolbar = $toolbar.select('div.onHoverToolbar');
+
     const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
-    const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
+
+    const $select = $hoverToolbar.append('select')
       .attr('class', 'aggSelect')
-      .on('change', (d, i) => {
-        const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
-        this.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.matrixViews, value, this);
+      .on('change', function(this: HTMLSelectElement) {
+        //BUG what if the value is 'select'?
+        that.fire(MatrixColumn.EVENT_CONVERT_TO_VECTOR, that.matrixViews, this.value, that);
       });
 
-    $vectorChange
+    $select
       .selectAll('option')
       .data(options).enter()
       .append('option')
       .text((d) => d);
-
   }
-
-
 }

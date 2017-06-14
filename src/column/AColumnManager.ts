@@ -11,6 +11,7 @@ import {makeListFromRange, makeRangeFromList} from './utils';
 import {IDataType} from 'phovea_core/src/datatype';
 
 
+//CODE QUALITY by convention classes starting with A are abstract classes
 export default class AColumnManager {
 
   columns: any[] = [];
