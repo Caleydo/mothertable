@@ -13,7 +13,6 @@ interface IAggSwitcherType {
 export default class RowNumberColumn extends AColumn<any, IDataType> {
 
   readonly minWidth: number = 10;
-  private readonly dataList: number[];
   private $main: d3.Selection<any>;
   private aggTypesPerGroup:IAggSwitcherType[] = [];
   private readonly minRowHeight = 18;
@@ -21,7 +20,6 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
   constructor(data: any, orientation: EOrientation, $parent: d3.Selection<any>) {
     super(data, orientation);
     this.$node = this.build($parent);
-    this.dataList = [];
   }
 
   protected buildVertical($parent: d3.Selection<any>): d3.Selection<any> {
@@ -54,6 +52,7 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
 
     // create new aggregation type object for each group
     if(heights.length !== this.aggTypesPerGroup.length) {
+      //ensure right length
       this.aggTypesPerGroup = heights.map((d):IAggSwitcherType => {
         return {
           height: d,
@@ -77,7 +76,7 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
       .selectAll('main > div')
       .data(this.aggTypesPerGroup);
 
-    const $enter = $blocks
+     $blocks
       .enter()
       .append('div')
       .classed('phovea-list', true)
@@ -93,16 +92,17 @@ export default class RowNumberColumn extends AColumn<any, IDataType> {
 
     const $counter = $blocks.selectAll('div')
       .data((d) => {
-      if(d.rowHeight < this.minRowHeight || d.aggregationType === EAggregationType.AGGREGATED) {
-        return [d.groupLength[0], d.groupLength[d.groupLength.length - 1]];
-      }
-      return d.groupLength;
-    });
+        if (d.rowHeight < this.minRowHeight || d.aggregationType === EAggregationType.AGGREGATED) {
+          // just the corners
+          return [d.groupLength[0], d.groupLength[d.groupLength.length - 1]];
+        }
+        return d.groupLength;
+      });
 
 
     $counter.enter().append('div');
 
-    $counter.text((d) => {return d;});
+    $counter.text(String);
 
     $counter.exit().remove();
 
