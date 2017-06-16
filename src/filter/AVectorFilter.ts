@@ -25,6 +25,7 @@ export abstract class AVectorFilter<T, DATATYPE extends IVector<T, any>> extends
     const $toolbar = $header.append('div').classed('toolbar', true);
     this.addSortIcon($toolbar);
     this.addTrashIcon($toolbar);
+    this.addHighlight($header);
     return $li;
   }
 

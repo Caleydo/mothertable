@@ -27,6 +27,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   static readonly EVENT_REMOVE_ME = 'removeMe';
   static readonly EVENT_COLUMN_LOCK_CHANGED = 'locked';
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
+  static readonly EVENT_HIGHLIGHT_ME = 'setColumnHighlight';
+  static readonly EVENT_REMOVEHIGHLIGHT_ME = 'removehighlightMe';
 
   static readonly DATATYPE = {vector: 'vector', matrix: 'matrix', stratification: 'stratification'};
 
@@ -49,24 +51,25 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   selectedUnaggVis: IVisPluginDesc;
   matrixFilters: AnyFilter[];//For the header in matrix
 
-  private _width:number = this.maxWidth;
+  private _width: number = this.maxWidth;
 
   protected multiformMap: Map<string, TaggleMultiform> = new Map<string, TaggleMultiform>();
+
 
   constructor(public readonly data: DATATYPE, public readonly orientation: EOrientation) {
     super();
   }
 
-  set width(value:number) {
+  set width(value: number) {
     this._width = value;
     this.$node.style('width', value + 'px');
   }
 
-  get width():number {
+  get width(): number {
     return this._width;
   }
 
-  get multiformList():TaggleMultiform[] {
+  get multiformList(): TaggleMultiform[] {
     // return the array in the correct order of DOM elements
     return this.body.selectAll('.multiformList')[0].map((d) => {
       return this.multiformMap.get(d3.select(d).datum().key);
@@ -143,18 +146,22 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     this.buildToolbar($node.select('div.toolbar'));
 
     $node.select('div.onHoverToolbar')
-      .style('display', 'none' )
+      .style('display', 'none')
       .style('visibility', 'hidden');
 
     $node.select('header').on('mouseover', () => {
+      this.fire(AColumn.EVENT_HIGHLIGHT_ME, this);
+      this.highlightMe(true);
       $node.select('div.onHoverToolbar')
-        .style('display', 'block' )
+        .style('display', 'block')
         .style('visibility', 'visible');
     });
 
     $node.select('header').on('mouseleave', () => {
+      this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this);
+      this.highlightMe(false);
       $node.select('div.onHoverToolbar')
-        .style('display', 'none' )
+        .style('display', 'none')
         .style('visibility', 'hidden');
     });
 
@@ -170,7 +177,7 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
       .on('drag', () => {
         const width = (<any>d3.event).x;
         // respect the given min-width
-        if(width <= this.minWidth) {
+        if (width <= this.minWidth) {
           return;
         }
         this.setFixedWidth(width);
@@ -183,8 +190,8 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
   /**
    * Simple resize behavior for the column width by scaling each multiform within the column
    */
-  public setFixedWidth(width:number) {
-    if(isNaN(width)) {
+  public setFixedWidth(width: number) {
+    if (isNaN(width)) {
       return;
     }
 
@@ -194,17 +201,24 @@ abstract class AColumn<T, DATATYPE extends IDataType> extends EventHandler {
     this.lockedWidth = this.width;
 
     this.$node.select('.lock-column')
-        .classed('active', true)
-        .attr('title', 'Unlock column')
-        .html(`<i class="fa fa-lock fa-fw" aria-hidden="true"></i><span class="sr-only">Unlock column</span>`);
+      .classed('active', true)
+      .attr('title', 'Unlock column')
+      .html(`<i class="fa fa-lock fa-fw" aria-hidden="true"></i><span class="sr-only">Unlock column</span>`);
 
     this.multiformList.forEach((multiform) => {
       scaleTo(multiform, this.width, multiform.size[1], this.orientation);
     });
   }
 
+
+  public  highlightMe(isTrue: boolean) {
+    this.$node.select('header.columnHeader').classed('highlight', isTrue);
+
+  }
+
+
   protected buildToolbar($toolbar: d3.Selection<any>) {
-    const $hoverToolbar =  $toolbar.select('div.onHoverToolbar');
+    const $hoverToolbar = $toolbar.select('div.onHoverToolbar');
     const $lockButton = $hoverToolbar.append('a')
       .classed('lock-column', true)
       .attr('title', 'Lock column')

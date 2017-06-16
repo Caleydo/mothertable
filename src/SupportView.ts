@@ -11,7 +11,7 @@ import {
   IDataType
 } from 'phovea_core/src/datatype';
 import {EventHandler} from 'phovea_core/src/event';
-import FilterManager from './filter/FilterManager';
+import FilterManager, {AnyFilter} from './filter/FilterManager';
 import {INumericalMatrix, IAnyMatrix} from 'phovea_core/src/matrix';
 import {IAnyVector} from 'phovea_core/src/vector';
 import {asVector} from 'phovea_core/src/vector';
@@ -48,14 +48,14 @@ export default class SupportView extends EventHandler {
   private _matrixData = new Map<string, INumericalMatrix>();
 
   private datasets: IDataType[];
-  private supportViewNode;
+  $supportViewNode: d3.Selection<any>;
 
   constructor(public readonly idType: IDType, $parent: d3.Selection<any>, public readonly id: number) {
     super();
     this.build($parent);
   }
 
-  private get idTypeHash() {
+  get idTypeHash() {
     return this.idType.id + '_' + this.id;
   }
 
@@ -80,7 +80,7 @@ export default class SupportView extends EventHandler {
     this.$fuelBar.append('div').classed('filteredData', true);
 
     this.$node = $wrapper.append('div').classed(this.idType.id, true);
-    this.supportViewNode = $wrapper;
+    this.$supportViewNode = $wrapper;
   }
 
   async init() {
@@ -127,13 +127,16 @@ export default class SupportView extends EventHandler {
     const matrixColumns = await Promise.all(this.datasets.filter((d) => d.desc.type === 'matrix').map(splitMatrixInVectors));
     this.datasets.push(...[].concat(...matrixColumns));
 
-    if (this.idType.id !== 'artist' && this.idType.id !== 'country') {
+    if (this.idType.id !== 'artist' && this.idType.id !== 'country') { // TODO dirty HACK
       const vectorsOnly = this.datasets.filter((d) => d.desc.type === AColumn.DATATYPE.vector);
       if (vectorsOnly.length > 0) {
         const idStrings = await (<IAnyVector>vectorsOnly[0]).names();
-        const idVector = asVector(idStrings, idStrings, {
+        const idVector = asVector(idStrings, idStrings, <any>{
           name: formatIdTypeName(this.idType.name),
-          idtype: `${this.idType}`
+          idtype: `${this.idType}`,
+          value: {
+            type: VALUE_TYPE_STRING
+          }
         });
         this.datasets.push(idVector);
       }
@@ -154,6 +157,14 @@ export default class SupportView extends EventHandler {
 
   }
 
+  setHighlight(column: AnyColumn) {
+    this._filterManager.setHighlight(column);
+  }
+
+  removeHighlight(column: AnyColumn) {
+    this._filterManager.removeHighlight(column);
+  }
+
   private setupFilterManager() {
     this._filterManager = new FilterManager(this.idType, this.$node);
     this._filterManager.on(FilterManager.EVENT_SORT_DRAGGING, (evt: any, data: AnyColumn[]) => {
@@ -161,6 +172,7 @@ export default class SupportView extends EventHandler {
       this.fire(FilterManager.EVENT_SORT_DRAGGING, data);
     });
     this._filterManager.on(AFilter.EVENT_REMOVE_ME, (evt: any, data: IDataType) => {
+      this.fire(AFilter.EVENT_REMOVE_ME, data);
       this.updateURLHash();
     });
 
@@ -168,6 +180,10 @@ export default class SupportView extends EventHandler {
     this.filterManager.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
       this.fire(AVectorFilter.EVENT_SORTBY_FILTER_ICON, data);
     });
+
+    this.filterManager.on(AColumn.EVENT_HIGHLIGHT_ME, (evt: any, column: AnyFilter) => this.fire(AColumn.EVENT_HIGHLIGHT_ME, column));
+    this.filterManager.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, (evt: any, column: AnyFilter) => this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, column));
+
 
     this.propagate(this._filterManager, FilterManager.EVENT_FILTER_CHANGED);
   }
@@ -198,7 +214,7 @@ export default class SupportView extends EventHandler {
   destroy() {
     this._filterManager.off(FilterManager.EVENT_SORT_DRAGGING, null);
     this.$node.remove();
-    this.supportViewNode.remove();
+    this.$supportViewNode.remove();
     this.filterManager.destroy();
     this.updateURLHash();
 
@@ -222,11 +238,15 @@ export default class SupportView extends EventHandler {
     return this._matrixData.get(datasetId);
   }
 
-  public remove(data: IDataType) {
+  remove(data: IDataType) {
+    this.updateURLHash();
     if (this._filterManager.contains(<IFilterAbleType>data)) {
       this._filterManager.remove(null, <IFilterAbleType>data);
-      this.updateURLHash();
     }
+  }
+
+  removeIdTypeFromHash(idType: string) {
+    hash.removeProp(idType);
   }
 
   private buildSelect2($parent: d3.Selection<any>) {
