@@ -261,6 +261,7 @@ export default class ColumnManager extends EventHandler {
     col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
     col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
+    col.off(NumberColumn.EVENT_CHANGE_AGG_FUNC, this.onChangeAggFunc);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
 
@@ -309,12 +310,11 @@ export default class ColumnManager extends EventHandler {
       this.addChangeIconMatrix(columnNode, col);
     }
 
-    const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
+    const selection: any = <HTMLElement>columnNode.select('main').selectAll('ol').node();
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
     projectedcolumn.$node.select('aside').remove();
 
     const p = projectedcolumn.$node.node();
-
 
     if (selection !== null && selection.children.length > 0) {
       const index = Array.from(selection.children).indexOf(p);
