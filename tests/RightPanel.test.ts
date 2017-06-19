@@ -18,7 +18,7 @@ import {
 import FilterManager from '../src/filter/FilterManager';
 import {ITableLoader, ITableLoader2, adapterOne2Two, viaAPI2Loader, viaDataLoader} from 'phovea_core/src/table/loader';
 import {IQueryArgs, ITableDataDescription, ITableColumn} from '../../phovea_core/src/table/ITable';
-import {Range, parse, range} from 'phovea_core/src/range';
+import {Range, all, list as rlist, parse, RangeLike, Range1D} from 'phovea_core/src/range';
 
 function createDummyLoader() {
   const r: ITableLoader2 = {
@@ -56,6 +56,21 @@ function createDescriptionObject(colName : string) {
       };
 }
 
+class TableMock extends Table {
+    rowIds(range: RangeLike = all()) {
+      const r = new Range();
+      r.dim(0).pushList([5, 6]);
+      return Promise.resolve(r);
+    }
+
+    colData(range: RangeLike = all()) {
+      const arr = [1];
+      arr[0] = NaN;
+     // arr[0][0] = NaN;
+      return Promise.resolve( arr);
+  }
+}
+
 function createTableVector(colName : string, cid : string) {
   // example of a simple mock
   //const tableMock:Table = tsmockito.mock(Table);
@@ -63,7 +78,7 @@ function createTableVector(colName : string, cid : string) {
   //const table = tsmockito.instance(tableMock)
 
   const dataDescription = {id: cid, idtype: 'dummy', size: [], columns: [], type: 'dummyType', name: 'dummyName', description: 'dummyDescription', fqname: 'fqname', ts: 5, creator: 'dummyCreator'};
-  const table = new Table(dataDescription, createDummyLoader());
+  const table = new TableMock(dataDescription, createDummyLoader());
   return new TableVector<any, any>(table, -1, createDescriptionObject(colName));
 }
 
@@ -79,6 +94,7 @@ describe('ColumnManager', function() {
   beforeEach(function() {
     const mockIDType = tsmockito.mock(IDType);
     colManager = new ColumnManager(mockIDType, EOrientation.Vertical, l);
+    colManager.addRowNumberColumn();
   });
 
   it('adds two columns', function(done) {
@@ -122,7 +138,8 @@ describe('ColumnManager', function() {
       expect(tv0.desc.id).toBe(tv1.desc.id);
       expect(colManager.length).toBe(2);
       colManager.remove(null, tv0);
-      expect(colManager.length).toBe(0);
+     // expect(function() {colManager.remove(null, tv0);}).toThrow(new Error());
+      expect(colManager.length).toBe(2);
       done();
       });
   });
