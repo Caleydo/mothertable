@@ -286,10 +286,22 @@ export default class ColumnManager extends EventHandler {
       this.addChangeIconMatrix(columnNode, col);
     }
 
-    const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
+    const selection: any = <HTMLElement>columnNode.select('main').selectAll('ol').node();
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
-    matrixDOM.node().appendChild(projectedcolumn.$node.node());
     projectedcolumn.$node.select('aside').remove();
+
+    const p = projectedcolumn.$node.node();
+
+
+    if (selection !== null && selection.children.length > 0) {
+      const index = Array.from(selection.children).indexOf(p);
+      selection.insertBefore(p, selection.children[index]);
+
+    } else {
+      matrixDOM.node().appendChild(projectedcolumn.$node.node());
+
+    }
+
     columnNode.style('width', null);
     columnNode.style('min-width', null);
     const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
@@ -333,18 +345,19 @@ export default class ColumnManager extends EventHandler {
 
   }
 
-  private changeAggFunction(aggfunction, col) {
-    const m = [col.data.m];
+  private changeAggFunction(aggfunction: string, col: NumberColumn) {
+    const m = [(<any>col.data).m];
     const newdata = this.convertMatrixToVector(m, aggfunction);
     this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, newdata[0], col);
 
 
   }
 
-  updateTableAggDom(oldColumn, newVector) {
+  updateTableAggDom(oldColumn: NumberColumn, newVector: IDataType) {
     const parent = oldColumn.$node.node().parentNode;
     const newCol = this.columns.find((d) => d.data === newVector);
     newCol.$node.select('aside').remove();
+
     parent.insertBefore(newCol.$node.node(), oldColumn.$node.node());
     this.remove(null, oldColumn.data);
   }
