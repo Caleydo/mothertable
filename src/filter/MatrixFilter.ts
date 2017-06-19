@@ -10,7 +10,7 @@ import DensityPlot from './DensityPlot';
 export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
   readonly $node: d3.Selection<any>;
-  private _filterDim: {width: number, height: number};
+  private _filterDim: { width: number, height: number };
 
   constructor(data: INumericalMatrix, $parent: d3.Selection<any>) {
     super(data);
@@ -29,6 +29,7 @@ export default class MatrixFilter extends AFilter<number, INumericalMatrix> {
 
     const $toolbar = $header.append('div').classed('toolbar', true);
     this.addTrashIcon($toolbar);
+    this.addHighlight($header);
     this.generateLabel($li);
     new DensityPlot(this.data, $li.select('main'), null, this.generateTooltip($li));
     return $li;

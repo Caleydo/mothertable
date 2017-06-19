@@ -21,8 +21,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   projectedMatrix: boolean = false;
   matrixViewRange: Range;
 
-  private $points: d3.Selection<any>;
-  private $axis: d3.Selection<any>;
+  private $points:d3.Selection<any>;
+  private $axis:d3.Selection<any>;
   private scale: d3.scale.Linear<number, number> = d3.scale.linear();
   private axis: d3.svg.Axis = d3.svg.axis();
 
@@ -58,18 +58,6 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       .tickValues(this.scale.ticks(tickCount).concat(this.scale.domain()));
 
     this.$axis.call(this.axis);
-
-    const count = this.$axis.selectAll('.tick').size();
-    this.$axis.selectAll('.tick').each(function (data, i) {
-      if (i === count - 1) {
-        const tick = d3.select(this).select('text');
-        tick.style('text-anchor', 'end');
-      }
-      if (i === count - 2) {
-        const tick = d3.select(this).select('text');
-        tick.style('text-anchor', 'start');
-      }
-    });
   }
 
   public updateAxis(brushedItems: number[][]) {
@@ -98,8 +86,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
   }
 
-  setFixedWidth(width: number) {
-    if (isNaN(width)) {
+  setFixedWidth(width:number) {
+    if(isNaN(width)) {
       return;
     }
     super.setFixedWidth(width);
