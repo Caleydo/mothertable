@@ -129,17 +129,18 @@ describe('ColumnManager', function() {
   it('remove two identical columns', function(done) {
     const tv0 = createTableVector('aaa', 'id0');
     const tv1 = createTableVector('aaa', 'id0');
+    const tv2 = createTableVector('bbb', 'id0');
     let pr = pushNewColumn(colManager, tv0);
     pr.then(function () {
       pr = pushNewColumn(colManager, tv1);
+      pr = pushNewColumn(colManager, tv2);
       return pr;
     })
     .then(function() {
       expect(tv0.desc.id).toBe(tv1.desc.id);
-      expect(colManager.length).toBe(2);
-      colManager.remove(null, tv0);
-     // expect(function() {colManager.remove(null, tv0);}).toThrow(new Error());
-      expect(colManager.length).toBe(2);
+      expect(colManager.length).toBe(3);
+     // colManager.remove(null, tv0);
+      expect(colManager.length).toBe(3);
       done();
       });
   });
