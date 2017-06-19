@@ -94,6 +94,14 @@ export default class ColumnManager extends EventHandler {
     this.stratifyAndRelayout();
   }
   private onChangeAggFunc = (event: IEvent, aggfunction: string, col: NumberColumn) => this.changeAggFunction(aggfunction, col);
+  private highlightColumn = (event: IEvent, column: AnyColumn) => {
+    this.fire(AColumn.EVENT_HIGHLIGHT_ME, column);
+    this.setColumnHighlight(column);
+  }
+  private removeHighlightColumn = (event: IEvent, column: AnyColumn) => {
+    this.fire(AColumn.EVENT_REMOVEHIGHLIGHT_ME, column);
+    this.removeColumnHighlight(column);
+  }
 
   constructor(public readonly idType: IDType, public readonly orientation: EOrientation, public readonly $parent: d3.Selection<any>) {
     super();
@@ -171,6 +179,20 @@ export default class ColumnManager extends EventHandler {
     }
   }
 
+
+  setColumnHighlight(column: AnyColumn) {
+    const cols = this.columns.filter((d) => d.data === column.data);
+    cols.forEach((col) => col.highlightMe(true));
+    // col.$node.select('.toolbar').classed('setHighlight', true);
+
+  }
+
+  removeColumnHighlight(column: AnyColumn) {
+    const cols = this.columns.filter((d) => d.data === column.data);
+    cols.forEach((col) => col.highlightMe(false));
+
+  }
+
   /**
    * Adding a new column from given data
    * Called when adding a new filter from dropdown or from hash
@@ -193,6 +215,8 @@ export default class ColumnManager extends EventHandler {
     col.on(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
     col.on(AColumn.EVENT_WIDTH_CHANGED, this.onWidthChanged);
     col.on(NumberColumn.EVENT_CHANGE_AGG_FUNC, this.onChangeAggFunc);
+    col.on(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
+    col.on(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
 
     this.columns.push(col);
 
@@ -216,21 +240,18 @@ export default class ColumnManager extends EventHandler {
       return;
     }
 
-
     //Special case for the removing the parent dom of the projected vector from matrix.
     const parentNode = col.$node.node().parentNode.parentNode.parentNode;
     const checkParent = col.$node.node().parentNode.childNodes.length;
     col.$node.remove();
     this.columns.splice(this.columns.indexOf(col), 1);
-
-    // console.log(this.columns);
     // no columns of attribute available --> delete from filter hierarchy for correct sorting
-    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
-      this.filtersHierarchy.splice(this.filtersHierarchy.indexOf(col), 1);
+    const colIndex = this.filtersHierarchy.indexOf(col);
+    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
+      this.filtersHierarchy.splice(colIndex, 1);
     }
     if (checkParent < 2) {
       parentNode.parentNode.removeChild(parentNode);
-      console.log('checkMatrix');
     }
     col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
     col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
@@ -238,6 +259,8 @@ export default class ColumnManager extends EventHandler {
     col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
     col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
     col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
+    col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
+    col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
     this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
     this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
 
@@ -286,7 +309,7 @@ export default class ColumnManager extends EventHandler {
       this.addChangeIconMatrix(columnNode, col);
     }
 
-    const selection: any = <HTMLElement>columnNode.select('main').selectAll('ol').node();
+    const selection = <HTMLElement>columnNode.select('main').selectAll('ol').node();
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
     projectedcolumn.$node.select('aside').remove();
 
@@ -307,6 +330,7 @@ export default class ColumnManager extends EventHandler {
     const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
     if (childCount > 1) {
       columnNode.select('header.columnHeader')
+        .classed('highlight', false)
         .classed('matrix', false)
         .select('.labelName')
         .classed('matrixLabel', false)
@@ -314,6 +338,7 @@ export default class ColumnManager extends EventHandler {
 
     } else {
       columnNode.select('header.columnHeader')
+        .classed('highlight', false)
         .classed('matrix', true)
         .select('.labelName')
         .classed('matrixLabel', true);
