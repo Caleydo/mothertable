@@ -21,8 +21,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   projectedMatrix: boolean = false;
   matrixViewRange: Range;
 
-  private $points:d3.Selection<any>;
-  private $axis:d3.Selection<any>;
+  private $points: d3.Selection<any>;
+  private $axis: d3.Selection<any>;
   private scale: d3.scale.Linear<number, number> = d3.scale.linear();
   private axis: d3.svg.Axis = d3.svg.axis();
 
@@ -60,8 +60,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
 
     const count = this.$axis.selectAll('.tick').size();
-    this.$axis.selectAll('.tick').each(function(data, i) {
-      if(i === count-1) {
+    this.$axis.selectAll('.tick').each(function (data, i) {
+      if (i === count - 1) {
         const tick = d3.select(this).select('text');
         tick.style('text-anchor', 'end');
       }
@@ -98,8 +98,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
   }
 
-  setFixedWidth(width:number) {
-    if(isNaN(width)) {
+  setFixedWidth(width: number) {
+    if (isNaN(width)) {
       return;
     }
     super.setFixedWidth(width);
@@ -107,6 +107,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   }
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
+    const range = (<any>this.data).parentValueType || histogramData.domain; // Hack for projected vector which are coming from matrix conversion
     return mixin(super.multiFormParams($body), {
       //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       initialVis: 'barplot',
@@ -116,8 +117,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       },
       'barplot': {
         cssClass: 'taggle-vis-barplot',
-        min: histogramData.domain[0],
-        max: histogramData.domain[1]
+        min: range[0],
+        max: range[1]
       },
       'phovea-vis-histogram': {
         color: 'grey',
