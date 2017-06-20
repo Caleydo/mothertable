@@ -64,7 +64,6 @@ class TableMock extends Table {
     colData(range: RangeLike = all()) {
       const arr = [1];
       arr[0] = NaN;
-     // arr[0][0] = NaN;
       return Promise.resolve( arr);
   }
 }
@@ -137,7 +136,7 @@ describe('ColumnManager', function() {
     .then(function() {
       expect(tv0.desc.id).toBe(tv1.desc.id);
       expect(colManager.length).toBe(3);
-     // colManager.remove(null, tv0);
+     // colManager.remove(null, tv0); // can't be executed unfortunatelys
       expect(colManager.length).toBe(3);
       done();
       });
