@@ -123,18 +123,20 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
 
   private attachListener() {
-    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
-    const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
-      .attr('class', 'aggSelect')
-      .on('change', (d, i) => {
-        const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
-        this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, value, this);
-      });
-    $vectorChange
-      .selectAll('option')
-      .data(options).enter()
-      .append('option')
-      .text((d) => d);
+    if ((<any>this).data.m !== undefined) {
+      const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
+      const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
+        .attr('class', 'aggSelect')
+        .on('change', (d, i) => {
+          const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
+          this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, value, this);
+        });
+      $vectorChange
+        .selectAll('option')
+        .data(options).enter()
+        .append('option')
+        .text((d) => d);
+    }
   }
 
 }

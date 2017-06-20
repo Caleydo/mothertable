@@ -291,7 +291,7 @@ export default class ColumnManager extends EventHandler {
   }
 
 
-  convertMatrixToVector(col, aggfunction) {
+  convertMatrixToVector(col: IAnyMatrix[], aggfunction: string) {
     const flattenedData: any = col.map((c) => {
       return c.reduce((row: number[]) => aggregatorFunction(aggfunction, row));
     });
@@ -299,7 +299,7 @@ export default class ColumnManager extends EventHandler {
   }
 
   updateTableView(flattenedMatrix: IAnyVector, col: AnyColumn) {
-    const projectedcolumn = this.columns.find((c) => c.dataView === flattenedMatrix);
+    const projectedcolumn = this.columns.find((c) => c.data === flattenedMatrix);
     if (projectedcolumn === undefined) {
       return;
     }
@@ -375,14 +375,12 @@ export default class ColumnManager extends EventHandler {
     const newdata = this.convertMatrixToVector(m, aggfunction);
     this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, newdata[0], col);
 
-
   }
 
   updateTableAggDom(oldColumn: NumberColumn, newVector: IDataType) {
     const parent = oldColumn.$node.node().parentNode;
     const newCol = this.columns.find((d) => d.data === newVector);
     newCol.$node.select('aside').remove();
-
     parent.insertBefore(newCol.$node.node(), oldColumn.$node.node());
     this.remove(null, oldColumn.data);
   }
