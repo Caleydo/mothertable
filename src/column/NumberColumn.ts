@@ -95,7 +95,6 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   }
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
-    const range = this.data.valuetype.range || histogramData.domain; // Hack for projected vector which are coming from matrix conversion
     return mixin(super.multiFormParams($body), {
       //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       initialVis: 'barplot',
@@ -105,8 +104,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       },
       'barplot': {
         cssClass: 'taggle-vis-barplot',
-        min: range[0],
-        max: range[1]
+        min: this.data.valuetype.range[0],
+        max: this.data.valuetype.range[1]
       },
       'phovea-vis-histogram': {
         color: 'grey',
