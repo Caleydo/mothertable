@@ -304,30 +304,35 @@ export default class ColumnManager extends EventHandler {
       return;
     }
     const columnNode = col.$node;
+    // Remove all the attributes added on the top of matrix
     columnNode.select('aside').selectAll('ol').remove();
     const aggNode = (columnNode.select('header.columnHeader').selectAll('.fa.fa-exchange').node());
+
+    // Only add aggregator icon if not exist
     if (aggNode === null) {
       this.addChangeIconMatrix(columnNode, col);
     }
 
     const selection: any = <HTMLElement>columnNode.select('main').selectAll('ol').node();
+    // Gives the parent dom of projected vector column
     const matrixDOM = this.getMatrixDOM(columnNode, selection);
+    //Remove the aside element from the new number column which are un necessary since column are converted from matrix.
     projectedcolumn.$node.select('aside').remove();
-
     const p = projectedcolumn.$node.node();
 
+    //Keep the same position of the projected column dom if exist else append in last position
     if (selection !== null && selection.children.length > 0) {
       const index = Array.from(selection.children).indexOf(p);
       selection.insertBefore(p, selection.children[index]);
-
     } else {
       matrixDOM.node().appendChild(projectedcolumn.$node.node());
-
     }
 
+    //The size of the matrix column will be based on the number of projected columns so remove fixed width
     columnNode.style('width', null);
     columnNode.style('min-width', null);
     const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
+    // When there is no stratification case child count is single i.e. there is single projected column because of single matrix view
     if (childCount > 1) {
       columnNode.select('header.columnHeader')
         .classed('highlight', false)
@@ -343,6 +348,8 @@ export default class ColumnManager extends EventHandler {
         .select('.labelName')
         .classed('matrixLabel', true);
     }
+
+    // Add header to the matrix aside for restoring of the original matrix.
     const h = columnNode.select('header.columnHeader').node();
     columnNode.select('header.columnHeader').select('.taggle-axis').classed('extended', true);
     columnNode.select('aside').node().appendChild(h);
@@ -355,6 +362,7 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+  // method for adding de aggregate icon on the top of matrix header
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
     columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').selectAll('*').remove();
     const aggIcon = columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').insert('a', ':first-child')
@@ -370,6 +378,7 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+  //Method for changing the aggregator function inside the converted number column from matrix
   private changeAggFunction(aggfunction: string, col: NumberColumn) {
     const m = [(<any>col.data).m];
     const newdata = this.convertMatrixToVector(m, aggfunction);
@@ -377,6 +386,7 @@ export default class ColumnManager extends EventHandler {
 
   }
 
+  // Method for updating the matrix dom while changing the aggregator function of the converted vector from matrix
   updateTableAggDom(oldColumn: NumberColumn, newVector: IDataType) {
     const parent = oldColumn.$node.node().parentNode;
     const newCol = this.columns.find((d) => d.data === newVector);
@@ -385,6 +395,7 @@ export default class ColumnManager extends EventHandler {
     this.remove(null, oldColumn.data);
   }
 
+  // Gives the dom node where converted vector from matrix are added.
   private getMatrixDOM(columnNode: d3.Selection<any>, selection: HTMLElement) {
     let matrixDOM;
     if (selection === null) {
