@@ -5,19 +5,17 @@
 /// <reference types="ts-mockito" />
 import ColumnManager from '../src/column/ColumnManager';
 import {EOrientation} from '../src/column/AColumn';
-import IDType from '../../phovea_core/src/idtype/IDType';
+import IDType from 'phovea_core/src/idtype/IDType';
 import * as d3 from 'd3';
-import {INumericalVector} from '../../phovea_core/src/vector/IVector';
-import TableVector from '../../phovea_core/src/table/internal/TableVector';
+import TableVector from 'phovea_core/src/table/internal/TableVector';
 import * as tsmockito from 'ts-mockito';
-import Table from '../../phovea_core/src/table/Table';
+import Table from 'phovea_core/src/table/Table';
 import {
   VALUE_TYPE_STRING, VALUE_TYPE_CATEGORICAL, VALUE_TYPE_INT, VALUE_TYPE_REAL,
   IDataType
 } from 'phovea_core/src/datatype';
-import FilterManager from '../src/filter/FilterManager';
 import {ITableLoader, ITableLoader2, adapterOne2Two, viaAPI2Loader, viaDataLoader} from 'phovea_core/src/table/loader';
-import {IQueryArgs, ITableDataDescription, ITableColumn} from '../../phovea_core/src/table/ITable';
+import {IQueryArgs, ITableDataDescription, ITableColumn} from 'phovea_core/src/table/ITable';
 import {Range, all, list as rlist, parse, RangeLike, Range1D} from 'phovea_core/src/range';
 
 function createDummyLoader() {
