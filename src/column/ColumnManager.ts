@@ -1036,8 +1036,6 @@ export function aggregatorFunction(aggType: string, arr: number[]) {
       return Math.round(d3.quantile(arr, 0.25));
     case AGGREGATE.q3:
       return Math.round(d3.quantile(arr, 0.75));
-    case AGGREGATE.sum:
-      return Math.round(d3.sum(arr));
     default:
       return '';
   }

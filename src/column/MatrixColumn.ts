@@ -25,8 +25,7 @@ export const AGGREGATE = {
   mean: 'mean',
   median: 'median',
   q1: 'q1',
-  q3: 'q3',
-  sum: 'sum'
+  q3: 'q3'
 
 };
 
@@ -285,7 +284,7 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
 
   private attachListener() {
     on(CategoricalColumn.EVENT_STRATIFYME, this.stratifyMe);
-    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3,AGGREGATE.sum];
+    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
     const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
       .attr('class', 'aggSelect')
       .on('change', (d, i) => {
