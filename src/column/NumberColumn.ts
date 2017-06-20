@@ -90,7 +90,6 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       return;
     }
     super.setFixedWidth(width);
-    super.setFixedWidth(width);
     this.updateAxisScale();
   }
 
