@@ -234,7 +234,8 @@ export default class ColumnManager extends EventHandler {
   }
 
   remove(evt: any, data: IDataType) {
-    const cols = this.columns.filter((d) => d.data.desc.id === data.desc.id);
+    // Replace by data.desc.id with data since the projected column from the matrix have same id
+    const cols = this.columns.filter((d) => d.data === data);
     //IF column is already removed
     if (cols.length === 0) {
       return;
@@ -263,7 +264,7 @@ export default class ColumnManager extends EventHandler {
       col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
       col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
       col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
-     col.off(NumberColumn.EVENT_CHANGE_AGG_FUNC, this.onChangeAggFunc);
+      col.off(NumberColumn.EVENT_CHANGE_AGG_FUNC, this.onChangeAggFunc);
       this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
       this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
       this.updateColumns();
