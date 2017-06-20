@@ -101,13 +101,18 @@ export default class FilterManager extends EventHandler {
 
   setHighlight(column: AnyColumn) {
     const col = this.filters.find((d) => d.data === column.data);
-    col.$node.select('header').classed('highlight', true);
+    if (col !== undefined) {
+      col.$node.select('header').classed('highlight', true);
+    }
 
   }
 
   removeHighlight(column: AnyColumn) {
     const col = this.filters.find((d) => d.data === column.data);
-    col.$node.select('header').classed('highlight', false);
+    if (col !== undefined) {
+      col.$node.select('header').classed('highlight', false);
+    }
+
 
   }
 

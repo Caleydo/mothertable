@@ -232,38 +232,39 @@ export default class ColumnManager extends EventHandler {
   }
 
   remove(evt: any, data: IDataType) {
-    const col = this.columns.find((d) => d.data === data);
+    const cols = this.columns.filter((d) => d.data.desc.id === data.desc.id);
     //IF column is already removed
-    if (col === undefined) {
+    if (cols.length === 0) {
       return;
     }
 
-    //Special case for the removing the parent dom of the projected vector from matrix.
-    const parentNode = col.$node.node().parentNode.parentNode.parentNode;
-    const checkParent = col.$node.node().parentNode.childNodes.length;
-    col.$node.remove();
-    this.columns.splice(this.columns.indexOf(col), 1);
-    // no columns of attribute available --> delete from filter hierarchy for correct sorting
-    const colIndex = this.filtersHierarchy.indexOf(col);
-    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
-      this.filtersHierarchy.splice(colIndex, 1);
-    }
-    if (checkParent < 2) {
-      parentNode.parentNode.removeChild(parentNode);
-    }
-    col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
-    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
-    col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
-    col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
-    col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
-    col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
-    col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
-    this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
-    this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
-
-
-    this.updateColumns();
+    cols.forEach((col) => {
+      //Special case for the removing the parent dom of the projected vector from matrix.
+      const parentNode = col.$node.node().parentNode.parentNode.parentNode;
+      const checkParent = col.$node.node().parentNode.childNodes.length;
+      col.$node.remove();
+      this.columns.splice(this.columns.indexOf(col), 1);
+      // no columns of attribute available --> delete from filter hierarchy for correct sorting
+      const colIndex = this.filtersHierarchy.findIndex((c) => c.data.desc.id === col.data.desc.id);
+      //const colIndex = this.filtersHierarchy.indexOf(col);
+      if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
+        this.filtersHierarchy.splice(colIndex, 1);
+      }
+      if (checkParent < 2) {
+        parentNode.parentNode.removeChild(parentNode);
+      }
+      col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+      col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
+      col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
+      col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
+      col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
+      col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
+      col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
+      col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
+      this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
+      this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
+      this.updateColumns();
+    });
   }
 
   /**
@@ -316,13 +317,16 @@ export default class ColumnManager extends EventHandler {
     const childCount = (columnNode.selectAll('main').selectAll('ol').node().childNodes.length);
     if (childCount > 1) {
       columnNode.select('header.columnHeader')
+        .classed('highlight', false)
         .classed('matrix', false)
         .select('.labelName')
         .classed('matrixLabel', false)
         .classed('matrixLabelExtended', true);
 
     } else {
+
       columnNode.select('header.columnHeader')
+        .classed('highlight', false)
         .classed('matrix', true)
         .select('.labelName')
         .classed('matrixLabel', true);
@@ -342,8 +346,8 @@ export default class ColumnManager extends EventHandler {
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
     columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').selectAll('*').remove();
     const aggIcon = columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').insert('a', ':first-child')
-      .attr('title', 'Aggregated Me')
-      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+      .attr('title', 'Deaggregate Me')
+      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Deaggregate Me</span>`);
     columnNode.select('main').selectAll('.multiformList').remove();
     aggIcon.on('click', (d) => {
       const numberColNodes = columnNode.selectAll('ol').selectAll('li');
