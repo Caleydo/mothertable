@@ -21,8 +21,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   projectedMatrix: boolean = false;
   matrixViewRange: Range;
 
-  private $points:d3.Selection<any>;
-  private $axis:d3.Selection<any>;
+  private $points: d3.Selection<any>;
+  private $axis: d3.Selection<any>;
   private scale: d3.scale.Linear<number, number> = d3.scale.linear();
   private axis: d3.svg.Axis = d3.svg.axis();
 
@@ -31,7 +31,6 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?: MatrixColumn) {
     super(data, orientation);
     this.$node = this.build($parent);
-    this.attachListener();
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
@@ -86,8 +85,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
   }
 
-  setFixedWidth(width:number) {
-    if(isNaN(width)) {
+  setFixedWidth(width: number) {
+    if (isNaN(width)) {
       return;
     }
     super.setFixedWidth(width);
@@ -96,7 +95,6 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       initialVis: 'barplot',
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP,
@@ -120,24 +118,4 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       }
     });
   }
-
-
-  private attachListener() {
-    if ((<any>this).data.m !== undefined) {
-      // this.matrixViewRange = this.data.m.range.dim(1).asList();
-      //  console.log(this.data.m, this.data.m.range.dim(1).asList())
-      const $matrixChange = this.toolbar.select('.onHoverToolbar').insert('a', ':first-child')
-        .attr('title', 'Aggregated Me')
-        .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
-
-      $matrixChange.on('click', () => {
-        this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, this);
-      });
-
-    }
-
-
-  }
-
-
 }
