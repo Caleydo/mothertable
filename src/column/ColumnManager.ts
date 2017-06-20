@@ -232,38 +232,39 @@ export default class ColumnManager extends EventHandler {
   }
 
   remove(evt: any, data: IDataType) {
-    const col = this.columns.find((d) => d.data === data);
+    const cols = this.columns.filter((d) => d.data.desc.id === data.desc.id);
     //IF column is already removed
-    if (col === undefined) {
+    if (cols.length === 0) {
       return;
     }
 
-    //Special case for the removing the parent dom of the projected vector from matrix.
-    const parentNode = col.$node.node().parentNode.parentNode.parentNode;
-    const checkParent = col.$node.node().parentNode.childNodes.length;
-    col.$node.remove();
-    this.columns.splice(this.columns.indexOf(col), 1);
-    // no columns of attribute available --> delete from filter hierarchy for correct sorting
-    const colIndex = this.filtersHierarchy.indexOf(col);
-    if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
-      this.filtersHierarchy.splice(colIndex, 1);
-    }
-    if (checkParent < 2) {
-      parentNode.parentNode.removeChild(parentNode);
-    }
-    col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
-    col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
-    col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
-    col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
-    col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
-    col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
-    col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
-    col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
-    this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
-    this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
-
-
-    this.updateColumns();
+    cols.forEach((col) => {
+      //Special case for the removing the parent dom of the projected vector from matrix.
+      const parentNode = col.$node.node().parentNode.parentNode.parentNode;
+      const checkParent = col.$node.node().parentNode.childNodes.length;
+      col.$node.remove();
+      this.columns.splice(this.columns.indexOf(col), 1);
+      // no columns of attribute available --> delete from filter hierarchy for correct sorting
+      const colIndex = this.filtersHierarchy.findIndex((c) => c.data.desc.id === col.data.desc.id);
+      //const colIndex = this.filtersHierarchy.indexOf(col);
+      if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
+        this.filtersHierarchy.splice(colIndex, 1);
+      }
+      if (checkParent < 2) {
+        parentNode.parentNode.removeChild(parentNode);
+      }
+      col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
+      col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
+      col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
+      col.off(AColumn.VISUALIZATION_SWITCHED, this.onVisChange);
+      col.off(MatrixColumn.EVENT_CONVERT_TO_VECTOR, this.onMatrixToVector);
+      col.off(NumberColumn.EVENT_CONVERT_TO_MATRIX, this.onVectorToMatrix);
+      col.off(AColumn.EVENT_HIGHLIGHT_ME, this.highlightColumn);
+      col.off(AColumn.EVENT_REMOVEHIGHLIGHT_ME, this.removeHighlightColumn);
+      this.fire(ColumnManager.EVENT_COLUMN_REMOVED, col);
+      this.fire(ColumnManager.EVENT_DATA_REMOVED, col.data);
+      this.updateColumns();
+    });
   }
 
   /**
