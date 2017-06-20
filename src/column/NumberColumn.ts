@@ -11,6 +11,7 @@ import {NUMERICAL_COLOR_MAP} from './utils';
 import * as d3 from 'd3';
 import Range from 'phovea_core/src/range/Range';
 import MatrixColumn from './MatrixColumn';
+import TableVector from 'phovea_core/src/table/internal/TableVector';
 
 export default class NumberColumn extends AVectorColumn<number, INumericalVector> {
 
@@ -95,6 +96,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   }
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
+    const range = (this.data instanceof TableVector) ? histogramData.domain : this.data.valuetype.range; // Hack for projected vector which are coming from matrix conversion
     return mixin(super.multiFormParams($body), {
       //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       initialVis: 'barplot',
@@ -104,8 +106,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       },
       'barplot': {
         cssClass: 'taggle-vis-barplot',
-        min: this.data.valuetype.range[0],
-        max: this.data.valuetype.range[1]
+        min: range[0],
+        max: range[1]
       },
       'phovea-vis-histogram': {
         color: 'grey',
