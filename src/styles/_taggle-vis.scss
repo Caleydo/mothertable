@@ -61,6 +61,16 @@
       padding: 0 0 0 10px;
     }
   }
+
+  &.hor {
+    > div {
+      //based on https://www.thecssninja.com/css/real-text-rotation-with-css
+      transform: rotate(180deg);
+      padding: 11px 1px 1px 1px;
+      //tb-rl – Flows the text vertically from top to bottom, right to left
+      writing-mode: tb-rl;
+    }
+  }
 }
 
 .phovea-mosaic {
