@@ -87,8 +87,8 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
     this.$axis.call(this.axis);
   }
 
-  setFixedWidth(width:number) {
-    if(isNaN(width)) {
+  setFixedWidth(width: number) {
+    if (isNaN(width)) {
       return;
     }
     super.setFixedWidth(width);
@@ -97,7 +97,6 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
   protected multiFormParams($body: d3.Selection<any>, histogramData?: ITaggleHistogramData): IMultiFormOptions {
     return mixin(super.multiFormParams($body), {
-      //initialVis: VisManager.getDefaultVis(this.data.desc.type, this.data.desc.value.type, EAggregationType.UNAGGREGATED),
       initialVis: 'barplot',
       'phovea-vis-heatmap1d': {
         color: NUMERICAL_COLOR_MAP,
@@ -124,37 +123,18 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
 
 
   private attachListener() {
-    if ((<any>this).data.m !== undefined) {
-      // this.matrixViewRange = this.data.m.range.dim(1).asList();
-      //  console.log(this.data.m, this.data.m.range.dim(1).asList())
-      const $matrixChange = this.toolbar.select('.onHoverToolbar').insert('a', ':first-child')
-        .attr('title', 'Aggregated Me')
-        .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
-
-      $matrixChange.on('click', () => {
-        this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, this);
+    const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
+    const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
+      .attr('class', 'aggSelect')
+      .on('change', (d, i) => {
+        const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
+        this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, value, this);
       });
-
-
-      const options = ['select', AGGREGATE.min, AGGREGATE.max, AGGREGATE.mean, AGGREGATE.median, AGGREGATE.q1, AGGREGATE.q3];
-      const $vectorChange = this.toolbar.select('div.onHoverToolbar').append('select')
-        .attr('class', 'aggSelect')
-        .on('change', (d, i) => {
-          const value = this.toolbar.select('div.onHoverToolbar').select('select').property('value');
-          this.fire(NumberColumn.EVENT_CHANGE_AGG_FUNC, value, this);
-        });
-
-      $vectorChange
-        .selectAll('option')
-        .data(options).enter()
-        .append('option')
-        .text((d) => d);
-
-
-    }
-
-
+    $vectorChange
+      .selectAll('option')
+      .data(options).enter()
+      .append('option')
+      .text((d) => d);
   }
-
 
 }

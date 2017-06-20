@@ -358,8 +358,8 @@ export default class ColumnManager extends EventHandler {
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
     columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').selectAll('*').remove();
     const aggIcon = columnNode.select('header.columnHeader').selectAll('.onHoverToolbar').insert('a', ':first-child')
-      .attr('title', 'Aggregated Me')
-      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Aggregate Me</span>`);
+      .attr('title', 'Deaggregate Me')
+      .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Deaggregate Me</span>`);
     columnNode.select('main').selectAll('.multiformList').remove();
     aggIcon.on('click', (d) => {
       const numberColNodes = columnNode.selectAll('ol').selectAll('li');
