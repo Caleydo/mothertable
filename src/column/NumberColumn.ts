@@ -31,7 +31,6 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
   constructor(data: INumericalVector, orientation: EOrientation, $parent: d3.Selection<any>, matrixCol?: MatrixColumn) {
     super(data, orientation);
     this.$node = this.build($parent);
-    //  this.attachListener();
   }
 
   protected buildToolbar($toolbar: d3.Selection<any>) {
@@ -103,6 +102,7 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       return;
     }
     super.setFixedWidth(width);
+    super.setFixedWidth(width);
     this.updateAxisScale();
   }
 
@@ -132,26 +132,4 @@ export default class NumberColumn extends AVectorColumn<number, INumericalVector
       }
     });
   }
-
-
-  //Uncomment this if user want to activate the single converted vector from matrix and add the deaggregate matrix as independent column.
-  //See issue 398
-  private attachListener() {
-    if ((<any>this).data.m !== undefined) {
-      // this.matrixViewRange = this.data.m.range.dim(1).asList();
-      //  console.log(this.data.m, this.data.m.range.dim(1).asList())
-      const $matrixChange = this.toolbar.select('.onHoverToolbar').insert('a', ':first-child')
-        .attr('title', 'Deaggregated Me')
-        .html(`<i class="fa fa-exchange" aria-hidden="true"></i><span class="sr-only">Deaggregate Me</span>`);
-
-      $matrixChange.on('click', () => {
-        this.fire(NumberColumn.EVENT_CONVERT_TO_MATRIX, this);
-      });
-
-    }
-
-
-  }
-
-
 }
