@@ -10,8 +10,7 @@ export default class MatrixSupportView extends SupportView {
   }
 
   protected addDefaultColumn() {
-    console.log('No default column for Matrix');
-
+    // we don't need a default column in a matrix support view
   }
 
 }
