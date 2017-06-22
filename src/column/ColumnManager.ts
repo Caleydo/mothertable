@@ -339,8 +339,6 @@ export default class ColumnManager extends EventHandler {
       return;
     }
     this.columns.splice(index, 1); // Remove matrix column
-    this.relayout();
-
   }
 
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
