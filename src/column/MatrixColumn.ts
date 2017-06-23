@@ -116,7 +116,6 @@ export default class MatrixColumn extends AColumn<number, INumericalMatrix> {
       rowRanges = this.rowRanges;
     }
     this.rowRanges = rowRanges;
-    // console.log((colRange), 'colrange');
 
     if (!colRange) {
       colRange = (await this.calculateDefaultRange());

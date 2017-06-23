@@ -23,7 +23,6 @@ import SortHandler from '../SortHandler/SortHandler';
 import AVectorFilter from '../filter/AVectorFilter';
 import {on} from 'phovea_core/src/event';
 import AFilter from '../filter/AFilter';
-import * as $ from 'jquery';
 import 'jquery-ui/ui/widgets/sortable';
 import {IAnyMatrix} from 'phovea_core/src/matrix/IMatrix';
 import * as d3 from 'd3';
@@ -48,6 +47,7 @@ import SupportView from '../SupportView';
 import RowNumberColumn from './RowNumberColumn';
 import Any = jasmine.Any;
 import {hash} from 'phovea_core/src/index';
+import * as $ from 'jquery';
 
 export declare type AnyColumn = AColumn<any, IDataType>;
 export declare type IMotherTableType = IStringVector | ICategoricalVector | INumericalVector | INumericalMatrix;
@@ -182,8 +182,6 @@ export default class ColumnManager extends EventHandler {
   setColumnHighlight(column: AnyColumn) {
     const cols = this.columns.filter((d) => d.data === column.data);
     cols.forEach((col) => col.highlightMe(true));
-    // col.$node.select('.toolbar').classed('setHighlight', true);
-
   }
 
   removeColumnHighlight(column: AnyColumn) {
@@ -219,8 +217,7 @@ export default class ColumnManager extends EventHandler {
     this.columns.push(col);
 
     // add column to hierarchy if it isn't a matrix and already added
-    const id = this.filtersHierarchy.filter((c) => c.data.desc.id === col.data.desc.id);
-    if (col.data.desc.type !== AColumn.DATATYPE.matrix && id.length === 0) {
+    if (col.data.desc.type !== AColumn.DATATYPE.matrix && this.filtersHierarchy.findIndex((c) => c.data.desc.id === col.data.desc.id) === -1) {
       this.filtersHierarchy.push(col);
     }
 
@@ -231,28 +228,32 @@ export default class ColumnManager extends EventHandler {
     return col;
   }
 
+  removeColumnFromDOM(col : AnyColumn) {
+    let $upmostElement = $(col.$node.node()).closest('li.column');
+    console.assert($upmostElement.length === 1);
+    const $matrixHeader = $($upmostElement).parents('li.column');
+    if($matrixHeader.length > 0) {
+      $upmostElement = $matrixHeader;
+    }
+    $upmostElement[$upmostElement.length - 1].remove();
+  }
+
   remove(evt: any, data: IDataType) {
     const cols = this.columns.filter((d) => d.data.desc.id === data.desc.id);
-    //IF column is already removed
-    if (cols.length === 0) {
-      return;
-    }
 
     cols.forEach((col) => {
-      //Special case for the removing the parent dom of the projected vector from matrix.
-      const parentNode = col.$node.node().parentNode.parentNode.parentNode;
-      const checkParent = col.$node.node().parentNode.childNodes.length;
-      col.$node.remove();
+      this.removeColumnFromDOM(col);
       this.columns.splice(this.columns.indexOf(col), 1);
-      // no columns of attribute available --> delete from filter hierarchy for correct sorting
       const colIndex = this.filtersHierarchy.findIndex((c) => c.data.desc.id === col.data.desc.id);
-      //const colIndex = this.filtersHierarchy.indexOf(col);
-      if (this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0 && colIndex > -1) {
+
+      // if colIndex is true then, then it has to be a matrix column
+      console.assert((colIndex > -1) || col.data.desc.type === AColumn.DATATYPE.matrix);
+
+      // if it is not a matrix column and if all columns associated to this filter are removed, then remove the filter too
+      if (colIndex > -1 && this.columns.filter((d) => d.data.desc.id === col.data.desc.id).length === 0) {
         this.filtersHierarchy.splice(colIndex, 1);
       }
-      if (checkParent < 2) {
-        parentNode.parentNode.removeChild(parentNode);
-      }
+
       col.off(AColumn.EVENT_REMOVE_ME, this.onColumnRemoved);
       col.off(AVectorColumn.EVENT_SORTBY_COLUMN_HEADER, this.onSortByColumnHeader);
       col.off(AColumn.EVENT_COLUMN_LOCK_CHANGED, this.onLockChange);
@@ -339,8 +340,6 @@ export default class ColumnManager extends EventHandler {
       return;
     }
     this.columns.splice(index, 1); // Remove matrix column
-    this.relayout();
-
   }
 
   private addChangeIconMatrix(columnNode: d3.Selection<any>, col: AnyColumn) {
