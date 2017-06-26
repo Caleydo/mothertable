@@ -310,8 +310,6 @@ export default class App {
     return supportView.init()
       .then(() => {
         this.supportView.push(supportView);
-        const matrix = this.supportView[0].getMatrixData(col.data.desc.id);
-        new MatrixFilter(matrix.t, supportView.$node);
         supportView.on(AVectorFilter.EVENT_SORTBY_FILTER_ICON, (evt: any, data) => {
           col.sortByFilterHeader(data);
         });
