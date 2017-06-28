@@ -45,7 +45,6 @@ import TaggleMultiform from './TaggleMultiform';
 import {AGGREGATE} from './MatrixColumn';
 import SupportView from '../SupportView';
 import RowNumberColumn from './RowNumberColumn';
-import Any = jasmine.Any;
 import {hash} from 'phovea_core/src/index';
 import * as $ from 'jquery';
 
