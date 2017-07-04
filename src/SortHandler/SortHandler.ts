@@ -131,6 +131,10 @@ export function filterCat<T>(aVal: T, bVal: T) {
   // }
 }
 
+function toFactor(sortCriteria: string) {
+  return sortCriteria === SORT.desc ? -1 : +1;
+}
+
 /**
  * See Test Folder for the use of this function
  *
@@ -145,13 +149,13 @@ export function stringSort(sortCriteria: string, aVal: string, bVal: string) {
   }
   let r : number = 0;
   if (aVal === null) {
-    r = +1;
-  } else if (bVal === null) {
     r = -1;
+  } else if (bVal === null) {
+    r = +1;
   } else {
     r = aVal.localeCompare(bVal);
   }
-  return sortCriteria === SORT.desc ? -r : r;
+  return r * toFactor(sortCriteria);
 }
 /**
  * See Test Folder for the use of this function
@@ -168,15 +172,15 @@ export function numSort(sortCriteria: string, aVal: number, bVal: number) {
     return 0;
   }
   let r : number = 0;
-  //NaN and null is maximal value
+  //NaN and null is minimal value
   if (aVal === null || isANaN) {
-    r = +1;
-  } else if (bVal === null || isBNaN) {
     r = -1;
+  } else if (bVal === null || isBNaN) {
+    r = +1;
   } else {
     r = aVal - bVal;
   }
-  return sortCriteria === SORT.desc ? -r : r;
+  return r * toFactor(sortCriteria);
 }
 
 
