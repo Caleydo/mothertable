@@ -9,6 +9,8 @@ import * as d3 from 'd3';
 import SortHandler, {SORT, stringSort} from '../SortHandler/SortHandler';
 import CategoricalColumn from '../column/CategoricalColumn';
 import {on, fire} from 'phovea_core/src/event';
+import {ICatHistogram} from '../../../phovea_core/src/math';
+import {debug} from 'util';
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
   readonly $node: d3.Selection<any>;
@@ -83,26 +85,11 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
   private async generateCategories($node: d3.Selection<any>, dispHistogram: boolean) {
     const that = this;
     const cellHeight = this.filterDim.height;
-    const allCatNames = await(<any>this.data).data();
-    const categories = (<any>this.data).desc.value.categories;
-
-    const c20 = d3.scale.category20();
-    const toolTip = (this.generateTooltip($node));
-    const cellDimension = this.filterDim.width / categories.length;
+    const hist = <ICatHistogram> await this.data.hist();
+    const bins = [];
+    hist.forEach((d, i) => bins.push(d));
     const catData = [];
-    const uniqueCategories = allCatNames.filter((x, i, a) => a.indexOf(x) === i);
-    uniqueCategories.forEach(((val, i) => {
-      const count = allCatNames.filter(isSame.bind(this, val));
-      let colcat = [];
-      if (typeof categories !== 'undefined') {
-        colcat = categories.filter((d, i) => {
-          return d.name === val;
-        });
-      }
-      const colorVal = (colcat.length < 1) ? c20(count.length) : colcat[0].color;
-      catData.push({name: val, count: count.length, 'color': colorVal});
-    }));
-
+    hist.categories.forEach((c, i) => catData.push({'name': c, 'count': bins[i], 'color': hist.colors[i]}));
     const onClick = function (d, $this) {
       $this.classed('active', !$this.classed('active'));
       if ($this.classed('active') === false) {

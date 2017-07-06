@@ -341,12 +341,17 @@ export default class SupportView extends EventHandler {
     datasets.forEach((tableVector, j) => {
       if ((tableVector.desc.type === 'vector' || tableVector.desc.type === 'matrix') && tableVector.desc.value.type === 'categorical') {
         const categories = tableVector.desc.value.categories;
+
         categories.forEach((v, i) => {
+          if (typeof v === 'string') {
+            v = { name: v};
+            categories[i] = v;
+          }
           if (v.color === undefined) {
-            const base = color[j - 4];
+            const base = color[j % color.length];
             v.color = base[i % base.length];
           }
-          if (v.label !== undefined) {
+          if (v.label === undefined) {
             v.label = v.name;
           }
         });
