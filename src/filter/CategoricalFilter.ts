@@ -9,7 +9,7 @@ import * as d3 from 'd3';
 import SortHandler, {SORT, stringSort} from '../SortHandler/SortHandler';
 import CategoricalColumn from '../column/CategoricalColumn';
 import {on, fire} from 'phovea_core/src/event';
-import {ICatHistogram} from '../../../phovea_core/src/math';
+import {ICatHistogram} from 'phovea_core/src/math';
 import {debug} from 'util';
 
 export default class CategoricalFilter extends AVectorFilter<string, ICategoricalVector> {
