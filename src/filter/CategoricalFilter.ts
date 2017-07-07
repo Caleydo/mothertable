@@ -89,7 +89,15 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
     const bins = [];
     hist.forEach((d, i) => bins.push(d));
     const catData = [];
-    hist.categories.forEach((c, i) => catData.push({'name': c, 'count': bins[i], 'color': hist.colors[i]}));
+    const categories = (<any>this.data.desc.value).categories;
+    const nameToLabel = new Map<string, string>();
+    if (categories) {
+      // replace each item in data with label
+      categories.forEach((d) => {
+        nameToLabel.set(d.name, d.label);
+      });
+    }
+    hist.categories.forEach((c, i) => catData.push({'name': (nameToLabel.has(c)) ? nameToLabel.get(c) : c, 'count': bins[i], 'color': hist.colors[i]}));
     const onClick = function (d, $this) {
       $this.classed('active', !$this.classed('active'));
       if ($this.classed('active') === false) {
