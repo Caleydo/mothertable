@@ -71,6 +71,7 @@ export default class App {
     const elems = elem.select('div.btn-group[role="group"]').selectAll('div.btn-group').data(this.idtypes);
     elems.enter().append('div')
       .classed('btn-group', true)
+      .attr('style', 'display: inline-block;')
       .attr('role', 'group')
       .html(`<button type="button" class="btn btn-default btn-lg"></button>`);
     elems.select('button')
