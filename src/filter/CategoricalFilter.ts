@@ -190,11 +190,9 @@ function isSame<T>(value: T, compareWith: T) {
 
 
 function findCatName(catName: any[], value: string) {
-
-  for (const x in catName) {
-    if (catName[x].id === value) {
-      return value;
-    }
+  const res = catName.find((x) => x.id === value);
+  if(res) {
+    return res;
   }
   return;
 }
