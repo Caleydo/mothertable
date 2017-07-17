@@ -97,7 +97,7 @@ export default class CategoricalFilter extends AVectorFilter<string, ICategorica
         nameToLabel.set(d.name, d.label);
       });
     }
-    hist.categories.forEach((c, i) => catData.push({'name': (nameToLabel.has(c)) ? nameToLabel.get(c) : c, 'count': bins[i], 'color': hist.colors[i]}));
+    hist.categories.forEach((c, i) => catData.push({'name': (nameToLabel.has(c)) ? nameToLabel.get(c) : c, 'id': c, 'count': bins[i], 'color': hist.colors[i]}));
     const onClick = function (d, $this) {
       $this.classed('active', !$this.classed('active'));
       if ($this.classed('active') === false) {
@@ -190,14 +190,13 @@ function isSame<T>(value: T, compareWith: T) {
 
 
 function findCatName(catName: any[], value: string) {
-
-  for (const x in catName) {
-    if (catName[x].name === value) {
-      return value;
-    }
+  const res = catName.find((x) => x.id === value);
+  if(res) {
+    return res;
   }
   return;
 }
+
 
 function catObjectsort(sortCriteria: string, a: { name: string }, b: { name: string }) {
   const aVal = a.name.toUpperCase();
@@ -213,4 +212,3 @@ function catObjectsort(sortCriteria: string, a: { name: string }, b: { name: str
     return (bVal.localeCompare(aVal));
   }
 }
-
